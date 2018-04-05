@@ -212,6 +212,8 @@ void OverviewPage::UpdateBoincUtilization()
     ui->labelStatus->setText(QString::fromUtf8(GlobalStatusStruct.status.c_str()));
     ui->labelPoll->setText(QString::fromUtf8(GlobalStatusStruct.poll.c_str()).replace(QChar('_'),QChar(' '), Qt::CaseSensitive));
     ui->labelErrors->setText(QString::fromUtf8(GlobalStatusStruct.errors.c_str()));
+    ui->labelETTS->setText(QString::fromUtf8(GlobalStatusStruct.ETTS.c_str()));
+    ui->labelERRperday->setText(QString::fromUtf8(GlobalStatusStruct.ERRperday.c_str()));
 }
 
 void OverviewPage::setModel(WalletModel *model)

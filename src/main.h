@@ -227,6 +227,8 @@ struct globalStatusType
     std::string netWeight;
     std::string coinWeight;
     std::string magnitude;
+    std::string ETTS;
+    std::string ERRperday;
     std::string project;
     std::string cpid;
     std::string status;
@@ -283,7 +285,9 @@ std::string UnpackBinarySuperblock(std::string sBlock);
 bool IsSuperBlock(CBlockIndex* pIndex);
 bool LoadSuperblock(std::string data, int64_t nTime, int height);
 
-double GetPoSKernelPS();
+double GetPoSKernelPS(int nPoSInterval = 40);
+double GetAverageDifficulty(int nPoSInterval = 40);
+double GetEstimatedTimetoStake(int nPoSInterval = 40, double dConfidence = 0.8);
 
 unsigned int ComputeMinWork(unsigned int nBase, int64_t nTime);
 unsigned int ComputeMinStake(unsigned int nBase, int64_t nTime, unsigned int nBlockTime);

@@ -336,34 +336,6 @@
               </property>
              </widget>
             </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="label_13">
-              <property name="text">
-               <string>Magnitude:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="0">
-             <widget class="QLabel" name="label_14">
-              <property name="text">
-               <string>Project:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="0">
-             <widget class="QLabel" name="label_15">
-              <property name="text">
-               <string>CPID:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="7" column="0">
-             <widget class="QLabel" name="label_16">
-              <property name="text">
-               <string>Status:</string>
-              </property>
-             </widget>
-            </item>
             <item row="3" column="1">
              <widget class="QLabel" name="labelCoinWeight">
               <property name="text">
@@ -371,6 +343,13 @@
               </property>
               <property name="textInteractionFlags">
                <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_13">
+              <property name="text">
+               <string>Magnitude:</string>
               </property>
              </widget>
             </item>
@@ -384,6 +363,13 @@
               </property>
              </widget>
             </item>
+            <item row="5" column="0">
+             <widget class="QLabel" name="label_14">
+              <property name="text">
+               <string>Project:</string>
+              </property>
+             </widget>
+            </item>
             <item row="5" column="1">
              <widget class="QLabel" name="labelProject">
               <property name="text">
@@ -391,6 +377,13 @@
               </property>
               <property name="textInteractionFlags">
                <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="0">
+             <widget class="QLabel" name="label_15">
+              <property name="text">
+               <string>CPID:</string>
               </property>
              </widget>
             </item>
@@ -404,6 +397,13 @@
               </property>
              </widget>
             </item>
+            <item row="7" column="0">
+             <widget class="QLabel" name="label_16">
+              <property name="text">
+               <string>Status:</string>
+              </property>
+             </widget>
+            </item>
             <item row="7" column="1">
              <widget class="QLabel" name="labelStatus">
               <property name="text">
@@ -411,6 +411,34 @@
               </property>
               <property name="textInteractionFlags">
                <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="0">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Est. TTS:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="1">
+             <widget class="QLabel" name="labelETTS">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="0">
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>Est. RR/day:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="1">
+             <widget class="QLabel" name="labelERRperday">
+              <property name="text">
+               <string/>
               </property>
              </widget>
             </item>
