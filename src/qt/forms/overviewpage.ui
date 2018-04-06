@@ -416,6 +416,9 @@
             </item>
             <item row="8" column="0">
              <widget class="QLabel" name="label">
+              <property name="toolTip">
+               <string>Estimated Time to Stake</string>
+              </property>
               <property name="text">
                <string>Est. TTS:</string>
               </property>
@@ -430,6 +433,9 @@
             </item>
             <item row="9" column="0">
              <widget class="QLabel" name="label_4">
+              <property name="toolTip">
+               <string>Estimated Research rewards per day</string>
+              </property>              
               <property name="text">
                <string>Est. RR/day:</string>
               </property>
