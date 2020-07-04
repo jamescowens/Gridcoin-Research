@@ -138,6 +138,49 @@ namespace
     };
 
 #endif
+
+    //!
+    //! \brief Parse an etag value from an HTTP header field.
+    //!
+    //! This will parse etag values from headers in these standard formats:
+    //!
+    //!   ETag: "12345"
+    //!   ETag: W/"12345"
+    //!
+    //! The name of the header is matched in a case-insensitive fashion. This
+    //! function will return an empty string for non-standard, malformed, and
+    //! non-etag headers. It removes the quotes from the output and ignores a
+    //! space after the colon that separates the header name from the value.
+    //!
+    //! \param header Entire HTTP header field that includes the name and value.
+    //!
+    //! \return The parsed etag value or an empty string if the supplied header
+    //! contains no standard etag content.
+    //!
+    std::string ParseEtag(const std::string& header)
+    {
+        if (header.size() <= 8 || header[4] != ':') {
+            return std::string();
+        }
+
+        constexpr char expected[] = "etag";
+        constexpr int32_t to_upper = 32;
+
+        for (size_t i = 0; i < 4; ++i) {
+            if (header[i] != expected[i] && header[i] != expected[i] - to_upper) {
+                return std::string();
+            }
+        }
+
+        const size_t start_quote = header.find('"', 5);
+        const size_t end_quote = header.find('"', start_quote + 1);
+
+        if (start_quote == std::string::npos || end_quote == std::string::npos) {
+            return std::string();
+        }
+
+        return header.substr(start_quote + 1, end_quote - start_quote - 1);
+    }
 } // anonymous namespace
 
 Http::CurlLifecycle::CurlLifecycle()
@@ -204,63 +247,20 @@ std::string Http::GetEtag(
     curl_easy_getinfo(curl.get(), CURLINFO_RESPONSE_CODE, &response_code);
     EvaluateResponse(response_code, url);
 
-    // Find ETag header.
-    std::string etag;
-
     _log(logattribute::INFO, "Http::ETag", "Header: \n" + header);
 
     std::istringstream iss(header);
     for (std::string line; std::getline(iss, line);)
     {
-        std::vector<std::string> header_line_elements = split(line, ":", "\"");
+        std::string etag = ParseEtag(line);
 
-        std::vector<std::string> trimmed_stripped_elements;
-
-        for (const auto& elem : header_line_elements)
+        if (!etag.empty())
         {
-            std::string output = elem;
-
-            // Get rid of leading and trailing spaces for all fields.
-            boost::algorithm::trim(output);
-
-            // Get rid of quotes.
-            boost::replace_all(output, "\"", "");
-
-            trimmed_stripped_elements.push_back(output);
-         }
-
-        std::string header_name;
-
-        if (header_line_elements.size())
-        {
-            header_name = trimmed_stripped_elements[0];
-
-            // Change everything in header field name to lower case.
-            boost::to_lower(header_name);
-        }
-
-        if (header_name == "etag" && header_line_elements.size() == 2)
-        {
-            etag = trimmed_stripped_elements[1];
-
-            // If the ETag has a "weak" suffix, we don't want the forward slash.
-            boost::replace_all(etag, "W/", "W");
-
-            if(etag.size())
-            {
-                _log(logattribute::INFO, "curl_http_header", "Captured ETag for project url <urlfile=" + url + ", ETag=" + etag + ">");
-
-                return etag;
-            }
+            return etag;
         }
     }
 
-    if (etag.empty())
-    {
-        throw std::runtime_error("No ETag response from project url <urlfile=" + url + ">");
-    }
-
-    return std::string();
+    throw std::runtime_error("No ETag response from project url <urlfile=" + url + ">");
 }
 
 std::string Http::GetLatestVersionResponse()
