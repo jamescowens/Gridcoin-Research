@@ -7,6 +7,7 @@
 #include <string.h>
 #include <memory>
 #include <boost/thread.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
 #if LIBCURL_VERSION_NUM >= 0x073d00
 /* In libcurl 7.61.0, support was added for extracting the time in plain
@@ -211,29 +212,53 @@ std::string Http::GetEtag(
     std::istringstream iss(header);
     for (std::string line; std::getline(iss, line);)
     {
-        size_t pos = line.find(":");
+        std::vector<std::string> header_line_elements = split(line, ":", "\"");
 
-        if (pos != 4)
+        std::vector<std::string> trimmed_stripped_elements;
+
+        for (const auto& elem : header_line_elements)
         {
-            continue;
+            std::string output = elem;
+
+            // Get rid of leading and trailing spaces for all fields.
+            boost::algorithm::trim(output);
+
+            // Change everything to lower case.
+            boost::to_lower(output);
+
+            // Get rid of quotes.
+            boost::replace_all(output, "\"", "");
+
+            trimmed_stripped_elements.push_back(output);
+         }
+
+        std::string header_name;
+
+        if (header_line_elements.size())
+        {
+            header_name = trimmed_stripped_elements[0];
         }
 
-        std::string header_name = line.substr(0, 4);
-        boost::to_lower(header_name);
-
-        if (header_name == "etag" && line.size() >= 9)
+        if (header_name == "etag" && header_line_elements.size() == 2)
         {
-            etag = line.substr(6); // extract header value
-            etag = etag.substr(1, etag.size() - 2); // strip quotes
+            etag = trimmed_stripped_elements[1];
 
-            _log(logattribute::INFO, "curl_http_header", "Captured ETag for project url <urlfile=" + url + ", ETag=" + etag + ">");
+            // If the ETag has a "weak" suffix, we don't want the forward slash.
+            boost::replace_all(etag, "W/", "W");
 
-            return etag;
+            if(etag.size())
+            {
+                _log(logattribute::INFO, "curl_http_header", "Captured ETag for project url <urlfile=" + url + ", ETag=" + etag + ">");
+
+                return etag;
+            }
         }
     }
 
     if (etag.empty())
+    {
         throw std::runtime_error("No ETag response from project url <urlfile=" + url + ">");
+    }
 
     return std::string();
 }

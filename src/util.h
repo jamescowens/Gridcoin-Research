@@ -228,6 +228,7 @@ std::string ToString(const T& val)
 
 bool Contains(const std::string& data, const std::string& instring);
 std::vector<std::string> split(const std::string& s, const std::string& delim);
+std::vector<std::string> split(const std::string& s, const std::string& delim, const std::string& delim_protect);
 
 std::string MakeSafeMessage(const std::string& messagestring);
 

@@ -997,6 +997,54 @@ std::vector<std::string> split(const std::string& s, const std::string& delim)
     return elems;
 }
 
+// Overload for a more sophisticated version that allows a field protector (usually a "),
+// which will allow the specified delimiter INSIDE the protector pair without being split.
+// We only use this if the protection is needed, because this is probably a bit slower.
+std::vector<std::string> split(const std::string& s, const std::string& delim, const std::string& delim_protect = "")
+{
+    std::vector<std::string> elems;
+
+    // This is to handle the case where someone uses split but specifies an
+    // empty delimiter.
+    if (delim.empty())
+    {
+        elems.push_back(s);
+
+        return elems;
+    }
+
+    size_t pos = 0;
+    size_t end = 0;
+
+    while(end != std::string::npos)
+    {
+        size_t next_delim = s.find(delim, pos);
+        size_t next_delim_protect = s.find(delim_protect, pos);
+
+        // If the position of the delimiter escape "protect" character is before
+        // the next delimiter, then we are in an escaped sequence.
+        if (next_delim_protect < next_delim)
+        {
+            // Advance the end to the next matching protect character.
+            end = s.find(delim_protect, next_delim_protect + delim_protect.size());
+
+            // Advance from the matching (closing) protect character to the next delimiter.
+            // This should be the next character, but there could be white space.
+            end = s.find(delim, end);
+        }
+        else
+        {
+            end = next_delim;
+        }
+
+        elems.push_back(s.substr(pos, end - pos));
+        pos = end + delim.size();
+    }
+
+    return elems;
+}
+
+
 // Format the subversion field according to BIP 14 spec (https://en.bitcoin.it/wiki/BIP_0014)
 std::string FormatSubVersion(const std::string& name, int nClientVersion, const std::vector<std::string>& comments)
 {
