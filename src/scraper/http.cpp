@@ -223,9 +223,6 @@ std::string Http::GetEtag(
             // Get rid of leading and trailing spaces for all fields.
             boost::algorithm::trim(output);
 
-            // Change everything to lower case.
-            boost::to_lower(output);
-
             // Get rid of quotes.
             boost::replace_all(output, "\"", "");
 
@@ -237,6 +234,9 @@ std::string Http::GetEtag(
         if (header_line_elements.size())
         {
             header_name = trimmed_stripped_elements[0];
+
+            // Change everything in header field name to lower case.
+            boost::to_lower(header_name);
         }
 
         if (header_name == "etag" && header_line_elements.size() == 2)
