@@ -8,6 +8,7 @@ $(package)_dependencies=xproto xextproto libX11 libXau
 
 define $(package)_set_vars
   $(package)_config_opts=--disable-static
+  $(package)_config_opts+=--libdir=$($($(package)_type)_prefix)/lib
   $(package)_cxxflags_aarch64_linux = $(GCCFLAGS)
   $(package)_cflags_aarch64_linux = $(GCCFLAGS)
   $(package)_cxxflags_arm_linux = $(GCCFLAGS)

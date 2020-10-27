@@ -6,8 +6,8 @@ $(package)_sha256_hash=ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0
 $(package)_patches=Makefile.patch
 
 define $(package)_set_vars
-  $(package)_build_opts= CC="$($(package)_cc)"
-  $(package)_build_opts+=CFLAGS="$($(package)_cflags) $($(package)_cppflags) -fPIC"
+  $(package)_build_opts= CC="$($(package)_cc) -fPIC"
+  $(package)_build_opts+=CFLAGS="$($(package)_cflags) $($(package)_cppflags)"
   $(package)_build_opts+=RANLIB="$($(package)_ranlib)"
   $(package)_build_opts+=AR="$($(package)_ar)"
   # $(package)_build_opts_darwin+=AR="$($(package)_libtool)"

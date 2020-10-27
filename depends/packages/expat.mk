@@ -6,7 +6,8 @@ $(package)_file_name=$(package)-$($(package)_version).tar.bz2
 $(package)_sha256_hash=d9dc32efba7e74f788fcc4f212a43216fc37cf5f23f4c2339664d473353aedf6
 
 define $(package)_set_vars
-  $(package)_config_opts=--disable-static
+  $(package)_config_opts=--enable-static --enable-shared
+  $(package)_config_opts+=--libdir=$($($(package)_type)_prefix)/lib
   $(package)_cxxflags_aarch64_linux = $(GCCFLAGS)
   $(package)_cflags_aarch64_linux = $(GCCFLAGS)
   $(package)_cxxflags_arm_linux = $(GCCFLAGS)
