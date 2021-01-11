@@ -347,6 +347,9 @@ void BeaconRegistry::Add(const ContractContext& ctx)
     //
     if (ctx->m_version == 1) {
         m_beacons[payload.m_cpid] = std::move(payload.m_beacon);
+
+        LogPrint(BCLog::LogFlags::MISC, "%s: version 1 beacon added for CPID %s.",
+                 __func__, payload.m_cpid.ToString());
         return;
     }
 
@@ -354,6 +357,8 @@ void BeaconRegistry::Add(const ContractContext& ctx)
     // key. If it matches, we don't need to verify it again:
     //
     if (TryRenewal(m_beacons, payload)) {
+        LogPrint(BCLog::LogFlags::MISC, "%s: beacon renewed for CPID %s.",
+                 __func__, payload.m_cpid.ToString());
         return;
     }
 
@@ -362,12 +367,18 @@ void BeaconRegistry::Add(const ContractContext& ctx)
     //
     PendingBeacon pending(payload.m_cpid, std::move(payload.m_beacon));
 
+    LogPrint(BCLog::LogFlags::MISC, "%s: beacon pending for CPID %s.",
+             __func__, payload.m_cpid.ToString());
+
     m_pending.emplace(pending.GetId(), std::move(pending));
 }
 
 void BeaconRegistry::Delete(const ContractContext& ctx)
 {
     const auto payload = ctx->SharePayloadAs<BeaconPayload>();
+
+    LogPrint(BCLog::LogFlags::MISC, "%s: beacon deleted for CPID %s.",
+             __func__, payload->m_cpid.ToString());
 
     if (ctx->m_version >= 2) {
         m_pending.erase(payload->m_beacon.GetId());
