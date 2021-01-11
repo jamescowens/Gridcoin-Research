@@ -1253,6 +1253,9 @@ int64_t CWallet::GetBalance() const
             if (pcoin->IsTrusted() && (pcoin->IsConfirmed() || pcoin->fFromMe))
                 nTotal += pcoin->GetAvailableCredit();
         }
+
+        LogPrint(BCLog::LogFlags::MISC, "Size of mapOrphanBlocks = %u, size of mapOrphanBlocksByPrev = %u."
+                 , mapOrphanBlocks.size(), mapOrphanBlocksByPrev.size());
     }
 
     return nTotal;

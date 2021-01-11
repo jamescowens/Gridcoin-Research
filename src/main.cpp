@@ -3311,18 +3311,28 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock, bool generated_by_me)
     for (unsigned int i = 0; i < vWorkQueue.size(); i++)
     {
         uint256 hashPrev = vWorkQueue[i];
+        bool orphan_accepted = false;
         for (multimap<uint256, CBlock*>::iterator mi = mapOrphanBlocksByPrev.lower_bound(hashPrev);
              mi != mapOrphanBlocksByPrev.upper_bound(hashPrev);
              ++mi)
         {
             CBlock* pblockOrphan = mi->second;
             if (pblockOrphan->AcceptBlock(generated_by_me))
+            {
+                // Put THIS block on the queue as the parent to allow the queue to process it's children.
                 vWorkQueue.push_back(pblockOrphan->GetHash(true));
-            mapOrphanBlocks.erase(pblockOrphan->GetHash(true));
-            g_seen_stakes.ForgetOrphan(pblockOrphan->vtx[1]);
+                mapOrphanBlocks.erase(pblockOrphan->GetHash(true));
+                g_seen_stakes.ForgetOrphan(pblockOrphan->vtx[1]);
+
+                orphan_accepted = true;
+            }
             delete pblockOrphan;
+
         }
-        mapOrphanBlocksByPrev.erase(hashPrev);
+
+        // If one of the peer orphan blocks was accepted with a parent (previous) hash
+        // that was the key in the multimap, then delete all entries from the multimap with that key (hash)
+        if (orphan_accepted) mapOrphanBlocksByPrev.erase(hashPrev);
     }
 
     return true;
