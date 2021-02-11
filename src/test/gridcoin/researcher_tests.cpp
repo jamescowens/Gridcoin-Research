@@ -78,7 +78,7 @@ void AddTestBeacon(const GRC::Cpid cpid)
         std::move(public_key));
 
     GRC::GetBeaconRegistry().Add({ contract, tx, nullptr });
-    GRC::GetBeaconRegistry().ActivatePending({ key_id }, now);
+    GRC::GetBeaconRegistry().ActivatePending({ key_id }, now, uint256(), -1);
 }
 
 //!
@@ -104,7 +104,7 @@ void AddExpiredTestBeacon(const GRC::Cpid cpid)
         std::move(public_key));
 
     GRC::GetBeaconRegistry().Add({ contract, tx, nullptr });
-    GRC::GetBeaconRegistry().ActivatePending({ key_id }, 0);
+    GRC::GetBeaconRegistry().ActivatePending({ key_id }, 0, uint256(), -1);
 }
 
 //!
