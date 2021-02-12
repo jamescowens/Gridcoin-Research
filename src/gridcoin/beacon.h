@@ -660,7 +660,7 @@ private:
         HistoricalBeaconMap m_historical; //!< Contains historical beacons.
 
         typedef std::map<uint256, StorageBeacon> StorageBeaconMap;
-        typedef std::map<std::pair<Cpid, int64_t>, StorageBeacon> StorageBeaconMapByCpidTime;
+        typedef std::multimap<std::pair<Cpid, int64_t>, StorageBeacon> StorageBeaconMapByCpidTime;
 
         int m_height_stored = 0;
 
@@ -674,10 +674,9 @@ private:
         bool LoadDBHeight(int &height_stored);
         bool StoreDBHeight(const int& height_stored);
 
-        bool Insert(const uint256& hash, const int &height, const StorageBeacon& beacon);
-        bool Update(const uint256& hash, const int& height, const StorageBeacon& beacon);
-        bool Erase(uint256 hash);
-
+        bool insert(const uint256& hash, const int& height, const Beacon& beacon);
+        bool update(const uint256& hash, const int& height, const Beacon& beacon);
+        bool erase(uint256 hash);
         HistoricalBeaconMap::iterator begin();
         HistoricalBeaconMap::iterator end();
         HistoricalBeaconMap::iterator find(uint256& hash);

@@ -347,7 +347,7 @@ bool BeaconRegistry::TryRenewal(Beacon_ptr& current_beacon_ptr, int& height, con
     renewal.m_prev_beacon_hash = current_beacon_ptr->m_hash;
 
     // Put the renewal beacon into the db.
-    m_beacon_db.Update(renewal.m_hash, height, static_cast<StorageBeacon>(renewal));
+    m_beacon_db.update(renewal.m_hash, height, renewal);
 
     // Get the iterator to the renewal beacon.
     auto renewal_iter = m_beacon_db.find(renewal.m_hash);
@@ -402,11 +402,12 @@ void BeaconRegistry::Add(const ContractContext& ctx)
     // Legacy beacon contracts before block version 11--just load the beacon:
     //
     if (ctx->m_version == 1) {
-        StorageBeacon historical(payload.m_cpid, payload.m_beacon);
+        Beacon historical(payload.m_beacon);
 
+        historical.m_cpid = payload.m_cpid;
         historical.m_status = BeaconStatusForStorage::ACTIVE;
 
-        m_beacon_db.Insert(ctx.m_tx.GetHash(), height, historical);
+        m_beacon_db.insert(ctx.m_tx.GetHash(), height, historical);
         m_beacons[payload.m_cpid] = std::make_shared<Beacon>(m_beacon_db[ctx.m_tx.GetHash()]);
         return;
     }
@@ -429,7 +430,7 @@ void BeaconRegistry::Add(const ContractContext& ctx)
     pending.m_status = BeaconStatusForStorage::PENDING;
 
     // Insert the entry into the db.
-    m_beacon_db.Insert(ctx.m_tx.GetHash(), height, static_cast<StorageBeacon>(pending));
+    m_beacon_db.insert(ctx.m_tx.GetHash(), height, static_cast<Beacon>(pending));
 
     // Insert a pointer to the entry in the m_pending map.
     m_pending[pending.GetId()] =  std::make_shared<Beacon>(m_beacon_db[ctx.m_tx.GetHash()]);
@@ -463,14 +464,15 @@ void BeaconRegistry::Delete(const ContractContext& ctx)
         m_beacons.erase(payload->m_cpid);
     }
 
-    StorageBeacon deleted_beacon(payload->m_cpid, payload->m_beacon);
+    Beacon deleted_beacon(payload->m_beacon);
 
+    deleted_beacon.m_cpid = payload->m_cpid;
     deleted_beacon.m_hash = ctx.m_tx.GetHash();
     deleted_beacon.m_prev_beacon_hash = last_active_ctx_hash;
     deleted_beacon.m_status = BeaconStatusForStorage::DELETED;
 
     // Insert the deleted beacon entry in the storage db.
-    m_beacon_db.Insert(deleted_beacon.m_hash, height, deleted_beacon);
+    m_beacon_db.insert(deleted_beacon.m_hash, height, deleted_beacon);
 }
 
 void BeaconRegistry::Revert(const ContractContext& ctx)
@@ -523,7 +525,7 @@ void BeaconRegistry::Revert(const ContractContext& ctx)
 
     // Erase the entry in the db. (Remember if this was a renewal, the prior entry was resurrected
     // above from leveldb.)
-    m_beacon_db.Erase(ctx.m_tx.GetHash());
+    m_beacon_db.erase(ctx.m_tx.GetHash());
 }
 
 void BeaconRegistry::SetDBHeight(int& height)
@@ -641,10 +643,10 @@ void BeaconRegistry::ActivatePending(
             auto found_already_activated_beacon = m_beacon_db.find(activated_beacon.m_hash);
             if (found_already_activated_beacon != m_beacon_db.end())
             {
-                m_beacon_db.Erase(activated_beacon.m_hash);
+                m_beacon_db.erase(activated_beacon.m_hash);
             }
 
-            m_beacon_db.Insert(activated_beacon.m_hash, height, static_cast<StorageBeacon>(activated_beacon));
+            m_beacon_db.insert(activated_beacon.m_hash, height, activated_beacon);
 
             // This is the subscript form of insert. Important here because an activated beacon should
             // overwrite any existing entry in the m_beacons map.
@@ -664,16 +666,19 @@ void BeaconRegistry::ActivatePending(
 
         //PendingBeacon pending_beacon = static_cast<PendingBeacon>(*iter->second);
         if (static_cast<PendingBeacon>(*iter->second).Expired(superblock_time)) {
-            StorageBeacon expired_pending_beacon = static_cast<StorageBeacon>(*iter->second);
+            Beacon expired_pending_beacon = static_cast<Beacon>(*iter->second);
 
-            // Mark the statuts as EXPIRED_PENDING.
+            // Mark the status as EXPIRED_PENDING.
             expired_pending_beacon.m_status = BeaconStatusForStorage::EXPIRED_PENDING;
-            // Set the storage beacon entry's hash to the block hash containing the SB.
-            expired_pending_beacon.m_hash = block_hash;
+            // Set the beacon entry's hash to a synthetic block hash similar to above.
+            expired_pending_beacon.m_hash = Hash(block_hash.begin(),
+                                                 block_hash.end(),
+                                                 expired_pending_beacon.m_cpid.Raw().begin(),
+                                                 expired_pending_beacon.m_cpid.Raw().end());
             // Set the storage beacon's previous beacon hash to the current (expired) pending beacon entry's hash.
             expired_pending_beacon.m_prev_beacon_hash = iter->second->m_hash;
             // Insert the expired_pending_beacon into the db.
-            m_beacon_db.Insert(block_hash, height, expired_pending_beacon);
+            m_beacon_db.insert(block_hash, height, expired_pending_beacon);
             // Remove the pending beacon entry from the m_pending map.
             iter = m_pending.erase(iter);
         } else {
@@ -707,7 +712,7 @@ void BeaconRegistry::Deactivate(const int64_t superblock_time)
             iter = m_beacons.erase(iter);
 
             // Erase the entry from the db. This removes the record from the underlying historical map and also leveldb.
-            m_beacon_db.Erase(hash_to_erase);
+            m_beacon_db.erase(hash_to_erase);
         } else {
             ++iter;
         }
@@ -784,8 +789,8 @@ int BeaconRegistry::BeaconDB::Initialize(PendingBeaconMap& m_pending, BeaconMap&
         // Load the storage_by_cpid multimap from the temporary storage map.
         for (const auto& iter : storage)
         {
-            // --------------------------------------- cpid --------- BeaconStorage type element.
-            storage_by_cpid_time[std::make_pair(iter.second.m_cpid, iter.second.m_timestamp)] = iter.second;
+            storage_by_cpid_time.insert(std::make_pair(std::make_pair(iter.second.m_cpid, iter.second.m_timestamp),
+                                                       iter.second));
         }
     }
 
@@ -1000,7 +1005,7 @@ bool BeaconRegistry::BeaconDB::LoadDBHeight(int& height_stored)
     return status;
 }
 
-bool BeaconRegistry::BeaconDB::Insert(const uint256 &hash, const int& height, const StorageBeacon& beacon)
+bool BeaconRegistry::BeaconDB::insert(const uint256 &hash, const int& height, const Beacon &beacon)
 {
     bool status = false;
 
@@ -1024,7 +1029,7 @@ bool BeaconRegistry::BeaconDB::Insert(const uint256 &hash, const int& height, co
 
         m_historical.insert(std::make_pair(hash, beacon));
 
-        status = Store(hash, beacon);
+        status = Store(hash, static_cast<StorageBeacon>(beacon));
 
         if (height) status &= StoreDBHeight(height);
 
@@ -1032,7 +1037,7 @@ bool BeaconRegistry::BeaconDB::Insert(const uint256 &hash, const int& height, co
     }
 }
 
-bool BeaconRegistry::BeaconDB::Update(const uint256 &hash, const int& height, const StorageBeacon& beacon)
+bool BeaconRegistry::BeaconDB::update(const uint256 &hash, const int& height, const Beacon &beacon)
 {
     bool status = false;
 
@@ -1051,14 +1056,14 @@ bool BeaconRegistry::BeaconDB::Update(const uint256 &hash, const int& height, co
     m_historical[hash] = beacon;
 
     // update leveldb
-    status = Store(hash, beacon);
+    status = Store(hash, static_cast<StorageBeacon>(beacon));
 
     if (height) status &= StoreDBHeight(height);
 
     return status;
 }
 
-bool BeaconRegistry::BeaconDB::Erase(uint256 hash)
+bool BeaconRegistry::BeaconDB::erase(uint256 hash)
 {
     auto iter = m_historical.find(hash);
 
