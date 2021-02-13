@@ -4,9 +4,14 @@
 
 #include "base58.h"
 #include "gridcoin/beacon.h"
+//#include "test/data/mainnet_beacon.h"
+#include "test/data/testnet_beacon.h"
+#include "txdb-leveldb.h"
 
 #include <boost/test/unit_test.hpp>
 #include <vector>
+
+extern leveldb::DB *txdb;
 
 namespace {
 //!
@@ -451,6 +456,89 @@ BOOST_AUTO_TEST_CASE(it_deserializes_from_a_stream)
         signature.end());
 
     BOOST_CHECK(payload.WellFormed(GRC::ContractAction::REMOVE) == true);
+}
+
+BOOST_AUTO_TEST_CASE(beaconstorage_testnet_test)
+{
+    GRC::BeaconRegistry& registry = GRC::GetBeaconRegistry();
+    registry.Reset();
+    CDataStream ss(SER_DISK, PROTOCOL_VERSION);
+    for (int i = 0; i < testnet_beacon_length; i++)
+        ss << testnet_beacon[i];
+
+    int64_t now;
+    std::vector<CTransaction> vtx;
+    std::vector<std::pair<uint160, int64_t>> beacon_activations;
+    std::vector<GRC::Cpid> active_beacons;
+    std::vector<CKeyID> pending_beacons;
+
+    ss >> now;
+    ss >> vtx;
+    ss >> beacon_activations;
+    ss >> active_beacons;
+    ss >> pending_beacons;
+
+    BOOST_CHECK(vtx.size() >= active_beacons.size() + pending_beacons.size());
+
+    int64_t sb_range_begin = -1;
+    int64_t sb_range_end = 0;
+
+    for (auto& tx : vtx) {
+        sb_range_end = tx.nTime;
+        for (const auto& contract : tx.GetContracts()) {
+            if (contract.m_action == GRC::ContractAction::ADD) {
+                registry.Add({ contract, tx, nullptr });
+            }
+            else if (contract.m_action == GRC::ContractAction::REMOVE) {
+                registry.Delete({ contract, tx, nullptr });
+            }
+        }
+        for (const auto& x : beacon_activations) {
+            if (sb_range_begin < x.second && x.second <= sb_range_end) {
+                registry.ActivatePending({ x.first }, x.second, uint256(), -1);
+            }
+        }
+        sb_range_begin = tx.nTime;
+    }
+
+    for (const auto& x : beacon_activations) {
+        if (sb_range_end < x.second) {
+            registry.ActivatePending({ x.first }, x.second, uint256(), -1);
+        }
+    }
+
+    BOOST_TEST_MESSAGE(active_beacons.size());
+    BOOST_TEST_MESSAGE(beacon_activations.size());
+
+    CBlockIndex index = CBlockIndex();
+    index.nHeight = -1;
+    index.nTime = now;
+    mapBlockIndex[hashBestChain] = &index;
+
+    BOOST_CHECK(registry.Beacons().size() == active_beacons.size());
+    for (const auto& cpid : active_beacons) {
+        if (registry.Try(cpid) == nullptr) {
+            BOOST_TEST_MESSAGE("e: " << cpid.ToString());
+            BOOST_CHECK(false);
+        }
+    }
+
+    registry.ResetMapsOnly();
+    registry.Initialize();
+
+   // BOOST_CHECK(registry.Beacons().size() == active_beacons.size());
+    //for (const auto& cpid : active_beacons) {
+    //    BOOST_CHECK(registry.ContainsActive(cpid, now));
+    //}
+
+    BOOST_CHECK(registry.PendingBeacons().size() == pending_beacons.size());
+    for (const auto& key : pending_beacons) {
+        BOOST_CHECK(registry.PendingBeacons().find(key) != registry.PendingBeacons().end());
+    }
+
+    for (const auto& beacon : registry.PendingBeacons()) {
+        BOOST_TEST_MESSAGE(beacon.first.ToString());
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

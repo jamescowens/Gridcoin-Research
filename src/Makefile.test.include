@@ -19,7 +19,8 @@ JSON_TEST_FILES = \
 OTHER_TEST_FILES = \
   test/data/superblock.txt.h \
   test/data/superblock_packed.bin.h \
-  test/data/superblock_unpacked.txt.h
+  test/data/superblock_unpacked.txt.h \
+  test/data/testnet_beacon.h
 
 # test_n binary #
 GRIDCOIN_TESTS =\
