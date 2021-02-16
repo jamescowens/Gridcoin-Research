@@ -1007,9 +1007,11 @@ int BeaconRegistry::BeaconDB::Initialize(PendingBeaconMap& m_pending, BeaconMap&
        {
            CTxDB txdb("r");
 
+           uint256 hash_hint = uint256();
+
            // Load the temporary which is similar to m_historical, except the elements are of type BeaconStorage instead
            // of Beacon.
-           status = txdb.ReadGenericSerializablesToMap(key_type, storage, m_beacon_init_hash_hint);
+           status = txdb.ReadGenericSerializablesToMap(key_type, storage, hash_hint);
        }
 
        if (!status)
@@ -1155,15 +1157,6 @@ void BeaconRegistry::ResetMapsOnly()
     m_beacons.clear();
     m_pending.clear();
     m_beacon_db.clear_map();
-}
-
-void BeaconRegistry::ResetAll()
-{
-    // Clear all maps
-    Reset();
-
-    // Clear leveldb beacon area.
-    m_beacon_db.clear_leveldb();
 }
 
 void BeaconRegistry::BeaconDB::clear_map()

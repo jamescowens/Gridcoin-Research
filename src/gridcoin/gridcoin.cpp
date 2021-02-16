@@ -87,7 +87,7 @@ void InitializeContracts(const CBlockIndex* pindexBest)
     // including the beacon_db and beacon key type elements from leveldb.
     if (GetBoolArg("-clearbeaconhistory", false))
     {
-        beacons.ResetAll();
+        beacons.Reset();
     }
 
     int beacon_db_height = beacons.Initialize();
