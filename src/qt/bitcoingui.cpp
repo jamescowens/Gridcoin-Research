@@ -1517,12 +1517,6 @@ void BitcoinGUI::updateGlobalStatus()
     // This is needed to prevent segfaulting due to early GUI initialization compared to core.
     if (miner_first_pass_complete)
     {
-        TRY_LOCK(cs_main, locked_main);
-
-        if (!locked_main) {
-            return;
-        }
-
         try
         {
             overviewPage->updateGlobalStatus();

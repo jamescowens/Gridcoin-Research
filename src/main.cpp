@@ -162,15 +162,19 @@ void GlobalStatus::SetGlobalStatus(bool force)
         // These are atomics and do not need a lock on cs_errors_lock to update. But the global variable
         // and functions called need a lock on cs_main.
         {
-            LOCK(cs_main);
+            TRY_LOCK(cs_main, locked_main);
+
+            if (!locked_main) {
+                return;
+            }
 
             blocks = nBestHeight;
             netWeight = GRC::GetEstimatedNetworkWeight() / 80.0;
             difficulty = GRC::GetCurrentDifficulty();
             etts = GRC::GetEstimatedTimetoStake();
-        }
 
-        update_time = GetAdjustedTime();
+            update_time = GetAdjustedTime();
+        }
 
         try
         {
