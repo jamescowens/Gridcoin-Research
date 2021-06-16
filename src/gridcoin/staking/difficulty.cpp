@@ -309,7 +309,7 @@ double GRC::GetEstimatedTimetoStake(bool ignore_staking_status, double dDiff, do
     bool able_to_stake;
 
     {
-        LOCK(g_miner_status.lock);
+        LOCK(g_miner_status.cs_miner_status_lock);
 
         staking = g_miner_status.nLastCoinStakeSearchInterval && g_miner_status.WeightSum;
 

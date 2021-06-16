@@ -64,28 +64,6 @@ public:
 };
 
 //!
-//! \brief Helper: update the miner status with a message that indicates why
-//! \c CreateCoinStake() skipped a cycle and then return \c false .
-//!
-//! \param status  The global miner status object to update.
-//! \param message Describes why the wallet contains no coins for staking.
-//!
-//! \return Always \false - suitable for returning from the call directly.
-//!
-bool ReturnMinerError(GRC::MinerStatus& status, GRC::MinerStatus::ReasonNotStakingCategory& not_staking_error)
-{
-    LOCK(status.lock);
-
-    status.Clear();
-
-    status.SetReasonNotStaking(not_staking_error);
-
-    LogPrint(BCLog::LogFlags::VERBOSE, "CreateCoinStake: %s", g_miner_status.ReasonNotStaking);
-
-    return false;
-}
-
-//!
 //! \brief Sign the research reward claim context for a newly-minted block.
 //!
 //! \param pwallet Supplies beacon private keys for signing.
@@ -200,7 +178,7 @@ std::optional<CWalletTx> GetLastStake(CWallet& wallet)
     uint256 cached_stake_tx_hash;
 
     {
-        LOCK(g_miner_status.lock);
+        LOCK(g_miner_status.cs_miner_status_lock);
         cached_stake_tx_hash = g_miner_status.m_last_pos_tx_hash;
     }
 
@@ -242,7 +220,7 @@ std::optional<CWalletTx> GetLastStake(CWallet& wallet)
     }
 
     {
-        LOCK(g_miner_status.lock);
+        LOCK(g_miner_status.cs_miner_status_lock);
         g_miner_status.m_last_pos_tx_hash = cached_stake_tx_hash;
     }
 
@@ -591,7 +569,26 @@ bool CreateCoinStake(CBlock &blocknew, CKey &key,
 
     if (!wallet.SelectCoinsForStaking(txnew.nTime, CoinsToStake, not_staking_error, balance, true))
     {
-        ReturnMinerError(g_miner_status, not_staking_error);
+        LOCK(g_miner_status.cs_miner_status_lock);
+
+        g_miner_status.SetReasonNotStakingFlag(not_staking_error);
+
+        if (LogInstance().WillLogCategory(BCLog::LogFlags::VERBOSE))
+        {
+            std::stringstream reasons;
+
+            bool first = true;
+            for (const auto& reason : g_miner_status.GetReasonsNotStaking())
+            {
+                if (!first) reasons << "; ";
+
+                reasons << reason;
+
+                first = false;
+            }
+
+            LogPrintf("WARN: %s: %s", __func__, reasons.str());
+        }
 
         return false;
     }
@@ -707,7 +704,7 @@ bool CreateCoinStake(CBlock &blocknew, CKey &key,
         } // if (StakeKernelHash <= StakeTarget)
     } // for (const auto& pcoin : CoinsToStake)
 
-    LOCK(g_miner_status.lock);
+    LOCK(g_miner_status.cs_miner_status_lock);
 
     if (kernel_found) ++g_miner_status.KernelsFound;
 
@@ -1158,29 +1155,29 @@ bool IsMiningAllowed(CWallet *pwallet)
 
     if (pwallet->IsLocked())
     {
-        LOCK(g_miner_status.lock);
-        g_miner_status.SetReasonNotStaking(GRC::MinerStatus::WALLET_LOCKED);
+        LOCK(g_miner_status.cs_miner_status_lock);
+        g_miner_status.SetReasonNotStakingFlag(GRC::MinerStatus::WALLET_LOCKED);
         status = false;
     }
 
     if (fDevbuildCripple)
     {
-        LOCK(g_miner_status.lock);
-        g_miner_status.SetReasonNotStaking(GRC::MinerStatus::TESTNET_ONLY);
+        LOCK(g_miner_status.cs_miner_status_lock);
+        g_miner_status.SetReasonNotStakingFlag(GRC::MinerStatus::TESTNET_ONLY);
         status = false;
     }
 
     if (vNodes.size() < GetMinimumConnectionsRequiredForStaking() || (!fTestNet && IsInitialBlockDownload()))
     {
-        LOCK(g_miner_status.lock);
-        g_miner_status.SetReasonNotStaking(GRC::MinerStatus::OFFLINE);
+        LOCK(g_miner_status.cs_miner_status_lock);
+        g_miner_status.SetReasonNotStakingFlag(GRC::MinerStatus::OFFLINE);
         status = false;
     }
 
     if (!gArgs.GetBoolArg("-staking", true))
     {
-        LOCK(g_miner_status.lock);
-        g_miner_status.SetReasonNotStaking(GRC::MinerStatus::DISABLED_BY_CONFIGURATION);
+        LOCK(g_miner_status.cs_miner_status_lock);
+        g_miner_status.SetReasonNotStakingFlag(GRC::MinerStatus::DISABLED_BY_CONFIGURATION);
         status = false;
     }
 
@@ -1371,10 +1368,10 @@ void StakeMiner(CWallet *pwallet)
         CBlock StakeBlock;
 
         {
-            LOCK(g_miner_status.lock);
+            LOCK(g_miner_status.cs_miner_status_lock);
 
             //clear miner messages
-            g_miner_status.ClearReasonsNotStaking();
+            g_miner_status.ClearReasonNotStakingFlags();
             g_miner_status.Version = StakeBlock.nVersion;
 
             // This is needed due to early initialization of bitcoingui
@@ -1383,7 +1380,7 @@ void StakeMiner(CWallet *pwallet)
 
         if(!IsMiningAllowed(pwallet))
         {
-            LOCK(g_miner_status.lock);
+            LOCK(g_miner_status.cs_miner_status_lock);
 
             g_miner_status.Clear();
             continue;
@@ -1451,7 +1448,7 @@ void StakeMiner(CWallet *pwallet)
         LogPrintf("StakeMiner: signed boinchash, coinstake, wholeblock");
 
         {
-            LOCK(g_miner_status.lock);
+            LOCK(g_miner_status.cs_miner_status_lock);
 
             g_miner_status.CreatedCnt++;
         }
@@ -1466,7 +1463,7 @@ void StakeMiner(CWallet *pwallet)
         LogPrintf("StakeMiner: block processed");
 
         {
-            LOCK(g_miner_status.lock);
+            LOCK(g_miner_status.cs_miner_status_lock);
 
             g_miner_status.AcceptedCnt++;
             g_miner_status.m_last_pos_tx_hash = StakeBlock.vtx[1].GetHash();

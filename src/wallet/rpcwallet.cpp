@@ -158,12 +158,21 @@ UniValue getwalletinfo(const UniValue& params, bool fHelp)
     }
 
     {
-        LOCK(g_miner_status.lock);
+        LOCK(g_miner_status.cs_miner_status_lock);
 
         bool staking = g_miner_status.nLastCoinStakeSearchInterval && g_miner_status.WeightSum;
 
         res.pushKV("staking", staking);
-        res.pushKV("mining-error", g_miner_status.ReasonNotStaking);
+
+        std::vector<std::string> reasons_not_staking = g_miner_status.GetReasonsNotStaking();
+        UniValue reasons(UniValue::VARR);
+
+        for (const auto& reason : reasons_not_staking)
+        {
+            reasons.push_back(reason);
+        }
+
+        res.pushKV("mining-errors", reasons);
     }
 
     return res;

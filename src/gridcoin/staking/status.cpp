@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "gridcoin/staking/status.h"
+#include "logging.h"
 
 #include <algorithm>
 
@@ -42,7 +43,7 @@ MinerStatus g_miner_status;
 MinerStatus::MinerStatus(void)
 {
     Clear();
-    ClearReasonsNotStaking();
+    ClearReasonNotStakingFlags();
     CreatedCnt = AcceptedCnt = KernelsFound = 0;
 }
 
@@ -53,31 +54,57 @@ void MinerStatus::Clear()
     nLastCoinStakeSearchInterval = 0;
 }
 
-bool MinerStatus::SetReasonNotStaking(ReasonNotStakingCategory not_staking_error)
+bool MinerStatus::SetReasonNotStakingFlag(ReasonNotStakingCategory not_staking_error)
 {
     bool inserted = false;
 
-    if (std::find(vReasonNotStaking.begin(), vReasonNotStaking.end(), not_staking_error) == vReasonNotStaking.end())
+    if (!(m_staking_status_flags & not_staking_error))
     {
-       vReasonNotStaking.insert(vReasonNotStaking.end(), not_staking_error);
+        m_staking_status_flags |= not_staking_error;
 
-       if (not_staking_error != NONE)
-       {
-           if (!ReasonNotStaking.empty()) ReasonNotStaking += "; ";
-           ReasonNotStaking += STAKING_ERROR_STRINGS[static_cast<int>(not_staking_error)];
-       }
+        if (m_staking_status_flags > NO_MATURE_COINS) able_to_stake = false;
 
-       if (not_staking_error > NO_MATURE_COINS) able_to_stake = false;
-
-       inserted = true;
+        inserted = true;
     }
 
     return inserted;
 }
 
-void MinerStatus::ClearReasonsNotStaking()
+void MinerStatus::ClearReasonNotStakingFlags()
 {
-    vReasonNotStaking.clear();
-    ReasonNotStaking.clear();
+    m_staking_status_flags = NONE;
     able_to_stake = true;
+}
+
+std::vector<std::string> MinerStatus::GetReasonsNotStaking()
+{
+    std::vector<std::string> reasons;
+
+    // The shift is the same as the index of the STAKING_ERROR_STRINGS.
+    for (unsigned int shift = 0; shift < std::numeric_limits<decltype(m_staking_status_flags)>::digits; ++shift)
+    {
+        if ((decltype(m_staking_status_flags)) 1 & (m_staking_status_flags >> shift))
+        {
+            reasons.push_back(STAKING_ERROR_STRINGS[shift + 1]);
+        }
+    }
+
+    return reasons;
+}
+
+std::string MinerStatus::GetReasonsNotStakingString()
+{
+    std::string output;
+    const std::vector<std::string>& reasons = GetReasonsNotStaking();
+
+    bool first = true;
+    for (const auto& reason : reasons)
+    {
+        if (!first) output += "; ";
+        output += reason;
+
+        first = false;
+    }
+
+    return output;
 }

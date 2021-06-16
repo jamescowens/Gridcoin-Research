@@ -1632,7 +1632,7 @@ void BitcoinGUI::updateStakingIcon()
         labelStakingIcon->setPixmap(GRC::ScaleStatusIcon(this, ":/icons/status_staking_problem_" + sSheet));
         //Part of this string won't be translated :(
         labelStakingIcon->setToolTip(tr("Unable to stake: %1")
-                                     .arg(QString(globalStatus.ReasonNotStaking.c_str())));
+                                     .arg(QString::fromStdString(globalStatus.ReasonsNotStaking)));
 
 #ifdef Q_OS_MAC
         // If not staking, not out of sync, and app nap disabled, enable app nap.
@@ -1648,7 +1648,7 @@ void BitcoinGUI::updateStakingIcon()
         labelStakingIcon->setPixmap(GRC::ScaleStatusIcon(this, ":/icons/status_staking_no_" + sSheet));
         //Part of this string won't be translated :(
         labelStakingIcon->setToolTip(tr("Not staking currently: %1, <b>Estimated</b> staking frequency is %2.")
-                                     .arg(QString(globalStatus.ReasonNotStaking.c_str()))
+                                     .arg(QString::fromStdString(globalStatus.ReasonsNotStaking))
                                      .arg(estimated_staking_freq));
 
 #ifdef Q_OS_MAC

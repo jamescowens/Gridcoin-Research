@@ -56,7 +56,7 @@ UniValue getmininginfo(const UniValue& params, bool fHelp)
     diff.pushKV("current", nCurrentDiff);
     diff.pushKV("target", nTargetDiff);
 
-    { LOCK(g_miner_status.lock);
+    { LOCK(g_miner_status.cs_miner_status_lock);
         // not using real weight to not break calculation
         bool staking = g_miner_status.nLastCoinStakeSearchInterval && g_miner_status.WeightSum;
         diff.pushKV("last-search-interval", g_miner_status.nLastCoinStakeSearchInterval);
@@ -69,7 +69,17 @@ UniValue getmininginfo(const UniValue& params, bool fHelp)
         obj.pushKV("netstakeweight", nNetworkWeight);
         obj.pushKV("netstakingGRCvalue", nNetworkWeight / 80.0);
         obj.pushKV("staking", staking);
-        obj.pushKV("mining-error", g_miner_status.ReasonNotStaking);
+
+        std::vector<std::string> reasons_not_staking = g_miner_status.GetReasonsNotStaking();
+        UniValue reasons(UniValue::VARR);
+
+        for (const auto& reason : reasons_not_staking)
+        {
+            reasons.push_back(reason);
+        }
+
+        obj.pushKV("mining-errors", reasons);
+
         obj.pushKV("time-to-stake_days", nExpectedTime/86400.0);
         obj.pushKV("expectedtime", nExpectedTime);
         obj.pushKV("mining-version", g_miner_status.Version);

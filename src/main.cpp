@@ -181,7 +181,7 @@ void GlobalStatus::SetGlobalStatus(bool force)
             unsigned long stk_dropped;
 
             {
-                LOCK2(g_miner_status.lock, cs_errors_lock);
+                LOCK2(g_miner_status.cs_miner_status_lock, cs_errors_lock);
 
                 staking = g_miner_status.nLastCoinStakeSearchInterval && g_miner_status.WeightSum;
 
@@ -189,26 +189,31 @@ void GlobalStatus::SetGlobalStatus(bool force)
 
                 able_to_stake = g_miner_status.able_to_stake;
 
-                ReasonNotStaking = g_miner_status.ReasonNotStaking;
-
-                errors.clear();
-
-                if (difficulty < 0.1)
-                {
-                    errors +=  _("Low difficulty!; ");
-                }
-
-                if (!g_miner_status.ReasonNotStaking.empty())
-                {
-                    errors +=  _("Miner: ") + g_miner_status.ReasonNotStaking;
-                }
+                ReasonsNotStaking = g_miner_status.GetReasonsNotStakingString();
 
                 stk_dropped = g_miner_status.KernelsFound - g_miner_status.AcceptedCnt;
             }
 
+            errors.clear();
+
+            if (difficulty < 0.1)
+            {
+                errors +=  _("Low difficulty!");
+            }
+
+            if (!ReasonsNotStaking.empty())
+            {
+                if (!errors.empty()) errors += _("; ");
+
+                errors += _("Miner: ");
+                errors += ReasonsNotStaking;
+            }
+
             if (stk_dropped)
             {
-                errors += "Rejected " + ToString(stk_dropped) + " stakes;";
+                if (!errors.empty()) errors += _("; ");
+
+                errors += _("Rejected ") + ToString(stk_dropped) + _(" stakes");
             }
 
             return;
@@ -239,7 +244,7 @@ const GlobalStatus::globalStatusType GlobalStatus::GetGlobalStatus()
 
     LOCK(cs_errors_lock);
 
-    globalStatus.ReasonNotStaking = ReasonNotStaking;
+    globalStatus.ReasonsNotStaking = ReasonsNotStaking;
     globalStatus.errors = errors;
 
     return globalStatus;
@@ -319,7 +324,7 @@ void SyncWithWallets(const CTransaction& tx, const CBlock* pblock, bool fUpdate,
                 {
                     pwallet->DisableTransaction(tx);
 
-                    LOCK(g_miner_status.lock);
+                    LOCK(g_miner_status.cs_miner_status_lock);
                     g_miner_status.m_last_pos_tx_hash.SetNull();
                 }
             }

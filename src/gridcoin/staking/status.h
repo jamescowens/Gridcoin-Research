@@ -9,30 +9,34 @@
 
 #include <string>
 #include <vector>
+#include <atomic>
 
 namespace GRC {
 class MinerStatus
 {
 public:
-    CCriticalSection lock;
+    MinerStatus();
+
+    CCriticalSection cs_miner_status_lock;
 
     // Update STAKING_ERROR_STRINGS when adding or removing items.
     enum ReasonNotStakingCategory
     {
-        NONE,
-        DISABLED_BY_CONFIGURATION,
-        NO_MATURE_COINS,
-        NO_COINS,
-        ENTIRE_BALANCE_RESERVED,
-        NO_UTXOS_AVAILABLE_DUE_TO_RESERVE,
-        WALLET_LOCKED,
-        TESTNET_ONLY,
-        OFFLINE
+        NONE = 0x0,
+        DISABLED_BY_CONFIGURATION = 0x1,
+        NO_MATURE_COINS = 0x2,
+        NO_COINS = 0x4,
+        ENTIRE_BALANCE_RESERVED = 0x8,
+        NO_UTXOS_AVAILABLE_DUE_TO_RESERVE = 0x10,
+        WALLET_LOCKED = 0x20,
+        TESTNET_ONLY = 0x40,
+        OFFLINE = 0x80
     };
 
-    std::vector<ReasonNotStakingCategory> vReasonNotStaking;
-    bool able_to_stake = true;
-    std::string ReasonNotStaking;
+    // Space for more flags if necessary.
+    uint16_t m_staking_status_flags;
+
+    bool able_to_stake;
 
     uint64_t WeightSum, WeightMin, WeightMax;
     double ValueSum;
@@ -50,10 +54,11 @@ public:
     double ideal_cumulative_weight = 0.0;
 
     void Clear();
-    MinerStatus();
 
-    bool SetReasonNotStaking(ReasonNotStakingCategory not_staking_error);
-    void ClearReasonsNotStaking();
+    bool SetReasonNotStakingFlag(ReasonNotStakingCategory not_staking_error);
+    void ClearReasonNotStakingFlags();
+    std::vector<std::string> GetReasonsNotStaking();
+    std::string GetReasonsNotStakingString();
 }; // MinerStatus
 } // namespace GRC
 

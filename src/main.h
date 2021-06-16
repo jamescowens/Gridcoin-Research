@@ -124,7 +124,6 @@ public:
         able_to_stake = false;
         staking = false;
 
-        ReasonNotStaking = std::string();
         errors = std::string();
     }
 
@@ -141,7 +140,7 @@ public:
         bool able_to_stake;
         bool staking;
 
-        std::string ReasonNotStaking;
+        std::string ReasonsNotStaking;
         std::string errors;
     };
 
@@ -168,13 +167,13 @@ private:
     std::atomic<double> coinWeight;
     std::atomic<double> etts;
 
+    std::string ReasonsNotStaking;
     std::atomic<bool> able_to_stake;
     std::atomic<bool> staking;
 
-    // This lock is only needed to protect the ReasonNotStaking and errors string.
+    // This lock is only needed to protect the errors string.
     CCriticalSection cs_errors_lock;
 
-    std::string ReasonNotStaking;
     std::string errors;
 };
 
