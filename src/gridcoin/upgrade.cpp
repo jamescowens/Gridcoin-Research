@@ -427,14 +427,22 @@ bool Upgrade::CleanupBlockchainData()
 
 bool Upgrade::ExtractSnapshot()
 {
-    std::string ArchiveFileString = GetDataDir().string() +  "/snapshot.zip";
-    const char* ArchiveFile = ArchiveFileString.c_str();
+    //std::string ArchiveFileString = GetDataDir().string() +  "/snapshot.zip";
+    //const char* ArchiveFile = ArchiveFileString.c_str();
+
+    fs::path archive_path = GetDataDir() / "snapshot.zip";
+    FILE* archive_file = fsbridge::fopen(archive_path, "rb");
+
     fs::path ExtractPath = GetDataDir();
+
+    zip_error_t* err = new zip_error_t;
+    zip_error_init(err);
+
     struct zip* ZipArchive;
     struct zip_file* ZipFile;
     struct zip_stat ZipStat;
     char Buf[1024*1024];
-    int err;
+    //int err;
     uint64_t i, j;
     int64_t entries, len, sum;
     long long totaluncompressedsize = 0;
@@ -443,20 +451,28 @@ bool Upgrade::ExtractSnapshot()
 
     try
     {
-        ZipArchive = zip_open(ArchiveFile, 0, &err);
+        zip_source_t* zip_source = zip_source_filep_create(archive_file, 0, -1, err);
+
+        //ZipArchive = zip_open(ArchiveFile, 0, &err);
+        ZipArchive = zip_open_from_source(zip_source, 0, err);
 
         if (ZipArchive == nullptr)
         {
-            zip_error_to_str(Buf, sizeof(Buf), err, errno);
+            //zip_error_to_str(Buf, sizeof(Buf), err, errno);
 
             ExtractStatus.SnapshotExtractFailed = true;
 
-            LogPrintf("Snapshot (ExtractSnapshot): Error opening snapshot.zip: %s", Buf);
+            //LogPrintf("Snapshot (ExtractSnapshot): Error opening snapshot.zip: %s", Buf);
+            LogPrintf("Snapshot (ExtractSnapshot): Error opening snapshot.zip: %s", zip_error_strerror(err));
 
             return false;
         }
 
+        LogPrintf("INFO %s: CP 2 before entries enumeration", __func__);
+
         entries = zip_get_num_entries(ZipArchive, 0);
+
+        LogPrintf("INFO %s: CP 3 number of entries: %u", __func__, entries);
 
         // Let's scan for total size uncompressed so we can do a detailed progress for the watching user
         for (j = 0; j < (uint64_t)entries; j++)
@@ -479,11 +495,16 @@ bool Upgrade::ExtractSnapshot()
             return false;
         }
 
+        LogPrintf("INFO %s: CP 4 totaluncompressed size: %" PRId64, __func__, totaluncompressedsize);
+
         // Now extract
         for (i = 0; i < (uint64_t)entries; i++)
         {
             if (zip_stat_index(ZipArchive, i, 0, &ZipStat) == 0)
             {
+                LogPrintf("INFO %s: CP 5 start of extraction loop iteration %" PRId64 ", with valid zip_stat_index",
+                          __func__, i);
+
                 // Does this require a directory
                 if (ZipStat.name[strlen(ZipStat.name) - 1] == '/')
                     fs::create_directory(ExtractPath / ZipStat.name);
@@ -565,6 +586,13 @@ bool Upgrade::ExtractSnapshot()
 
     catch (boost::thread_interrupted&)
     {
+        return false;
+    }
+
+    catch (std::exception& e)
+    {
+        error("%s: Error occurred during snapshot zip file extraction: %s", __func__, e.what());
+
         return false;
     }
 
