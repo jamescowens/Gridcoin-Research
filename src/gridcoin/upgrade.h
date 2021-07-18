@@ -40,7 +40,7 @@ public:
     //!
     //! \brief Constructor.
     //!
-    Upgrade();
+    Upgrade(ThreadHandlerPtr upgrade_threads);
 
     //!
     //! \brief Enum for determining the type of message to be returned for ResetBlockchainData functions
@@ -65,7 +65,7 @@ public:
     //! \brief Function that will be threaded to download snapshot
     //! and provide realtime updates on the progress.
     //!
-    void DownloadSnapshot();
+    static void DownloadSnapshot(void *parg);
 
     //!
     //! \brief Cleans up previous blockchain data if any is found
@@ -77,9 +77,7 @@ public:
     //!
     //! \brief Extracts the snapshot zip file
     //!
-    //! \return Bool on the success of extraction
-    //!
-    bool ExtractSnapshot();
+    static void ExtractSnapshot(void *parg);
 
     //!
     //! \brief Snapshot main function that runs the full snapshot task
@@ -113,6 +111,9 @@ public:
     //! \returns String containing message.
     //!
     static std::string ResetBlockchainMessages(ResetBlockchainMsg _msg);
+
+private:
+    ThreadHandlerPtr m_upgrade_threads;
 };
 
 //!
