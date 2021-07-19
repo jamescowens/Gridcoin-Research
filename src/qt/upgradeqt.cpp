@@ -274,11 +274,19 @@ void UpgradeQt::DownloadSnapshot()
 
 void UpgradeQt::ExtractSnapshot()
 {
+    LogPrintf("INFO %s: CP 1a first thing in ExtractSnapshot after thread instantiation", __func__);
+
     RenameThread("grc-snapshotex");
+
+    LogPrintf("INFO %s: CP 1b after thread rename", __func__);
 
     Upgrade upgrade;
 
+    LogPrintf("INFO %s: CP 1c after upgrade object init", __func__);
+
     upgrade.ExtractSnapshot();
+
+    LogPrintf("INFO %s: CP 1d after ExtractSnapshot execution", __func__);
 }
 
 void UpgradeQt::ErrorMsg(const std::string& text, const std::string& informativetext)
