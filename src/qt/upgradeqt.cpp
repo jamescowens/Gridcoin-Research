@@ -57,31 +57,31 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
 
     QString OutputText;
 
-    while (!DownloadStatus.SnapshotDownloadComplete)
+    while (!DownloadStatus.GetSnapshotDownloadComplete())
     {
-        if (DownloadStatus.SnapshotDownloadFailed)
+        if (DownloadStatus.GetSnapshotDownloadFailed())
         {
             ErrorMsg(_("Failed to download snapshot.zip; See debug.log"), _("The wallet will now shutdown."));
 
             return false;
         }
 
-        if (DownloadStatus.SnapshotDownloadSpeed < 1000000 && DownloadStatus.SnapshotDownloadSpeed > 0)
-            OutputText = ToQString(BaseProgressString + RoundToString((DownloadStatus.SnapshotDownloadSpeed / (double)1000), 1) + " " + _("KB/s")
-                                   + " (" + RoundToString(DownloadStatus.SnapshotDownloadAmount / (double)(1024 * 1024 * 1024), 2) + _("GB/")
-                                   + RoundToString(DownloadStatus.SnapshotDownloadSize / (double)(1024 * 1024 * 1024), 2) + _("GB)"));
+        if (DownloadStatus.GetSnapshotDownloadSpeed() < 1000000 && DownloadStatus.GetSnapshotDownloadSpeed() > 0)
+            OutputText = ToQString(BaseProgressString + RoundToString((DownloadStatus.GetSnapshotDownloadSpeed() / (double)1000), 1) + " " + _("KB/s")
+                                   + " (" + RoundToString(DownloadStatus.GetSnapshotDownloadAmount() / (double)(1024 * 1024 * 1024), 2) + _("GB/")
+                                   + RoundToString(DownloadStatus.GetSnapshotDownloadSize() / (double)(1024 * 1024 * 1024), 2) + _("GB)"));
 
-        else if (DownloadStatus.SnapshotDownloadSpeed > 1000000)
-            OutputText = ToQString(BaseProgressString + RoundToString((DownloadStatus.SnapshotDownloadSpeed / (double)1000000), 1) + " " + _("MB/s")
-                                   + " (" + RoundToString(DownloadStatus.SnapshotDownloadAmount / (double)(1024 * 1024 * 1024), 2) + _("GB/")
-                                   + RoundToString(DownloadStatus.SnapshotDownloadSize / (double)(1024 * 1024 * 1024), 2) + _("GB)"));
+        else if (DownloadStatus.GetSnapshotDownloadSpeed() > 1000000)
+            OutputText = ToQString(BaseProgressString + RoundToString((DownloadStatus.GetSnapshotDownloadSpeed() / (double)1000000), 1) + " " + _("MB/s")
+                                   + " (" + RoundToString(DownloadStatus.GetSnapshotDownloadAmount() / (double)(1024 * 1024 * 1024), 2) + _("GB/")
+                                   + RoundToString(DownloadStatus.GetSnapshotDownloadSize() / (double)(1024 * 1024 * 1024), 2) + _("GB)"));
 
         // Not supported
         else
             OutputText = ToQString(BaseProgressString + " " + _("N/A"));
 
         Progress.setLabelText(OutputText);
-        Progress.setValue(DownloadStatus.SnapshotDownloadProgress);
+        Progress.setValue(DownloadStatus.GetSnapshotDownloadProgress());
 
         SnapshotApp.processEvents();
 
@@ -195,13 +195,11 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
 
     LogPrintf("INFO %s: CP 1 before SnapShotExtractThread instantiation", __func__);
 
-    //boost::thread SnapshotExtractThread(std::bind(&UpgradeQt::ExtractSnapshot, this));
-
-    ExtractSnapshot();
+    boost::thread SnapshotExtractThread(std::bind(&UpgradeQt::ExtractSnapshot, this));
 
     LogPrintf("INFO %s: CP 6 after SnapShotExtractThread instantiation", __func__);
 
-    while (!ExtractStatus.SnapshotExtractComplete)
+    while (!ExtractStatus.GetSnapshotExtractComplete())
     {
         if (Progress.wasCanceled())
         {
@@ -227,7 +225,7 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
 
         }
 
-        if (ExtractStatus.SnapshotZipInvalid)
+        if (ExtractStatus.GetSnapshotZipInvalid())
         {
             fCancelOperation = true;
 
@@ -239,7 +237,7 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
             return false;
         }
 
-        if (ExtractStatus.SnapshotExtractFailed)
+        if (ExtractStatus.GetSnapshotExtractFailed())
         {
             ErrorMsg(_("Snapshot extraction failed! Cleaning up any extracted data"), _("The wallet will now shutdown."));
 
@@ -249,7 +247,7 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
             return false;
         }
 
-        Progress.setValue(ExtractStatus.SnapshotExtractProgress);
+        Progress.setValue(ExtractStatus.GetSnapshotExtractProgress());
 
         SnapshotApp.processEvents();
 

@@ -16,11 +16,70 @@
 namespace GRC {
 
 /** Snapshot Extraction Status struct **/
-struct struct_SnapshotExtractStatus{
+struct struct_SnapshotExtractStatus
+{
+    CCriticalSection cs_lock;
+
     bool SnapshotZipInvalid = false;
     bool SnapshotExtractComplete = false;
     bool SnapshotExtractFailed = false;
-    int SnapshotExtractProgress;
+    int SnapshotExtractProgress = 0;
+
+    bool GetSnapshotZipInvalid()
+    {
+        LOCK(cs_lock);
+
+        return SnapshotZipInvalid;
+    }
+
+    bool GetSnapshotExtractComplete()
+    {
+        LOCK(cs_lock);
+
+        return SnapshotExtractComplete;
+    }
+
+    bool GetSnapshotExtractFailed()
+    {
+        LOCK(cs_lock);
+
+        return SnapshotExtractFailed;
+    }
+
+    int GetSnapshotExtractProgress()
+    {
+        LOCK(cs_lock);
+
+        return SnapshotExtractProgress;
+    }
+
+    void SetSnapshotZipInvalid(bool SnapshotZipInvalid_in)
+    {
+        LOCK(cs_lock);
+
+        SnapshotZipInvalid = SnapshotZipInvalid_in;
+    }
+
+    void SetSnapshotExtractComplete(bool SnapshotExtractComplete_in)
+    {
+        LOCK(cs_lock);
+
+        SnapshotExtractComplete = SnapshotExtractComplete_in;
+    }
+
+    void SetSnapshotExtractFailed(bool SnapshotExtractFailed_in)
+    {
+        LOCK(cs_lock);
+
+        SnapshotExtractFailed = SnapshotExtractFailed_in;
+    }
+
+    void SetSnapshotExtractProgress(bool SnapshotExtractProgress_in)
+    {
+        LOCK(cs_lock);
+
+        SnapshotExtractProgress = SnapshotExtractProgress_in;
+    }
 };
 
 extern struct_SnapshotExtractStatus ExtractStatus;

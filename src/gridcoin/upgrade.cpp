@@ -26,6 +26,11 @@ bool GRC::fCancelOperation = false;
 
 Upgrade::Upgrade()
 {
+    // For right now, we will bypass the setters, since the lock and member variables are public in the structs.
+    // This may change in the future.
+
+    LOCK2(DownloadStatus.cs_lock, ExtractStatus.cs_lock);
+
     // Clear the structs
     DownloadStatus.SnapshotDownloadSize = 0;
     DownloadStatus.SnapshotDownloadSpeed = 0;
@@ -201,19 +206,19 @@ void Upgrade::SnapshotMain()
 
     Prog.SetType(0);
 
-    while (!DownloadStatus.SnapshotDownloadComplete)
+    while (!DownloadStatus.GetSnapshotDownloadComplete())
     {
-        if (DownloadStatus.SnapshotDownloadFailed)
+        if (DownloadStatus.GetSnapshotDownloadFailed())
             throw std::runtime_error("Failed to download snapshot.zip; See debug.log");
 
-        if (Prog.Update(DownloadStatus.SnapshotDownloadProgress, DownloadStatus.SnapshotDownloadSpeed, DownloadStatus.SnapshotDownloadAmount, DownloadStatus.SnapshotDownloadSize))
+        if (Prog.Update(DownloadStatus.GetSnapshotDownloadProgress(), DownloadStatus.GetSnapshotDownloadSpeed(), DownloadStatus.GetSnapshotDownloadAmount(), DownloadStatus.GetSnapshotDownloadSize()))
             std::cout << Prog.Status() << std::flush;
 
         MilliSleep(1000);
     }
 
     // This is needed in some spots as the download can complete before the next progress update occurs so just 100% here as it was successful
-    if (Prog.Update(100, -1, DownloadStatus.SnapshotDownloadSize, DownloadStatus.SnapshotDownloadSize))
+    if (Prog.Update(100, -1, DownloadStatus.GetSnapshotDownloadSize(), DownloadStatus.GetSnapshotDownloadSize()))
         std::cout << Prog.Status() << std::flush;
 
     std::cout << std::endl;
@@ -251,9 +256,9 @@ void Upgrade::SnapshotMain()
     // Create a thread for snapshot to be extracted
     boost::thread SnapshotExtractThread(std::bind(&Upgrade::ExtractSnapshot, this));
 
-    while (!ExtractStatus.SnapshotExtractComplete)
+    while (!ExtractStatus.GetSnapshotExtractComplete())
     {
-        if (ExtractStatus.SnapshotExtractFailed)
+        if (ExtractStatus.GetSnapshotExtractFailed())
         {
             // Do this without checking on success, If it passed in stage 3 it will pass here.
             CleanupBlockchainData();
@@ -261,7 +266,7 @@ void Upgrade::SnapshotMain()
             throw std::runtime_error("Failed to extract snapshot.zip; See debug.log");
         }
 
-        if (Prog.Update(ExtractStatus.SnapshotExtractProgress))
+        if (Prog.Update(ExtractStatus.GetSnapshotExtractProgress()))
             std::cout << Prog.Status() << std::flush;
 
         MilliSleep(1000);
@@ -290,7 +295,7 @@ void Upgrade::DownloadSnapshot()
     {
         LogPrintf("Snapshot Downloader: Exception occurred while attempting to download snapshot (%s)", e.what());
 
-        DownloadStatus.SnapshotDownloadFailed = true;
+        DownloadStatus.SetSnapshotDownloadFailed(true);
     }
 
     return;
@@ -466,7 +471,7 @@ bool Upgrade::ExtractSnapshot()
         {
             //zip_error_to_str(Buf, sizeof(Buf), err, errno);
 
-            ExtractStatus.SnapshotExtractFailed = true;
+            ExtractStatus.SetSnapshotExtractFailed(true);
 
             //LogPrintf("Snapshot (ExtractSnapshot): Error opening snapshot.zip: %s", Buf);
             LogPrintf("Snapshot (ExtractSnapshot): Error opening snapshot.zip: %s", zip_error_strerror(err));
@@ -494,7 +499,7 @@ bool Upgrade::ExtractSnapshot()
         // if the zip file has no entries.
         if (!totaluncompressedsize)
         {
-            ExtractStatus.SnapshotZipInvalid = true;
+            ExtractStatus.SetSnapshotZipInvalid(true);
 
             LogPrintf("Snapshot (ExtractSnapshot): Error - snapshot.zip has no entries");
 
@@ -521,7 +526,7 @@ bool Upgrade::ExtractSnapshot()
 
                     if (!ZipFile)
                     {
-                        ExtractStatus.SnapshotExtractFailed = true;
+                        ExtractStatus.SetSnapshotExtractFailed(true);
 
                         LogPrintf("Snapshot (ExtractSnapshot): Error opening file %s within snapshot.zip", ZipStat.name);
 
@@ -534,7 +539,7 @@ bool Upgrade::ExtractSnapshot()
 
                     if (!ExtractFile)
                     {
-                        ExtractStatus.SnapshotExtractFailed = true;
+                        ExtractStatus.SetSnapshotExtractFailed(true);
 
                         LogPrintf("Snapshot (ExtractSnapshot): Error opening file %s on filesystem", ZipStat.name);
 
@@ -551,7 +556,7 @@ bool Upgrade::ExtractSnapshot()
 
                         if (len < 0)
                         {
-                            ExtractStatus.SnapshotExtractFailed = true;
+                            ExtractStatus.SetSnapshotExtractFailed(true);
 
                             LogPrintf("Snapshot (ExtractSnapshot): Failed to read zip buffer");
 
@@ -568,7 +573,7 @@ bool Upgrade::ExtractSnapshot()
                         {
                             lastupdated = GetAdjustedTime();
 
-                            ExtractStatus.SnapshotExtractProgress = ((currentuncompressedsize / (double)totaluncompressedsize) * 100);
+                            ExtractStatus.SetSnapshotExtractProgress(((currentuncompressedsize / (double)totaluncompressedsize) * 100));
                         }
                     }
 
@@ -580,14 +585,14 @@ bool Upgrade::ExtractSnapshot()
 
         if (zip_close(ZipArchive) == -1)
         {
-            ExtractStatus.SnapshotExtractFailed = true;
+            ExtractStatus.SetSnapshotExtractFailed(true);
 
             LogPrintf("Snapshot (ExtractSnapshot): Failed to close snapshot.zip");
 
             return false;
         }
 
-        ExtractStatus.SnapshotExtractComplete = true;
+        ExtractStatus.SetSnapshotExtractComplete(true);
     }
 
     catch (boost::thread_interrupted&)

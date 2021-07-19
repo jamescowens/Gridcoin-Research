@@ -8,17 +8,106 @@
 
 #include <string>
 #include <stdexcept>
+#include "sync.h"
 
 //!
 //! \brief Struct for snapshot download progress updates.
 //!
-struct struct_SnapshotStatus{
+struct struct_SnapshotStatus
+{
+    CCriticalSection cs_lock;
+
     bool SnapshotDownloadComplete = false;
     bool SnapshotDownloadFailed = false;
-    int64_t SnapshotDownloadSpeed;
-    int SnapshotDownloadProgress;
+    int64_t SnapshotDownloadSpeed = 0;
+    int SnapshotDownloadProgress = 0;
     long long SnapshotDownloadSize = 0;
     long long SnapshotDownloadAmount = 0;
+
+    bool GetSnapshotDownloadComplete()
+    {
+        LOCK(cs_lock);
+
+        return SnapshotDownloadComplete;
+    }
+
+    bool GetSnapshotDownloadFailed()
+    {
+        LOCK(cs_lock);
+
+        return SnapshotDownloadFailed;
+    }
+
+    int64_t GetSnapshotDownloadSpeed()
+    {
+        LOCK(cs_lock);
+
+        return SnapshotDownloadSpeed;
+    }
+
+    int GetSnapshotDownloadProgress()
+    {
+        LOCK(cs_lock);
+
+        return SnapshotDownloadProgress;
+    }
+
+    long long GetSnapshotDownloadSize()
+    {
+        LOCK(cs_lock);
+
+        return SnapshotDownloadSize;
+    }
+
+    long long GetSnapshotDownloadAmount()
+    {
+        LOCK(cs_lock);
+
+        return SnapshotDownloadAmount;
+    }
+
+    void SetSnapshotDownloadComplete(bool SnapshotDownloadComplete_in)
+    {
+        LOCK(cs_lock);
+
+        SnapshotDownloadComplete = SnapshotDownloadComplete_in;
+    }
+
+    void SetSnapshotDownloadFailed(bool SnapshotDownloadFailed_in)
+    {
+        LOCK(cs_lock);
+
+        SnapshotDownloadFailed = SnapshotDownloadFailed_in;
+    }
+
+    void SetSnapshotDownloadSpeed(int64_t SnapshotDownloadSpeed_in)
+    {
+        LOCK(cs_lock);
+
+        SnapshotDownloadSpeed = SnapshotDownloadSpeed_in;
+    }
+
+    void SetSnapshotDownloadProgress(int SnapshotDownloadProgress_in)
+    {
+        LOCK(cs_lock);
+
+        SnapshotDownloadProgress = SnapshotDownloadProgress_in;
+    }
+
+    void SetSnapshotDownloadSize(long long SnapshotDownloadSize_in)
+    {
+        LOCK(cs_lock);
+
+        SnapshotDownloadSize = SnapshotDownloadSize_in;
+    }
+
+    void SetSnapshotDownloadAmount(long long SnapshotDownloadAmount_in)
+    {
+        LOCK(cs_lock);
+
+        SnapshotDownloadAmount = SnapshotDownloadAmount_in;
+    }
+
 };
 
 extern struct_SnapshotStatus DownloadStatus;
