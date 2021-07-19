@@ -427,6 +427,8 @@ bool Upgrade::CleanupBlockchainData()
 
 bool Upgrade::ExtractSnapshot()
 {
+    LogPrintf("INFO %s: CP 2a beginning", __func__);
+
     //std::string ArchiveFileString = GetDataDir().string() +  "/snapshot.zip";
     //const char* ArchiveFile = ArchiveFileString.c_str();
 
@@ -434,6 +436,8 @@ bool Upgrade::ExtractSnapshot()
     FILE* archive_file = fsbridge::fopen(archive_path, "rb");
 
     fs::path ExtractPath = GetDataDir();
+
+    LogPrintf("INFO %s: CP 2b right before firzt libzip API call", __func__);
 
     zip_error_t* err = new zip_error_t;
     zip_error_init(err);
@@ -448,6 +452,8 @@ bool Upgrade::ExtractSnapshot()
     long long totaluncompressedsize = 0;
     long long currentuncompressedsize = 0;
     int64_t lastupdated = GetAdjustedTime();
+
+    LogPrintf("INFO %s: CP 2c right before try block", __func__);
 
     try
     {
@@ -468,7 +474,7 @@ bool Upgrade::ExtractSnapshot()
             return false;
         }
 
-        LogPrintf("INFO %s: CP 2 before entries enumeration", __func__);
+        LogPrintf("INFO %s: CP 2d before entries enumeration", __func__);
 
         entries = zip_get_num_entries(ZipArchive, 0);
 
