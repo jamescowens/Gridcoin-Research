@@ -195,7 +195,9 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
 
     LogPrintf("INFO %s: CP 1 before SnapShotExtractThread instantiation", __func__);
 
-    boost::thread SnapshotExtractThread(std::bind(&UpgradeQt::ExtractSnapshot, this));
+    //boost::thread SnapshotExtractThread(std::bind(&UpgradeQt::ExtractSnapshot, this));
+
+    ExtractSnapshot();
 
     LogPrintf("INFO %s: CP 6 after SnapShotExtractThread instantiation", __func__);
 
@@ -207,8 +209,8 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
             {
                 fCancelOperation = true;
 
-                SnapshotExtractThread.interrupt();
-                SnapshotExtractThread.join();
+                //SnapshotExtractThread.interrupt();
+                //SnapshotExtractThread.join();
 
                 Msg(_("Snapshot operation canceled."), _("The wallet will now shutdown."));
 
@@ -229,8 +231,8 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
         {
             fCancelOperation = true;
 
-            SnapshotExtractThread.interrupt();
-            SnapshotExtractThread.join();
+            //SnapshotExtractThread.interrupt();
+            //SnapshotExtractThread.join();
 
             Msg(_("Snapshot operation canceled due to an invalid snapshot zip."), _("The wallet will now shutdown."));
 
