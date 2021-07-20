@@ -29,12 +29,15 @@ bool UpgradeQt::SnapshotMain(ThreadHandlerPtr& upgrade_threads, QApplication& Sn
 
     Upgrade UpgradeMain(upgrade_threads);
 
+    Upgrade::Status& status = UpgradeMain.m_status;
+
     // Verify a mandatory release is not available before we continue to snapshot download.
     std::string VersionResponse = "";
 
     if (UpgradeMain.CheckForLatestUpdate(VersionResponse, false, true))
     {
-        ErrorMsg(UpgradeMain.ResetBlockchainMessages(Upgrade::UpdateAvailable), UpgradeMain.ResetBlockchainMessages(Upgrade::GithubResponse) + "\r\n" + VersionResponse);
+        ErrorMsg(UpgradeMain.ResetBlockchainMessages(Upgrade::UpdateAvailable),
+                 UpgradeMain.ResetBlockchainMessages(Upgrade::GithubResponse) + "\r\n" + VersionResponse);
 
         return false;
     }
@@ -51,40 +54,39 @@ bool UpgradeQt::SnapshotMain(ThreadHandlerPtr& upgrade_threads, QApplication& Sn
     SnapshotApp.processEvents();
 
     // Create a thread for snapshot to be downloaded
-    if (!upgrade_threads->createThread(UpgradeQt::DownloadSnapshot, nullptr, "DownloadSnapshotThread")) {
+    if (!upgrade_threads->createThread(UpgradeQt::DownloadSnapshot, &UpgradeMain, "DownloadSnapshotThread")) {
         throw std::runtime_error("Failed to create download snapshot thread; See debug.log");
     }
-    //boost::thread SnapshotDownloadThread(std::bind(&UpgradeQt::DownloadSnapshot, this)); // thread runs free
 
     std::string BaseProgressString = _("Stage (1/4): Downloading snapshot.zip: Speed ");
 
     QString OutputText;
 
-    while (!DownloadStatus.GetSnapshotDownloadComplete())
+    while (!status.GetSnapshotDownloadComplete())
     {
-        if (DownloadStatus.GetSnapshotDownloadFailed())
+        if (status.GetSnapshotDownloadFailed())
         {
             ErrorMsg(_("Failed to download snapshot.zip; See debug.log"), _("The wallet will now shutdown."));
 
             return false;
         }
 
-        if (DownloadStatus.GetSnapshotDownloadSpeed() < 1000000 && DownloadStatus.GetSnapshotDownloadSpeed() > 0)
-            OutputText = ToQString(BaseProgressString + RoundToString((DownloadStatus.GetSnapshotDownloadSpeed() / (double)1000), 1) + " " + _("KB/s")
-                                   + " (" + RoundToString(DownloadStatus.GetSnapshotDownloadAmount() / (double)(1024 * 1024 * 1024), 2) + _("GB/")
-                                   + RoundToString(DownloadStatus.GetSnapshotDownloadSize() / (double)(1024 * 1024 * 1024), 2) + _("GB)"));
+        if (status.GetSnapshotDownloadSpeed() < 1000000 && status.GetSnapshotDownloadSpeed() > 0)
+            OutputText = ToQString(BaseProgressString + RoundToString((status.GetSnapshotDownloadSpeed() / (double)1000), 1) + " " + _("KB/s")
+                                   + " (" + RoundToString(status.GetSnapshotDownloadAmount() / (double)(1024 * 1024 * 1024), 2) + _("GB/")
+                                   + RoundToString(status.GetSnapshotDownloadSize() / (double)(1024 * 1024 * 1024), 2) + _("GB)"));
 
-        else if (DownloadStatus.GetSnapshotDownloadSpeed() > 1000000)
-            OutputText = ToQString(BaseProgressString + RoundToString((DownloadStatus.GetSnapshotDownloadSpeed() / (double)1000000), 1) + " " + _("MB/s")
-                                   + " (" + RoundToString(DownloadStatus.GetSnapshotDownloadAmount() / (double)(1024 * 1024 * 1024), 2) + _("GB/")
-                                   + RoundToString(DownloadStatus.GetSnapshotDownloadSize() / (double)(1024 * 1024 * 1024), 2) + _("GB)"));
+        else if (status.GetSnapshotDownloadSpeed() > 1000000)
+            OutputText = ToQString(BaseProgressString + RoundToString((status.GetSnapshotDownloadSpeed() / (double)1000000), 1) + " " + _("MB/s")
+                                   + " (" + RoundToString(status.GetSnapshotDownloadAmount() / (double)(1024 * 1024 * 1024), 2) + _("GB/")
+                                   + RoundToString(status.GetSnapshotDownloadSize() / (double)(1024 * 1024 * 1024), 2) + _("GB)"));
 
         // Not supported
         else
             OutputText = ToQString(BaseProgressString + " " + _("N/A"));
 
         Progress.setLabelText(OutputText);
-        Progress.setValue(DownloadStatus.GetSnapshotDownloadProgress());
+        Progress.setValue(status.GetSnapshotDownloadProgress());
 
         SnapshotApp.processEvents();
 
@@ -94,9 +96,8 @@ bool UpgradeQt::SnapshotMain(ThreadHandlerPtr& upgrade_threads, QApplication& Sn
             {
                 fCancelOperation = true;
 
-                upgrade_threads->removeByName("DownloadSnapshotThread");
-                //SnapshotDownloadThread.interrupt();
-                //SnapshotDownloadThread.join();
+                upgrade_threads->interruptAll();
+                upgrade_threads->removeAll();
 
                 Msg(_("Snapshot operation canceled."), _("The wallet will now shutdown."));
 
@@ -196,14 +197,13 @@ bool UpgradeQt::SnapshotMain(ThreadHandlerPtr& upgrade_threads, QApplication& Sn
 
     // Extract Snapshot
     // Create a thread for snapshot to be extracted
-    if (!upgrade_threads->createThread(UpgradeQt::ExtractSnapshot, nullptr, "ExtractSnapshotThread")) {
+    if (!upgrade_threads->createThread(UpgradeQt::ExtractSnapshot, &UpgradeMain, "ExtractSnapshotThread")) {
         throw std::runtime_error("Failed to create extract snapshot thread; See debug.log");
     }
-    //boost::thread SnapshotExtractThread(std::bind(&UpgradeQt::ExtractSnapshot, this));
 
     LogPrintf("INFO %s: CP 6 after SnapShotExtractThread instantiation", __func__);
 
-    while (!ExtractStatus.GetSnapshotExtractComplete())
+    while (!status.GetSnapshotExtractComplete())
     {
         if (Progress.wasCanceled())
         {
@@ -211,9 +211,8 @@ bool UpgradeQt::SnapshotMain(ThreadHandlerPtr& upgrade_threads, QApplication& Sn
             {
                 fCancelOperation = true;
 
-                upgrade_threads->removeByName("ExtractSnapshotThread");
-                //SnapshotDownloadThread.interrupt();
-                //SnapshotDownloadThread.join();
+                upgrade_threads->interruptAll();
+                upgrade_threads->removeAll();
 
                 Msg(_("Snapshot operation canceled."), _("The wallet will now shutdown."));
 
@@ -230,7 +229,7 @@ bool UpgradeQt::SnapshotMain(ThreadHandlerPtr& upgrade_threads, QApplication& Sn
 
         }
 
-        if (ExtractStatus.GetSnapshotZipInvalid())
+        if (status.GetSnapshotZipInvalid())
         {
             fCancelOperation = true;
 
@@ -243,7 +242,7 @@ bool UpgradeQt::SnapshotMain(ThreadHandlerPtr& upgrade_threads, QApplication& Sn
             return false;
         }
 
-        if (ExtractStatus.GetSnapshotExtractFailed())
+        if (status.GetSnapshotExtractFailed())
         {
             ErrorMsg(_("Snapshot extraction failed! Cleaning up any extracted data"), _("The wallet will now shutdown."));
 
@@ -253,7 +252,7 @@ bool UpgradeQt::SnapshotMain(ThreadHandlerPtr& upgrade_threads, QApplication& Sn
             return false;
         }
 
-        Progress.setValue(ExtractStatus.GetSnapshotExtractProgress());
+        Progress.setValue(status.GetSnapshotExtractProgress());
 
         SnapshotApp.processEvents();
 
@@ -273,9 +272,6 @@ void UpgradeQt::DownloadSnapshot(void* parg)
 {
    RenameThread("grc-snapshotdl");
 
-   //Upgrade upgrade;
-
-   //upgrade.DownloadSnapshot();
    Upgrade::DownloadSnapshot(parg);
 }
 
@@ -287,13 +283,9 @@ void UpgradeQt::ExtractSnapshot(void* parg)
 
     LogPrintf("INFO %s: CP 1b after thread rename", __func__);
 
-    Upgrade upgrade;
-
-    LogPrintf("INFO %s: CP 1c after upgrade object init", __func__);
-
     Upgrade::ExtractSnapshot(parg);
 
-    LogPrintf("INFO %s: CP 1d after ExtractSnapshot execution", __func__);
+    LogPrintf("INFO %s: CP 1c after ExtractSnapshot execution", __func__);
 }
 
 void UpgradeQt::ErrorMsg(const std::string& text, const std::string& informativetext)

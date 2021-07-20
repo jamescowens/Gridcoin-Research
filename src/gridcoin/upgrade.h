@@ -10,79 +10,11 @@
 #include <iomanip>
 #include <vector>
 
-#include "gridcoin/scraper/http.h"
 #include "ui_interface.h"
 
-namespace GRC {
-
-/** Snapshot Extraction Status struct **/
-struct struct_SnapshotExtractStatus
+namespace GRC
 {
-    CCriticalSection cs_lock;
-
-    bool SnapshotZipInvalid = false;
-    bool SnapshotExtractComplete = false;
-    bool SnapshotExtractFailed = false;
-    int SnapshotExtractProgress = 0;
-
-    bool GetSnapshotZipInvalid()
-    {
-        LOCK(cs_lock);
-
-        return SnapshotZipInvalid;
-    }
-
-    bool GetSnapshotExtractComplete()
-    {
-        LOCK(cs_lock);
-
-        return SnapshotExtractComplete;
-    }
-
-    bool GetSnapshotExtractFailed()
-    {
-        LOCK(cs_lock);
-
-        return SnapshotExtractFailed;
-    }
-
-    int GetSnapshotExtractProgress()
-    {
-        LOCK(cs_lock);
-
-        return SnapshotExtractProgress;
-    }
-
-    void SetSnapshotZipInvalid(bool SnapshotZipInvalid_in)
-    {
-        LOCK(cs_lock);
-
-        SnapshotZipInvalid = SnapshotZipInvalid_in;
-    }
-
-    void SetSnapshotExtractComplete(bool SnapshotExtractComplete_in)
-    {
-        LOCK(cs_lock);
-
-        SnapshotExtractComplete = SnapshotExtractComplete_in;
-    }
-
-    void SetSnapshotExtractFailed(bool SnapshotExtractFailed_in)
-    {
-        LOCK(cs_lock);
-
-        SnapshotExtractFailed = SnapshotExtractFailed_in;
-    }
-
-    void SetSnapshotExtractProgress(bool SnapshotExtractProgress_in)
-    {
-        LOCK(cs_lock);
-
-        SnapshotExtractProgress = SnapshotExtractProgress_in;
-    }
-};
-
-extern struct_SnapshotExtractStatus ExtractStatus;
+//extern struct_SnapshotExtractStatus ExtractStatus;
 /** Qt Side **/
 extern bool fCancelOperation;
 
@@ -108,6 +40,170 @@ public:
         CleanUp,
         UpdateAvailable,
         GithubResponse
+    };
+
+    //!
+    //! \brief Class for snapshot download and extraction progress updates.
+    //!
+    class Status
+    {
+    public:
+        bool GetSnapshotDownloadComplete()
+        {
+            LOCK(cs_lock);
+
+            return SnapshotDownloadComplete;
+        }
+
+        bool GetSnapshotDownloadFailed()
+        {
+            LOCK(cs_lock);
+
+            return SnapshotDownloadFailed;
+        }
+
+        int64_t GetSnapshotDownloadSpeed()
+        {
+            LOCK(cs_lock);
+
+            return SnapshotDownloadSpeed;
+        }
+
+        int GetSnapshotDownloadProgress()
+        {
+            LOCK(cs_lock);
+
+            return SnapshotDownloadProgress;
+        }
+
+        long long GetSnapshotDownloadSize()
+        {
+            LOCK(cs_lock);
+
+            return SnapshotDownloadSize;
+        }
+
+        long long GetSnapshotDownloadAmount()
+        {
+            LOCK(cs_lock);
+
+            return SnapshotDownloadAmount;
+        }
+
+        void SetSnapshotDownloadComplete(bool SnapshotDownloadComplete_in)
+        {
+            LOCK(cs_lock);
+
+            SnapshotDownloadComplete = SnapshotDownloadComplete_in;
+        }
+
+        void SetSnapshotDownloadFailed(bool SnapshotDownloadFailed_in)
+        {
+            LOCK(cs_lock);
+
+            SnapshotDownloadFailed = SnapshotDownloadFailed_in;
+        }
+
+        void SetSnapshotDownloadSpeed(int64_t SnapshotDownloadSpeed_in)
+        {
+            LOCK(cs_lock);
+
+            SnapshotDownloadSpeed = SnapshotDownloadSpeed_in;
+        }
+
+        void SetSnapshotDownloadProgress(int SnapshotDownloadProgress_in)
+        {
+            LOCK(cs_lock);
+
+            SnapshotDownloadProgress = SnapshotDownloadProgress_in;
+        }
+
+        void SetSnapshotDownloadSize(long long SnapshotDownloadSize_in)
+        {
+            LOCK(cs_lock);
+
+            SnapshotDownloadSize = SnapshotDownloadSize_in;
+        }
+
+        void SetSnapshotDownloadAmount(long long SnapshotDownloadAmount_in)
+        {
+            LOCK(cs_lock);
+
+            SnapshotDownloadAmount = SnapshotDownloadAmount_in;
+        }
+
+        bool GetSnapshotZipInvalid()
+        {
+            LOCK(cs_lock);
+
+            return SnapshotZipInvalid;
+        }
+
+        bool GetSnapshotExtractComplete()
+        {
+            LOCK(cs_lock);
+
+            return SnapshotExtractComplete;
+        }
+
+        bool GetSnapshotExtractFailed()
+        {
+            LOCK(cs_lock);
+
+            return SnapshotExtractFailed;
+        }
+
+        int GetSnapshotExtractProgress()
+        {
+            LOCK(cs_lock);
+
+            return SnapshotExtractProgress;
+        }
+
+        void SetSnapshotZipInvalid(bool SnapshotZipInvalid_in)
+        {
+            LOCK(cs_lock);
+
+            SnapshotZipInvalid = SnapshotZipInvalid_in;
+        }
+
+        void SetSnapshotExtractComplete(bool SnapshotExtractComplete_in)
+        {
+            LOCK(cs_lock);
+
+            SnapshotExtractComplete = SnapshotExtractComplete_in;
+        }
+
+        void SetSnapshotExtractFailed(bool SnapshotExtractFailed_in)
+        {
+            LOCK(cs_lock);
+
+            SnapshotExtractFailed = SnapshotExtractFailed_in;
+        }
+
+        void SetSnapshotExtractProgress(int SnapshotExtractProgress_in)
+        {
+            LOCK(cs_lock);
+
+            SnapshotExtractProgress = SnapshotExtractProgress_in;
+        }
+
+    private:
+        CCriticalSection cs_lock;
+
+        // Download
+        bool SnapshotDownloadComplete = false;
+        bool SnapshotDownloadFailed = false;
+        int64_t SnapshotDownloadSpeed = 0;
+        int SnapshotDownloadProgress = 0;
+        long long SnapshotDownloadSize = 0;
+        long long SnapshotDownloadAmount = 0;
+
+        // Extract
+        bool SnapshotZipInvalid = false;
+        bool SnapshotExtractComplete = false;
+        bool SnapshotExtractFailed = false;
+        int SnapshotExtractProgress = 0;
     };
 
     //!
@@ -170,6 +266,9 @@ public:
     //! \returns String containing message.
     //!
     static std::string ResetBlockchainMessages(ResetBlockchainMsg _msg);
+
+public:
+    Status m_status;
 
 private:
     ThreadHandlerPtr m_upgrade_threads;

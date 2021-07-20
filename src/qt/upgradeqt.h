@@ -8,7 +8,6 @@
 #include <string>
 #include <QString>
 #include <QApplication>
-//#include "gridcoin/upgrade.h"
 #include "ui_interface.h"
 
 class UpgradeQt
@@ -74,7 +73,6 @@ public:
     //! \return Returns success of blockchain data cleanup task.
     //!
     static bool ResetBlockchain(QApplication& ResetBlockchainApp);
-
 };
 #endif // UPGRADEQT_H
 

@@ -25,8 +25,6 @@
 #define progressinterval 1
 #endif
 
-struct_SnapshotStatus DownloadStatus;
-
 enum class logattribute {
     // Can't use ERROR here because it is defined already in windows.h.
     ERR,
@@ -73,20 +71,23 @@ namespace
     struct progress {
       timetype lastruntime;
       CURL *curl;
+      GRC::Upgrade* upgrade_ptr;
     };
 
-    static int newerprogress_callback(void *ptr, curl_off_t downtotal, curl_off_t downnow, curl_off_t uptotal, curl_off_t uplnow)
+    static int newerprogress_callback(void *ptr, curl_off_t downtotal, curl_off_t downnow,
+                                      curl_off_t uptotal, curl_off_t uplnow)
     {
-        struct progress *pg = (struct progress*)ptr;
+        progress *pg = (progress*)ptr;
         CURL *curl = pg->curl;
+        GRC::Upgrade::Status& status = pg->upgrade_ptr->m_status;
 
         // Thread interrupting
         try
         {
             boost::this_thread::interruption_point();
             // Set this once.
-            if (DownloadStatus.SnapshotDownloadSize == 0)
-                DownloadStatus.SnapshotDownloadSize = downtotal;
+            if (status.GetSnapshotDownloadSize() == 0)
+                status.SetSnapshotDownloadSize(downtotal);
 
             timetype currenttime = 0;
             curl_easy_getinfo(curl, timeopt, &currenttime);
@@ -107,20 +108,20 @@ namespace
 
 #if LIBCURL_VERSION_NUM >= 0x073700
                     if (speed > 0)
-                        DownloadStatus.SnapshotDownloadSpeed = (int64_t)speed;
+                        status.SetSnapshotDownloadSpeed((int64_t)speed);
 
                     else {
-                        DownloadStatus.SnapshotDownloadSpeed = 0;
+                        status.SetSnapshotDownloadSpeed(0);
 
                     }
 #else
                     // Not supported by libcurl
-                    DownloadStatus.SnapshotDownloadSpeed = -1;
+                    status.SetSnapshotDownloadSpeed(-1);
 #endif
-                    if (DownloadStatus.SnapshotDownloadSize > 0 && (downnow > 0))
+                    if (status.GetSnapshotDownloadSize() > 0 && (downnow > 0))
                     {
-                        DownloadStatus.SnapshotDownloadProgress = ((downnow / (double)DownloadStatus.SnapshotDownloadSize) * 100);
-                        DownloadStatus.SnapshotDownloadAmount = downnow;
+                        status.SetSnapshotDownloadProgress(((downnow / (double)status.GetSnapshotDownloadSize()) * 100));
+                        status.SetSnapshotDownloadAmount(downnow);
                     }
                 }
             }
@@ -137,7 +138,8 @@ namespace
 #if LIBCURL_VERSION_NUM < 0x072000
     static int olderprogress_callback(void *ptr, double downtotal, double downnow, double uptotal, double upnow)
     {
-        return newerprogress_callback(ptr, (curl_off_t)downtotal, (curl_off_t)downnow, (curl_off_t)uptotal, (curl_off_t)upnow);
+        return newerprogress_callback(ptr, (curl_off_t)downtotal, (curl_off_t)downnow,
+                                      (curl_off_t)uptotal, (curl_off_t)upnow);
     };
 
 #endif
@@ -270,7 +272,8 @@ std::string Http::GetLatestVersionResponse()
 {
     std::string buffer;
     std::string header;
-    std::string url = gArgs.GetArg("-updatecheckurl", "https://api.github.com/repos/gridcoin-community/Gridcoin-Research/releases/latest");
+    std::string url = gArgs.GetArg("-updatecheckurl",
+                                   "https://api.github.com/repos/gridcoin-community/Gridcoin-Research/releases/latest");
 
     struct curl_slist* headers = nullptr;
     headers = curl_slist_append(headers, "Accept: */*");
@@ -299,7 +302,7 @@ std::string Http::GetLatestVersionResponse()
     return buffer;
 }
 
-void Http::DownloadSnapshot()
+void Http::DownloadSnapshot(GRC::Upgrade* upgrade)
 {
     std::string url = gArgs.GetArg("-snapshoturl", "https://snapshot.gridcoin.us/snapshot.zip");
 
@@ -309,7 +312,7 @@ void Http::DownloadSnapshot()
 
     if (!fp)
     {
-        DownloadStatus.SnapshotDownloadFailed = true;
+        upgrade->m_status.SetSnapshotDownloadFailed(true);
 
         throw std::runtime_error(
                 tfm::format("Snapshot Downloader: Error opening target %s: %s (%d)", destination.string(), strerror(errno), errno));
@@ -329,6 +332,8 @@ void Http::DownloadSnapshot()
 
     fileprogress.lastruntime = 0;
     fileprogress.curl = curl;
+    fileprogress.upgrade_ptr = upgrade;
+
     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
     curl_easy_setopt(curl, CURLOPT_PROXY, "");
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
@@ -358,14 +363,16 @@ void Http::DownloadSnapshot()
 
     if (res > 0)
     {
-        if (res == CURLE_ABORTED_BY_CALLBACK)
+        if (res == CURLE_ABORTED_BY_CALLBACK) {
+            LogPrintf("INFO: %s: res == CURLE_ABORTED_BY_CALLBACK", __func__);
             return;
-
+        }
         else
         {
-            DownloadStatus.SnapshotDownloadFailed = true;
+            upgrade->m_status.SetSnapshotDownloadFailed(true);
 
-            throw std::runtime_error(tfm::format("Snapshot Downloader: Failed to download file %s: %s", url, curl_easy_strerror(res)));
+            throw std::runtime_error(tfm::format("Snapshot Downloader: Failed to download file %s: %s",
+                                                 url, curl_easy_strerror(res)));
         }
     }
 
@@ -374,7 +381,7 @@ void Http::DownloadSnapshot()
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
     EvaluateResponse(response_code, url);
 
-    DownloadStatus.SnapshotDownloadComplete = true;
+    upgrade->m_status.SetSnapshotDownloadComplete(true);
 
     return;
 }

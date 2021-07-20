@@ -2,7 +2,7 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "gridcoin/upgrade.h"
+#include "gridcoin/scraper/http.h"
 #include "util.h"
 #include "init.h"
 
@@ -20,28 +20,11 @@
 
 using namespace GRC;
 
-struct_SnapshotExtractStatus GRC::ExtractStatus;
-
 bool GRC::fCancelOperation = false;
 
 Upgrade::Upgrade(ThreadHandlerPtr upgrade_threads)
     : m_upgrade_threads(upgrade_threads)
 {
-    // For right now, we will bypass the setters, since the lock and member variables are public in the structs.
-    // This may change in the future.
-
-    LOCK2(DownloadStatus.cs_lock, ExtractStatus.cs_lock);
-
-    // Clear the structs
-    DownloadStatus.SnapshotDownloadSize = 0;
-    DownloadStatus.SnapshotDownloadSpeed = 0;
-    DownloadStatus.SnapshotDownloadAmount = 0;
-    DownloadStatus.SnapshotDownloadFailed = false;
-    DownloadStatus.SnapshotDownloadComplete = false;
-    DownloadStatus.SnapshotDownloadProgress = 0;
-    ExtractStatus.SnapshotExtractFailed = false;
-    ExtractStatus.SnapshotExtractComplete = false;
-    ExtractStatus.SnapshotExtractProgress = 0;
 }
 
 void Upgrade::ScheduledUpdateCheck()
@@ -53,7 +36,8 @@ void Upgrade::ScheduledUpdateCheck()
 
 bool Upgrade::CheckForLatestUpdate(std::string& client_message_out, bool ui_dialog, bool snapshotrequest)
 {
-    // If testnet skip this || If the user changes this to disable while wallet running just drop out of here now. (need a way to remove items from scheduler)
+    // If testnet skip this || If the user changes this to disable while wallet running just drop out of here now.
+    // (need a way to remove items from scheduler)
     if (fTestNet || (gArgs.GetBoolArg("-disableupdatecheck", false) && !snapshotrequest))
         return false;
 
@@ -155,7 +139,8 @@ bool Upgrade::CheckForLatestUpdate(std::string& client_message_out, bool ui_dial
     }
     catch (std::exception& ex)
     {
-        LogPrintf("%s: Exception occurred checking client version against github version (%s)", __func__, ToString(ex.what()));
+        LogPrintf("%s: Exception occurred checking client version against github version (%s)",
+                  __func__, ToString(ex.what()));
 
         return false;
     }
@@ -163,7 +148,8 @@ bool Upgrade::CheckForLatestUpdate(std::string& client_message_out, bool ui_dial
     if (!NewVersion) return NewVersion;
 
     // New version was found
-    client_message_out = _("Local version: ") + strprintf("%d.%d.%d.%d", CLIENT_VERSION_MAJOR, CLIENT_VERSION_MINOR, CLIENT_VERSION_REVISION, CLIENT_VERSION_BUILD) + "\r\n";
+    client_message_out = _("Local version: ") + strprintf("%d.%d.%d.%d", CLIENT_VERSION_MAJOR, CLIENT_VERSION_MINOR,
+                                                          CLIENT_VERSION_REVISION, CLIENT_VERSION_BUILD) + "\r\n";
     client_message_out.append(_("Github version: ") + GithubReleaseData + "\r\n");
     client_message_out.append(_("This update is ") + GithubReleaseType + "\r\n\r\n");
 
@@ -186,7 +172,8 @@ void Upgrade::SnapshotMain()
 {
     std::cout << std::endl;
     std::cout << _("Snapshot Process Has Begun.") << std::endl;
-    std::cout << _("Warning: Ending this process after Stage 2 will result in syncing from 0 or an incomplete/corrupted blockchain.") << std::endl << std::endl;
+    std::cout << _("Warning: Ending this process after Stage 2 will result in syncing from 0 or an "
+                   "incomplete/corrupted blockchain.") << std::endl << std::endl;
 
     // Verify a mandatory release is not available before we continue to snapshot download.
     std::string VersionResponse = "";
@@ -201,7 +188,7 @@ void Upgrade::SnapshotMain()
     }
 
     // Create a thread for snapshot to be downloaded
-    if (!m_upgrade_threads->createThread(Upgrade::DownloadSnapshot, nullptr, "DownloadSnapshotThread")) {
+    if (!m_upgrade_threads->createThread(Upgrade::DownloadSnapshot, this, "DownloadSnapshotThread")) {
         throw std::runtime_error("Failed to create download snapshot thread; See debug.log");
     }
     //boost::thread SnapshotDownloadThread(std::bind(&Upgrade::DownloadSnapshot, this));
@@ -210,19 +197,21 @@ void Upgrade::SnapshotMain()
 
     Prog.SetType(0);
 
-    while (!DownloadStatus.GetSnapshotDownloadComplete())
+    while (!m_status.GetSnapshotDownloadComplete())
     {
-        if (DownloadStatus.GetSnapshotDownloadFailed())
+        if (m_status.GetSnapshotDownloadFailed())
             throw std::runtime_error("Failed to download snapshot.zip; See debug.log");
 
-        if (Prog.Update(DownloadStatus.GetSnapshotDownloadProgress(), DownloadStatus.GetSnapshotDownloadSpeed(), DownloadStatus.GetSnapshotDownloadAmount(), DownloadStatus.GetSnapshotDownloadSize()))
+        if (Prog.Update(m_status.GetSnapshotDownloadProgress(), m_status.GetSnapshotDownloadSpeed(),
+                        m_status.GetSnapshotDownloadAmount(), m_status.GetSnapshotDownloadSize()))
             std::cout << Prog.Status() << std::flush;
 
         MilliSleep(1000);
     }
 
-    // This is needed in some spots as the download can complete before the next progress update occurs so just 100% here as it was successful
-    if (Prog.Update(100, -1, DownloadStatus.GetSnapshotDownloadSize(), DownloadStatus.GetSnapshotDownloadSize()))
+    // This is needed in some spots as the download can complete before the next progress update occurs so just 100% here
+    // as it was successful
+    if (Prog.Update(100, -1, m_status.GetSnapshotDownloadSize(), m_status.GetSnapshotDownloadSize()))
         std::cout << Prog.Status() << std::flush;
 
     std::cout << std::endl;
@@ -258,14 +247,14 @@ void Upgrade::SnapshotMain()
     Prog.SetType(3);
 
     // Create a thread for snapshot to be extracted
-    if (!m_upgrade_threads->createThread(Upgrade::ExtractSnapshot, nullptr, "ExtractSnapshotThread")) {
+    if (!m_upgrade_threads->createThread(Upgrade::ExtractSnapshot, this, "ExtractSnapshotThread")) {
         throw std::runtime_error("Failed to create extract snapshot thread; See debug.log");
     }
     //boost::thread SnapshotExtractThread(std::bind(&Upgrade::ExtractSnapshot, this));
 
-    while (!ExtractStatus.GetSnapshotExtractComplete())
+    while (!m_status.GetSnapshotExtractComplete())
     {
-        if (ExtractStatus.GetSnapshotExtractFailed())
+        if (m_status.GetSnapshotExtractFailed())
         {
             // Do this without checking on success, If it passed in stage 3 it will pass here.
             CleanupBlockchainData();
@@ -273,7 +262,7 @@ void Upgrade::SnapshotMain()
             throw std::runtime_error("Failed to extract snapshot.zip; See debug.log");
         }
 
-        if (Prog.Update(ExtractStatus.GetSnapshotExtractProgress()))
+        if (Prog.Update(m_status.GetSnapshotExtractProgress()))
             std::cout << Prog.Status() << std::flush;
 
         MilliSleep(1000);
@@ -290,19 +279,19 @@ void Upgrade::SnapshotMain()
 
 void Upgrade::DownloadSnapshot(void* parg)
 {
-     // Download the snapshot.zip
+    Upgrade* upgrade = (Upgrade*) parg;
+
+    // Download the snapshot.zip
     Http HTTPHandler;
 
     try
     {
-        HTTPHandler.DownloadSnapshot();
+        HTTPHandler.DownloadSnapshot(upgrade);
     }
 
     catch(std::runtime_error& e)
     {
         LogPrintf("Snapshot Downloader: Exception occurred while attempting to download snapshot (%s)", e.what());
-
-        DownloadStatus.SetSnapshotDownloadFailed(true);
     }
 
     return;
@@ -321,7 +310,8 @@ bool Upgrade::VerifySHA256SUM()
 
     catch (std::runtime_error& e)
     {
-        LogPrintf("Snapshot (VerifySHA256SUM): Exception occurred while attempting to retrieve snapshot SHA256SUM (%s)", e.what());
+        LogPrintf("Snapshot (VerifySHA256SUM): Exception occurred while attempting to retrieve snapshot SHA256SUM (%s)",
+                  e.what());
     }
 
     if (ServerSHA256SUM.empty())
@@ -368,7 +358,8 @@ bool Upgrade::VerifySHA256SUM()
 
     else
     {
-        LogPrintf("Snapshot (VerifySHA256SUM): Mismatch of sha256sum of snapshot.zip (Server = %s / File = %s)", ServerSHA256SUM, FileSHA256SUM);
+        LogPrintf("Snapshot (VerifySHA256SUM): Mismatch of sha256sum of snapshot.zip (Server = %s / File = %s)",
+                  ServerSHA256SUM, FileSHA256SUM);
 
         return false;
     }
@@ -439,10 +430,9 @@ bool Upgrade::CleanupBlockchainData()
 
 void Upgrade::ExtractSnapshot(void* parg)
 {
-    LogPrintf("INFO %s: CP 2a beginning", __func__);
+    Upgrade* upgrade = (Upgrade *) parg;
 
-    //std::string ArchiveFileString = GetDataDir().string() +  "/snapshot.zip";
-    //const char* ArchiveFile = ArchiveFileString.c_str();
+    LogPrintf("INFO %s: CP 2a beginning", __func__);
 
     fs::path archive_path = GetDataDir() / "snapshot.zip";
     FILE* archive_file = fsbridge::fopen(archive_path, "rb");
@@ -458,7 +448,6 @@ void Upgrade::ExtractSnapshot(void* parg)
     struct zip_file* ZipFile;
     struct zip_stat ZipStat;
     char Buf[1024*1024];
-    //int err;
     uint64_t i, j;
     int64_t entries, len, sum;
     long long totaluncompressedsize = 0;
@@ -478,7 +467,7 @@ void Upgrade::ExtractSnapshot(void* parg)
         {
             //zip_error_to_str(Buf, sizeof(Buf), err, errno);
 
-            ExtractStatus.SetSnapshotExtractFailed(true);
+            upgrade->m_status.SetSnapshotExtractFailed(true);
 
             //LogPrintf("Snapshot (ExtractSnapshot): Error opening snapshot.zip: %s", Buf);
             LogPrintf("Snapshot (ExtractSnapshot): Error opening snapshot.zip: %s", zip_error_strerror(err));
@@ -506,7 +495,7 @@ void Upgrade::ExtractSnapshot(void* parg)
         // if the zip file has no entries.
         if (!totaluncompressedsize)
         {
-            ExtractStatus.SetSnapshotZipInvalid(true);
+            upgrade->m_status.SetSnapshotZipInvalid(true);
 
             LogPrintf("Snapshot (ExtractSnapshot): Error - snapshot.zip has no entries");
 
@@ -533,7 +522,7 @@ void Upgrade::ExtractSnapshot(void* parg)
 
                     if (!ZipFile)
                     {
-                        ExtractStatus.SetSnapshotExtractFailed(true);
+                        upgrade->m_status.SetSnapshotExtractFailed(true);
 
                         LogPrintf("Snapshot (ExtractSnapshot): Error opening file %s within snapshot.zip", ZipStat.name);
 
@@ -546,7 +535,7 @@ void Upgrade::ExtractSnapshot(void* parg)
 
                     if (!ExtractFile)
                     {
-                        ExtractStatus.SetSnapshotExtractFailed(true);
+                        upgrade->m_status.SetSnapshotExtractFailed(true);
 
                         LogPrintf("Snapshot (ExtractSnapshot): Error opening file %s on filesystem", ZipStat.name);
 
@@ -563,7 +552,7 @@ void Upgrade::ExtractSnapshot(void* parg)
 
                         if (len < 0)
                         {
-                            ExtractStatus.SetSnapshotExtractFailed(true);
+                            upgrade->m_status.SetSnapshotExtractFailed(true);
 
                             LogPrintf("Snapshot (ExtractSnapshot): Failed to read zip buffer");
 
@@ -580,7 +569,8 @@ void Upgrade::ExtractSnapshot(void* parg)
                         {
                             lastupdated = GetAdjustedTime();
 
-                            ExtractStatus.SetSnapshotExtractProgress(((currentuncompressedsize / (double)totaluncompressedsize) * 100));
+                            upgrade->m_status.SetSnapshotExtractProgress((currentuncompressedsize
+                                                                          / (double)totaluncompressedsize) * 100);
                         }
                     }
 
@@ -592,24 +582,24 @@ void Upgrade::ExtractSnapshot(void* parg)
 
         if (zip_close(ZipArchive) == -1)
         {
-            ExtractStatus.SetSnapshotExtractFailed(true);
+            upgrade->m_status.SetSnapshotExtractFailed(true);
 
             LogPrintf("Snapshot (ExtractSnapshot): Failed to close snapshot.zip");
 
             return;
         }
 
-        ExtractStatus.SetSnapshotExtractComplete(true);
+        upgrade->m_status.SetSnapshotExtractComplete(true);
     }
 
     catch (boost::thread_interrupted&)
     {
-        ExtractStatus.SnapshotExtractComplete = false;
+        upgrade->m_status.SetSnapshotExtractComplete(false);
     }
 
     catch (std::exception& e)
     {
-        ExtractStatus.SnapshotExtractComplete = false;
+        upgrade->m_status.SetSnapshotExtractComplete(false);
         error("%s: Error occurred during snapshot zip file extraction: %s", __func__, e.what());
     }
 
