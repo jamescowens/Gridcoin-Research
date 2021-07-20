@@ -22,12 +22,12 @@ QString UpgradeQt::ToQString(const std::string& string)
     return QString::fromStdString(string);
 }
 
-bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
+bool UpgradeQt::SnapshotMain(ThreadHandlerPtr& upgrade_threads, QApplication& SnapshotApp)
 {
     SnapshotApp.processEvents();
     SnapshotApp.setWindowIcon(QPixmap(":/images/gridcoin"));
 
-    Upgrade UpgradeMain;
+    Upgrade UpgradeMain(upgrade_threads);
 
     // Verify a mandatory release is not available before we continue to snapshot download.
     std::string VersionResponse = "";
@@ -51,7 +51,10 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
     SnapshotApp.processEvents();
 
     // Create a thread for snapshot to be downloaded
-    boost::thread SnapshotDownloadThread(std::bind(&UpgradeQt::DownloadSnapshot, this)); // thread runs free
+    if (!upgrade_threads->createThread(UpgradeQt::DownloadSnapshot, nullptr, "DownloadSnapshotThread")) {
+        throw std::runtime_error("Failed to create download snapshot thread; See debug.log");
+    }
+    //boost::thread SnapshotDownloadThread(std::bind(&UpgradeQt::DownloadSnapshot, this)); // thread runs free
 
     std::string BaseProgressString = _("Stage (1/4): Downloading snapshot.zip: Speed ");
 
@@ -91,8 +94,9 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
             {
                 fCancelOperation = true;
 
-                SnapshotDownloadThread.interrupt();
-                SnapshotDownloadThread.join();
+                upgrade_threads->removeByName("DownloadSnapshotThread");
+                //SnapshotDownloadThread.interrupt();
+                //SnapshotDownloadThread.join();
 
                 Msg(_("Snapshot operation canceled."), _("The wallet will now shutdown."));
 
@@ -192,10 +196,10 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
 
     // Extract Snapshot
     // Create a thread for snapshot to be extracted
-
-    LogPrintf("INFO %s: CP 1 before SnapShotExtractThread instantiation", __func__);
-
-    boost::thread SnapshotExtractThread(std::bind(&UpgradeQt::ExtractSnapshot, this));
+    if (!upgrade_threads->createThread(UpgradeQt::ExtractSnapshot, nullptr, "ExtractSnapshotThread")) {
+        throw std::runtime_error("Failed to create extract snapshot thread; See debug.log");
+    }
+    //boost::thread SnapshotExtractThread(std::bind(&UpgradeQt::ExtractSnapshot, this));
 
     LogPrintf("INFO %s: CP 6 after SnapShotExtractThread instantiation", __func__);
 
@@ -207,8 +211,9 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
             {
                 fCancelOperation = true;
 
-                //SnapshotExtractThread.interrupt();
-                //SnapshotExtractThread.join();
+                upgrade_threads->removeByName("ExtractSnapshotThread");
+                //SnapshotDownloadThread.interrupt();
+                //SnapshotDownloadThread.join();
 
                 Msg(_("Snapshot operation canceled."), _("The wallet will now shutdown."));
 
@@ -229,8 +234,9 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
         {
             fCancelOperation = true;
 
-            //SnapshotExtractThread.interrupt();
-            //SnapshotExtractThread.join();
+            upgrade_threads->removeByName("ExtractSnapshotThread");
+            //SnapshotDownloadThread.interrupt();
+            //SnapshotDownloadThread.join();
 
             Msg(_("Snapshot operation canceled due to an invalid snapshot zip."), _("The wallet will now shutdown."));
 
@@ -263,16 +269,17 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
     return true;
 }
 
-void UpgradeQt::DownloadSnapshot()
+void UpgradeQt::DownloadSnapshot(void* parg)
 {
    RenameThread("grc-snapshotdl");
 
-   Upgrade upgrade;
+   //Upgrade upgrade;
 
-   upgrade.DownloadSnapshot();
+   //upgrade.DownloadSnapshot();
+   Upgrade::DownloadSnapshot(parg);
 }
 
-void UpgradeQt::ExtractSnapshot()
+void UpgradeQt::ExtractSnapshot(void* parg)
 {
     LogPrintf("INFO %s: CP 1a first thing in ExtractSnapshot after thread instantiation", __func__);
 
@@ -284,7 +291,7 @@ void UpgradeQt::ExtractSnapshot()
 
     LogPrintf("INFO %s: CP 1c after upgrade object init", __func__);
 
-    upgrade.ExtractSnapshot();
+    Upgrade::ExtractSnapshot(parg);
 
     LogPrintf("INFO %s: CP 1d after ExtractSnapshot execution", __func__);
 }
@@ -370,7 +377,8 @@ bool UpgradeQt::ResetBlockchain(QApplication& ResetBlockchainApp)
     ResetBlockchainApp.processEvents();
     ResetBlockchainApp.setWindowIcon(QPixmap(":/images/gridcoin"));
 
-    Upgrade resetblockchain;
+    // Don't need the threadhandler for this call.
+    Upgrade resetblockchain(nullptr);
 
     bool fSuccess = resetblockchain.CleanupBlockchainData();
 

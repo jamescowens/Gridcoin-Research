@@ -24,7 +24,8 @@ struct_SnapshotExtractStatus GRC::ExtractStatus;
 
 bool GRC::fCancelOperation = false;
 
-Upgrade::Upgrade()
+Upgrade::Upgrade(ThreadHandlerPtr upgrade_threads)
+    : m_upgrade_threads(upgrade_threads)
 {
     // For right now, we will bypass the setters, since the lock and member variables are public in the structs.
     // This may change in the future.
@@ -200,7 +201,10 @@ void Upgrade::SnapshotMain()
     }
 
     // Create a thread for snapshot to be downloaded
-    boost::thread SnapshotDownloadThread(std::bind(&Upgrade::DownloadSnapshot, this));
+    if (!m_upgrade_threads->createThread(Upgrade::DownloadSnapshot, nullptr, "DownloadSnapshotThread")) {
+        throw std::runtime_error("Failed to create download snapshot thread; See debug.log");
+    }
+    //boost::thread SnapshotDownloadThread(std::bind(&Upgrade::DownloadSnapshot, this));
 
     Progress Prog;
 
@@ -254,7 +258,10 @@ void Upgrade::SnapshotMain()
     Prog.SetType(3);
 
     // Create a thread for snapshot to be extracted
-    boost::thread SnapshotExtractThread(std::bind(&Upgrade::ExtractSnapshot, this));
+    if (!m_upgrade_threads->createThread(Upgrade::ExtractSnapshot, nullptr, "ExtractSnapshotThread")) {
+        throw std::runtime_error("Failed to create extract snapshot thread; See debug.log");
+    }
+    //boost::thread SnapshotExtractThread(std::bind(&Upgrade::ExtractSnapshot, this));
 
     while (!ExtractStatus.GetSnapshotExtractComplete())
     {
@@ -281,7 +288,7 @@ void Upgrade::SnapshotMain()
     return;
 }
 
-void Upgrade::DownloadSnapshot()
+void Upgrade::DownloadSnapshot(void* parg)
 {
      // Download the snapshot.zip
     Http HTTPHandler;
@@ -430,7 +437,7 @@ bool Upgrade::CleanupBlockchainData()
     return true;
 }
 
-bool Upgrade::ExtractSnapshot()
+void Upgrade::ExtractSnapshot(void* parg)
 {
     LogPrintf("INFO %s: CP 2a beginning", __func__);
 
@@ -476,7 +483,7 @@ bool Upgrade::ExtractSnapshot()
             //LogPrintf("Snapshot (ExtractSnapshot): Error opening snapshot.zip: %s", Buf);
             LogPrintf("Snapshot (ExtractSnapshot): Error opening snapshot.zip: %s", zip_error_strerror(err));
 
-            return false;
+            return;
         }
 
         LogPrintf("INFO %s: CP 2d before entries enumeration", __func__);
@@ -503,7 +510,7 @@ bool Upgrade::ExtractSnapshot()
 
             LogPrintf("Snapshot (ExtractSnapshot): Error - snapshot.zip has no entries");
 
-            return false;
+            return;
         }
 
         LogPrintf("INFO %s: CP 4 totaluncompressed size: %" PRId64, __func__, totaluncompressedsize);
@@ -530,7 +537,7 @@ bool Upgrade::ExtractSnapshot()
 
                         LogPrintf("Snapshot (ExtractSnapshot): Error opening file %s within snapshot.zip", ZipStat.name);
 
-                        return false;
+                        return;
                     }
 
                     fs::path ExtractFileString = ExtractPath / ZipStat.name;
@@ -543,7 +550,7 @@ bool Upgrade::ExtractSnapshot()
 
                         LogPrintf("Snapshot (ExtractSnapshot): Error opening file %s on filesystem", ZipStat.name);
 
-                        return false;
+                        return;
                     }
 
                     sum = 0;
@@ -560,7 +567,7 @@ bool Upgrade::ExtractSnapshot()
 
                             LogPrintf("Snapshot (ExtractSnapshot): Failed to read zip buffer");
 
-                            return false;
+                            return;
                         }
 
                         fwrite(Buf, 1, (uint64_t)len, ExtractFile);
@@ -589,7 +596,7 @@ bool Upgrade::ExtractSnapshot()
 
             LogPrintf("Snapshot (ExtractSnapshot): Failed to close snapshot.zip");
 
-            return false;
+            return;
         }
 
         ExtractStatus.SetSnapshotExtractComplete(true);
@@ -597,17 +604,16 @@ bool Upgrade::ExtractSnapshot()
 
     catch (boost::thread_interrupted&)
     {
-        return false;
+        ExtractStatus.SnapshotExtractComplete = false;
     }
 
     catch (std::exception& e)
     {
+        ExtractStatus.SnapshotExtractComplete = false;
         error("%s: Error occurred during snapshot zip file extraction: %s", __func__, e.what());
-
-        return false;
     }
 
-    return true;
+    return;
 }
 
 void Upgrade::DeleteSnapshot()

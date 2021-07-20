@@ -467,7 +467,11 @@ int main(int argc, char *argv[])
     // Run snapshot main if Gridcoin was started with the snapshot argument and we are not TestNet
     if (gArgs.IsArgSet("-snapshotdownload") && !gArgs.IsArgSet("-testnet"))
     {
-        GRC::Upgrade snapshot;
+        // We need a separate thread handler for the upgrade main, because the normal one is not activated until farther down
+        // in bitcoin.cpp.
+        std::shared_ptr<ThreadHandler> upgrade_threads = std::make_shared<ThreadHandler>();
+
+        GRC::Upgrade snapshot(upgrade_threads);
 
         try
         {
@@ -490,7 +494,11 @@ int main(int argc, char *argv[])
     // Check to see if the user requested to reset blockchain data -- We allow on testnet.
     if (gArgs.IsArgSet("-resetblockchaindata"))
     {
-        GRC::Upgrade resetblockchain;
+        // We need a separate thread handler for the upgrade main, because the normal one is not activated until farther down
+        // in bitcoin.cpp.
+        std::shared_ptr<ThreadHandler> upgrade_threads = std::make_shared<ThreadHandler>();
+
+        GRC::Upgrade resetblockchain(upgrade_threads);
 
         if (resetblockchain.ResetBlockchainData())
             LogPrintf("ResetBlockchainData: success");
@@ -525,6 +533,10 @@ int main(int argc, char *argv[])
     /** This is only if the GUI menu option was used! **/
     if (fSnapshotRequest)
     {
+        // We need a separate thread handler for the upgrade main, because the normal one is not activated until farther down
+        // in bitcoin.cpp.
+        std::shared_ptr<ThreadHandler> upgrade_threads = std::make_shared<ThreadHandler>();
+
         UpgradeQt Snapshot;
 
         // Release LevelDB file handles on Windows so we can remove the old
@@ -537,7 +549,7 @@ int main(int argc, char *argv[])
         //
         CTxDB().Close();
 
-        if (Snapshot.SnapshotMain(app))
+        if (Snapshot.SnapshotMain(upgrade_threads, app))
             LogPrintf("Snapshot: Success!");
 
         else

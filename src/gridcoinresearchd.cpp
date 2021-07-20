@@ -134,7 +134,11 @@ bool AppInit(int argc, char* argv[])
         // Check to see if the user requested a snapshot and we are not running TestNet!
         if (gArgs.IsArgSet("-snapshotdownload") && !gArgs.IsArgSet("-testnet"))
         {
-            GRC::Upgrade snapshot;
+            // We need a separate thread handler for the upgrade main, because the normal one is not activated until
+            // farther down.
+            std::shared_ptr<ThreadHandler> upgrade_threads = std::make_shared<ThreadHandler>();
+
+            GRC::Upgrade snapshot(upgrade_threads);
 
             // Let's check make sure gridcoin is not already running in the data directory.
             // Use new probe feature
@@ -170,7 +174,11 @@ bool AppInit(int argc, char* argv[])
         // Check to see if the user requested to reset blockchain data -- We allow reset blockchain data on testnet, but not a snapshot download.
         if (gArgs.IsArgSet("-resetblockchaindata"))
         {
-            GRC::Upgrade resetblockchain;
+            // We need a separate thread handler for the upgrade main, because the normal one is not activated until
+            // farther down.
+            std::shared_ptr<ThreadHandler> upgrade_threads = std::make_shared<ThreadHandler>();
+
+            GRC::Upgrade resetblockchain(upgrade_threads);
 
             // Let's check make sure gridcoin is not already running in the data directory.
             if (!LockDirectory(GetDataDir(), ".lock", false))

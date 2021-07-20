@@ -8,6 +8,8 @@
 #include <string>
 #include <QString>
 #include <QApplication>
+//#include "gridcoin/upgrade.h"
+#include "ui_interface.h"
 
 class UpgradeQt
 {
@@ -21,17 +23,17 @@ public:
     //!
     //! \return Returns success of snapshot task.
     //!
-    bool SnapshotMain(QApplication& SnapshotApp);
+    bool SnapshotMain(ThreadHandlerPtr& upgrade_threads, QApplication& SnapshotApp);
     //!
     //! \brief Function called via thread to download snapshot and provide realtime updates of progress.
     //!
     //! \return Success of function.
     //!
-    void DownloadSnapshot();
+    static void DownloadSnapshot(void* parg);
     //!
     //! \brief Function called via thread to extract snapshot and provide realtime updates of progress.
     //!
-    void ExtractSnapshot();
+    static void ExtractSnapshot(void* parg);
     //!
     //! \brief ErrorMsg box for displaying errors that have occurred during snapshot process.
     //!
