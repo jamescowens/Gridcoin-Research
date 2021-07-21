@@ -74,7 +74,7 @@ struct struct_SnapshotExtractStatus
         SnapshotExtractFailed = SnapshotExtractFailed_in;
     }
 
-    void SetSnapshotExtractProgress(bool SnapshotExtractProgress_in)
+    void SetSnapshotExtractProgress(int SnapshotExtractProgress_in)
     {
         LOCK(cs_lock);
 

@@ -253,8 +253,14 @@ void Upgrade::SnapshotMain()
 
     Prog.SetType(3);
 
+    // This workaround for the macos is to prevent a crash on macos when initiating the ExtractSnapshot in
+    // another thread. We spent hours trying to determine the cause, but haven't been able to pin it down yet.
+#ifndef Q_OS_MAC
     // Create a thread for snapshot to be extracted
     boost::thread SnapshotExtractThread(std::bind(&Upgrade::ExtractSnapshot, this));
+#else
+    ExtractSnapshot();
+#endif
 
     while (!ExtractStatus.GetSnapshotExtractComplete())
     {
@@ -573,7 +579,15 @@ bool Upgrade::ExtractSnapshot()
                         {
                             lastupdated = GetAdjustedTime();
 
-                            ExtractStatus.SetSnapshotExtractProgress(((currentuncompressedsize / (double)totaluncompressedsize) * 100));
+                            ExtractStatus.SetSnapshotExtractProgress(currentuncompressedsize
+                                                                     / (double)totaluncompressedsize * 100);
+
+                            // This workaround for the macos is to prevent a crash on macos when initiating the ExtractSnapshot in
+                            // another thread. We spent hours trying to determine the cause, but haven't been able to pin it down yet.
+#ifdef Q_OS_MAC
+                            if (Prog.Update(ExtractStatus.GetSnapshotExtractProgress()))
+                                std::cout << Prog.Status() << std::flush;
+#endif
                         }
                     }
 
