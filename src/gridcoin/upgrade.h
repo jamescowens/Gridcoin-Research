@@ -187,6 +187,8 @@ public:
 class Progress
 {
 private:
+    // To enforce type safety on int Type.
+    CCriticalSection cs_lock;
 
     int Type;
     int CurrentProgress;
@@ -223,6 +225,8 @@ public:
     //!
     void SetType(int Typein)
     {
+        LOCK(cs_lock);
+
         Type = Typein;
 
         Reset(true);
@@ -230,6 +234,8 @@ public:
 
     int GetType()
     {
+        LOCK(cs_lock);
+
         return Type;
     }
 

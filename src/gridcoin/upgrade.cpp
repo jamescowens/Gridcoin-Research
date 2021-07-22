@@ -201,10 +201,13 @@ void Upgrade::SnapshotMain()
 
     Progress progress;
 
-    // Create a worker thread to do all of the heavy lifting.
+    progress.SetType(0);
+
+    // Create a worker thread to do all of the heavy lifting. We are going to use a ping-pong workflow state here,
+    // with progress Type as the trigger.
     boost::thread WorkerMainThread(Upgrade::WorkerMain, boost::ref(progress));
 
-    while (progress.GetType() == 0 || !DownloadStatus.GetSnapshotDownloadComplete())
+    while (!DownloadStatus.GetSnapshotDownloadComplete())
     {
         if (DownloadStatus.GetSnapshotDownloadFailed())
         {
@@ -229,7 +232,9 @@ void Upgrade::SnapshotMain()
 
     std::cout << std::endl;
 
-    while (progress.GetType() == 1 || !DownloadStatus.GetSHA256SUMComplete())
+    progress.SetType(1);
+
+    while (!DownloadStatus.GetSHA256SUMComplete())
     {
         if (DownloadStatus.GetSHA256SUMFailed())
         {
@@ -248,7 +253,9 @@ void Upgrade::SnapshotMain()
 
     std::cout << std::endl;
 
-    while (progress.GetType() == 2 || !DownloadStatus.GetCleanupBlockchainDataComplete())
+    progress.SetType(2);
+
+    while (!DownloadStatus.GetCleanupBlockchainDataComplete())
     {
         if (DownloadStatus.GetCleanupBlockchainDataFailed())
         {
@@ -268,7 +275,9 @@ void Upgrade::SnapshotMain()
 
     std::cout << std::endl;
 
-    while (progress.GetType() == 3 || !ExtractStatus.GetSnapshotExtractComplete())
+    progress.SetType(3);
+
+    while (!ExtractStatus.GetSnapshotExtractComplete())
     {
         if (ExtractStatus.GetSnapshotExtractFailed())
         {
@@ -295,21 +304,60 @@ void Upgrade::SnapshotMain()
 
 void Upgrade::WorkerMain(Progress& progress)
 {
-    progress.SetType(0);
+    // The "steps" are triggered in SnapshotMain but processed here in this switch statement.
+    bool finished = false;
 
-    DownloadSnapshot();
+    while (!finished)
+    {
+        switch (progress.GetType())
+        {
+        case 0:
+            if (DownloadStatus.GetSnapshotDownloadFailed())
+            {
+                finished = true;
+                return;
+            }
+            else if (!DownloadStatus.GetSnapshotDownloadComplete())
+            {
+                DownloadSnapshot();
+            }
+            break;
+        case 1:
+            if (DownloadStatus.GetSHA256SUMFailed())
+            {
+                finished = true;
+                return;
+            }
+            else if (!DownloadStatus.GetSHA256SUMComplete())
+            {
+                 VerifySHA256SUM();
+            }
+            break;
+        case 2:
+            if (DownloadStatus.GetCleanupBlockchainDataFailed())
+            {
+                finished = true;
+                return;
+            }
+            else if (!DownloadStatus.GetCleanupBlockchainDataComplete())
+            {
+                CleanupBlockchainData();
+            }
+            break;
+        case 3:
+            if (ExtractStatus.GetSnapshotExtractFailed())
+            {
+                finished = true;
+                return;
+            }
+            else if (!ExtractStatus.GetSnapshotExtractComplete())
+            {
+                ExtractSnapshot();
+            }
+        }
 
-    progress.SetType(1);
-
-    VerifySHA256SUM();
-
-    progress.SetType(2);
-
-    CleanupBlockchainData();
-
-    progress.SetType(3);
-
-    ExtractSnapshot();
+        sleep(250);
+    }
 }
 
 void Upgrade::DownloadSnapshot()
