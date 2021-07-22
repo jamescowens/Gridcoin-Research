@@ -509,29 +509,23 @@ void Upgrade::CleanupBlockchainData()
         {
             if (fs::is_directory(Iter->path()))
             {
-                for (const auto& path_segment : Iter->path())
+                if (fs::relative(Iter->path(), CleanupPath) == (fs::path) "txleveldb")
                 {
-                    if (fs::relative(path_segment, CleanupPath) == (fs::path) "txleveldb")
+                    for (fs::recursive_directory_iterator it(Iter->path());
+                         it != fs::recursive_directory_iterator();
+                         ++it)
                     {
-                        for (fs::recursive_directory_iterator it(path_segment);
-                             it != fs::recursive_directory_iterator();
-                             ++it)
-                        {
-                            ++total_items;
-                        }
+                        ++total_items;
                     }
                 }
 
-                for (const auto& path_segment : Iter->path())
+                if (fs::relative(Iter->path(), CleanupPath) == (fs::path) "accrual")
                 {
-                    if (fs::relative(path_segment, CleanupPath) == (fs::path) "accrual")
+                    for (fs::recursive_directory_iterator it(Iter->path());
+                         it != fs::recursive_directory_iterator();
+                         ++it)
                     {
-                        for (fs::recursive_directory_iterator it(path_segment);
-                             it != fs::recursive_directory_iterator();
-                             ++it)
-                        {
-                            ++total_items;
-                        }
+                        ++total_items;
                     }
                 }
 
@@ -581,54 +575,48 @@ void Upgrade::CleanupBlockchainData()
         {
             if (fs::is_directory(Iter->path()))
             {
-                for (const auto& path_segment : Iter->path())
+                if (fs::relative(Iter->path(), CleanupPath) == (fs::path) "txleveldb")
                 {
-                    if (fs::relative(path_segment, CleanupPath) == (fs::path) "txleveldb")
+                    for (fs::recursive_directory_iterator it(Iter->path());
+                         it != fs::recursive_directory_iterator();)
                     {
-                        for (fs::recursive_directory_iterator it(path_segment);
-                             it != fs::recursive_directory_iterator();)
+                        LogPrintf("INFO: %s: Removing %s", __func__, it->path().string());
+
+                        fs::path filepath = *it++;
+
+                        if (fs::remove(filepath))
                         {
-                            LogPrintf("INFO: %s: Removing %s", __func__, it->path().string());
+                            ++items;
+                            DownloadStatus.SetCleanupBlockchainDataProgress(items * 100 / total_items);
+                        }
+                        else
+                        {
+                            DownloadStatus.SetCleanupBlockchainDataFailed(true);
 
-                            fs::path filepath = *it++;
-
-                            if (fs::remove(filepath))
-                            {
-                                ++items;
-                                DownloadStatus.SetCleanupBlockchainDataProgress(items * 100 / total_items);
-                            }
-                            else
-                            {
-                                DownloadStatus.SetCleanupBlockchainDataFailed(true);
-
-                                return;
-                            }
+                            return;
                         }
                     }
                 }
 
-                for (const auto& path_segment : Iter->path())
+                if (fs::relative(Iter->path(), CleanupPath) == (fs::path) "accrual")
                 {
-                    if (fs::relative(path_segment, CleanupPath).string() == (fs::path) "accrual")
+                    for (fs::recursive_directory_iterator it(Iter->path());
+                         it != fs::recursive_directory_iterator();)
                     {
-                        for (fs::recursive_directory_iterator it(path_segment);
-                             it != fs::recursive_directory_iterator();)
+                        LogPrintf("INFO: %s: Removing %s", __func__, it->path().string());
+
+                        fs::path filepath = *it++;
+
+                        if (fs::remove(filepath))
                         {
-                            LogPrintf("INFO: %s: Removing %s", __func__, it->path().string());
+                            ++items;
+                            DownloadStatus.SetCleanupBlockchainDataProgress(items * 100 / total_items);
+                        }
+                        else
+                        {
+                            DownloadStatus.SetCleanupBlockchainDataFailed(true);
 
-                            fs::path filepath = *it++;
-
-                            if (fs::remove(filepath))
-                            {
-                                ++items;
-                                DownloadStatus.SetCleanupBlockchainDataProgress(items * 100 / total_items);
-                            }
-                            else
-                            {
-                                DownloadStatus.SetCleanupBlockchainDataFailed(true);
-
-                                return;
-                            }
+                            return;
                         }
                     }
                 }
