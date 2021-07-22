@@ -228,8 +228,10 @@ void Upgrade::SnapshotMain()
             std::cout << progress.Status() << std::flush;
         }
 
-        MilliSleep(250);
+        MilliSleep(1000);
     }
+
+    LogPrintf("INFO: %s: Exited while loop for snapshot download.", __func__);
 
     // This is needed in some spots as the download can complete before the next progress update occurs so just 100% here
     // as it was successful
@@ -244,6 +246,10 @@ void Upgrade::SnapshotMain()
 
     while (!DownloadStatus.GetSHA256SUMComplete())
     {
+        LogPrintf("INFO: %s: DownloadStatus.GetSHA256SUMComplete() = %i",
+                  __func__,
+                  DownloadStatus.GetSHA256SUMComplete());
+
         if (DownloadStatus.GetSHA256SUMFailed())
         {
             throw std::runtime_error("Failed to verify SHA256SUM of snapshot.zip; See debug.log");
@@ -254,7 +260,7 @@ void Upgrade::SnapshotMain()
             std::cout << progress.Status() << std::flush;
         }
 
-        MilliSleep(250);
+        MilliSleep(1000);
     }
 
     if (progress.Update(100)) std::cout << progress.Status() << std::flush;
@@ -276,7 +282,7 @@ void Upgrade::SnapshotMain()
             std::cout << progress.Status() << std::flush;
         }
 
-        MilliSleep(250);
+        MilliSleep(1000);
     }
 
     if (progress.Update(100)) std::cout << progress.Status() << std::flush;
@@ -298,7 +304,7 @@ void Upgrade::SnapshotMain()
         if (progress.Update(ExtractStatus.GetSnapshotExtractProgress()))
             std::cout << progress.Status() << std::flush;
 
-        MilliSleep(250);
+        MilliSleep(1000);
     }
 
     if (progress.Update(100)) std::cout << progress.Status() << std::flush;
@@ -366,7 +372,7 @@ void Upgrade::WorkerMain(Progress& progress)
             }
         }
 
-        sleep(1000);
+        MilliSleep(1000);
     }
 
     LogPrintf("INFO: %s: Exited while loop", __func__);
@@ -442,13 +448,17 @@ void Upgrade::VerifySHA256SUM()
         return;
     }
 
-    unsigned int total_reads = fs::file_size(fileloc) / 32768 + 1;
+    unsigned int total_reads = fs::file_size(fileloc) / sizeof(buffer) + 1;
+
+    LogPrintf("INFO: %s: total_reads = %u", __func__, total_reads);
 
     unsigned int read_count = 0;
     while ((bytesread = fread(buffer, 1, sizeof(buffer), file)))
     {
         SHA256_Update(&ctx, buffer, bytesread);
         ++read_count;
+
+        if (read_count % 100 == 0) LogPrintf("INFO: %s: read_count = %u", __func__, read_count);
 
         DownloadStatus.SetSHA256SUMProgress(read_count * 100 / total_reads);
     }
@@ -554,6 +564,8 @@ void Upgrade::CleanupBlockchainData()
         return;
     }
 
+    LogPrintf("INFO: %s: total_items = %u", __func__, total_items);
+
     if (!total_items)
     {
         DownloadStatus.SetCleanupBlockchainDataComplete(true);
@@ -574,10 +586,13 @@ void Upgrade::CleanupBlockchainData()
                     if (path_segment.string() == "txleveldb")
                     {
                         for (fs::recursive_directory_iterator it(path_segment);
-                             it != fs::recursive_directory_iterator();
-                             ++it)
+                             it != fs::recursive_directory_iterator();)
                         {
-                            if (fs::remove(*it))
+                            LogPrintf("INFO: %s: Removing %s", __func__, it->path().string());
+
+                            fs::path filepath = *it++;
+
+                            if (fs::remove(filepath))
                             {
                                 ++items;
                                 DownloadStatus.SetCleanupBlockchainDataProgress(items * 100 / total_items);
@@ -597,10 +612,13 @@ void Upgrade::CleanupBlockchainData()
                     if (path_segment.string() == "accrual")
                     {
                         for (fs::recursive_directory_iterator it(path_segment);
-                             it != fs::recursive_directory_iterator();
-                             ++it)
+                             it != fs::recursive_directory_iterator();)
                         {
-                            if (fs::remove(*it))
+                            LogPrintf("INFO: %s: Removing %s", __func__, it->path().string());
+
+                            fs::path filepath = *it++;
+
+                            if (fs::remove(filepath))
                             {
                                 ++items;
                                 DownloadStatus.SetCleanupBlockchainDataProgress(items * 100 / total_items);
