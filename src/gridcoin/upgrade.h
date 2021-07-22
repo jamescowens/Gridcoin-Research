@@ -135,7 +135,7 @@ public:
     //!
     static void CleanupBlockchainData();
 
-    static void WorkerMain(Progress& progress);
+    static void WorkerMain(Progress &progress);
 
     //!
     //! \brief Extracts the snapshot zip file

@@ -199,13 +199,17 @@ void Upgrade::SnapshotMain()
         throw std::runtime_error(_("Failed to download snapshot as mandatory client is available for download."));
     }
 
+    //Progress* progress_ptr = new Progress();
+
+    //Progress& progress = *progress_ptr;
+
     Progress progress;
 
     progress.SetType(0);
 
     // Create a worker thread to do all of the heavy lifting. We are going to use a ping-pong workflow state here,
     // with progress Type as the trigger.
-    boost::thread WorkerMainThread(Upgrade::WorkerMain, boost::ref(progress));
+    boost::thread WorkerMainThread(std::bind(&Upgrade::WorkerMain, boost::ref(progress)));
 
     while (!DownloadStatus.GetSnapshotDownloadComplete())
     {
@@ -220,7 +224,7 @@ void Upgrade::SnapshotMain()
             std::cout << progress.Status() << std::flush;
         }
 
-        MilliSleep(1000);
+        MilliSleep(250);
     }
 
     // This is needed in some spots as the download can complete before the next progress update occurs so just 100% here
@@ -246,7 +250,7 @@ void Upgrade::SnapshotMain()
             std::cout << progress.Status() << std::flush;
         }
 
-        MilliSleep(1000);
+        MilliSleep(250);
     }
 
     if (progress.Update(100)) std::cout << progress.Status() << std::flush;
@@ -268,7 +272,7 @@ void Upgrade::SnapshotMain()
             std::cout << progress.Status() << std::flush;
         }
 
-        MilliSleep(1000);
+        MilliSleep(250);
     }
 
     if (progress.Update(100)) std::cout << progress.Status() << std::flush;
@@ -290,7 +294,7 @@ void Upgrade::SnapshotMain()
         if (progress.Update(ExtractStatus.GetSnapshotExtractProgress()))
             std::cout << progress.Status() << std::flush;
 
-        MilliSleep(1000);
+        MilliSleep(250);
     }
 
     if (progress.Update(100)) std::cout << progress.Status() << std::flush;
