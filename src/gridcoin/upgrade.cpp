@@ -511,7 +511,7 @@ void Upgrade::CleanupBlockchainData()
             {
                 for (const auto& path_segment : Iter->path())
                 {
-                    if (path_segment.string() == "txleveldb")
+                    if (fs::relative(path_segment, CleanupPath) == (fs::path) "txleveldb")
                     {
                         for (fs::recursive_directory_iterator it(path_segment);
                              it != fs::recursive_directory_iterator();
@@ -524,7 +524,7 @@ void Upgrade::CleanupBlockchainData()
 
                 for (const auto& path_segment : Iter->path())
                 {
-                    if (path_segment.string() == "accrual")
+                    if (fs::relative(path_segment, CleanupPath) == (fs::path) "accrual")
                     {
                         for (fs::recursive_directory_iterator it(path_segment);
                              it != fs::recursive_directory_iterator();
@@ -583,7 +583,7 @@ void Upgrade::CleanupBlockchainData()
             {
                 for (const auto& path_segment : Iter->path())
                 {
-                    if (path_segment.string() == "txleveldb")
+                    if (fs::relative(path_segment, CleanupPath) == (fs::path) "txleveldb")
                     {
                         for (fs::recursive_directory_iterator it(path_segment);
                              it != fs::recursive_directory_iterator();)
@@ -609,7 +609,7 @@ void Upgrade::CleanupBlockchainData()
 
                 for (const auto& path_segment : Iter->path())
                 {
-                    if (path_segment.string() == "accrual")
+                    if (fs::relative(path_segment, CleanupPath).string() == (fs::path) "accrual")
                     {
                         for (fs::recursive_directory_iterator it(path_segment);
                              it != fs::recursive_directory_iterator();)
