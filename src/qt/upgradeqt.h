@@ -9,6 +9,12 @@
 #include <QString>
 #include <QApplication>
 
+namespace GRC
+{
+class Progress;
+}
+
+
 class UpgradeQt
 {
 public:

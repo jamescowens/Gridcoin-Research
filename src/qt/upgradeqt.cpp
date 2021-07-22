@@ -48,16 +48,19 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
     Progress.setValue(0);
     Progress.show();
 
+    // When doing this for the Qt side, we are only going to use this for the SetType to drive the workflow.
+    GRC::Progress worker_progress;
+
     SnapshotApp.processEvents();
 
     // Create a thread for snapshot to be downloaded
-    boost::thread SnapshotDownloadThread(std::bind(&UpgradeQt::DownloadSnapshot, this)); // thread runs free
+    boost::thread WorkerMainThread(Upgrade::WorkerMain, boost::ref(worker_progress)); // thread runs free
 
     std::string BaseProgressString = _("Stage (1/4): Downloading snapshot.zip: Speed ");
 
     QString OutputText;
 
-    while (!DownloadStatus.GetSnapshotDownloadComplete())
+    while (worker_progress.GetType() == 0 || !DownloadStatus.GetSnapshotDownloadComplete())
     {
         if (DownloadStatus.GetSnapshotDownloadFailed())
         {
@@ -91,8 +94,8 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
             {
                 fCancelOperation = true;
 
-                SnapshotDownloadThread.interrupt();
-                SnapshotDownloadThread.join();
+                WorkerMainThread.interrupt();
+                WorkerMainThread.join();
 
                 Msg(_("Snapshot operation canceled."), _("The wallet will now shutdown."));
 
@@ -117,35 +120,45 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
 
     SnapshotApp.processEvents();
 
-    // Get the snapshot.zip Sha256sum from webserver
-    if (UpgradeMain.VerifySHA256SUM())
+    while (worker_progress.GetType() == 1 || !DownloadStatus.GetSHA256SUMComplete())
     {
-        Progress.setValue(100);
-
-        SnapshotApp.processEvents();
-    }
-
-    else
-    {
-        ErrorMsg(_("SHA256SUM of snapshot.zip does not match the server's SHA256SUM."), _("The wallet will now shutdown."));
-
-        return false;
-    }
-
-    if (Progress.wasCanceled())
-    {
-        if (CancelOperation())
+        if (DownloadStatus.GetSHA256SUMFailed())
         {
-            fCancelOperation = true;
-
-            Msg(_("Snapshot operation canceled."), _("The wallet will now shutdown."));
+            ErrorMsg(_("Failed to download snapshot.zip; See debug.log"), _("The wallet will now shutdown."));
 
             return false;
         }
-    }
 
-    // Make it seen
-    MilliSleep(3000);
+        Progress.setLabelText(OutputText);
+        Progress.setValue(DownloadStatus.GetSHA256SUMProgress());
+
+        SnapshotApp.processEvents();
+
+        if (Progress.wasCanceled())
+        {
+            if (CancelOperation())
+            {
+                fCancelOperation = true;
+
+                WorkerMainThread.interrupt();
+                WorkerMainThread.join();
+
+                Msg(_("Snapshot operation canceled."), _("The wallet will now shutdown."));
+
+                return false;
+            }
+
+            // Avoid the window disappearing for 1 second after a reset
+            else
+            {
+                Progress.reset();
+
+                continue;
+            }
+        }
+
+        MilliSleep(1000);
+    }
 
     Progress.reset();
     Progress.setValue(0);
@@ -153,53 +166,53 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
 
     SnapshotApp.processEvents();
 
-    // Clean up the blockchain data
-    if (UpgradeMain.CleanupBlockchainData())
+    while (worker_progress.GetType() == 2 || !DownloadStatus.GetCleanupBlockchainDataComplete())
     {
-        Progress.setValue(100);
-
-        SnapshotApp.processEvents();
-    }
-
-    else
-    {
-        ErrorMsg(_("Could not clean up previous blockchain data."), _("The wallet will now shutdown."));
-
-        return false;
-    }
-
-    if (Progress.wasCanceled())
-    {
-        if (CancelOperation())
+        if (DownloadStatus.GetCleanupBlockchainDataFailed())
         {
-            fCancelOperation = true;
-
-            Msg(_("Snapshot operation canceled."), _("The wallet will now shutdown."));
+            ErrorMsg(_("Failed to download snapshot.zip; See debug.log"), _("The wallet will now shutdown."));
 
             return false;
         }
-    }
 
-    // Make it seen
-    MilliSleep(3000);
+        Progress.setLabelText(OutputText);
+        Progress.setValue(DownloadStatus.GetCleanupBlockchainDataProgress());
+
+        SnapshotApp.processEvents();
+
+        if (Progress.wasCanceled())
+        {
+            if (CancelOperation())
+            {
+                fCancelOperation = true;
+
+                WorkerMainThread.interrupt();
+                WorkerMainThread.join();
+
+                Msg(_("Snapshot operation canceled."), _("The wallet will now shutdown."));
+
+                return false;
+            }
+
+            // Avoid the window disappearing for 1 second after a reset
+            else
+            {
+                Progress.reset();
+
+                continue;
+            }
+        }
+
+        MilliSleep(1000);
+    }
 
     Progress.reset();
     Progress.setValue(0);
-
     Progress.setLabelText(ToQString(_("Stage (4/4): Extracting snapshot.zip")));
 
     SnapshotApp.processEvents();
 
-    // Extract Snapshot
-    // Create a thread for snapshot to be extracted
-
-    LogPrintf("INFO %s: CP 1 before SnapShotExtractThread instantiation", __func__);
-
-    boost::thread SnapshotExtractThread(std::bind(&UpgradeQt::ExtractSnapshot, this));
-
-    LogPrintf("INFO %s: CP 6 after SnapShotExtractThread instantiation", __func__);
-
-    while (!ExtractStatus.GetSnapshotExtractComplete())
+    while (worker_progress.GetType() == 3 || !ExtractStatus.GetSnapshotExtractComplete())
     {
         if (Progress.wasCanceled())
         {
@@ -372,7 +385,9 @@ bool UpgradeQt::ResetBlockchain(QApplication& ResetBlockchainApp)
 
     Upgrade resetblockchain;
 
-    bool fSuccess = resetblockchain.CleanupBlockchainData();
+    resetblockchain.CleanupBlockchainData();
+
+    bool fSuccess = (DownloadStatus.CleanupBlockchainDataComplete && !DownloadStatus.CleanupBlockchainDataFailed);
 
     if (fSuccess)
         Msg(_("Reset Blockchain Data: Blockchain data removal was a success"), _("The wallet will now shutdown. Please start your wallet to begin sync from zero"), false);
@@ -381,7 +396,7 @@ bool UpgradeQt::ResetBlockchain(QApplication& ResetBlockchainApp)
     {
         std::string inftext = resetblockchain.ResetBlockchainMessages(Upgrade::CleanUp);
 
-        ErrorMsg(_("Reset Blockchain Data: Blockchain data removal was a failure"), inftext);
+        ErrorMsg(_("Reset Blockchain Data: Blockchain data removal failed."), inftext);
     }
 
     return fSuccess;

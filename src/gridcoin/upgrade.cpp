@@ -199,70 +199,76 @@ void Upgrade::SnapshotMain()
         throw std::runtime_error(_("Failed to download snapshot as mandatory client is available for download."));
     }
 
-    // Create a thread for snapshot to be downloaded
-    boost::thread SnapshotDownloadThread(std::bind(&Upgrade::DownloadSnapshot, this));
+    Progress progress;
 
-    Progress Prog;
+    // Create a worker thread to do all of the heavy lifting.
+    boost::thread WorkerMainThread(Upgrade::WorkerMain, boost::ref(progress));
 
-    Prog.SetType(0);
-
-    while (!DownloadStatus.GetSnapshotDownloadComplete())
+    while (progress.GetType() == 0 || !DownloadStatus.GetSnapshotDownloadComplete())
     {
         if (DownloadStatus.GetSnapshotDownloadFailed())
+        {
             throw std::runtime_error("Failed to download snapshot.zip; See debug.log");
+        }
 
-        if (Prog.Update(DownloadStatus.GetSnapshotDownloadProgress(), DownloadStatus.GetSnapshotDownloadSpeed(), DownloadStatus.GetSnapshotDownloadAmount(), DownloadStatus.GetSnapshotDownloadSize()))
-            std::cout << Prog.Status() << std::flush;
+        if (progress.Update(DownloadStatus.GetSnapshotDownloadProgress(), DownloadStatus.GetSnapshotDownloadSpeed(),
+                        DownloadStatus.GetSnapshotDownloadAmount(), DownloadStatus.GetSnapshotDownloadSize()))
+        {
+            std::cout << progress.Status() << std::flush;
+        }
 
         MilliSleep(1000);
     }
 
-    // This is needed in some spots as the download can complete before the next progress update occurs so just 100% here as it was successful
-    if (Prog.Update(100, -1, DownloadStatus.GetSnapshotDownloadSize(), DownloadStatus.GetSnapshotDownloadSize()))
-        std::cout << Prog.Status() << std::flush;
-
-    std::cout << std::endl;
-
-    Prog.SetType(1);
-
-    if (VerifySHA256SUM())
+    // This is needed in some spots as the download can complete before the next progress update occurs so just 100% here
+    // as it was successful
+    if (progress.Update(100, -1, DownloadStatus.GetSnapshotDownloadSize(), DownloadStatus.GetSnapshotDownloadSize()))
     {
-        Prog.Update(100);
-
-        std::cout << Prog.Status() << std::flush;
+        std::cout << progress.Status() << std::flush;
     }
 
-    else
-        throw std::runtime_error("Failed to verify SHA256SUM of snapshot.zip; See debug.log");
-
     std::cout << std::endl;
 
-    Prog.SetType(2);
-
-    if (CleanupBlockchainData())
+    while (progress.GetType() == 1 || !DownloadStatus.GetSHA256SUMComplete())
     {
-        Prog.Update(100);
+        if (DownloadStatus.GetSHA256SUMFailed())
+        {
+            throw std::runtime_error("Failed to verify SHA256SUM of snapshot.zip; See debug.log");
+        }
 
-        std::cout << Prog.Status() << std::flush;
+        if (progress.Update(DownloadStatus.GetSHA256SUMProgress()))
+        {
+            std::cout << progress.Status() << std::flush;
+        }
+
+        MilliSleep(1000);
     }
 
-    else
-        throw std::runtime_error("Failed to Cleanup previous blockchain data; See debug.log");
+    if (progress.Update(100)) std::cout << progress.Status() << std::flush;
 
     std::cout << std::endl;
 
-    Prog.SetType(3);
+    while (progress.GetType() == 2 || !DownloadStatus.GetCleanupBlockchainDataComplete())
+    {
+        if (DownloadStatus.GetCleanupBlockchainDataFailed())
+        {
+            throw std::runtime_error("Failed to cleanup previous blockchain data prior to extraction of snapshot.zip; "
+                                     "See debug.log");
+        }
 
-    // This workaround for the macos is to prevent a crash on macos when initiating the ExtractSnapshot in
-    // another thread. We spent hours trying to determine the cause, but haven't been able to pin it down yet.
-#ifndef Q_OS_MAC
-    // Create a thread for snapshot to be extracted
-    boost::thread SnapshotExtractThread(std::bind(&Upgrade::ExtractSnapshot, this));
-#else
-    ExtractSnapshot();
-#endif
+        if (progress.Update(DownloadStatus.GetCleanupBlockchainDataProgress()))
+        {
+            std::cout << progress.Status() << std::flush;
+        }
 
-    while (!ExtractStatus.GetSnapshotExtractComplete())
+        MilliSleep(1000);
+    }
+
+    if (progress.Update(100)) std::cout << progress.Status() << std::flush;
+
+    std::cout << std::endl;
+
+    while (progress.GetType() == 3 || !ExtractStatus.GetSnapshotExtractComplete())
     {
         if (ExtractStatus.GetSnapshotExtractFailed())
         {
@@ -272,19 +278,38 @@ void Upgrade::SnapshotMain()
             throw std::runtime_error("Failed to extract snapshot.zip; See debug.log");
         }
 
-        if (Prog.Update(ExtractStatus.GetSnapshotExtractProgress()))
-            std::cout << Prog.Status() << std::flush;
+        if (progress.Update(ExtractStatus.GetSnapshotExtractProgress()))
+            std::cout << progress.Status() << std::flush;
 
         MilliSleep(1000);
     }
 
-    if (Prog.Update(100))
-        std::cout << Prog.Status() << std::flush;
+    if (progress.Update(100)) std::cout << progress.Status() << std::flush;
 
     std::cout << std::endl;
+
     std::cout << _("Snapshot Process Complete!") << std::endl;
 
     return;
+}
+
+void Upgrade::WorkerMain(Progress& progress)
+{
+    progress.SetType(0);
+
+    DownloadSnapshot();
+
+    progress.SetType(1);
+
+    VerifySHA256SUM();
+
+    progress.SetType(2);
+
+    CleanupBlockchainData();
+
+    progress.SetType(3);
+
+    ExtractSnapshot();
 }
 
 void Upgrade::DownloadSnapshot()
@@ -307,7 +332,7 @@ void Upgrade::DownloadSnapshot()
     return;
 }
 
-bool Upgrade::VerifySHA256SUM()
+void Upgrade::VerifySHA256SUM()
 {
     Http HTTPHandler;
 
@@ -327,7 +352,9 @@ bool Upgrade::VerifySHA256SUM()
     {
         LogPrintf("Snapshot (VerifySHA256SUM): Empty sha256sum returned from server");
 
-        return false;
+        DownloadStatus.SetSHA256SUMFailed(true);
+
+        return;
     }
 
     unsigned char digest[SHA256_DIGEST_LENGTH];
@@ -345,11 +372,21 @@ bool Upgrade::VerifySHA256SUM()
     {
         LogPrintf("Snapshot (VerifySHA256SUM): Failed to open snapshot.zip");
 
-        return false;
+        DownloadStatus.SetSHA256SUMFailed(true);
+
+        return;
     }
 
+    unsigned int total_reads = fs::file_size(fileloc) / 32768 + 1;
+
+    unsigned int read_count = 0;
     while ((bytesread = fread(buffer, 1, sizeof(buffer), file)))
+    {
         SHA256_Update(&ctx, buffer, bytesread);
+        ++read_count;
+
+        DownloadStatus.SetSHA256SUMProgress(read_count * 100 / total_reads);
+    }
 
     SHA256_Final(digest, &ctx);
 
@@ -363,28 +400,36 @@ bool Upgrade::VerifySHA256SUM()
     fclose(file);
 
     if (ServerSHA256SUM == FileSHA256SUM)
-        return true;
+    {
+        DownloadStatus.SetSHA256SUMComplete(true);
 
+        return;
+    }
     else
     {
         LogPrintf("Snapshot (VerifySHA256SUM): Mismatch of sha256sum of snapshot.zip (Server = %s / File = %s)", ServerSHA256SUM, FileSHA256SUM);
 
-        return false;
+        DownloadStatus.SetSHA256SUMFailed(true);
+
+        return;
     }
 }
 
-bool Upgrade::CleanupBlockchainData()
+void Upgrade::CleanupBlockchainData()
 {
     fs::path CleanupPath = GetDataDir();
+
+    unsigned int total_items = 0;
+    unsigned int items = 0;
 
     // We must delete previous blockchain data
     // txleveldb
     // blk*.dat
     fs::directory_iterator IterEnd;
 
+    // Count for progress bar first
     try
     {
-        // Remove the files. We iterate as we know blk* will exist more and more in future as well
         for (fs::directory_iterator Iter(CleanupPath); Iter != IterEnd; ++Iter)
         {
             if (fs::is_directory(Iter->path()))
@@ -393,7 +438,12 @@ bool Upgrade::CleanupBlockchainData()
                 {
                     if (path_segment.string() == "txleveldb")
                     {
-                        if (!fs::remove_all(*Iter)) return false;
+                        for (fs::recursive_directory_iterator it(path_segment);
+                             it != fs::recursive_directory_iterator();
+                             ++it)
+                        {
+                            ++total_items;
+                        }
                     }
                 }
 
@@ -401,10 +451,16 @@ bool Upgrade::CleanupBlockchainData()
                 {
                     if (path_segment.string() == "accrual")
                     {
-                        if (!fs::remove_all(*Iter)) return false;
+                        for (fs::recursive_directory_iterator it(path_segment);
+                             it != fs::recursive_directory_iterator();
+                             ++it)
+                        {
+                            ++total_items;
+                        }
                     }
                 }
 
+                // If it was a directory no need to check if a regular file below.
                 continue;
             }
 
@@ -417,11 +473,110 @@ bool Upgrade::CleanupBlockchainData()
                     std::string filetocheck = Iter->path().filename().string();
                     // Check it ends with .dat and starts with blk
                     if (filetocheck.substr(0, 3) == "blk" && filetocheck.substr(filetocheck.length() - 4, 4) == ".dat")
-                        if (!fs::remove(*Iter))
-                            return false;
+                    {
+                        ++total_items;
+                    }
+                }
+            }
+        }
+    }
+    catch (fs::filesystem_error &ex)
+    {
+        LogPrintf("%s: Exception occurred: %s", __func__, ex.what());
+
+        DownloadStatus.SetCleanupBlockchainDataFailed(true);
+
+        return;
+    }
+
+    if (!total_items)
+    {
+        DownloadStatus.SetCleanupBlockchainDataComplete(true);
+
+        return;
+    }
+
+    // Now try the cleanup.
+    try
+    {
+        // Remove the files. We iterate as we know blk* will exist more and more in future as well
+        for (fs::directory_iterator Iter(CleanupPath); Iter != IterEnd; ++Iter)
+        {
+            if (fs::is_directory(Iter->path()))
+            {
+                for (const auto& path_segment : Iter->path())
+                {
+                    if (path_segment.string() == "txleveldb")
+                    {
+                        for (fs::recursive_directory_iterator it(path_segment);
+                             it != fs::recursive_directory_iterator();
+                             ++it)
+                        {
+                            if (fs::remove(*it))
+                            {
+                                ++items;
+                                DownloadStatus.SetCleanupBlockchainDataProgress(items * 100 / total_items);
+                            }
+                            else
+                            {
+                                DownloadStatus.SetCleanupBlockchainDataFailed(true);
+
+                                return;
+                            }
+                        }
+                    }
                 }
 
+                for (const auto& path_segment : Iter->path())
+                {
+                    if (path_segment.string() == "accrual")
+                    {
+                        for (fs::recursive_directory_iterator it(path_segment);
+                             it != fs::recursive_directory_iterator();
+                             ++it)
+                        {
+                            if (fs::remove(*it))
+                            {
+                                ++items;
+                                DownloadStatus.SetCleanupBlockchainDataProgress(items * 100 / total_items);
+                            }
+                            else
+                            {
+                                DownloadStatus.SetCleanupBlockchainDataFailed(true);
+
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                // If it was a directory no need to check if a regular file below.
                 continue;
+            }
+
+            else if (fs::is_regular_file(*Iter))
+            {
+                size_t FileLoc = Iter->path().filename().string().find("blk");
+
+                if (FileLoc != std::string::npos)
+                {
+                    std::string filetocheck = Iter->path().filename().string();
+                    // Check it ends with .dat and starts with blk
+                    if (filetocheck.substr(0, 3) == "blk" && filetocheck.substr(filetocheck.length() - 4, 4) == ".dat")
+                    {
+                        if (fs::remove(*Iter))
+                        {
+                            ++items;
+                            DownloadStatus.SetCleanupBlockchainDataProgress(items * 100 / total_items);
+                        }
+                        else
+                        {
+                            DownloadStatus.SetCleanupBlockchainDataFailed(true);
+
+                            return;
+                        }
+                    }
+                }
             }
         }
     }
@@ -430,18 +585,20 @@ bool Upgrade::CleanupBlockchainData()
     {
         LogPrintf("%s: Exception occurred: %s", __func__, ex.what());
 
-        return false;
+        DownloadStatus.SetCleanupBlockchainDataFailed(true);
+
+        return;
     }
 
-    return true;
+    DownloadStatus.SetCleanupBlockchainDataProgress(100);
+    DownloadStatus.SetCleanupBlockchainDataComplete(true);
+
+    return;
 }
 
-bool Upgrade::ExtractSnapshot()
+void Upgrade::ExtractSnapshot()
 {
     LogPrintf("INFO %s: CP 2a beginning", __func__);
-
-    //std::string ArchiveFileString = GetDataDir().string() +  "/snapshot.zip";
-    //const char* ArchiveFile = ArchiveFileString.c_str();
 
     fs::path archive_path = GetDataDir() / "snapshot.zip";
     FILE* archive_file = fsbridge::fopen(archive_path, "rb");
@@ -457,7 +614,6 @@ bool Upgrade::ExtractSnapshot()
     struct zip_file* ZipFile;
     struct zip_stat ZipStat;
     char Buf[1024*1024];
-    //int err;
     uint64_t i, j;
     int64_t entries, len, sum;
     long long totaluncompressedsize = 0;
@@ -482,7 +638,7 @@ bool Upgrade::ExtractSnapshot()
             //LogPrintf("Snapshot (ExtractSnapshot): Error opening snapshot.zip: %s", Buf);
             LogPrintf("Snapshot (ExtractSnapshot): Error opening snapshot.zip: %s", zip_error_strerror(err));
 
-            return false;
+            return;
         }
 
         LogPrintf("INFO %s: CP 2d before entries enumeration", __func__);
@@ -509,7 +665,7 @@ bool Upgrade::ExtractSnapshot()
 
             LogPrintf("Snapshot (ExtractSnapshot): Error - snapshot.zip has no entries");
 
-            return false;
+            return;
         }
 
         LogPrintf("INFO %s: CP 4 totaluncompressed size: %" PRId64, __func__, totaluncompressedsize);
@@ -536,7 +692,7 @@ bool Upgrade::ExtractSnapshot()
 
                         LogPrintf("Snapshot (ExtractSnapshot): Error opening file %s within snapshot.zip", ZipStat.name);
 
-                        return false;
+                        return;
                     }
 
                     fs::path ExtractFileString = ExtractPath / ZipStat.name;
@@ -549,7 +705,7 @@ bool Upgrade::ExtractSnapshot()
 
                         LogPrintf("Snapshot (ExtractSnapshot): Error opening file %s on filesystem", ZipStat.name);
 
-                        return false;
+                        return;
                     }
 
                     sum = 0;
@@ -566,7 +722,7 @@ bool Upgrade::ExtractSnapshot()
 
                             LogPrintf("Snapshot (ExtractSnapshot): Failed to read zip buffer");
 
-                            return false;
+                            return;
                         }
 
                         fwrite(Buf, 1, (uint64_t)len, ExtractFile);
@@ -579,15 +735,8 @@ bool Upgrade::ExtractSnapshot()
                         {
                             lastupdated = GetAdjustedTime();
 
-                            ExtractStatus.SetSnapshotExtractProgress(currentuncompressedsize
-                                                                     / (double)totaluncompressedsize * 100);
-
-                            // This workaround for the macos is to prevent a crash on macos when initiating the ExtractSnapshot in
-                            // another thread. We spent hours trying to determine the cause, but haven't been able to pin it down yet.
-#ifdef Q_OS_MAC
-                            if (Prog.Update(ExtractStatus.GetSnapshotExtractProgress()))
-                                std::cout << Prog.Status() << std::flush;
-#endif
+                            ExtractStatus.SetSnapshotExtractProgress(currentuncompressedsize * 100
+                                                                     / totaluncompressedsize);
                         }
                     }
 
@@ -603,25 +752,30 @@ bool Upgrade::ExtractSnapshot()
 
             LogPrintf("Snapshot (ExtractSnapshot): Failed to close snapshot.zip");
 
-            return false;
+            return;
         }
-
-        ExtractStatus.SetSnapshotExtractComplete(true);
     }
 
     catch (boost::thread_interrupted&)
     {
-        return false;
+        ExtractStatus.SetSnapshotExtractFailed(true);
+
+        return;
     }
 
     catch (std::exception& e)
     {
         error("%s: Error occurred during snapshot zip file extraction: %s", __func__, e.what());
 
-        return false;
+        ExtractStatus.SetSnapshotExtractFailed(true);
+
+        return;
     }
 
-    return true;
+
+    ExtractStatus.SetSnapshotExtractProgress(100);
+    ExtractStatus.SetSnapshotExtractComplete(true);
+    return;
 }
 
 void Upgrade::DeleteSnapshot()
@@ -644,7 +798,9 @@ void Upgrade::DeleteSnapshot()
 
 bool Upgrade::ResetBlockchainData()
 {
-    return CleanupBlockchainData();
+    CleanupBlockchainData();
+
+    return (DownloadStatus.CleanupBlockchainDataComplete && !DownloadStatus.CleanupBlockchainDataFailed);
 }
 
 std::string Upgrade::ResetBlockchainMessages(ResetBlockchainMsg _msg)

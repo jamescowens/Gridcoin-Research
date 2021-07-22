@@ -86,6 +86,8 @@ extern struct_SnapshotExtractStatus ExtractStatus;
 /** Qt Side **/
 extern bool fCancelOperation;
 
+class Progress;
+
 /** A Class to support update checks and allow easy application of the latest snapshot **/
 //!
 //! \brief Upgrade class
@@ -124,21 +126,23 @@ public:
     //! \brief Function that will be threaded to download snapshot
     //! and provide realtime updates on the progress.
     //!
-    void DownloadSnapshot();
+    static void DownloadSnapshot();
 
     //!
     //! \brief Cleans up previous blockchain data if any is found
     //!
     //! \return Bool on the success of cleanup
     //!
-    static bool CleanupBlockchainData();
+    static void CleanupBlockchainData();
+
+    static void WorkerMain(Progress& progress);
 
     //!
     //! \brief Extracts the snapshot zip file
     //!
     //! \return Bool on the success of extraction
     //!
-    bool ExtractSnapshot();
+    static void ExtractSnapshot();
 
     //!
     //! \brief Snapshot main function that runs the full snapshot task
@@ -152,7 +156,7 @@ public:
     //!
     //! \return Bool on the success of matching SHA256SUM
     //!
-    static bool VerifySHA256SUM();
+    static void VerifySHA256SUM();
 
     //!
     //! \brief Small function to delete the snapshot.zip file
@@ -222,6 +226,11 @@ public:
         Type = Typein;
 
         Reset(true);
+    }
+
+    int GetType()
+    {
+        return Type;
     }
 
     //!
