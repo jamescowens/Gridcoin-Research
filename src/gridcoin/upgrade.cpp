@@ -213,6 +213,10 @@ void Upgrade::SnapshotMain()
 
     while (!DownloadStatus.GetSnapshotDownloadComplete())
     {
+        LogPrintf("INFO: %s: DownloadStatus.GetSnapshotDownloadComplete() = %i",
+                  __func__,
+                  DownloadStatus.GetSnapshotDownloadComplete());
+
         if (DownloadStatus.GetSnapshotDownloadFailed())
         {
             throw std::runtime_error("Failed to download snapshot.zip; See debug.log");
@@ -313,6 +317,8 @@ void Upgrade::WorkerMain(Progress& progress)
 
     while (!finished)
     {
+        LogPrintf("INFO: %s: progress Type = %i", __func__, progress.GetType());
+
         switch (progress.GetType())
         {
         case 0:
@@ -360,8 +366,10 @@ void Upgrade::WorkerMain(Progress& progress)
             }
         }
 
-        sleep(250);
+        sleep(1000);
     }
+
+    LogPrintf("INFO: %s: Exited while loop", __func__);
 }
 
 void Upgrade::DownloadSnapshot()
@@ -380,6 +388,11 @@ void Upgrade::DownloadSnapshot()
 
         DownloadStatus.SetSnapshotDownloadFailed(true);
     }
+
+    LogPrintf("INFO %s: Snapshot download complete: DownloadStatus.GetSnapshotDownloadComplete() = %i",
+              __func__, DownloadStatus.GetSnapshotDownloadComplete());
+
+    DownloadStatus.SetSnapshotDownloadComplete(true);
 
     return;
 }
