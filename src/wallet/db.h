@@ -51,6 +51,8 @@ public:
 
     CDBEnv();
     ~CDBEnv();
+    void Reset();
+
     void MakeMock();
     bool IsMock() { return fMockDb; };
 
@@ -109,6 +111,7 @@ protected:
 public:
     void Flush();
     void Close();
+    void ReloadDbEnv();
 private:
     CDB(const CDB&);
     void operator=(const CDB&);

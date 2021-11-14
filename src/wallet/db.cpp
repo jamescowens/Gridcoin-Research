@@ -327,7 +327,8 @@ void CDB::Close()
         LOCK(bitdb.cs_db);
         --bitdb.mapFileUseCount[strFile];
     }
-    dbenv->m_db_in_use.notify_all();
+
+    bitdb.m_db_in_use.notify_all();
 }
 
 void CDBEnv::CloseDb(const string& strFile)
@@ -365,9 +366,8 @@ void CDBEnv::ReloadDbEnv()
         CloseDb(filename);
     }
     // Reset the environment
-    Flush(true); // This will flush and close the environment
+    Flush(true);
     Reset();
-    Open(true);
 }
 
 bool CDBEnv::RemoveDb(const string& strFile)
@@ -377,6 +377,12 @@ bool CDBEnv::RemoveDb(const string& strFile)
     LOCK(cs_db);
     int rc = dbenv.dbremove(nullptr, strFile.c_str(), nullptr, DB_AUTO_COMMIT);
     return (rc == 0);
+}
+
+void CDBEnv::Reset()
+{
+    CDBEnv::Close();
+    CDBEnv::Open(GetDataDir());
 }
 
 bool CDB::Rewrite(const string& strFile, const char* pszSkip)
@@ -520,7 +526,5 @@ void CDBEnv::Flush(bool fShutdown)
 
 void CDB::ReloadDbEnv()
 {
-    if (!IsDummy()) {
-        dbenv->ReloadDbEnv();
-    }
+    bitdb.ReloadDbEnv();
 }
