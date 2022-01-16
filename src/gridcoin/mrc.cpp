@@ -2,14 +2,19 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
+#include "gridcoin/mrc.h"
+
 #include "amount.h"
 #include "key.h"
 #include "main.h"
-#include "gridcoin/mrc.h"
 #include "gridcoin/account.h"
+#include "gridcoin/claim.h"
 #include "gridcoin/tally.h"
 #include "gridcoin/beacon.h"
+#include "gridcoin/quorum.h"
+#include "gridcoin/researcher.h"
 #include "util.h"
+#include "wallet/wallet.h"
 
 using namespace GRC;
 
@@ -222,3 +227,130 @@ bool GRC::MRCContractHandler::Validate(const Contract& contract, const CTransact
     // m_last_block_hash.
     return ValidateMRC(pindexBest, mrc);
 }
+
+namespace {
+//!
+//! \brief Sign the mrc.
+//!
+//! \param pwallet Supplies beacon private keys for signing.
+//! \param pindex   Block index of last block.
+//! \param mrc   An initialized mrc to sign.
+//! \param mrc_tx The transaction for the mrc.
+//!
+//! \return \c true if the miner holds active beacon keys used to successfully
+//! sign the claim.
+//!
+bool TrySignMRC(
+    CWallet* pwallet,
+    CBlockIndex* pindex,
+    GRC::MRC& mrc) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
+{
+    AssertLockHeld(cs_main);
+
+    // lock needs to be taken on pwallet here.
+    LOCK(pwallet->cs_wallet);
+
+    const GRC::CpidOption cpid = mrc.m_mining_id.TryCpid();
+
+    if (!cpid) {
+        return false; // Skip beacon signature for investors.
+    }
+
+    const GRC::BeaconOption beacon = GRC::GetBeaconRegistry().Try(*cpid);
+
+    if (!beacon) {
+        return error("%s: No active beacon", __func__);
+    }
+
+    // We use pindex->nTime here because the ending interval of the payment is aligned to the last block
+    // (the head of the chain), not the MRC transaction time.
+    if (beacon->Expired(pindex->nTime)) {
+        return error("%s: Beacon expired", __func__);
+    }
+
+    CKey beacon_key;
+
+    if (!pwallet->GetKey(beacon->m_public_key.GetID(), beacon_key)) {
+        return error("%s: Missing beacon private key", __func__);
+    }
+
+    if (!beacon_key.IsValid()) {
+        return error("%s: Invalid beacon key", __func__);
+    }
+
+    // Note that the last block hash has already been recorded in mrc for binding into the signature.
+    if (!mrc.Sign(beacon_key)) {
+        return error("%s: Signature failed. Check beacon key", __func__);
+    }
+
+    LogPrint(BCLog::LogFlags::MINER,
+             "%s: Signed for CPID %s and block hash %s with signature %s",
+             __func__,
+             cpid->ToString(),
+             pindex->GetBlockHash().ToString(),
+             HexStr(mrc.m_signature));
+
+    return true;
+}
+} // anonymous namespace
+
+//!
+//! \brief This is patterned after the CreateGridcoinReward, except that it is attached as a contract
+//! to a regular transaction by a requesting node rather than bound to the block by the staker.
+//! Note that the Researcher::Get() here is the requesting node, not the staker node.
+//!
+//! The nTime of the pindex (head of the chain) is used as the time for the accrual calculations.
+bool GRC::CreateMRC(CBlockIndex* pindex,
+                    MRC& mrc,
+                    CAmount &nReward,
+                    CAmount &fee,
+                    CWallet* pwallet) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
+{
+    const GRC::ResearcherPtr researcher = GRC::Researcher::Get();
+
+    mrc.m_mining_id = researcher->Id();
+
+    if (researcher->Status() == GRC::ResearcherStatus::NO_BEACON) {
+        error("%s: CPID eligible but no active beacon key so MRC cannot be formed.", __func__);
+
+        return false;
+    }
+
+    if (const GRC::CpidOption cpid = mrc.m_mining_id.TryCpid()) {
+        mrc.m_research_subsidy = GRC::Tally::GetAccrual(*cpid, pindex->nTime, pindex);
+
+        // If no pending research subsidy value exists, bail.
+        if (mrc.m_research_subsidy <= 0) {
+            error("%s: No positive research reward pending at time of mrc.", __func__);
+
+            return false;
+        } else {
+            nReward = mrc.m_research_subsidy;
+            mrc.m_magnitude = GRC::Quorum::GetMagnitude(*cpid).Floating();
+        }
+    }
+
+    mrc.m_client_version = FormatFullVersion().substr(0, GRC::Claim::MAX_VERSION_SIZE);
+    mrc.m_organization = gArgs.GetArg("-org", "").substr(0, GRC::Claim::MAX_ORGANIZATION_SIZE);
+
+    mrc.m_last_block_hash = pindex->GetBlockHash();
+    mrc.m_fee = mrc.ComputeMRCFee();
+    fee = mrc.m_fee;
+
+    if (!TrySignMRC(pwallet, pindex, mrc)) {
+        error("%s: Failed to sign mrc.", __func__);
+
+        return false;
+    }
+
+    LogPrintf(
+        "INFO: %s: for %s mrc %s magnitude %d Research %s",
+        __func__,
+        mrc.m_mining_id.ToString(),
+        FormatMoney(nReward),
+        mrc.m_magnitude,
+        FormatMoney(mrc.m_research_subsidy));
+
+    return true;
+}
+
