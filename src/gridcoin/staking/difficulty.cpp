@@ -7,6 +7,7 @@
 #include "bignum.h"
 #include "chainparams.h"
 #include "init.h"
+#include "consensus/consensus.h"
 #include "gridcoin/staking/difficulty.h"
 #include "gridcoin/staking/kernel.h"
 #include "gridcoin/staking/status.h"

@@ -6,8 +6,9 @@
 #ifndef BITCOIN_VALIDATION_H
 #define BITCOIN_VALIDATION_H
 
+#include "util.h"
 #include "amount.h"
-#include "index/disktxpos.h"
+#include "index/txindex.h"
 #include "primitives/transaction.h"
 
 #include <map>

@@ -7,7 +7,9 @@
 
 #include <policy/policy.h>
 
+#include "consensus/consensus.h"
 #include "consensus/tx_verify.h"
+#include "main.h"
 
 bool IsStandard(const CScript& scriptPubKey, txnouttype& whichType)
 {

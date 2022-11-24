@@ -4,6 +4,7 @@
 
 #include "amount.h"
 #include "chainparams.h"
+#include "consensus/consensus.h"
 #include "init.h"
 #include "main.h"
 #include "gridcoin/beacon.h"

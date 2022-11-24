@@ -9,7 +9,6 @@
 #include <util/strencodings.h>
 #include "serialize.h"
 #include "uint256.h"
-#include "version.h"
 
 #include <openssl/bn.h>
 

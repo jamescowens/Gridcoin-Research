@@ -8,19 +8,13 @@
 #include "amount.h"
 #include "arith_uint256.h"
 #include "chainparams.h"
-#include "consensus/consensus.h"
-#include "index/disktxpos.h"
-#include "index/txindex.h"
-#include "util.h"
 #include "net.h"
 #include "gridcoin/block_index.h"
-#include "gridcoin/contract/contract.h"
 #include "gridcoin/cpid.h"
 #include "primitives/transaction.h"
 #include "sync.h"
 #include "script.h"
 #include "scrypt.h"
-#include "validation.h"
 
 #include <map>
 #include <unordered_map>

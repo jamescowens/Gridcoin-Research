@@ -3,6 +3,7 @@
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
 #include "main.h"
+#include "consensus/consensus.h"
 #include "node/ui_interface.h"
 #include "random.h"
 

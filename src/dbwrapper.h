@@ -9,6 +9,7 @@
 #include "clientversion.h"
 #include "main.h"
 #include "streams.h"
+#include "index/disktxpos.h"
 
 #include <string>
 #include <leveldb/db.h>

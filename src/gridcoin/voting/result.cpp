@@ -3,6 +3,7 @@
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
 #include "main.h"
+#include "index/txindex.h"
 #include "gridcoin/beacon.h"
 #include "gridcoin/quorum.h"
 #include "gridcoin/superblock.h"

@@ -5,7 +5,7 @@
 #ifndef BITCOIN_CONSENSUS_TX_VERIFY_H
 #define BITCOIN_CONSENSUS_TX_VERIFY_H
 
-#include "main.h"
+#include "validation.h"
 
 class CTransaction;
 

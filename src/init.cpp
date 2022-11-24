@@ -5,6 +5,7 @@
 
 
 #include "chainparams.h"
+#include "consensus/consensus.h"
 #include "util.h"
 #include "util/threadnames.h"
 #include "net.h"

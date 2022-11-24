@@ -6,7 +6,7 @@
 #ifndef BITCOIN_POLICY_POLICY_H
 #define BITCOIN_POLICY_POLICY_H
 
-#include "main.h"
+#include "validation.h"
 
 bool IsStandard(const CScript& scriptPubKey, txnouttype& whichType);
 

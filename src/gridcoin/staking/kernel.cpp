@@ -6,11 +6,11 @@
 #include "amount.h"
 #include "arith_uint256.h"
 #include "gridcoin/staking/kernel.h"
-#include "txdb.h"
 #include "main.h"
 #include "random.h"
 #include "streams.h"
-#include "util.h"
+#include "dbwrapper.h"
+#include "index/txindex.h"
 
 using namespace std;
 using namespace GRC;

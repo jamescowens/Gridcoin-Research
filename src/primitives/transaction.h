@@ -6,6 +6,7 @@
 #ifndef BITCOIN_PRIMITIVES_TRANSACTION_H
 #define BITCOIN_PRIMITIVES_TRANSACTION_H
 
+#include "util.h"
 #include "amount.h"
 #include "gridcoin/contract/contract.h"
 #include "script.h"

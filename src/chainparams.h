@@ -10,9 +10,6 @@
 #include "consensus/params.h"
 #include "protocol.h"
 
-// system.h included only for temporary V12 fork point overrides for testing.
-#include "util/system.h"
-
 #include <memory>
 #include <vector>
 

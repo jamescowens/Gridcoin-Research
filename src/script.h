@@ -18,6 +18,7 @@
 #include "prevector.h"
 #include <util/hash_type.h>
 #include "wallet/ismine.h"
+#include "tinyformat.h"
 
 typedef std::vector<unsigned char> valtype;
 

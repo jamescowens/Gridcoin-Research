@@ -11,10 +11,8 @@
 #include <vector>
 
 #include <pubkey.h>
-#include "serialize.h"
 #include "support/allocators/secure.h"
 #include "uint256.h"
-#include "util.h"
 
 class key_error : public std::runtime_error
 {

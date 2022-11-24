@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#include "util.h"
 #include "key.h"
 #include "script.h"
 

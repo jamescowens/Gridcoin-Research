@@ -5,6 +5,8 @@
 #ifndef BITCOIN_INDEX_TXINDEX_H
 #define BITCOIN_INDEX_TXINDEX_H
 
+#include "index/disktxpos.h"
+
 /**  A txdb record that contains the disk location of a transaction and the
  * locations of transactions that spend its outputs.  vSpent is really only
  * used as a flag, but having the location is very helpful for debugging.

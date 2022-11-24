@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "util.h"
+#include "serialize.h"
 
 class CNode;
 class uint256;
