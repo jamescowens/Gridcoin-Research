@@ -1460,6 +1460,10 @@ bool AskForOutstandingBlocks(uint256 hashStart)
 
 bool ProcessBlock(CNode* pfrom, CBlock* pblock, bool generated_by_me) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
 {
+    std::string function = __func__;
+
+    g_timer.InitTimer(function, LogInstance().WillLogCategory(BCLog::LogFlags::MISC));
+
     AssertLockHeld(cs_main);
 
     // Check for duplicate
@@ -1468,6 +1472,8 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock, bool generated_by_me) EXCLUSIVE_
         return error("ProcessBlock() : already have block %d %s", mapBlockIndex[hash]->nHeight, hash.ToString().c_str());
     if (mapOrphanBlocks.count(hash))
         return error("ProcessBlock() : already have block (orphan) %s", hash.ToString().c_str());
+
+    g_timer.GetTimes("Check for duplicate", function);
 
     if (pblock->hashPrevBlock != hashBestChain)
     {
@@ -1484,9 +1490,13 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock, bool generated_by_me) EXCLUSIVE_
         }
     }
 
+    g_timer.GetTimes("Checkpoint check", function);
+
     // Preliminary checks
     if (!CheckBlock(*pblock, pindexBest->nHeight + 1))
         return error("ProcessBlock() : CheckBlock FAILED");
+
+    g_timer.GetTimes("CheckBlock", function);
 
     // If don't already have its previous block, shunt it off to holding area until we get it
     if (!pblock->hashPrevBlock.IsNull() && !mapBlockIndex.count(pblock->hashPrevBlock))
@@ -1512,18 +1522,34 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock, bool generated_by_me) EXCLUSIVE_
             }
         }
 
+        g_timer.GetTimes("Orphan processing: proof of stake duplicate check", function);
+
         CBlock* pblock2 = new CBlock(*pblock);
         mapOrphanBlocks.insert(make_pair(hash, pblock2));
+        g_timer.GetTimes("Orphan processing: mapOrphanBlocks.insert", function);
+
         mapOrphanBlocksByPrev.insert(make_pair(pblock->hashPrevBlock, pblock2));
+        g_timer.GetTimes("Orphan processing: mapOrphanBlocksByPrev.insert", function);
 
         // Ask this guy to fill in what we're missing
         const CBlock* const pblock_root = GetOrphanRoot(pblock2);
+        g_timer.GetTimes("Orphan processing: GetOrphanRoot", function);
+
         pfrom->PushGetBlocks(pindexBest, pblock_root->GetHash(true));
+
+        LogPrint(BCLog::LogFlags::MISC, "INFO: %s: pfrom->PushGetBlocks(%s, %s)",
+                 __func__,
+                 pindexBest->GetBlockHash().GetHex(),
+                 pblock_root->GetHash(true).GetHex());
+
+        g_timer.GetTimes("Orphan processing: pfrom->PushGetBlocks", function);
+
         // ppcoin: getblocks may not obtain the ancestor block rejected
         // earlier by duplicate-stake check so we ask for it again directly
         if (!IsInitialBlockDownload())
         {
             const CInv ancestor_request(MSG_BLOCK, pblock_root->hashPrevBlock);
+            g_timer.GetTimes(function + " orphan processing: ancestor_request", function);
 
             // Ensure that this request is not deferred. CNode::AskFor() bumps
             // the earliest time for a message by two minutes for each call. A
@@ -1535,7 +1561,10 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock, bool generated_by_me) EXCLUSIVE_
             //
             mapAlreadyAskedFor[ancestor_request] = 0;
             pfrom->AskFor(ancestor_request);
+            g_timer.GetTimes("Orphan processing: pfrom->AskFor", function);
         }
+
+        g_timer.GetTimes("Request missing blocks complete", function);
 
         return true;
     }
@@ -1544,25 +1573,50 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock, bool generated_by_me) EXCLUSIVE_
     if (!AcceptBlock(*pblock, generated_by_me))
         return error("ProcessBlock() : AcceptBlock FAILED");
 
+    g_timer.GetTimes("AcceptBlock", function);
+
     // Recursively process any orphan blocks that depended on this one
     vector<uint256> vWorkQueue;
     vWorkQueue.push_back(hash);
     for (unsigned int i = 0; i < vWorkQueue.size(); i++)
     {
         uint256 hashPrev = vWorkQueue[i];
+
+        LogPrint(BCLog::LogFlags::VERBOSE, "INFO: %s: vWorkQueue.size() = %u, vWorkQueue[%u] = %s",
+                 __func__,
+                 vWorkQueue.size(),
+                 i,
+                 hashPrev.GetHex());
+
+        unsigned int j = 0;
+
         for (multimap<uint256, CBlock*>::iterator mi = mapOrphanBlocksByPrev.lower_bound(hashPrev);
              mi != mapOrphanBlocksByPrev.upper_bound(hashPrev);
-             ++mi)
+             ++mi, ++j)
         {
             CBlock* pblockOrphan = mi->second;
+
+            LogPrint(BCLog::LogFlags::VERBOSE, "INFO: %s: mapOrphanBlocksbyPrev match element %u, pblockOrphan hash = %s",
+                     __func__,
+                     j,
+                     pblockOrphan->GetHash(true).GetHex());
+
             if (AcceptBlock(*pblockOrphan, generated_by_me))
                 vWorkQueue.push_back(pblockOrphan->GetHash(true));
             mapOrphanBlocks.erase(pblockOrphan->GetHash(true));
             g_seen_stakes.ForgetOrphan(pblockOrphan->vtx[1]);
+
+            LogPrint(BCLog::LogFlags::VERBOSE, "INFO: %s: mapOrphanBlocks.size() = %u, g_seen_stakes.size() = %u",
+                     __func__,
+                     mapOrphanBlocks.size(),
+                     g_seen_stakes.OrphanProofsSeenSize());
+
             delete pblockOrphan;
         }
         mapOrphanBlocksByPrev.erase(hashPrev);
     }
+
+    g_timer.GetTimes("Dependent orphan processing on accepted block complete", function);
 
     return true;
 }

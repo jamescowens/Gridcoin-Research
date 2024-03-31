@@ -131,17 +131,63 @@ unsigned short GetListenPort()
 
 void CNode::PushGetBlocks(CBlockIndex* pindexBegin, uint256 hashEnd)
 {
+    LogPrint(BCLog::LogFlags::MISC, "INFO: %s: pnode = %" PRId64 ", id = %" PRId64 ", address = %s",
+             __func__,
+             (uint64_t) this,
+             id,
+             addr.ToString());
+
+    std::string function = {__func__};
+
+    g_timer.InitTimer(function, LogInstance().WillLogCategory(BCLog::LogFlags::MISC));
+
     if (pindexBegin == pindexLastGetBlocksBegin && hashEnd == hashLastGetBlocksEnd) return;  // Filter out duplicate requests
 
     pindexLastGetBlocksBegin = pindexBegin;
     hashLastGetBlocksEnd = hashEnd;
 
+    g_timer.GetTimes("Before caching check", __func__);
+
     if (pindexBegin != g_getblocks_pindex_begin) {
+        LogPrint(BCLog::LogFlags::MISC, "INFO: %s: pindexBegin->GetBlockHash() = %s, pindexBegin = %" PRId64 ", "
+                                        "g_getblocks_pindex_begin->GetBlockHash() = %s, g_getblocks_pindex_begin = %" PRId64,
+                 __func__,
+                 pindexBegin ? pindexBegin->GetBlockHash().GetHex() : (uint256 {}).GetHex(),
+                 (uint64_t) pindexBegin,
+                 g_getblocks_pindex_begin ? g_getblocks_pindex_begin->GetBlockHash().GetHex() : (uint256 {}).GetHex(),
+                 (uint64_t) g_getblocks_pindex_begin);
+
         g_getblocks_pindex_begin = pindexBegin;
         g_getblocks_locator = CBlockLocator(pindexBegin);
+
+        if (LogInstance().WillLogCategory(BCLog::LogFlags::MISC)) {
+            std::string have_blocks;
+            bool first = true;
+            for (const auto& iter : g_getblocks_locator.vHave) {
+                if (!first) {
+                    have_blocks += ", ";
+                } else {
+                    first = false;
+                }
+
+                have_blocks += iter.GetHex();
+            }
+
+            LogPrintf("INFO: %s: CBlockLocator vHave = %s",
+                      __func__,
+                      have_blocks);
+        }
+
+
+        g_timer.GetTimes("After CBlockLocator(pindexBegin) call - cache miss", function);
     }
 
+    g_timer.GetTimes("Post cache check", function);
+
     PushMessage(NetMsgType::GETBLOCKS, g_getblocks_locator, hashEnd);
+
+    g_timer.GetTimes("PushMessage - PushGetBlocks complete", function);
+
 }
 
 // find 'best' local address for a particular peer

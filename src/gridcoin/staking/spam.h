@@ -145,6 +145,11 @@ public:
         }
     }
 
+    size_t OrphanProofsSeenSize()
+    {
+        return m_orphan_proofs_seen.size();
+    }
+
 private:
     //!
     //! \brief A hash table of recently-observed kernel proof hashes.
