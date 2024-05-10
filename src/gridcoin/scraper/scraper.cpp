@@ -3699,32 +3699,44 @@ bool ProcessProjectStatsFromStreamByCPID(const std::string& project, boostio::fi
 
 bool ProcessNetworkWideFromProjectStats(ScraperStats& mScraperStats)
 {
-    // -------- CPID ----------------- stats entry ---- # of projects
-    std::map<std::string, std::pair<ScraperObjectStats, unsigned int>> mByCPID;
+    // -------- CPID ----------------- stats entry --- # of projects - mag capped
+    std::map<std::string, std::tuple<ScraperObjectStats, unsigned int, double>> mByCPID;
 
-    for (const auto& byCPIDbyProjectEntry : mScraperStats)
-    {
-        if (byCPIDbyProjectEntry.first.objecttype == statsobjecttype::byCPIDbyProject)
-        {
+    double total_delta_mag_from_cap = 0.0;
+
+    for (const auto& byCPIDbyProjectEntry : mScraperStats) {
+        if (byCPIDbyProjectEntry.first.objecttype == statsobjecttype::byCPIDbyProject) {
             std::string CPID = split(byCPIDbyProjectEntry.first.objectID, ",")[1];
 
+            double delta_mag_from_cap = 0.0;
+
             auto mByCPID_entry = mByCPID.find(CPID);
-            if (mByCPID_entry != mByCPID.end())
-            {
-                mByCPID_entry->second.first.statsvalue.dTC += byCPIDbyProjectEntry.second.statsvalue.dTC;
-                mByCPID_entry->second.first.statsvalue.dRAT += byCPIDbyProjectEntry.second.statsvalue.dRAT;
-                mByCPID_entry->second.first.statsvalue.dRAC += byCPIDbyProjectEntry.second.statsvalue.dRAC;
-                mByCPID_entry->second.first.statsvalue.dMag += byCPIDbyProjectEntry.second.statsvalue.dMag;
-                // Note the following is VERY inelegant. It CAPS the CPID magnitude to CPID_MAG_LIMIT.
-                // No attempt to renormalize the magnitudes due to this cap is done at this time. This means
-                // The total magnitude across projects will NOT match the total across all CPIDs and the network.
-                mByCPID_entry->second.first.statsvalue.dMag =
-                        std::min<double>(CPID_MAG_LIMIT, mByCPID_entry->second.first.statsvalue.dMag);
+            if (mByCPID_entry != mByCPID.end()) {
+                std::get<0>(mByCPID_entry->second).statsvalue.dTC += byCPIDbyProjectEntry.second.statsvalue.dTC;
+                std::get<0>(mByCPID_entry->second).statsvalue.dRAT += byCPIDbyProjectEntry.second.statsvalue.dRAT;
+                std::get<0>(mByCPID_entry->second).statsvalue.dRAC += byCPIDbyProjectEntry.second.statsvalue.dRAC;
+
+                // Increment dMag for this project (pre-cap check)
+                std::get<0>(mByCPID_entry->second).statsvalue.dMag += byCPIDbyProjectEntry.second.statsvalue.dMag;
+
+                if (std::get<0>(mByCPID_entry->second).statsvalue.dMag > CPID_MAG_LIMIT) {
+                    double limited_cpid_mag = std::min<double>(CPID_MAG_LIMIT, std::get<0>(mByCPID_entry->second).statsvalue.dMag);
+
+                    delta_mag_from_cap = std::get<0>(mByCPID_entry->second).statsvalue.dMag - limited_cpid_mag;
+
+                    // Record magnitude after capping operation
+                    std::get<0>(mByCPID_entry->second).statsvalue.dMag = limited_cpid_mag;
+
+                    // Record delta mag from cap
+                    std::get<2>(mByCPID_entry->second) += delta_mag_from_cap;
+
+                    // Record running total for delta mag from cap
+                    total_delta_mag_from_cap += delta_mag_from_cap;
+                }
+
                 // Increment number of projects tallied
-                ++mByCPID_entry->second.second;
-            }
-            else
-            {
+                ++std::get<1>(mByCPID_entry->second);
+            } else {
                 // Since an entry did not already exist, start a new one.
                 ScraperObjectStats CPIDStatsEntry;
 
@@ -3734,14 +3746,24 @@ bool ProcessNetworkWideFromProjectStats(ScraperStats& mScraperStats)
                 CPIDStatsEntry.statsvalue.dTC = byCPIDbyProjectEntry.second.statsvalue.dTC;
                 CPIDStatsEntry.statsvalue.dRAT = byCPIDbyProjectEntry.second.statsvalue.dRAT;
                 CPIDStatsEntry.statsvalue.dRAC = byCPIDbyProjectEntry.second.statsvalue.dRAC;
-                // Note the following is VERY inelegant. It CAPS the CPID magnitude to CPID_MAG_LIMIT.
-                // No attempt to renormalize the magnitudes due to this cap is done at this time. This means
-                // The total magnitude across projects will NOT match the total across all CPIDs and the network.
-                CPIDStatsEntry.statsvalue.dMag =
-                        std::min<double>(CPID_MAG_LIMIT, byCPIDbyProjectEntry.second.statsvalue.dMag);
+
+                // Record dMag for first project for this cpid (pre-cap check)
+                CPIDStatsEntry.statsvalue.dMag = byCPIDbyProjectEntry.second.statsvalue.dMag;
+
+                if (byCPIDbyProjectEntry.second.statsvalue.dMag > CPID_MAG_LIMIT) {
+                    double limited_cpid_mag = std::min<double>(CPID_MAG_LIMIT, byCPIDbyProjectEntry.second.statsvalue.dMag);
+
+                    delta_mag_from_cap = byCPIDbyProjectEntry.second.statsvalue.dMag - limited_cpid_mag;
+
+                    // Record magnitude after capping operation
+                    CPIDStatsEntry.statsvalue.dMag = limited_cpid_mag;
+
+                    // Record running total for delta mag from cap
+                    total_delta_mag_from_cap += delta_mag_from_cap;
+                }
 
                 // This is the first project encountered, because otherwise there would already be an entry.
-                mByCPID[CPID] = std::make_pair(CPIDStatsEntry, 1);
+                mByCPID[CPID] = std::make_tuple(CPIDStatsEntry, 1, delta_mag_from_cap);
             }
         }
     }
@@ -3755,44 +3777,50 @@ bool ProcessNetworkWideFromProjectStats(ScraperStats& mScraperStats)
     // ObjectID is blank string for network-wide.
     NetworkWideStatsEntry.statskey.objectID = "";
 
-    for (auto mByCPID_entry = mByCPID.begin(); mByCPID_entry != mByCPID.end(); ++mByCPID_entry)
-    {
-        unsigned int nProjectCount = mByCPID_entry->second.second;
+    for (auto mByCPID_entry = mByCPID.begin(); mByCPID_entry != mByCPID.end(); ++mByCPID_entry) {
+        unsigned int nProjectCount = std::get<1>(mByCPID_entry->second);
 
         // Compute CPID AvgRAC across the projects for that CPID and set.
-        if (nProjectCount)
-        {
-            mByCPID_entry->second.first.statsvalue.dAvgRAC = mByCPID_entry->second.first.statsvalue.dRAC / nProjectCount;
-        }
-        else
-        {
-            mByCPID_entry->second.first.statsvalue.dAvgRAC = 0.0;
+        if (nProjectCount) {
+            std::get<0>(mByCPID_entry->second).statsvalue.dAvgRAC = std::get<0>(mByCPID_entry->second).statsvalue.dRAC / nProjectCount;
+        } else {
+            std::get<0>(mByCPID_entry->second).statsvalue.dAvgRAC = 0.0;
         }
 
         // Update scraper map with complete entry including dAvgRAC
-        mScraperStats[mByCPID_entry->second.first.statskey] = mByCPID_entry->second.first;
+        mScraperStats[std::get<0>(mByCPID_entry->second).statskey] = std::get<0>(mByCPID_entry->second);
 
         // Increment the network wide stats.
-        NetworkWideStatsEntry.statsvalue.dTC += mByCPID_entry->second.first.statsvalue.dTC;
-        NetworkWideStatsEntry.statsvalue.dRAT += mByCPID_entry->second.first.statsvalue.dRAT;
-        NetworkWideStatsEntry.statsvalue.dRAC += mByCPID_entry->second.first.statsvalue.dRAC;
-        NetworkWideStatsEntry.statsvalue.dMag += mByCPID_entry->second.first.statsvalue.dMag;
+        NetworkWideStatsEntry.statsvalue.dTC += std::get<0>(mByCPID_entry->second).statsvalue.dTC;
+        NetworkWideStatsEntry.statsvalue.dRAT += std::get<0>(mByCPID_entry->second).statsvalue.dRAT;
+        NetworkWideStatsEntry.statsvalue.dRAC += std::get<0>(mByCPID_entry->second).statsvalue.dRAC;
+        NetworkWideStatsEntry.statsvalue.dMag += std::get<0>(mByCPID_entry->second).statsvalue.dMag;
 
         ++nCPIDProjectCount;
     }
 
     // Compute Network AvgRAC across all ByCPIDByProject elements and set.
-    if (nCPIDProjectCount)
-    {
+    if (nCPIDProjectCount) {
         NetworkWideStatsEntry.statsvalue.dAvgRAC = NetworkWideStatsEntry.statsvalue.dRAC / nCPIDProjectCount;
-    }
-    else
-    {
+    } else {
         NetworkWideStatsEntry.statsvalue.dAvgRAC = 0.0;
     }
 
     // Insert the (single) network-wide entry into the overall map.
     mScraperStats[NetworkWideStatsEntry.statskey] = NetworkWideStatsEntry;
+
+    // If V13 blocks are enabled, renormalize mags due to CPID mag caps.
+    if (total_delta_mag_from_cap > 0 && WITH_LOCK(cs_main, return IsV13Enabled(nBestHeight))) {
+
+        // Get the actual network-wide magnitude. If there was a cpid cap, this will be less than NETWORK_MAGNITUDE.
+        double actual_network_wide_mag = mScraperStats[NetworkWideStatsEntry.statskey].statsvalue.dMag;
+
+        // Compute the target network_wide_mag from actual + accumulated delta mag from cap. Note this can be slightly different
+        // than NETWORK_MAGNITUDE because of rounding.
+        double target_network_wide_mag = actual_network_wide_mag + total_delta_mag_from_cap;
+
+        // Todo...
+    }
 
     return true;
 }
