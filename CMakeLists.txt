@@ -241,7 +241,6 @@ if(USE_ASM)
 endif()
 
 if(ENABLE_GUI)
-    set(QT_MACOS_DISABLE_DARK_MODE False)
     if(USE_QT6)
         find_package(Qt6 ${QT6_MINIMUM_VERSION} COMPONENTS ${QT_COMPONENTS} REQUIRED)
         set(QT Qt6)
@@ -251,10 +250,6 @@ if(ENABLE_GUI)
         endif()
         find_package(Qt5 ${QT5_MINIMUM_VERSION} COMPONENTS ${QT_COMPONENTS} REQUIRED)
         set(QT Qt5)
-
-        if(Qt5Core_VERSION VERSION_LESS 5.12.0)
-            set(QT_MACOS_DISABLE_DARK_MODE True)
-        endif()
 
         # Compatibility macros
         if(Qt5Core_VERSION VERSION_LESS 5.15.0)
