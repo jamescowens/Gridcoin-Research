@@ -19,6 +19,8 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QThread>
+#include <QStandardPaths>
+#include <QRegExp>
 
 #ifdef WIN32
 #ifdef _WIN32_IE
