@@ -21,6 +21,7 @@ namespace GRC {
 class PollRegistry;
 }
 
+
 class ClientModel;
 class OptionsModel;
 class uint256;
