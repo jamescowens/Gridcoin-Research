@@ -39,7 +39,6 @@
 #include <QMessageBox>
 #include <QGridLayout>
 #include <QDebug>
-#include <QTextCodec>
 #include <QLocale>
 #include <QTranslator>
 #include <QSplashScreen>

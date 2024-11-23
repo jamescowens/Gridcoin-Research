@@ -69,7 +69,7 @@ bool UpgradeQt::SnapshotMain(QApplication& SnapshotApp)
 
     m_quitAction = new QAction(tr("E&xit"), this);
     m_quitAction->setToolTip(tr("Quit application"));
-    m_quitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
+    m_quitAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
     m_quitAction->setMenuRole(QAction::QuitRole);
 
     m_appMenuBar = new QMenuBar();

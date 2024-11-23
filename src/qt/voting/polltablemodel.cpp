@@ -265,7 +265,8 @@ void PollTableModel::refresh()
                  __func__);
     }
 
-    (void) QtConcurrent::run([this]() {
+    QThreadPool *pool = QThreadPool::globalInstance();
+    pool->start([this]() {
         RenameThread("PollTableModel_refresh");
         util::ThreadSetInternalName("PollTableModel_refresh");
 

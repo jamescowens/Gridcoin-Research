@@ -14,6 +14,8 @@ ${RUNTIME_LIBS}
     ${QT}::Widgets
     ${QT}::Gui
     ${QT}::Core
+    ${QT}::Test
+    ${QT}::Widgets
     gridcoinqt
     gridcoin_util
     )

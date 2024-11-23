@@ -210,9 +210,6 @@ target_link_libraries(gridcoinqt PUBLIC
     gridcoin_util
 )
 
-if(USE_QT6)
-    target_link_libraries(gridcoinqt PUBLIC ${QT}::Core5Compat)
-endif()
 if(USE_DBUS)
     target_link_libraries(gridcoinqt PUBLIC ${QT}::DBus)
 endif()
@@ -228,7 +225,7 @@ elseif(WIN32)
 endif()
 
 target_compile_definitions(gridcoinqt PUBLIC HAVE_CONFIG_H)
-target_compile_definitions(gridcoinqt PUBLIC QT_DISABLE_DEPRECATED_UP_TO=0x050F00)
+target_compile_definitions(gridcoinqt PUBLIC QT_DISABLE_DEPRECATED_UP_TO=0x060200)
 
 if(ENABLE_UPNP)
     if(DEFAULT_UPNP)
@@ -318,11 +315,9 @@ if(UNIX AND NOT APPLE AND DEFINED DEP_LIB)
 endif()
 
 set_target_properties(gridcoinresearch PROPERTIES
-    WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE_GUI_IDENTIFIER gridcoin.us
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    MACOSX_BUNDLE_BUNDLE_NAME "Gridcoin Wallet"
     MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/share/qt/Info.plist.cmake.in"
     RESOURCE ${MACOSX_BUNDLE_RESOURCE_FILES}
