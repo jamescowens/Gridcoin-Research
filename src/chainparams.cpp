@@ -81,6 +81,7 @@ public:
         consensus.MRCZeroPaymentInterval = 14 * 24 * 60 * 60;
         consensus.MaxMandatorySideStakeTotalAlloc = Fraction(1, 4);
         consensus.DefaultMagnitudeUnit = Fraction(1, 4);
+        consensus.MaxMagnitudeUnit = Fraction(5, 1);
         consensus.DefaultMagnitudeWeightFactor = Fraction(100, 567);
         consensus.StandardContractReplayLookback = 180 * 24 * 60 * 60;
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -199,6 +200,7 @@ public:
         consensus.MRCZeroPaymentInterval = 10 * 60;
         consensus.MaxMandatorySideStakeTotalAlloc = Fraction(1, 4);
         consensus.DefaultMagnitudeUnit = Fraction(1, 4);
+        consensus.MaxMagnitudeUnit = Fraction(5, 1);
         consensus.DefaultMagnitudeWeightFactor = Fraction(100, 567);
         consensus.StandardContractReplayLookback = 180 * 24 * 60 * 60;
         consensus.powLimit = uint256S("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
