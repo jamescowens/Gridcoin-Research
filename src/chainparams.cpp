@@ -73,6 +73,8 @@ public:
         consensus.DefaultConstantBlockReward = 10 * COIN;
         consensus.ConstantBlockRewardFloor = 0;
         consensus.ConstantBlockRewardCeiling = 500 * COIN;
+        consensus.SuperblockV3Height = std::numeric_limits<int>::max();
+        // Immediately post zero payment interval fees 40% for mainnet
         consensus.InitialMRCFeeFractionPostZeroInterval = Fraction(2, 5);
         consensus.MRCZeroPaymentInterval = 14 * 24 * 60 * 60;
         consensus.MaxMandatorySideStakeTotalAlloc = Fraction(1, 4);
@@ -191,6 +193,8 @@ public:
         consensus.DefaultConstantBlockReward = 10 * COIN;
         consensus.ConstantBlockRewardFloor = 0;
         consensus.ConstantBlockRewardCeiling = 500 * COIN;
+        consensus.SuperblockV3Height = std::numeric_limits<int>::max();
+        // Immediately post zero payment interval fees 40% for testnet, the same as mainnet
         consensus.InitialMRCFeeFractionPostZeroInterval = Fraction(2, 5);
         consensus.MRCZeroPaymentInterval = 10 * 60;
         consensus.MaxMandatorySideStakeTotalAlloc = Fraction(1, 4);

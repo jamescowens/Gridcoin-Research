@@ -56,6 +56,10 @@ struct Params {
       * for block v13+. Note that this is typed as int64_t rather than CAmount to avoid the extra include.
       */
     int64_t ConstantBlockRewardCeiling;
+    /**
+      * @brief Block height at which superblock v3 contracts are allowed/required
+      */
+    int SuperblockV3Height;
     /** The fraction of rewards taken as fees in an MRC after the zero payment interval. Only consesnus critical
       * at BlockV12Height or above. Note that this is typed as int64_t rather than CAmount to avoid the extra include.
       */
@@ -88,7 +92,7 @@ struct Params {
       * for purposes of computing voting weight. Nominally 1 / 5.67 from Fern onwards.
       *
       * The magnitude weight factor can be set by an administrative protocol entry with the key name "magnitudeweightfactor" for
-     * V13+ blocks. The value is specified as a whole number or fraction. For example, 1 / 5.67 would be "100/567", 2 would be "2".
+      * V13+ blocks. The value is specified as a whole number or fraction. For example, 1 / 5.67 would be "100/567", 2 would be "2".
       */
     Fraction DefaultMagnitudeWeightFactor;
     /**
