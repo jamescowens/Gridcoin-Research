@@ -76,7 +76,7 @@ public:
         // Immediately post zero payment interval fees 40% for mainnet
         consensus.DefaultConstantBlockReward = 10 * COIN;
         consensus.ConstantBlockRewardFloor = 0;
-        consensus.ConstantBlockRewardCeiling = 200 * COIN;
+        consensus.ConstantBlockRewardCeiling = 500 * COIN;
         consensus.InitialMRCFeeFractionPostZeroInterval = Fraction(2, 5);
         consensus.MRCZeroPaymentInterval = 14 * 24 * 60 * 60;
         consensus.MaxMandatorySideStakeTotalAlloc = Fraction(1, 4);
@@ -195,7 +195,7 @@ public:
         // Immediately post zero payment interval fees 40% for testnet, the same as mainnet
         consensus.DefaultConstantBlockReward = 10 * COIN;
         consensus.ConstantBlockRewardFloor = 0;
-        consensus.ConstantBlockRewardCeiling = 100 * COIN;
+        consensus.ConstantBlockRewardCeiling = 500 * COIN;
         consensus.InitialMRCFeeFractionPostZeroInterval = Fraction(2, 5);
         consensus.MRCZeroPaymentInterval = 10 * 60;
         consensus.MaxMandatorySideStakeTotalAlloc = Fraction(1, 4);
