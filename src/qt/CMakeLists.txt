@@ -160,6 +160,7 @@ elseif(WIN32)
 endif()
 
 target_compile_definitions(gridcoinqt PUBLIC HAVE_CONFIG_H)
+target_compile_definitions(gridcoinqt PUBLIC QT_DISABLE_DEPRECATED_UP_TO=0x050F00)
 
 if(USE_DBUS)
     target_link_libraries(gridcoinqt PUBLIC Qt5::DBus)

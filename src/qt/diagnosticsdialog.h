@@ -6,7 +6,8 @@
 #define BITCOIN_QT_DIAGNOSTICSDIALOG_H
 
 #include <QDialog>
-#include <QtNetwork>
+#include <QtNetwork/QTcpSocket>
+#include <QtNetwork/QUdpSocket>
 #include <QtWidgets/QLabel>
 
 #include <string>

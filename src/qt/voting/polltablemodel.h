@@ -7,16 +7,16 @@
 
 #include "uint256.h"
 #include "gridcoin/voting/filter.h"
+#include "qt/voting/votingmodel.h"
 
 #include <memory>
 #include <QSortFilterProxyModel>
 #include <QMutex>
 
-class PollItem;
-class VotingModel;
-
 class PollTableDataModel : public QAbstractTableModel
 {
+    Q_OBJECT
+
 public:
     PollTableDataModel();
 

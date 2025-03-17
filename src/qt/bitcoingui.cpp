@@ -78,6 +78,7 @@
 #include <QUrl>
 #include <QStyle>
 #include <QDesktopWidget>
+#include <QSettings>
 
 #include <boost/lexical_cast.hpp>
 
@@ -1277,10 +1278,11 @@ void BitcoinGUI::incomingTransaction(const QModelIndex & parent, int start, int 
                                  "Amount: %2\n"
                                  "Type: %3\n"
                                  "Address: %4")
-                              .arg(date)
-                              .arg(BitcoinUnits::formatWithUnit(walletModel->getOptionsModel()->getDisplayUnit(), amount, true))
-                              .arg(type)
-                              .arg(address), icon);
+                              .arg(date,
+                                   BitcoinUnits::formatWithUnit(walletModel->getOptionsModel()->getDisplayUnit(), amount, true),
+                                   type,
+                                   address),
+                              icon);
     }
 }
 
@@ -1526,7 +1528,7 @@ void BitcoinGUI::dropEvent(QDropEvent *event)
     {
         int nValidUrisFound = 0;
         QList<QUrl> uris = event->mimeData()->urls();
-        for (const QUrl& uri : uris) {
+        for (const QUrl& uri : std::as_const(uris)) {
             if (sendCoinsPage->handleURI(uri.toString()))
                 nValidUrisFound++;
         }
@@ -1728,7 +1730,8 @@ QString BitcoinGUI::GetEstimatedStakingFrequency(unsigned int nEstimateTime)
         }
     }
 
-    text = tr("%1 times per %2").arg(QString(RoundToString(frequency, 2).c_str())).arg(unit);
+    text = tr("%1 times per %2").arg(QString(RoundToString(frequency, 2).c_str()),
+                                     unit);
 
     return text;
 }
@@ -1745,9 +1748,9 @@ void BitcoinGUI::updateStakingIcon(
     {
         labelStakingIcon->setPixmap(GRC::ScaleStatusIcon(this, ":/icons/status_staking_yes_" + sSheet));
         labelStakingIcon->setToolTip(tr("Staking.<br>Your weight is %1<br>Network weight is %2<br><b>Estimated</b> staking frequency is %3.")
-                                     .arg(QString::number(coin_weight, 'f', 0))
-                                     .arg(QString::number(net_weight, 'f', 0))
-                                     .arg(GetEstimatedStakingFrequency(etts_days)));
+                                     .arg(QString::number(coin_weight, 'f', 0),
+                                          QString::number(net_weight, 'f', 0),
+                                          GetEstimatedStakingFrequency(etts_days)));
     }
     else if (coin_weight == 0.0)
     {
@@ -1759,8 +1762,8 @@ void BitcoinGUI::updateStakingIcon(
     {
         labelStakingIcon->setPixmap(GRC::ScaleStatusIcon(this, ":/icons/status_staking_no_" + sSheet));
         labelStakingIcon->setToolTip(tr("Not staking currently: %1, <b>Estimated</b> staking frequency is %2.")
-                                     .arg(clientModel->getMinerWarnings())
-                                     .arg(GetEstimatedStakingFrequency(etts_days)));
+                                     .arg(clientModel->getMinerWarnings(),
+                                          GetEstimatedStakingFrequency(etts_days)));
     }
 }
 
@@ -1847,18 +1850,18 @@ void BitcoinGUI::updateScraperIcon(int scraperEventtype, int status)
                                             "Scrapers included: %3. \n"
                                             "Scraper(s) excluded: %4. \n"
                                             "Scraper(s) not publishing: %5.")
-                                         .arg(QString(DateTimeStrFormat("%x %H:%M:%S", nConvergenceTime).c_str()))
-                                         .arg(qsExcludedProjects)
-                                         .arg(qsIncludedScrapers)
-                                         .arg(qsExcludedScrapers)
-                                         .arg(qsScrapersNotPublishing));
+                                         .arg(QString(DateTimeStrFormat("%x %H:%M:%S", nConvergenceTime).c_str()),
+                                              qsExcludedProjects,
+                                              qsIncludedScrapers,
+                                              qsExcludedScrapers,
+                                              qsScrapersNotPublishing));
         }
         else
         {
             labelScraperIcon->setToolTip(tr("Scraper: Convergence achieved, date/time %1 UTC. \n"
                                             " Project(s) excluded: %2.")
-                                         .arg(QString(DateTimeStrFormat("%x %H:%M:%S", nConvergenceTime).c_str()))
-                                         .arg(qsExcludedProjects));
+                                         .arg(QString(DateTimeStrFormat("%x %H:%M:%S", nConvergenceTime).c_str()),
+                                              qsExcludedProjects));
         }
     }
     else if ((scraperEventtype == (int)scrapereventtypes::Convergence  || scraperEventtype == (int)scrapereventtypes::SBContract)

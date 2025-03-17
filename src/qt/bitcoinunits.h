@@ -9,6 +9,8 @@
 */
 class BitcoinUnits: public QAbstractListModel
 {
+    Q_OBJECT
+
 public:
     explicit BitcoinUnits(QObject *parent);
 

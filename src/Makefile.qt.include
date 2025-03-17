@@ -133,6 +133,7 @@ QT_MOC_CPP = \
   qt/moc_bitcoinaddressvalidator.cpp \
   qt/moc_bitcoinamountfield.cpp \
   qt/moc_bitcoingui.cpp \
+  qt/moc_bitcoinunits.cpp \
   qt/moc_clicklabel.cpp \
   qt/moc_clientmodel.cpp \
   qt/moc_coincontroldialog.cpp \
@@ -173,6 +174,7 @@ QT_MOC_CPP = \
   qt/moc_transactiontablemodel.cpp \
   qt/moc_transactionview.cpp \
   qt/moc_updatedialog.cpp \
+  qt/moc_upgradeqt.cpp \
   qt/moc_walletmodel.cpp \
   qt/researcher/moc_projecttablemodel.cpp \
   qt/researcher/moc_researchermodel.cpp \

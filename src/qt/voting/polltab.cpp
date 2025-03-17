@@ -32,7 +32,7 @@ QString PollWaitMessage()
 
 QString FullRefreshMessage()
 {
-    return QStringLiteral("%1 %2").arg(RefreshMessage()).arg(PollWaitMessage());
+    return QStringLiteral("%1 %2").arg(RefreshMessage(), PollWaitMessage());
 }
 } // Anonymous namespace
 

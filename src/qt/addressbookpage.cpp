@@ -202,7 +202,7 @@ void AddressBookPage::on_signMessageButton_clicked()
     QModelIndexList indexes = table->selectionModel()->selectedRows(AddressTableModel::Address);
     QString addr;
 
-    for (QModelIndex index : indexes) {
+    for (QModelIndex index : std::as_const(indexes)) {
         QVariant address = index.data();
         addr = address.toString();
     }
@@ -216,7 +216,7 @@ void AddressBookPage::on_verifyMessageButton_clicked()
     QModelIndexList indexes = table->selectionModel()->selectedRows(AddressTableModel::Address);
     QString addr;
 
-    for (QModelIndex index : indexes) {
+    for (QModelIndex index : std::as_const(indexes)) {
         QVariant address = index.data();
         addr = address.toString();
     }
@@ -308,7 +308,7 @@ void AddressBookPage::done(int retval)
     // Figure out which address was selected, and return it
     QModelIndexList indexes = table->selectionModel()->selectedRows(AddressTableModel::Address);
 
-    for (QModelIndex index : indexes) {
+    for (QModelIndex index : std::as_const(indexes)) {
         QVariant address = table->model()->data(index);
         returnValue = address.toString();
     }

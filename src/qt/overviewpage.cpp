@@ -301,8 +301,8 @@ void OverviewPage::setHeight(int height, int height_of_peers, bool in_sync)
         percent_progress = height * 100 / height_of_peers;
 
         text += QString(" of %1 (%2\%)")
-                .arg(QString::number(height_of_peers))
-                .arg(QString::number(percent_progress));
+                .arg(QString::number(height_of_peers),
+                     QString::number(percent_progress));
     }
 
     ui->blocksLabel->setText(text);

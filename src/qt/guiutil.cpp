@@ -97,8 +97,8 @@ QString formatNiceTimeOffset(qint64 secs)
         qint64 years = secs / YEAR_IN_SECONDS;
         qint64 remainder = secs % YEAR_IN_SECONDS;
         timeBehindText = QObject::tr("%1 and %2")
-            .arg(QObject::tr("%n year(s)", "", years))
-            .arg(QObject::tr("%n week(s)","", round_half_up(remainder, WEEK_IN_SECONDS)));
+            .arg(QObject::tr("%n year(s)", "", years),
+                 QObject::tr("%n week(s)","", round_half_up(remainder, WEEK_IN_SECONDS)));
     }
 
     return timeBehindText;

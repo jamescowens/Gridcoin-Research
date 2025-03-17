@@ -620,7 +620,7 @@ void CoinControlDialog::updateLabels(WalletModel *model,
     bool fLowOutput = false;
     bool fDust = false;
     CTransaction txDummy;
-    for (const qint64& amount : *payAmounts) {
+    for (const qint64& amount : std::as_const(*payAmounts)) {
         nPayAmount += amount;
 
         if (amount > 0)
@@ -749,8 +749,8 @@ void CoinControlDialog::updateLabels(WalletModel *model,
 
     // tool tips
     l5->setToolTip(tr("This label turns red, if the transaction size is bigger than 10000 bytes.\n\n This means a fee of at least %1 per kb is required.\n\n Can vary +/- 1 Byte per input.").arg(BitcoinUnits::formatWithUnit(nDisplayUnit, CENT)));
-    l7->setToolTip(tr("This label turns red, if any recipient receives an amount smaller than %1.\n\n This means a fee of at least %2 is required. \n\n Amounts below 0.546 times the minimum relay fee are shown as DUST.").arg(BitcoinUnits::formatWithUnit(nDisplayUnit, CENT)).arg(BitcoinUnits::formatWithUnit(nDisplayUnit, CENT)));
-    l8->setToolTip(tr("This label turns red, if the change is smaller than %1.\n\n This means a fee of at least %2 is required.").arg(BitcoinUnits::formatWithUnit(nDisplayUnit, CENT)).arg(BitcoinUnits::formatWithUnit(nDisplayUnit, CENT)));
+    l7->setToolTip(tr("This label turns red, if any recipient receives an amount smaller than %1.\n\n This means a fee of at least %2 is required. \n\n Amounts below 0.546 times the minimum relay fee are shown as DUST.").arg(BitcoinUnits::formatWithUnit(nDisplayUnit, CENT), BitcoinUnits::formatWithUnit(nDisplayUnit, CENT)));
+    l8->setToolTip(tr("This label turns red, if the change is smaller than %1.\n\n This means a fee of at least %2 is required.").arg(BitcoinUnits::formatWithUnit(nDisplayUnit, CENT), BitcoinUnits::formatWithUnit(nDisplayUnit, CENT)));
     dialog->findChild<QLabel *>("coinControlBytesTextLabel")    ->setToolTip(l5->toolTip());
     dialog->findChild<QLabel *>("coinControlLowOutputTextLabel")->setToolTip(l7->toolTip());
     dialog->findChild<QLabel *>("coinControlChangeTextLabel")   ->setToolTip(l8->toolTip());
@@ -833,7 +833,7 @@ void CoinControlDialog::updateView()
             if (!(sAddress == sWalletAddress)) // change
             {
                 // tooltip from where the change comes from
-                itemOutput->setToolTip(COLUMN_LABEL, tr("change from %1 (%2)").arg(sWalletLabel).arg(sWalletAddress));
+                itemOutput->setToolTip(COLUMN_LABEL, tr("change from %1 (%2)").arg(sWalletLabel, sWalletAddress));
                 itemOutput->setText(COLUMN_LABEL, tr("(change)"));
                 itemOutput->setText(COLUMN_CHANGE_BOOL, QString::number(1));
             }
