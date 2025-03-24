@@ -17,6 +17,7 @@ jobs:
                     - minimal
                     - no-asm
                     - gui-full
+                    - gui-qt6
                     - system-libs
                 include:
                     - tag: no-asm
@@ -33,6 +34,15 @@ jobs:
                           -DENABLE_QRENCODE=ON
                           -DENABLE_UPNP=ON
                           -DUSE_DBUS=ON
+                    - tag: gui-qt6
+                      deps: >-
+                          qt6-base-dev
+                          qt6-5compat-dev
+                          qt6-tools-dev
+                      options: >-
+                          -DENABLE_GUI=ON
+                          -DUSE_DBUS=ON
+                          -DUSE_QT6=ON
                     - tag: system-libs
                       deps: >-
                           libdb5.3++-dev
@@ -118,6 +128,7 @@ jobs:
                     - minimal
                     - no-asm
                     - gui-full
+                    - gui-qt6
                     - system-libs
                 include:
                     - tag: no-asm
@@ -133,6 +144,13 @@ jobs:
                           -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5
                           -DENABLE_QRENCODE=ON
                           -DENABLE_UPNP=ON
+                    - tag: gui-qt6
+                      deps: >-
+                          qt@6
+                      options: >-
+                          -DENABLE_GUI=ON
+                          -DQt6_DIR=$(brew --prefix qt@6)/lib/cmake/Qt6
+                          -DUSE_QT6=ON
                     - tag: system-libs
                       deps: >-
                           berkeley-db@5
@@ -209,6 +227,7 @@ jobs:
                     - minimal
                     - no-asm
                     - gui-full
+                    - gui-qt6
                 include:
                     - tag: no-asm
                       deps: null
@@ -223,6 +242,14 @@ jobs:
                           -DENABLE_GUI=ON
                           -DENABLE_QRENCODE=ON
                           -DENABLE_UPNP=ON
+                    - tag: gui-qt6
+                      deps: >-
+                          qt6-base:p
+                          qt6-5compat:p
+                          qt6-tools:p
+                      options: >-
+                          -DENABLE_GUI=ON
+                          -DUSE_QT6=ON
         steps:
             - name: Checkout
               uses: actions/checkout@v4
