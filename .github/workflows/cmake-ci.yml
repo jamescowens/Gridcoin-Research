@@ -59,23 +59,10 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
             - name: Install dependencies
-              uses: awalsh128/cache-apt-pkgs-action@v1
-              with:
-                  packages: >-
-                      ${{matrix.deps}}
-                      ccache
-                      cmake
-                      libcurl4-openssl-dev
-                      libssl-dev
-                      libzip-dev
-                      ninja-build
-                      pkgconf
-                      zipcmp
-                      zipmerge
-                      ziptool
-                  version: ${{matrix.tag}}
-            - name: Install Boost dependencies
               run: sudo apt-get install -y --no-install-recommends
+                  ${{matrix.deps}}
+                  ccache
+                  cmake
                   libboost-dev
                   libboost-date-time-dev
                   libboost-exception-dev
@@ -84,6 +71,14 @@ jobs:
                   libboost-serialization-dev
                   libboost-test-dev
                   libboost-thread-dev
+                  libcurl4-openssl-dev
+                  libssl-dev
+                  libzip-dev
+                  ninja-build
+                  pkgconf
+                  zipcmp
+                  zipmerge
+                  ziptool
             - name: Configure
               run: cmake
                   -B ${{github.workspace}}/build -G Ninja
