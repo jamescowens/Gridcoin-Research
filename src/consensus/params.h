@@ -80,6 +80,10 @@ struct Params {
       */
     Fraction MaxMagnitudeUnit;
     /**
+     * @brief This is the minimum allowed magnitude weight factor as a fraction. Applicable for block v13+
+     */
+    Fraction MinMagnitudeWeightFactor;
+    /**
       * @brief The multiplier applied to (money supply / network magnitude) to scale the network magnitude into equivalent GRC
       * for purposes of computing voting weight. Nominally 1 / 5.67 from Fern onwards.
       *
@@ -87,6 +91,10 @@ struct Params {
      * V13+ blocks. The value is specified as a whole number or fraction. For example, 1 / 5.67 would be "100/567", 2 would be "2".
       */
     Fraction DefaultMagnitudeWeightFactor;
+    /**
+     * @brief This is the maximum allowed magnitude weight factor as a fraction. Applicable for block v13+.
+     */
+    Fraction MaxMagnitudeWeightFactor;
     /** The "standard" contract replay lookback for those contract types that do not have a registry db.
       */
     int64_t StandardContractReplayLookback;

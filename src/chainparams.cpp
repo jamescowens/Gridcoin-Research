@@ -78,7 +78,9 @@ public:
         consensus.MaxMandatorySideStakeTotalAlloc = Fraction(1, 4);
         consensus.DefaultMagnitudeUnit = Fraction(1, 4);
         consensus.MaxMagnitudeUnit = Fraction(5, 1);
+        consensus.MinMagnitudeWeightFactor = Fraction(1, 10);
         consensus.DefaultMagnitudeWeightFactor = Fraction(100, 567);
+        consensus.MaxMagnitudeWeightFactor = Fraction(1);
         consensus.StandardContractReplayLookback = 180 * 24 * 60 * 60;
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         /**
@@ -194,7 +196,9 @@ public:
         consensus.MaxMandatorySideStakeTotalAlloc = Fraction(1, 4);
         consensus.DefaultMagnitudeUnit = Fraction(1, 4);
         consensus.MaxMagnitudeUnit = Fraction(5, 1);
+        consensus.MinMagnitudeWeightFactor = Fraction(1, 10);
         consensus.DefaultMagnitudeWeightFactor = Fraction(100, 567);
+        consensus.MaxMagnitudeWeightFactor = Fraction(1);
         consensus.StandardContractReplayLookback = 180 * 24 * 60 * 60;
         consensus.powLimit = uint256S("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 

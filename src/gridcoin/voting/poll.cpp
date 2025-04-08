@@ -237,6 +237,11 @@ Fraction Poll::ResolveMagnitudeWeightFactor(CBlockIndex *index) const
         magnitude_weight_factor = Fraction().FromString(protocol_entry->m_value);
     }
 
+    // Clamp to allowed MagnitudeWeightFactor interval.
+    magnitude_weight_factor = std::clamp<Fraction>(magnitude_weight_factor,
+                                                   Params().GetConsensus().MinMagnitudeWeightFactor,
+                                                   Params().GetConsensus().MaxMagnitudeWeightFactor);
+
     return magnitude_weight_factor;
 }
 
