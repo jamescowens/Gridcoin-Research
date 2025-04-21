@@ -189,14 +189,14 @@ public:
         consensus.BlockV10Height = 629409;
         consensus.BlockV11Height = 1301500;
         consensus.BlockV12Height = 1871830;
-        consensus.BlockV13Height = std::numeric_limits<int>::max();
+        consensus.BlockV13Height = 2870000;
         consensus.PollV3Height = 1944820;
         consensus.ProjectV2Height = 1944820;
         consensus.DefaultConstantBlockReward = 10 * COIN;
         consensus.ConstantBlockRewardFloor = 0;
         consensus.ConstantBlockRewardCeiling = 500 * COIN;
-        consensus.ProjectV4Height = std::numeric_limits<int>::max();
-        consensus.SuperblockV3Height = std::numeric_limits<int>::max();
+        consensus.ProjectV4Height = 2870000;
+        consensus.SuperblockV3Height = 2870000;
         // Immediately post zero payment interval fees 40% for testnet, the same as mainnet
         consensus.InitialMRCFeeFractionPostZeroInterval = Fraction(2, 5);
         consensus.MRCZeroPaymentInterval = 10 * 60;
