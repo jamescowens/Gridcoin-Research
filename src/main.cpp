@@ -2051,8 +2051,8 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         if (pfrom->nVersion < MIN_PEER_PROTO_VERSION
             || (DISCONNECT_OLD_VERSION_AFTER_GRACE_PERIOD
                 && pfrom->nVersion < PROTOCOL_VERSION
-                && pindexBest->nHeight > std::max(Params().GetConsensus().BlockV12Height,
-                                                  Params().GetConsensus().BlockV12Height + DISCONNECT_GRACE_PERIOD)
+                && pindexBest->nHeight > std::max(Params().GetConsensus().BlockV13Height,
+                                                  Params().GetConsensus().BlockV13Height + DISCONNECT_GRACE_PERIOD)
                 )
             ) {
             // disconnect from peers older than this proto version
