@@ -788,6 +788,13 @@ void SetupServerArgs()
     hidden_args.emplace_back("-daemonwait");
 #endif
 
+    // Temporary hidden options for fork height overrides to facilitate isolated testnet testing.
+    hidden_args.emplace_back("-blockv13height");
+    hidden_args.emplace_back("-projectv4height");
+    hidden_args.emplace_back("-superblockv3height");
+    hidden_args.emplace_back("-blockv14height");
+    hidden_args.emplace_back("-autogreylistauditheight");
+
     // Additional hidden options
     hidden_args.emplace_back("-devbuild");
     hidden_args.emplace_back("-scrapersleep");
@@ -1381,8 +1388,13 @@ bool AppInit2(ThreadHandlerPtr threads)
 
     LogPrintf("Block version 11 hard fork configured for block %d", Params().GetConsensus().BlockV11Height);
     LogPrintf("Block version 12 hard fork configured for block %d", Params().GetConsensus().BlockV12Height);
-    LogPrintf("Block version 13 hard fork configured for block %d", Params().GetConsensus().BlockV13Height);
-    LogPrintf("Block version 14 hard fork configured for block %d", Params().GetConsensus().BlockV14Height);
+    // Isolated-testnet arg overrides restored (9ee7dab4): -blockv13height /
+    // -blockv14height let the mesh set the hard-fork heights locally. Kept
+    // alongside development's v15 + POOL-retention logging added since.
+    LogPrintf("Block version 13 hard fork configured for block %d",
+              gArgs.GetArg("-blockv13height", Params().GetConsensus().BlockV13Height));
+    LogPrintf("Block version 14 hard fork configured for block %d",
+              gArgs.GetArg("-blockv14height", Params().GetConsensus().BlockV14Height));
     LogPrintf("Block version 15 hard fork configured for block %d", GetBlockV15Height());
 
     // Surface the effective POOL PENDING/OPEN retention so an isolated-testnet
