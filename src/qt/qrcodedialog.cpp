@@ -6,7 +6,6 @@
 #include "guiutil.h"
 #include "optionsmodel.h"
 
-#include <QLatin1String>
 #include <QPixmap>
 #include <QUrl>
 
@@ -150,7 +149,7 @@ void QRCodeDialog::on_saveAsButton_clicked()
 {
     QString fn = GUIUtil::getSaveFileName(
         this, tr("Save QR Code"), QString(),
-        tr("PNG Image", "Name of PNG file format") + QLatin1String(" (*.png)"), nullptr);
+        tr("PNG Image", "Name of PNG file format") + u" (*.png)"_qs, nullptr);
     if (!fn.isEmpty())
         myImage.scaled(EXPORT_IMAGE_SIZE, EXPORT_IMAGE_SIZE).save(fn);
 }
