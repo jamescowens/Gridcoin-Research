@@ -18,7 +18,6 @@
 #include <QDoubleValidator>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QLatin1String>
 #include <QLineEdit>
 #include <QTableView>
 #include <QHeaderView>
@@ -281,7 +280,7 @@ void TransactionView::exportClicked()
     QString filename = GUIUtil::getSaveFileName(
             this,
             tr("Export Transaction Data"), QString(),
-            tr("Comma separated file", "Name of CSV file format") + QLatin1String(" (*.csv)"), nullptr);
+            tr("Comma separated file", "Name of CSV file format") + u" (*.csv)"_qs, nullptr);
 
     if (filename.isNull()) return;
 

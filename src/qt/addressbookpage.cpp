@@ -11,7 +11,6 @@
 
 #include <QSortFilterProxyModel>
 #include <QClipboard>
-#include <QLatin1String>
 #include <QMessageBox>
 #include <QMenu>
 
@@ -328,7 +327,7 @@ void AddressBookPage::exportClicked()
     QString filename = GUIUtil::getSaveFileName(
             this,
             tr("Export Address Book Data"), QString(),
-            tr("Comma separated file", "Name of CSV file format") + QLatin1String(" (*.csv)"), nullptr);
+            tr("Comma separated file", "Name of CSV file format") + u" (*.csv)"_qs, nullptr);
 
     if (filename.isNull()) return;
 
