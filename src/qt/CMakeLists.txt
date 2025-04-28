@@ -183,13 +183,25 @@ add_dependencies(gridcoinqt gridcoinqt_l10n)
 # Application
 # ===========
 
-add_executable(gridcoinresearch WIN32 MACOSX_BUNDLE bitcoin.cpp)
+add_executable(gridcoinresearch bitcoin.cpp)
+
+set(MACOSX_BUNDLE_RESOURCE_FILES res/icons/gridcoin.icns)
+if(APPLE)
+    target_sources(gridcoinresearch PRIVATE ${MACOSX_BUNDLE_RESOURCE_FILES})
+endif()
 
 target_link_libraries(gridcoinresearch PRIVATE
     ${RUNTIME_LIBS}
     ${QT}::Widgets
     gridcoin_util
     gridcoinqt
+)
+
+set_target_properties(gridcoinresearch PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/share/qt/Info.plist.cmake.in"
+    RESOURCE ${MACOSX_BUNDLE_RESOURCE_FILES}
 )
 
 if(UNIX AND NOT APPLE)
