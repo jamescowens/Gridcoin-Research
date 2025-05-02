@@ -103,6 +103,9 @@ public:
     /** Progress message during initialization. */
     ADD_SIGNALS_DECL_WRAPPER(InitMessage, void, const std::string &message);
 
+    /** How many blocks have been loaded during initialization. */
+    ADD_SIGNALS_DECL_WRAPPER(InitProgress, void, unsigned int loaded, unsigned int total);
+
     /** Initiate client shutdown. */
     ADD_SIGNALS_DECL_WRAPPER(QueueShutdown, void);
 

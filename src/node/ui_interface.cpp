@@ -17,6 +17,7 @@ struct UISignals {
     boost::signals2::signal<CClientUIInterface::ThreadSafeMessageBoxSig> ThreadSafeMessageBox;
     boost::signals2::signal<CClientUIInterface::ThreadSafeAskQuestionSig> ThreadSafeAskQuestion;
     boost::signals2::signal<CClientUIInterface::InitMessageSig> InitMessage;
+    boost::signals2::signal<CClientUIInterface::InitProgressSig> InitProgress;
     boost::signals2::signal<CClientUIInterface::NotifyNumConnectionsChangedSig> NotifyNumConnectionsChanged;
     boost::signals2::signal<CClientUIInterface::NotifyAlertChangedSig> NotifyAlertChanged;
     boost::signals2::signal<CClientUIInterface::BannedListChangedSig> BannedListChanged;
@@ -47,6 +48,7 @@ static UISignals g_ui_signals;
 ADD_SIGNALS_IMPL_WRAPPER(ThreadSafeMessageBox);
 ADD_SIGNALS_IMPL_WRAPPER(ThreadSafeAskQuestion);
 ADD_SIGNALS_IMPL_WRAPPER(InitMessage);
+ADD_SIGNALS_IMPL_WRAPPER(InitProgress);
 ADD_SIGNALS_IMPL_WRAPPER(NotifyNumConnectionsChanged);
 ADD_SIGNALS_IMPL_WRAPPER(NotifyAlertChanged);
 ADD_SIGNALS_IMPL_WRAPPER(BannedListChanged);
@@ -72,6 +74,7 @@ bool CClientUIInterface::ThreadSafeAskFee(int64_t nFeeRequired, const std::strin
 bool CClientUIInterface::ThreadSafeAskQuestion(std::string caption, std::string body) { return g_ui_signals.ThreadSafeAskQuestion(caption, body).value_or(false); }
 void CClientUIInterface::ThreadSafeHandleURI(const std::string& strURI) { return g_ui_signals.ThreadSafeHandleURI(strURI); }
 void CClientUIInterface::InitMessage(const std::string &message) { return g_ui_signals.InitMessage(message); }
+void CClientUIInterface::InitProgress(unsigned int loaded, unsigned int total) { return g_ui_signals.InitProgress(loaded, total); }
 void CClientUIInterface::QueueShutdown() { return g_ui_signals.QueueShutdown(); }
 std::string CClientUIInterface::Translate(const char* psz) { return g_ui_signals.Translate(psz).value_or(std::string(psz)); }
 void CClientUIInterface::NotifyBlocksChanged(bool syncing, int height, int64_t best_time, uint32_t target_bits) { return g_ui_signals.NotifyBlocksChanged(syncing, height, best_time, target_bits); }
