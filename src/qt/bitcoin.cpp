@@ -44,6 +44,7 @@
 #include <QSplashScreen>
 #include <QLibraryInfo>
 #include <QProcess>
+#include <QDir>
 
 // This eliminates the linter false positive on double include of QtPlugin
 #if (defined(BITCOIN_NEED_QT_PLUGINS) && !defined(_BITCOIN_QT_PLUGINS_INCLUDED)) || defined(QT_STATICPLUGIN)
@@ -634,6 +635,10 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
     uiInterface.Translate_connect(Translate);
 
     uiInterface.UpdateMessageBox_connect(UpdateMessageBox);
+
+    QFont font = QFont("SF Pro Text");
+    font.setPixelSize(12);
+    app.setFont(font);
 
     QQmlApplicationEngine engine;
     engine.addImportPath("qrc:/qml");
