@@ -199,6 +199,24 @@
         <file alias="SF-Pro-Text-RegularItalic">res/fonts/SF-Pro-Text-RegularItalic.otf</file>
         <file alias="SF-Pro-Text-Semibold">res/fonts/SF-Pro-Text-Semibold.otf</file>
         <file alias="SF-Pro-Text-SemiboldItalic">res/fonts/SF-Pro-Text-SemiboldItalic.otf</file>
+        <file alias="Montserrat-Black">res/fonts/Montserrat-Black.ttf</file>
+        <file alias="Montserrat-BlackItalic">res/fonts/Montserrat-BlackItalic.ttf</file>
+        <file alias="Montserrat-Bold">res/fonts/Montserrat-Bold.ttf</file>
+        <file alias="Montserrat-BoldItalic">res/fonts/Montserrat-BoldItalic.ttf</file>
+        <file alias="Montserrat-ExtraBold">res/fonts/Montserrat-ExtraBold.ttf</file>
+        <file alias="Montserrat-ExtraBoldItalic">res/fonts/Montserrat-ExtraBoldItalic.ttf</file>
+        <file alias="Montserrat-ExtraLight">res/fonts/Montserrat-ExtraLight.ttf</file>
+        <file alias="Montserrat-ExtraLightItalic">res/fonts/Montserrat-ExtraLightItalic.ttf</file>
+        <file alias="Montserrat-Italic">res/fonts/Montserrat-Italic.ttf</file>
+        <file alias="Montserrat-Light">res/fonts/Montserrat-Light.ttf</file>
+        <file alias="Montserrat-LightItalic">res/fonts/Montserrat-LightItalic.ttf</file>
+        <file alias="Montserrat-Medium">res/fonts/Montserrat-Medium.ttf</file>
+        <file alias="Montserrat-MediumItalic">res/fonts/Montserrat-MediumItalic.ttf</file>
+        <file alias="Montserrat-Regular">res/fonts/Montserrat-Regular.ttf</file>
+        <file alias="Montserrat-SemiBold">res/fonts/Montserrat-SemiBold.ttf</file>
+        <file alias="Montserrat-SemiBoldItalic">res/fonts/Montserrat-SemiBoldItalic.ttf</file>
+        <file alias="Montserrat-Thin">res/fonts/Montserrat-Thin.ttf</file>
+        <file alias="Montserrat-ThinItalic">res/fonts/Montserrat-ThinItalic.ttf</file>
     </qresource>
     <qresource prefix="/movies"/>
     <qresource prefix="/stylesheets">
