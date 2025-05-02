@@ -187,6 +187,18 @@
         <file alias="inter-bold">res/fonts/Inter-Bold.otf</file>
         <file alias="inter-medium">res/fonts/Inter-Medium.otf</file>
         <file alias="inter-regular">res/fonts/Inter-Regular.otf</file>
+        <file alias="SF-Pro-Text-Bold">res/fonts/SF-Pro-Text-Bold.otf</file>
+        <file alias="SF-Pro-Text-BoldItalic">res/fonts/SF-Pro-Text-BoldItalic.otf</file>
+        <file alias="SF-Pro-Text-Heavy">res/fonts/SF-Pro-Text-Heavy.otf</file>
+        <file alias="SF-Pro-Text-HeavyItalic">res/fonts/SF-Pro-Text-HeavyItalic.otf</file>
+        <file alias="SF-Pro-Text-Light">res/fonts/SF-Pro-Text-Light.otf</file>
+        <file alias="SF-Pro-Text-LightItalic">res/fonts/SF-Pro-Text-LightItalic.otf</file>
+        <file alias="SF-Pro-Text-Medium">res/fonts/SF-Pro-Text-Medium.otf</file>
+        <file alias="SF-Pro-Text-MediumItalic">res/fonts/SF-Pro-Text-MediumItalic.otf</file>
+        <file alias="SF-Pro-Text-Regular">res/fonts/SF-Pro-Text-Regular.otf</file>
+        <file alias="SF-Pro-Text-RegularItalic">res/fonts/SF-Pro-Text-RegularItalic.otf</file>
+        <file alias="SF-Pro-Text-Semibold">res/fonts/SF-Pro-Text-Semibold.otf</file>
+        <file alias="SF-Pro-Text-SemiboldItalic">res/fonts/SF-Pro-Text-SemiboldItalic.otf</file>
     </qresource>
     <qresource prefix="/movies"/>
     <qresource prefix="/stylesheets">
