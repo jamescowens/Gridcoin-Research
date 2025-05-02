@@ -3,7 +3,7 @@
 */
 import QtQuick 2.15
 import QtQuick.Window 2.15
-import QtQuick.Controls 2.15
+import QtQuick.Controls.Basic 2.15 as Basic
 import MMPTheme 1.0
 
 Window {
@@ -63,7 +63,7 @@ Window {
         running: false
         onFinished: closeSplashScreen()
     }
-    ProgressBar {
+    Basic.ProgressBar {
         id: blockProgressBar
         value: currentBlocksLoaded/totalBlocks
         anchors {
@@ -112,7 +112,7 @@ Window {
         color: MMPTheme.themeSelect("#4e2fad", MMPTheme.cWhite)
         font.pixelSize: 34
         font.weight: Font.Bold
-        // font.family: "Montserrat"
+        font.family: "Montserrat"
         anchors {
             horizontalCenter: parent.horizontalCenter
             top: logo.bottom
@@ -124,7 +124,7 @@ Window {
         text: qsTr("Rewarding Volunteer Distributed Computing")
         color: MMPTheme.themeSelect("#7787a3", MMPTheme.cWhite)
         font.weight: Font.DemiBold
-        // font.family: "Montserrat"
+        font.family: "Montserrat"
         anchors {
             horizontalCenter: parent.horizontalCenter
             top: gridcoinText.bottom

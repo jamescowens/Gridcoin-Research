@@ -643,7 +643,7 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
     QQmlApplicationEngine engine;
     engine.addImportPath("qrc:/qml");
 
-    const QUrl url(QStringLiteral("qrc:/qml/Main.qml"));
+    const QUrl url(QStringLiteral("qrc:/qml/SplashScreen.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                     &app, [url](QObject *obj, const QUrl &objUrl){
         if (!obj && url == objUrl)
@@ -660,10 +660,6 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
     engine.rootContext()->setContextProperty("_messageBrige", &messageBrige);
     
     engine.load(url);
-    if (engine.rootObjects().isEmpty()) {
-        qCritical() << "Error: No root object found after loading QML.  Check for errors during loading.";
-        return -1; // Return an error code
-    }
     
     // QSplashScreen splash(QPixmap(":/images/splash"));
     if (gArgs.GetBoolArg("-splash", true) && !gArgs.GetBoolArg("-min"))

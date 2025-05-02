@@ -157,23 +157,22 @@ set_source_files_properties(
 )
 
 qt_policy(SET QTP0004 NEW)
+set_source_files_properties(qml/plugins/MMPTheme/MMPTheme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 qt_add_qml_module(MMPTheme
     URI MMPTheme
     VERSION 1.0
     RESOURCE_PREFIX qml
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/MMPTheme"
-    RESOURCES
-        qml/MMPTheme/qmldir
     QML_FILES  
-        qml/MMPTheme/MMPTheme.qml
-        qml/MMPTheme/Button.qml
-        qml/MMPTheme/CheckBox.qml
-        qml/MMPTheme/GroupBox.qml
-        qml/MMPTheme/RadioButton.qml
-        qml/MMPTheme/ScrollBar.qml
-        qml/MMPTheme/SpinBox.qml
-        qml/MMPTheme/TextArea.qml
-        qml/MMPTheme/TextField.qml
+        qml/plugins/MMPTheme/MMPTheme.qml
+        qml/MMPControls/Button.qml
+        qml/MMPControls/CheckBox.qml
+        qml/MMPControls/GroupBox.qml
+        qml/MMPControls/RadioButton.qml
+        qml/MMPControls/ScrollBar.qml
+        qml/MMPControls/SpinBox.qml
+        qml/MMPControls/TextArea.qml
+        qml/MMPControls/TextField.qml
 )
 
 # Libraries to link
