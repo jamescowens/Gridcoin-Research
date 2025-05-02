@@ -424,6 +424,8 @@ bool CTxDB::LoadBlockIndex()
                     _("Blocks Loaded"),
                     (100 * nLoaded / nHighest)));
 
+                uiInterface.InitProgress(nLoaded, nHighest);
+
                 tfm::format(std::cout,"%d ",nLoaded); fflush(stdout);
             }
         }
@@ -477,6 +479,7 @@ bool CTxDB::LoadBlockIndex()
             if ((nCurrentDepth % 1000) == 0)
             {
                 uiInterface.InitMessage(strprintf("%" PRId64 "/%" PRId64 " %s", nCurrentDepth, nCheckDepth, _("Blocks Verified")));
+                uiInterface.InitProgress(nLoaded, nHighest);
             }
         }
 

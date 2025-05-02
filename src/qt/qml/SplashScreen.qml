@@ -13,16 +13,6 @@ Window {
     flags: Qt.SplashScreen | Qt.FramelessWindowHint
     visible: true
     color: "transparent"
-    signal loaded
-    property int currentBlocksLoaded: 0
-    property int totalBlocks: 2000000
-
-    Connections {
-        target: _messageBrige
-        function onNewInitMessage(message) {
-             console.log("QML received message:", message)
-        }
-    }
 
     Rectangle {
         id: background
@@ -36,19 +26,6 @@ Window {
         }
     }
 
-    Timer {
-        id: blockLoadingTimer
-        interval: 10
-        running: true
-        repeat: true
-        onTriggered: {
-            currentBlocksLoaded += 2000
-            if (blockProgressBar.value>= 1) {
-                running=false
-                opacityAnimation.start()
-            }
-        }
-    }
     function closeSplashScreen() {
         loaded()
         splashScreen.close()
@@ -65,7 +42,7 @@ Window {
     }
     Basic.ProgressBar {
         id: blockProgressBar
-        value: currentBlocksLoaded/totalBlocks
+        value: _initModel.total === 0 ? 0 : _initModel.loaded / _initModel.total
         anchors {
             left: parent.left
             right: parent.right
@@ -133,7 +110,7 @@ Window {
     }
     Text {
         id: blocksLoadedText
-        text: qsTr("%L1/%L2 Blocks Loaded").arg(currentBlocksLoaded).arg(totalBlocks)
+        text: _initModel.message
         color: MMPTheme.themeSelect(MMPTheme.cOxfordBlue, "#6a7994")
         font.pixelSize: 10
         anchors {
