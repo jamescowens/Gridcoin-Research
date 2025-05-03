@@ -627,7 +627,7 @@ Superblock Superblock::FromConvergence(
         // Refresh the auto greylist and refresh this superblock with the greylist status.
         std::shared_ptr<GRC::AutoGreylist> greylist_ptr = GRC::GetAutoGreylistCache();
 
-        greylist_ptr->RefreshWithSuperblock(superblock);
+        greylist_ptr->RefreshWithAndUpdateSuperblock(superblock);
     }
 
     return superblock;
