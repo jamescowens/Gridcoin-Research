@@ -621,7 +621,7 @@ Superblock Superblock::FromConvergence(
 
     if (version > 2) {
         // Populate the total credits into the superblock object from the convergence. This must be done BEFORE
-        // the auto greylist RefreshWithSuperblock is called.
+        // the auto greylist RefreshWithAndUpdateSuperblock is called.
         superblock.m_projects_all_cpids_total_credits.Reset(stats.mScraperConvergedStats.m_total_credit_map);
 
         // Refresh the auto greylist and refresh this superblock with the greylist status.
