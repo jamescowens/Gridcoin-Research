@@ -756,6 +756,15 @@ BOOST_AUTO_TEST_CASE(it_initializes_from_a_provided_scraper_convergence_v3)
     // This needs to be initialized, because the below FromConvergence call uses the AutoGreylist class, which in turn
     // cannot have a pindex with random data.
     pindexBest = new CBlockIndex;
+    pindexGenesisBlock = new CBlockIndex;
+
+    pindexGenesisBlock->nHeight = 0;
+    pindexGenesisBlock->nTime = 0;
+    pindexBest->nHeight = 1;
+    pindexBest->nTime = 1;
+    pindexBest->pprev = pindexGenesisBlock;
+    pindexGenesisBlock->pnext = pindexBest;
+    nBestHeight = 1;
 
     const ScraperStatsMeta meta(3);
     GRC::Superblock superblock = GRC::Superblock::FromConvergence(GetTestConvergence(meta), 3);
@@ -819,6 +828,7 @@ BOOST_AUTO_TEST_CASE(it_initializes_from_a_provided_scraper_convergence_v3)
     }
 
     delete pindexBest;
+    delete pindexGenesisBlock;
 }
 
 BOOST_AUTO_TEST_CASE(it_initializes_from_a_fallback_by_project_scraper_convergence)
@@ -887,6 +897,15 @@ BOOST_AUTO_TEST_CASE(it_initializes_from_a_fallback_by_project_scraper_convergen
     // This needs to be initialized, because the below FromConvergence call uses the AutoGreylist class, which in turn
     // cannot have a pindex with random data.
     pindexBest = new CBlockIndex;
+    pindexGenesisBlock = new CBlockIndex;
+
+    pindexGenesisBlock->nHeight = 0;
+    pindexGenesisBlock->nTime = 0;
+    pindexBest->nHeight = 1;
+    pindexBest->nTime = 1;
+    pindexBest->pprev = pindexGenesisBlock;
+    pindexGenesisBlock->pnext = pindexBest;
+    nBestHeight = 1;
 
     const ScraperStatsMeta meta(3);
     GRC::Superblock superblock = GRC::Superblock::FromConvergence(
@@ -965,6 +984,7 @@ BOOST_AUTO_TEST_CASE(it_initializes_from_a_fallback_by_project_scraper_convergen
     }
 
     delete pindexBest;
+    delete pindexGenesisBlock;
 }
 
 BOOST_AUTO_TEST_CASE(it_initializes_by_unpacking_a_legacy_binary_contract)

@@ -189,14 +189,14 @@ public:
         consensus.BlockV10Height = 629409;
         consensus.BlockV11Height = 1301500;
         consensus.BlockV12Height = 1871830;
-        consensus.BlockV13Height = std::numeric_limits<int>::max();
+        consensus.BlockV13Height = 2870000;
         consensus.PollV3Height = 1944820;
         consensus.ProjectV2Height = 1944820;
         consensus.DefaultConstantBlockReward = 10 * COIN;
         consensus.ConstantBlockRewardFloor = 0;
         consensus.ConstantBlockRewardCeiling = 500 * COIN;
-        consensus.ProjectV4Height = std::numeric_limits<int>::max();
-        consensus.SuperblockV3Height = std::numeric_limits<int>::max();
+        consensus.ProjectV4Height = 2870000;
+        consensus.SuperblockV3Height = 2870000;
         // Immediately post zero payment interval fees 40% for testnet, the same as mainnet
         consensus.InitialMRCFeeFractionPostZeroInterval = Fraction(2, 5);
         consensus.MRCZeroPaymentInterval = 10 * 60;
@@ -234,6 +234,7 @@ public:
             {
                 {0,       uint256S("0x00006e037d7b84104208ecf2a8638d23149d712ea810da604ee2f2cb39bae713")},
                 {2400000, uint256S("0x962b7607f8ffceb5c77951d242caed3f94f465f8529d924338700895ff8ed458")},
+                {2800000, uint256S("0x038f6a3bdea036e11f6793e5ec0d66434c7889c1fdb340e32136ec0d5bc4cd18")}
             }
         };
 

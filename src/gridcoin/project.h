@@ -839,7 +839,7 @@ public:
     //! from a scraper convergence, and is used in the call chain from the miner loop. The superblock object project status
     //! will be updated.
     //!
-    void RefreshWithSuperblock(Superblock& superblock);
+    void RefreshWithAndUpdateSuperblock(Superblock& superblock);
 
     //!
     //! \brief Resets the AutoGreylist object. This is called by the Whitelist Reset().
