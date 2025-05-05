@@ -574,7 +574,7 @@ void AutoGreylist::RefreshWithSuperblock(SuperblockPtr superblock_ptr_in,
     m_superblock_hash = superblock_ptr_in->GetHash();
 }
 
-void AutoGreylist::RefreshWithSuperblock(Superblock& superblock) EXCLUSIVE_LOCKS_REQUIRED (cs_main)
+void AutoGreylist::RefreshWithAndUpdateSuperblock(Superblock& superblock) EXCLUSIVE_LOCKS_REQUIRED (cs_main)
 {
     SuperblockPtr superblock_ptr;
 
@@ -582,6 +582,8 @@ void AutoGreylist::RefreshWithSuperblock(Superblock& superblock) EXCLUSIVE_LOCKS
     // form a superblock ptr referencing the current head of the chain. The actual superblock will be the next block if it
     // is added to the chain, for for the purposes here, this is what we want, because it is simply used to feed the
     // overloaded version which takes the superblock_ptr and follows the chain backwards to do the greylist calculations.
+    //
+    // Replace copies the superblock object.
     superblock_ptr.Replace(superblock);
 
     superblock_ptr.Rebind(pindexBest);
