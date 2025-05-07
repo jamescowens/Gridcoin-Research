@@ -508,6 +508,8 @@ case $host in
        AC_MSG_ERROR("windres not found")
      fi
 
+     CPPFLAGS="$CPPFLAGS -DSECP256K1_STATIC"
+
      CPPFLAGS="$CPPFLAGS -D_MT -DWIN32 -D_WINDOWS -DBOOST_THREAD_USE_LIB -D_WIN32_WINNT=0x0601"
      case $host in
        i?86-*) WINDOWS_BITS=32 ;;
