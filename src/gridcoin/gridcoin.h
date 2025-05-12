@@ -46,6 +46,11 @@ bool CleanConfig();
 //! with registry db.
 //!
 void RunDBPassivation();
+
+//!
+//! \brief Function to provide for poll expiration/warning notification.
+//!
+void NotifyPoll();
 } // namespace GRC
 
 #endif // GRIDCOIN_GRIDCOIN_H

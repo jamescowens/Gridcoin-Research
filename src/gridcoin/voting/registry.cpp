@@ -332,6 +332,7 @@ PollReference::PollReference()
     , m_duration_days(0)
     , m_votes({})
     , m_magnitude_weight_factor(Fraction())
+    , m_expiration_warn_notified(false)
 {
 }
 
@@ -764,6 +765,49 @@ std::optional<CAmount> PollReference::GetActiveVoteWeight(const PollResultOption
     }
 }
 
+std::string PollReference::NotifyTypeToString(const PollNotificationType& notify_type) const
+{
+    switch (notify_type) {
+    case PollNotificationType::POLL_ADD:
+        return "added";
+    case PollNotificationType::POLL_DELETE:
+        return "deleted";
+    case PollNotificationType::POLL_EXPIRE_WARNING:
+        return "expiration_warning";
+    default:
+        return "unknown";
+    }
+}
+
+void PollReference::Notify(const PollNotificationType& notify_type) const
+{
+#if HAVE_SYSTEM
+  // Support running an external command on poll creation. Do not notify for already expired polls. This is especially
+    // important during a sync to avoid spamming poll notifications.
+    if (!Expired(GetAdjustedTime())) {
+        std::string strCmd = gArgs.GetArg("-pollnotify", std::string {});
+
+        if (strCmd.empty()) {
+            return;
+        }
+
+        // The placeholders %s1 and %s2 are replaced with the txid and the notification type.
+        boost::replace_all(strCmd, "%s1", m_txid.ToString());
+        boost::replace_all(strCmd, "%s2", NotifyTypeToString(notify_type));
+        boost::thread t(runCommand, strCmd); // thread runs free
+
+        if (notify_type == POLL_EXPIRE_WARNING) {
+            m_expiration_warn_notified = true;
+        }
+    }
+#endif
+}
+
+bool PollReference::IsExpiringWarningNotified() const
+{
+    return m_expiration_warn_notified;
+}
+
 void PollReference::LinkVote(const uint256 txid)
 {
     m_votes.emplace_back(txid);
@@ -1064,6 +1108,8 @@ void PollRegistry::AddPoll(const ContractContext& ctx) EXCLUSIVE_LOCKS_REQUIRED(
 
         poll_ref.m_magnitude_weight_factor = payload->m_poll.ResolveMagnitudeWeightFactor(poll_ref.GetStartingBlockIndexPtr());
 
+        poll_ref.Notify(PollReference::PollNotificationType::POLL_ADD);
+
         if (fQtActive && !poll_ref.Expired(GetAdjustedTime())) {
             uiInterface.NewPollReceived(poll_ref.Time());
         }
@@ -1142,6 +1188,12 @@ void PollRegistry::DeletePoll(const ContractContext& ctx) EXCLUSIVE_LOCKS_REQUIR
 
     int64_t poll_time = payload->m_poll.m_timestamp;
 
+    PollReference* poll_ref = TryBy(payload->m_poll.m_title);
+
+    // Note this reference will effectively disappear once this function exits, but this is ok, because there will
+    // be no need to further reference it after this point for purposes of notification.
+    poll_ref->Notify(PollReference::PollNotificationType::POLL_DELETE);
+
     m_polls.erase(ToLower(payload->m_poll.m_title));
 
     m_polls_by_txid.erase(ctx.m_tx.GetHash());
@@ -1155,7 +1207,6 @@ void PollRegistry::DeletePoll(const ContractContext& ctx) EXCLUSIVE_LOCKS_REQUIR
     if (fQtActive) {
         uiInterface.NewPollReceived(poll_time);;
     }
-
 }
 
 void PollRegistry::DeleteVote(const ContractContext& ctx) EXCLUSIVE_LOCKS_REQUIRED(cs_main, PollRegistry::cs_poll_registry)

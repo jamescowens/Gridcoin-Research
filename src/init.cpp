@@ -360,6 +360,12 @@ void SetupServerArgs()
                    ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-walletnotify=<cmd>", "Execute command when a wallet transaction changes (%s in cmd is replaced by TxID)",
                    ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    argsman.AddArg("-pollnotify=<cmd>", "Execute command when a poll is added/deleted/expiring (%s1 in cmd is replaced by poll id,"
+                                        "%s2 is replaced by status: added, deleted, expiration warning)",
+                   ArgsManager::ALLOW_ANY | ArgsManager::IMMEDIATE_EFFECT, OptionsCategory::OPTIONS);
+    argsman.AddArg("-pollexpirewarningtime=<hours>", "Hours before poll expiration to execute notification command. Default is "
+                                                     "7 days (168 hours)",
+                   ArgsManager::ALLOW_ANY | ArgsManager::IMMEDIATE_EFFECT, OptionsCategory::OPTIONS);
 #endif
     argsman.AddArg("-confchange", "Require confirmations for change (default: 0)",
                    ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
