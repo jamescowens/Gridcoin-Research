@@ -774,33 +774,37 @@ std::string PollReference::NotifyTypeToString(const PollNotificationType& notify
         return "deleted";
     case PollNotificationType::POLL_EXPIRE_WARNING:
         return "expiration_warning";
+    case PollNotificationType::POLL_NOTIFY_TEST:
+        return "test";
     default:
         return "unknown";
     }
 }
 
-void PollReference::Notify(const PollNotificationType& notify_type) const
+std::string PollReference::Notify(const PollNotificationType& notify_type) const
 {
+    std::string strCmd = gArgs.GetArg("-pollnotify", std::string {});
+
 #if HAVE_SYSTEM
-  // Support running an external command on poll creation. Do not notify for already expired polls. This is especially
+    // Support running an external command on poll creation. Do not notify for already expired polls. This is especially
     // important during a sync to avoid spamming poll notifications.
     if (!Expired(GetAdjustedTime())) {
-        std::string strCmd = gArgs.GetArg("-pollnotify", std::string {});
+        if (!strCmd.empty()) {
+            // The placeholders %s1 and %s2 are replaced with the txid and the notification type.
+            boost::replace_all(strCmd, "%s1", m_txid.ToString());
+            boost::replace_all(strCmd, "%s2", NotifyTypeToString(notify_type));
+            boost::thread t(runCommand, strCmd); // thread runs free
 
-        if (strCmd.empty()) {
-            return;
-        }
+            LogPrint(BCLog::LogFlags::MISC, "INFO: %s: poll notify command: %s", __func__, strCmd);
 
-        // The placeholders %s1 and %s2 are replaced with the txid and the notification type.
-        boost::replace_all(strCmd, "%s1", m_txid.ToString());
-        boost::replace_all(strCmd, "%s2", NotifyTypeToString(notify_type));
-        boost::thread t(runCommand, strCmd); // thread runs free
-
-        if (notify_type == POLL_EXPIRE_WARNING) {
-            m_expiration_warn_notified = true;
+            if (notify_type == POLL_EXPIRE_WARNING) {
+                m_expiration_warn_notified = true;
+            }
         }
     }
 #endif
+
+    return strCmd;
 }
 
 bool PollReference::IsExpiringWarningNotified() const

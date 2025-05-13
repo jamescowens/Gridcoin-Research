@@ -12,8 +12,7 @@
 # If using this script with -pollnotify, the command string should
 # appear like the following:
 #
-# -pollnotify="/path/to/script/poll_notify.sh sender@email.com recipient@email.com %s1 %s2"
-# Replace the example path and sender/recipient email addresses with the desired values.
+# -pollnotify="/path/to/script/poll_notify.sh <gridcoin daemon executable> <gridcoin data directory> <network> <sender email address> <recipient email address> %s1 %s2"
 #
 # The script requires the command-line version of gridcoin, gridcoinresearchd,
 # jq (the JSON parser), and properly configured mailx.
@@ -21,19 +20,28 @@
 export LC_ALL=C
 
 # Check if the correct number of arguments is provided
-if [ "$#" -ne 4 ]; then
-    echo "Usage: $0 <sender email address> <recipient email_address> <poll_txid> <notification_type>"
+if [ "$#" -ne 7 ]; then
+    echo "Usage: $0 <gridcoin daemon executable> <gridcoin data directory> <network> <sender email address> <recipient email_address> <poll_txid> <notification_type>"
+    echo "The gridcoin executable should include the path. Specify the data directory for the node. For network, specify mainnet or testnet."
     exit 1
 fi
 
 # Assign input arguments to variables
-SENDER_EMAIL_ADDRESS="$1"
-RECIPIENT_EMAIL_ADDRESS="$2"
-POLL_TXID="$3"
-NOTIFICATION_TYPE="$4"
+GRIDCOIN_EXECUTABLE="$1"
+GRIDCOIN_DATA_DIRECTORY="$2"
+
+GRIDCOIN_NETWORK=""
+if [[ "$3" == "testnet" ]]; then
+    GRIDCOIN_NETWORK="-testnet"
+fi
+
+SENDER_EMAIL_ADDRESS="$4"
+RECIPIENT_EMAIL_ADDRESS="$5"
+POLL_TXID="$6"
+NOTIFICATION_TYPE="$7"
 
 # Fetch all poll details using gridcoinresearchd
-ALL_POLLS=$(gridcoinresearchd listpolls true 2>/dev/null)
+ALL_POLLS=$("$GRIDCOIN_EXECUTABLE" -datadir="$GRIDCOIN_DATA_DIRECTORY" "$GRIDCOIN_NETWORK" listpolls true 2>/dev/null)
 
 # Check if the poll list was retrieved successfully
 if [ -z "$ALL_POLLS" ]; then

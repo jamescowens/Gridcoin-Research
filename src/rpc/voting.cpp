@@ -743,3 +743,27 @@ UniValue votedetails(const UniValue& params, bool fHelp)
 
     throw JSONRPCError(RPC_MISC_ERROR, "No matching poll found");
 }
+
+UniValue testpollnotification(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1) {
+        throw std::runtime_error(
+                "testpollnotification <poll txid>\n"
+                "\n"
+                "<poll txid> --> Transaction id of the poll to test notification.\n"
+                "\n"
+                "Test the poll notification system.\n");
+    }
+
+    const uint256 txid = uint256S(params[0].get_str());
+
+    const PollReference* ref = GetPollRegistry().TryByTxid(txid);
+
+    if (!ref) {
+        throw JSONRPCError(RPC_MISC_ERROR, "No poll exists for that ID");
+    }
+
+    std::string cmd = ref->Notify(PollReference::PollNotificationType::POLL_NOTIFY_TEST);
+
+    return strprintf("Notification command: %s", cmd);
+}

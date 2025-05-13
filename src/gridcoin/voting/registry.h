@@ -52,7 +52,8 @@ public:
         UNKNOWN,
         POLL_ADD,
         POLL_DELETE,
-        POLL_EXPIRE_WARNING
+        POLL_EXPIRE_WARNING,
+        POLL_NOTIFY_TEST
     };
 
     //!
@@ -186,8 +187,9 @@ public:
     //! \brief Runs a free thread executing provided poll notification command. Also sets m_expiration_warn_notified
     //! to true if the notification type is EXPIRE_WARNING.
     //! \param notify_type
+    //! \return std::string of command run
     //!
-    void Notify(const PollNotificationType& notify_type) const;
+    std::string Notify(const PollNotificationType& notify_type) const;
 
     //!
     //! \brief Returns whether the expiration warning was sent.
