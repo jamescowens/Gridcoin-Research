@@ -650,7 +650,7 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
 
     QQmlApplicationEngine engine;
 
-    const QUrl url(QStringLiteral("qrc:/qml/SplashScreen.qml"));
+    const QUrl url(QStringLiteral("qrc:/qml/WindowManager.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                     &app, [url](QObject *obj, const QUrl &objUrl){
         if (!obj && url == objUrl)
@@ -668,12 +668,9 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
     
     engine.load(url);
     
-    // QSplashScreen splash(QPixmap(":/images/splash"));
     if (gArgs.GetBoolArg("-splash", true) && !gArgs.GetBoolArg("-min"))
     {
-        // splash.setEnabled(false);
-        // splash.show();
-        // splashref = &splash;
+        initModel.showSplashScreen();
     }
 
     app.processEvents();
@@ -705,8 +702,7 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
                 UninterruptibleSleep(std::chrono::milliseconds{100});
             }
 
-            if (splashref)
-                splash.finish(&window);
+            initModel.hideSplashScreen();
 
             if (!fRequestShutdown) {
                 // Put this in a block, so that the Model objects are cleaned up before
@@ -724,8 +720,6 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
                 engine.rootContext()->setContextProperty("_researcherModel", &researcherModel);
                 engine.rootContext()->setContextProperty("_mrcModel", &mrcModel);
                 engine.rootContext()->setContextProperty("_votingModel", &votingModel);
-                
-                engine.load(url);
                 
                 // If -min option passed, start window minimized.
                 if(gArgs.GetBoolArg("-min"))

@@ -14,6 +14,13 @@ Window {
     visible: true
     color: "transparent"
 
+    signal splashClosing
+
+    Connections {
+        target: _initModel
+        function onHideSplashScreen() { fadeOut.start() }
+    }
+
     Rectangle {
         id: background
         anchors.fill: parent
@@ -27,11 +34,11 @@ Window {
     }
 
     function closeSplashScreen() {
-        loaded()
+        splashClosing()
         splashScreen.close()
     }
     NumberAnimation {
-        id: opacityAnimation
+        id: fadeOut
         target: splashScreen
         properties: "opacity"
         duration: 1000
