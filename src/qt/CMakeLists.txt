@@ -161,7 +161,7 @@ set_source_files_properties(qml/plugins/MMPTheme/MMPTheme.qml PROPERTIES QT_QML_
 qt_add_qml_module(MMPTheme
     URI MMPTheme
     VERSION 1.0
-    RESOURCE_PREFIX qml
+    RESOURCE_PREFIX qt/qml
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/MMPTheme"
     QML_FILES  
         qml/plugins/MMPTheme/MMPTheme.qml
