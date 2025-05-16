@@ -649,7 +649,6 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
     app.setFont(font);
 
     QQmlApplicationEngine engine;
-    engine.addImportPath("qrc:/qml");
 
     const QUrl url(QStringLiteral("qrc:/qml/SplashScreen.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
