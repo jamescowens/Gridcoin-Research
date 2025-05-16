@@ -5,7 +5,7 @@
 import QtQuick 2.15
 import QtQuick.Window 2.15
 import QtQml 2.15
-import Qt.labs.platform 1.1 //Available in Qt 5/6
+import Qt.labs.platform 1.1
 Item {
     id: root
 
