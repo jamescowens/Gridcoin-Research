@@ -18,6 +18,8 @@ public:
 signals:
     void loadedChanged();
     void messageChanged();
+    void showSplashScreen();
+    void hideSplashScreen();
     
 private:
     QAtomicInteger<unsigned int> m_loaded = 0;

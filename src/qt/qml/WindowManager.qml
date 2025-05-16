@@ -8,7 +8,12 @@ import QtQml 2.15
 import Qt.labs.platform 1.1 //Available in Qt 5/6
 Item {
     id: root
-    Component.onCompleted: showSplashScreen()
+
+    Connections {
+        target: _initModel
+        function onShowSplashScreen() { showSplashScreen() }
+    }
+
     SystemTrayIcon {
         visible: true
         icon.source: "qrc:/images/gridcoin"
@@ -55,7 +60,7 @@ Item {
     function showSplashScreen() {
         var component = Qt.createComponent("SplashScreen.qml")
         var windowObj = component.createObject(root)
-        windowObj.loaded.connect(showMainWindow)
+        windowObj.splashClosing.connect(showMainWindow)
         windowObj.show()
     }
 
