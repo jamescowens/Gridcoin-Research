@@ -22,7 +22,7 @@ MouseArea {
         width: height
         sourceSize.width: width
         sourceSize.height: height
-        source: "resources/icons/generic/ic_open_link.svg"
+        source: "icons/generic/ic_open_link.svg"
         anchors {
             top: parent.top
             bottom: parent.bottom

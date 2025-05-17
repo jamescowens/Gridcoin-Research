@@ -31,7 +31,7 @@ Window {
         }
         Image {
             id: logoImage
-            source: "qrc:/resources/icons/logos/ic_logo_app_gradient_white.svg"
+            source: "qrc:/icons/logos/ic_logo_app_gradient_white.svg"
             sourceSize: Qt.size(160, 160)
             anchors {
                 top: parent.top

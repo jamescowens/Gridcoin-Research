@@ -82,7 +82,7 @@ Window {
     }
     Image {
         id: logo
-        source: "qrc:/images/gridcoin"
+        source: "qrc:/icons/logos/ic_logo_app_gradient_white.svg"
         sourceSize: Qt.size(80, 80)
         anchors {
             top: parent.top

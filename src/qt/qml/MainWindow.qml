@@ -24,7 +24,7 @@ ApplicationWindow {
     TabMenu{
         id: menu
         width: 90
-        onMenuButtonClicked: loader.source=identification
+        onMenuButtonClicked: (identification) => loader.source=identification
         anchors{
             top: parent.top
             bottom: statusBar.top

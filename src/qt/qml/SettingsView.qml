@@ -84,7 +84,7 @@ Rectangle{
                 Image {
                     id: generalSettingsIcon
                     sourceSize: Qt.size(30,30)
-                    source: MMPTheme.themeSelect("/resources/icons/tabs/ic_tab_general_light.svg", "/resources/icons/tabs/ic_tab_general_dark.svg")
+                    source: MMPTheme.themeSelect("/icons/tabs/ic_tab_general_light.svg", "/icons/tabs/ic_tab_general_dark.svg")
                     anchors {
                         top: parent.top
                         horizontalCenter: parent.horizontalCenter
@@ -111,7 +111,7 @@ Rectangle{
                 Image {
                     id: networkSettingsIcon
                     sourceSize: Qt.size(30,30)
-                    source: MMPTheme.themeSelect("/resources/icons/tabs/ic_tab_network_light.svg", "/resources/icons/tabs/ic_tab_network_dark.svg")
+                    source: MMPTheme.themeSelect("/icons/tabs/ic_tab_network_light.svg", "/icons/tabs/ic_tab_network_dark.svg")
                     anchors {
                         top: parent.top
                         horizontalCenter: parent.horizontalCenter
@@ -138,7 +138,7 @@ Rectangle{
                 Image {
                     id: windowSettingsIcon
                     sourceSize: Qt.size(30,30)
-                    source: MMPTheme.themeSelect("/resources/icons/tabs/ic_tab_window_light.svg", "/resources/icons/tabs/ic_tab_window_dark.svg")
+                    source: MMPTheme.themeSelect("/icons/tabs/ic_tab_window_light.svg", "/icons/tabs/ic_tab_window_dark.svg")
                     anchors {
                         top: parent.top
                         horizontalCenter: parent.horizontalCenter
@@ -165,7 +165,7 @@ Rectangle{
                 Image {
                     id: displaySettingsIcon
                     sourceSize: Qt.size(30,30)
-                    source: MMPTheme.themeSelect("/resources/icons/tabs/ic_tab_display_light.svg", "/resources/icons/tabs/ic_tab_display_dark.svg")
+                    source: MMPTheme.themeSelect("/icons/tabs/ic_tab_display_light.svg", "/icons/tabs/ic_tab_display_dark.svg")
                     anchors {
                         top: parent.top
                         horizontalCenter: parent.horizontalCenter
@@ -193,7 +193,7 @@ Rectangle{
                 Image {
                     id: nodesSettingsIcon
                     sourceSize: Qt.size(30,30)
-                    source: MMPTheme.themeSelect("/resources/icons/tabs/ic_tab_nodes_light.svg", "/resources/icons/tabs/ic_tab_nodes_dark.svg")
+                    source: MMPTheme.themeSelect("/icons/tabs/ic_tab_nodes_light.svg", "/icons/tabs/ic_tab_nodes_dark.svg")
                     anchors {
                         top: parent.top
                         horizontalCenter: parent.horizontalCenter
@@ -231,7 +231,7 @@ Rectangle{
             Image {
                 id: debugIcon
                 sourceSize: Qt.size(25,25)
-                source: MMPTheme.themeSelect("qrc:/resources/icons/tabs/ic_tab_more_light.svg", "qrc:/resources/icons/tabs/ic_tab_more_dark.svg")
+                source: MMPTheme.themeSelect("qrc:/icons/tabs/ic_tab_more_light.svg", "qrc:/icons/tabs/ic_tab_more_dark.svg")
                 anchors.centerIn: parent
             }
         }
@@ -290,7 +290,7 @@ Rectangle{
             Button {
                 id: saveButton
                 text: qsTr("Save")
-                icon.source: MMPTheme.themeSelect("qrc:/resources/icons/buttons/ic_btn_save_light.svg", "qrc:/resources/icons/buttons/ic_btn_save_dark.svg")
+                icon.source: MMPTheme.themeSelect("qrc:/icons/buttons/ic_btn_save_light.svg", "qrc:/icons/buttons/ic_btn_save_dark.svg")
                 enabled: settingsChanged
                 anchors {
                     right: parent.right
@@ -301,7 +301,7 @@ Rectangle{
             Button {
                 id: discardButton
                 text: qsTr("Discard")
-                icon.source: MMPTheme.themeSelect("qrc:/resources/icons/buttons/ic_btn_discard_light.svg", "qrc:/resources/icons/buttons/ic_btn_discard_dark.svg")
+                icon.source: MMPTheme.themeSelect("qrc:/icons/buttons/ic_btn_discard_light.svg", "qrc:/icons/buttons/ic_btn_discard_dark.svg")
                 enabled: settingsChanged
                 anchors {
                     right: saveButton.left
@@ -580,7 +580,7 @@ Rectangle{
                             id: addSSButton
                             Layout.fillHeight: true
                             implicitWidth: 30
-                            icon.source: MMPTheme.themeSelect("/resources/icons/buttons/ic_btn_add_light.svg","/resources/icons/buttons/ic_btn_add_dark.svg")
+                            icon.source: MMPTheme.themeSelect("/icons/buttons/ic_btn_add_light.svg","/icons/buttons/ic_btn_add_dark.svg")
                             background: Item{}
                             onClicked: {
                                 sideStakeListModel.append({address: "", percentage: 0})
@@ -598,7 +598,7 @@ Rectangle{
                             id: removeSSButton
                             Layout.fillHeight: true
                             implicitWidth: 30
-                            icon.source: MMPTheme.themeSelect("/resources/icons/buttons/ic_btn_remove_light.svg","/resources/icons/buttons/ic_btn_remove_dark.svg")
+                            icon.source: MMPTheme.themeSelect("/icons/buttons/ic_btn_remove_light.svg","/icons/buttons/ic_btn_remove_dark.svg")
                             background: Item{}
                             onClicked: sideStakeListModel.remove(sideStakeListView.currentIndex)
                             enabled: sideStakeListModel.count > 0
@@ -892,7 +892,7 @@ Rectangle{
                 //                Button {
                 //                    id: showDateSelectorButton
                 //                    text: qsTr("Select Date")
-                //                    icon.source: MMPTheme.themeSelect("resources/icons/generic/ic_date_light.svg","resources/icons/generic/ic_date_dark.svg")
+                //                    icon.source: MMPTheme.themeSelect("icons/generic/ic_date_light.svg","icons/generic/ic_date_dark.svg")
                 //                }
                 CheckBox {
                     id: addressesInTransactionsCheckbox
@@ -1003,7 +1003,7 @@ Rectangle{
                             id: addNodeButton
                             Layout.fillHeight: true
                             implicitWidth: 30
-                            icon.source: MMPTheme.themeSelect("/resources/icons/buttons/ic_btn_add_light.svg","/resources/icons/buttons/ic_btn_add_dark.svg")
+                            icon.source: MMPTheme.themeSelect("/icons/buttons/ic_btn_add_light.svg","/icons/buttons/ic_btn_add_dark.svg")
                             background: Item{}
                             onClicked: {
                                 addNodeListModel.append({address: ""})
@@ -1020,7 +1020,7 @@ Rectangle{
                             id: removeNodeButton
                             Layout.fillHeight: true
                             implicitWidth: 30
-                            icon.source: MMPTheme.themeSelect("/resources/icons/buttons/ic_btn_remove_light.svg","/resources/icons/buttons/ic_btn_remove_dark.svg")
+                            icon.source: MMPTheme.themeSelect("/icons/buttons/ic_btn_remove_light.svg","/icons/buttons/ic_btn_remove_dark.svg")
                             background: Item{}
                             onClicked: addNodeListModel.remove(addNodeListView.currentIndex)
                             enabled: addNodeListModel.count > 0

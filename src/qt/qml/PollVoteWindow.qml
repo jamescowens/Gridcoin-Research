@@ -173,7 +173,7 @@ Window {
 
         Button {
             id: submitVoteButton
-            icon.source: MMPTheme.themeSelect("qrc:/resources/icons/buttons/ic_btn_vote_light.svg", "qrc:/resources/icons/buttons/ic_btn_vote_dark.svg")
+            icon.source: MMPTheme.themeSelect("qrc:/icons/buttons/ic_btn_vote_light.svg", "qrc:/icons/buttons/ic_btn_vote_dark.svg")
             text: qsTr("Vote")
             enabled: {
                 //Loop through model and check if any answers are selected

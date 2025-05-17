@@ -23,7 +23,7 @@ FocusScope {
             id: searchIcon
             height: parent.height*0.5
             width: height
-            source: MMPTheme.themeSelect("resources/icons/generic/ic_search_light.svg","resources/icons/generic/ic_search_dark.svg")
+            source: MMPTheme.themeSelect("icons/generic/ic_search_light.svg","icons/generic/ic_search_dark.svg")
             tintColor: MMPTheme.themeSelect(control.activeFocus ? "#757d8e" : "#b0b5be",
                                             control.activeFocus ? "#babcbe" : "#3a465e")
             anchors {

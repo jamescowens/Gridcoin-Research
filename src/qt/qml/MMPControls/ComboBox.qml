@@ -46,7 +46,7 @@ T.ComboBox {
     indicator: Image {
         x: parent.width - width - parent.padding
         y: parent.height / 2 - height / 2
-        source: MMPTheme.themeSelect("qrc:/resources/icons/generic/ic_chevron_down_light.svg", "qrc:/resources/icons/generic/ic_chevron_down_dark.svg")
+        source: MMPTheme.themeSelect("qrc:/icons/generic/ic_chevron_down_light.svg", "qrc:/icons/generic/ic_chevron_down_dark.svg")
         opacity: !control.enabled ? 0.3 : (control.activeFocus ? 1 : 0.7)
         sourceSize: Qt.size(15, 15)
     }

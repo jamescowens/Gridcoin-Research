@@ -310,6 +310,8 @@ int main(int argc, char *argv[])
     // Initiate the app here to support choosing the data directory.
     Q_INIT_RESOURCE(bitcoin);
     Q_INIT_RESOURCE(bitcoin_locale);
+    Q_INIT_RESOURCE(qml);
+    Q_INIT_RESOURCE(res);
 
     RegisterMetaTypes();
     QApplication app(argc, argv);

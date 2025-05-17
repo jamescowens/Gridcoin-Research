@@ -223,7 +223,7 @@ Window {
             Button {
                 id: nextButton
                 text: qsTr("Next")
-                icon.source: MMPTheme.themeSelect("/resources/icons/generic/ic_chevron_right_light.svg", "/resources/icons/generic/ic_chevron_right_dark.svg")
+                icon.source: MMPTheme.themeSelect("/icons/generic/ic_chevron_right_light.svg", "/icons/generic/ic_chevron_right_dark.svg")
                 onClicked: activate()
                 Keys.onEnterPressed: activate()
                 Keys.onReturnPressed: activate()
@@ -553,7 +553,7 @@ Window {
                                         id: addChoiceButton
                                         Layout.fillHeight: true
                                         implicitWidth: 30
-                                        icon.source: MMPTheme.themeSelect("/resources/icons/buttons/ic_btn_add_light.svg","/resources/icons/buttons/ic_btn_add_dark.svg")
+                                        icon.source: MMPTheme.themeSelect("/icons/buttons/ic_btn_add_light.svg","/icons/buttons/ic_btn_add_dark.svg")
                                         background: Item{}
                                         onClicked: choicesListModel.append({})
                                     }
@@ -567,7 +567,7 @@ Window {
                                         id: removeChoiceButton
                                         Layout.fillHeight: true
                                         implicitWidth: 30
-                                        icon.source: MMPTheme.themeSelect("/resources/icons/buttons/ic_btn_remove_light.svg","/resources/icons/buttons/ic_btn_remove_dark.svg")
+                                        icon.source: MMPTheme.themeSelect("/icons/buttons/ic_btn_remove_light.svg","/icons/buttons/ic_btn_remove_dark.svg")
                                         background: Item{}
                                         onClicked: choicesListModel.remove(choicesListView.currentIndex)
                                         enabled: choicesListModel.count > 0
@@ -587,7 +587,7 @@ Window {
             Button {
                 id: createPollButton
                 text: qsTr("Create Poll")
-                icon.source: MMPTheme.themeSelect("/resources/icons/buttons/ic_btn_create_light.svg", "/resources/icons/buttons/ic_btn_create_dark.svg")
+                icon.source: MMPTheme.themeSelect("/icons/buttons/ic_btn_create_light.svg", "/icons/buttons/ic_btn_create_dark.svg")
                 KeyNavigation.tab: durationSpinbox
                 anchors {
                     bottom: parent.bottom
@@ -601,7 +601,7 @@ Window {
                 onClicked: stackView.pop()
                 Keys.onReturnPressed: stackView.pop()
                 Keys.onEnterPressed: stackView.pop()
-                icon.source: MMPTheme.themeSelect("/resources/icons/generic/ic_chevron_left_light.svg", "/resources/icons/generic/ic_chevron_left_dark.svg")
+                icon.source: MMPTheme.themeSelect("/icons/generic/ic_chevron_left_light.svg", "/icons/generic/ic_chevron_left_dark.svg")
                 KeyNavigation.tab: createPollButton
                 anchors {
                     bottom: parent.bottom
@@ -804,7 +804,7 @@ Window {
             Button {
                 id: nextButton
                 text: qsTr("Next")
-                icon.source: MMPTheme.themeSelect("/resources/icons/generic/ic_chevron_right_light.svg", "/resources/icons/generic/ic_chevron_right_dark.svg")
+                icon.source: MMPTheme.themeSelect("/icons/generic/ic_chevron_right_light.svg", "/icons/generic/ic_chevron_right_dark.svg")
                 KeyNavigation.tab: addProjectRadioButton
                 onClicked: activate()
                 Keys.onEnterPressed: activate()
@@ -843,7 +843,7 @@ Window {
                 onClicked: stackView.pop()
                 Keys.onReturnPressed: stackView.pop()
                 Keys.onEnterPressed: stackView.pop()
-                icon.source: MMPTheme.themeSelect("/resources/icons/generic/ic_chevron_left_light.svg", "/resources/icons/generic/ic_chevron_left_dark.svg")
+                icon.source: MMPTheme.themeSelect("/icons/generic/ic_chevron_left_light.svg", "/icons/generic/ic_chevron_left_dark.svg")
                 KeyNavigation.tab: nextButton
                 anchors {
                     bottom: parent.bottom

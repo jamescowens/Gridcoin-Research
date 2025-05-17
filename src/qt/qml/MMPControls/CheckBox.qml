@@ -36,7 +36,7 @@ T.CheckBox {
         Image {
             x: (parent.width - width) / 2
             y: (parent.height - height) / 2
-            source: "qrc:/resources/icons/generic/ic_checkbox_tick.svg"
+            source: "qrc:/icons/generic/ic_checkbox_tick.svg"
             visible: control.checked
             sourceSize: Qt.size(15, 15)
         }

@@ -116,6 +116,8 @@ add_library(gridcoinqt STATIC
 
     bitcoin.qrc
     bitcoin_locale.qrc
+    qml/qml.qrc
+    res/res.qrc
 )
 
 if(WIN32)
