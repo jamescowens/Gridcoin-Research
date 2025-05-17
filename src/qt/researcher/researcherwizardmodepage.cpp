@@ -40,17 +40,17 @@ void ResearcherWizardModePage::initializePage()
 
     ui->modeButtonGroup->setId(ui->soloRadioButton, ResearcherWizard::ModeSolo);
     ui->modeButtonGroup->setId(ui->poolRadioButton, ResearcherWizard::ModePool);
-    ui->modeButtonGroup->setId(ui->investorRadioButton, ResearcherWizard::ModeInvestor);
+    ui->modeButtonGroup->setId(ui->noncruncherRadioButton, ResearcherWizard::ModeNoncruncher);
 
     connect(ui->soloIconLabel, &ClickLabel::clicked, this, static_cast<void (ResearcherWizardModePage::*)()>(&ResearcherWizardModePage::selectSolo));
     connect(ui->soloRadioButton, &QRadioButton::toggled, this, static_cast<void (ResearcherWizardModePage::*)(bool)>(&ResearcherWizardModePage::selectSolo));
     connect(ui->poolIconLabel, &ClickLabel::clicked, this, static_cast<void (ResearcherWizardModePage::*)()>(&ResearcherWizardModePage::selectPool));
     connect(ui->poolRadioButton, &QRadioButton::toggled, this, static_cast<void (ResearcherWizardModePage::*)(bool)>(&ResearcherWizardModePage::selectPool));
-    connect(ui->investorIconLabel, &ClickLabel::clicked, this, static_cast<void (ResearcherWizardModePage::*)()>(&ResearcherWizardModePage::selectInvestor));
-    connect(ui->investorRadioButton, &QRadioButton::toggled, this, static_cast<void (ResearcherWizardModePage::*)(bool)>(&ResearcherWizardModePage::selectInvestor));
+    connect(ui->noncruncherIconLabel, &ClickLabel::clicked, this, static_cast<void (ResearcherWizardModePage::*)()>(&ResearcherWizardModePage::selectNoncruncher));
+    connect(ui->noncruncherRadioButton, &QRadioButton::toggled, this, static_cast<void (ResearcherWizardModePage::*)(bool)>(&ResearcherWizardModePage::selectNoncruncher));
 
-    if (m_researcher_model->configuredForInvestorMode()) {
-        selectInvestor();
+    if (m_researcher_model->configuredForNoncruncherMode()) {
+        selectNoncruncher();
     } else if (m_researcher_model->hasEligibleProjects()) {
         selectSolo();
     } else if (m_researcher_model->hasPoolProjects()) {
@@ -108,23 +108,23 @@ void ResearcherWizardModePage::selectPool(bool checked)
     emit completeChanged();
 }
 
-void ResearcherWizardModePage::selectInvestor()
+void ResearcherWizardModePage::selectNoncruncher()
 {
-    ui->investorRadioButton->setChecked(true);
+    ui->noncruncherRadioButton->setChecked(true);
 }
 
-void ResearcherWizardModePage::selectInvestor(bool checked)
+void ResearcherWizardModePage::selectNoncruncher(bool checked)
 {
-    const int icon_size = ui->investorIconLabel->width();
+    const int icon_size = ui->noncruncherIconLabel->width();
     QIcon icon;
 
     if (checked) {
-        icon = QIcon(":/images/ic_investor_active");
+        icon = QIcon(":/images/ic_noncruncher_active");
     } else {
-        icon = QIcon(":/images/ic_investor_inactive");
+        icon = QIcon(":/images/ic_noncruncher_inactive");
     }
 
-    ui->investorIconLabel->setPixmap(icon.pixmap(icon_size, icon_size));
+    ui->noncruncherIconLabel->setPixmap(icon.pixmap(icon_size, icon_size));
     emit completeChanged();
 }
 

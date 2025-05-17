@@ -12,7 +12,7 @@ namespace DiagnoseLib {
 bool Diagnose::m_researcher_mode = false;
 bool Diagnose::m_hasEligibleProjects = false;
 bool Diagnose::m_hasPoolProjects = false;
-bool Diagnose::m_configured_for_investor_mode = false;
+bool Diagnose::m_configured_for_noncruncher_mode = false;
 std::unordered_map<Diagnose::TestNames, Diagnose*> Diagnose::m_name_to_test_map;
 CCriticalSection Diagnose::cs_diagnostictests;
 boost::asio::io_context Diagnose::s_ioService;

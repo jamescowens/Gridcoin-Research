@@ -42,7 +42,7 @@ ResearcherWizard::ResearcherWizard(
     ui->beaconPage->setModel(researcher_model, wallet_model);
     ui->authPage->setModel(researcher_model);
     ui->summaryPage->setModel(researcher_model);
-    ui->investorPage->setModel(researcher_model);
+    ui->NoncruncherPage->setModel(researcher_model);
     ui->poolPage->setModel(researcher_model, wallet_model);
     ui->poolSummaryPage->setModel(researcher_model);
 
@@ -84,7 +84,7 @@ int ResearcherWizard::GetNextIdByMode(const int mode)
         case ModeUnknown:  return PageMode;
         case ModeSolo:     return PageEmail;
         case ModePool:     return PagePool;
-        case ModeInvestor: return PageInvestor;
+        case ModeNoncruncher: return PageNoncruncher;
     }
 
     assert(false);

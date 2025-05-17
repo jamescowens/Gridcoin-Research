@@ -538,7 +538,7 @@ BOOST_AUTO_TEST_CASE(it_skips_loading_project_xml_with_empty_project_names)
         )XML",
     });
 
-    // No valid projects loaded; mining ID should remain INVESTOR:
+    // No valid projects loaded; mining ID should remain noncruncher:
     BOOST_CHECK(projects.empty() == true);
 }
 
@@ -705,11 +705,11 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(Researcher)
 
-BOOST_AUTO_TEST_CASE(it_initializes_to_an_investor)
+BOOST_AUTO_TEST_CASE(it_initializes_to_an_noncruncher)
 {
     GRC::Researcher researcher;
 
-    BOOST_CHECK(researcher.Id().Which() == GRC::MiningId::Kind::INVESTOR);
+    BOOST_CHECK(researcher.Id().Which() == GRC::MiningId::Kind::NONCRUNCHER);
     BOOST_CHECK(researcher.Projects().empty() == true);
 }
 
@@ -740,7 +740,7 @@ BOOST_AUTO_TEST_CASE(it_provides_access_to_a_global_researcher_singleton)
 {
     GRC::ResearcherPtr researcher(GRC::Researcher::Get());
 
-    BOOST_CHECK(researcher->Id() == GRC::MiningId::ForInvestor());
+    BOOST_CHECK(researcher->Id() == GRC::MiningId::ForNoncruncher());
 }
 
 BOOST_AUTO_TEST_CASE(it_determines_whether_a_wallet_is_eligible_for_rewards)
@@ -748,7 +748,7 @@ BOOST_AUTO_TEST_CASE(it_determines_whether_a_wallet_is_eligible_for_rewards)
     GRC::Researcher researcher;
 
     BOOST_CHECK(researcher.Eligible() == false);
-    BOOST_CHECK(researcher.IsInvestor() == true);
+    BOOST_CHECK(researcher.IsNoncruncher() == true);
 
     // A zero-value CPID is technically a valid CPID:
     researcher = GRC::Researcher(GRC::Cpid(), GRC::MiningProjectMap());
@@ -756,7 +756,7 @@ BOOST_AUTO_TEST_CASE(it_determines_whether_a_wallet_is_eligible_for_rewards)
     AddTestBeacon(GRC::Cpid());
 
     BOOST_CHECK(researcher.Eligible() == true);
-    BOOST_CHECK(researcher.IsInvestor() == false);
+    BOOST_CHECK(researcher.IsNoncruncher() == false);
 
     // Clean up:
     RemoveTestBeacon(GRC::Cpid());
@@ -785,15 +785,15 @@ BOOST_AUTO_TEST_CASE(it_provides_an_overall_status_of_the_researcher_context)
 {
     GRC::Researcher researcher;
 
-    BOOST_CHECK(researcher.Status() == GRC::ResearcherStatus::INVESTOR);
+    BOOST_CHECK(researcher.Status() == GRC::ResearcherStatus::NONCRUNCHER);
 
     GRC::MiningProjectMap projects;
     projects.Set(GRC::MiningProject("ineligible", GRC::Cpid(), "team name",
                                     "url", 0.0));
 
-    researcher = GRC::Researcher(GRC::MiningId::ForInvestor(), projects);
+    researcher = GRC::Researcher(GRC::MiningId::ForNoncruncher(), projects);
 
-    // Has projects but none eligible (investor):
+    // Has projects but none eligible (noncruncher):
     BOOST_CHECK(researcher.Status() == GRC::ResearcherStatus::NO_PROJECTS);
 
     researcher = GRC::Researcher(GRC::Cpid(), projects);
@@ -921,11 +921,11 @@ BOOST_AUTO_TEST_CASE(it_looks_up_loaded_boinc_projects_by_name)
     GRC::Researcher::Reload(GRC::MiningProjectMap());
 }
 
-BOOST_AUTO_TEST_CASE(it_resets_to_investor_mode_when_parsing_no_projects)
+BOOST_AUTO_TEST_CASE(it_resets_to_noncruncher_mode_when_parsing_no_projects)
 {
     GRC::Researcher::Reload(GRC::MiningProjectMap());
 
-    BOOST_CHECK(GRC::Researcher::Get()->Id() == GRC::MiningId::ForInvestor());
+    BOOST_CHECK(GRC::Researcher::Get()->Id() == GRC::MiningId::ForNoncruncher());
     BOOST_CHECK(GRC::Researcher::Get()->Projects().empty() == true);
 }
 
@@ -1038,8 +1038,8 @@ BOOST_AUTO_TEST_CASE(it_tags_invalid_projects_with_errors_when_parsing_xml)
 
     GRC::Cpid cpid = GRC::Cpid::Parse("f5d8234352e5a5ae3915debba7258294");
 
-    // No valid projects loaded; mining ID should remain INVESTOR:
-    BOOST_CHECK(GRC::Researcher::Get()->Id() == GRC::MiningId::ForInvestor());
+    // No valid projects loaded; mining ID should remain noncruncher:
+    BOOST_CHECK(GRC::Researcher::Get()->Id() == GRC::MiningId::ForNoncruncher());
 
     const GRC::MiningProjectMap& projects = GRC::Researcher::Get()->Projects();
     BOOST_CHECK(projects.size() == 9);
@@ -1172,8 +1172,8 @@ BOOST_AUTO_TEST_CASE(it_skips_loading_project_xml_with_empty_project_names)
         )XML",
     }));
 
-    // No valid projects loaded; mining ID should remain INVESTOR:
-    BOOST_CHECK(GRC::Researcher::Get()->Id() == GRC::MiningId::ForInvestor());
+    // No valid projects loaded; mining ID should remain noncruncher:
+    BOOST_CHECK(GRC::Researcher::Get()->Id() == GRC::MiningId::ForNoncruncher());
     BOOST_CHECK(GRC::Researcher::Get()->Projects().empty() == true);
 
     // Clean up:
@@ -1340,7 +1340,7 @@ BOOST_AUTO_TEST_CASE(it_applies_the_team_requirement_dynamically)
         )XML",
     }));
 
-    BOOST_CHECK(GRC::Researcher::Get()->IsInvestor() == true);
+    BOOST_CHECK(GRC::Researcher::Get()->IsNoncruncher() == true);
 
     if (const GRC::ProjectOption project = GRC::Researcher::Get()->Project("name")) {
         BOOST_CHECK(project->m_team == "! not gridcoin !");
@@ -1357,7 +1357,7 @@ BOOST_AUTO_TEST_CASE(it_applies_the_team_requirement_dynamically)
     GRC::Researcher::MarkDirty();
     GRC::Researcher::Refresh();
 
-    BOOST_CHECK(GRC::Researcher::Get()->IsInvestor() == false);
+    BOOST_CHECK(GRC::Researcher::Get()->IsNoncruncher() == false);
 
     if (const GRC::ProjectOption project = GRC::Researcher::Get()->Project("name")) {
         BOOST_CHECK(project->m_team == "! not gridcoin !");
@@ -1374,7 +1374,7 @@ BOOST_AUTO_TEST_CASE(it_applies_the_team_requirement_dynamically)
     GRC::Researcher::MarkDirty();
     GRC::Researcher::Refresh();
 
-    BOOST_CHECK(GRC::Researcher::Get()->IsInvestor() == true);
+    BOOST_CHECK(GRC::Researcher::Get()->IsNoncruncher() == true);
 
     if (const GRC::ProjectOption project = GRC::Researcher::Get()->Project("name")) {
         BOOST_CHECK(project->m_team == "! not gridcoin !");
@@ -1673,9 +1673,9 @@ void it_parses_project_xml_from_a_client_state_xml_file()
 
 // Note: the precondition skips this test case when the test harness cannot
 // resolve the client_state.xml stub.
-void it_resets_to_investor_mode_when_explicitly_configured()
+void it_resets_to_noncruncher_mode_when_explicitly_configured()
 {
-    gArgs.ForceSetArg("investor", "1");
+    gArgs.ForceSetArg("noncruncher", "1");
 
     // For a valid test, set the email address because it will also pass falsely
     // if this is absent:
@@ -1687,11 +1687,11 @@ void it_resets_to_investor_mode_when_explicitly_configured()
 
     GRC::Researcher::Reload();
 
-    BOOST_CHECK(GRC::Researcher::Get()->Id() == GRC::MiningId::ForInvestor());
+    BOOST_CHECK(GRC::Researcher::Get()->Id() == GRC::MiningId::ForNoncruncher());
     BOOST_CHECK(GRC::Researcher::Get()->Projects().empty() == true);
 
     // Clean up:
-    gArgs.ForceSetArg("investor", "0");
+    gArgs.ForceSetArg("noncruncher", "0");
     gArgs.ForceSetArg("email", "");
     gArgs.ForceSetArg("boincdatadir", "");
     GRC::Researcher::Reload(GRC::MiningProjectMap());
@@ -1705,13 +1705,13 @@ BOOST_AUTO_TEST_CASE(client_state_stub_exists)
 {
     if (fs::exists(ResolveStubDir() / "client_state.xml")) {
         boost::unit_test::framework::master_test_suite().add(BOOST_TEST_CASE(&it_parses_project_xml_from_a_client_state_xml_file));
-        boost::unit_test::framework::master_test_suite().add(BOOST_TEST_CASE(&it_resets_to_investor_mode_when_explicitly_configured));
+        boost::unit_test::framework::master_test_suite().add(BOOST_TEST_CASE(&it_resets_to_noncruncher_mode_when_explicitly_configured));
     } else {
         BOOST_TEST_MESSAGE("client_state.xml test stub not found");
     }
 }
 
-BOOST_AUTO_TEST_CASE(it_resets_to_investor_when_it_only_finds_pool_projects)
+BOOST_AUTO_TEST_CASE(it_resets_to_noncruncher_when_it_only_finds_pool_projects)
 {
     const GRC::Cpid cpid = GRC::Cpid::Parse("f5d8234352e5a5ae3915debba7258294");
     gArgs.ForceSetArg("email", "researcher@example.com");
@@ -1730,7 +1730,7 @@ BOOST_AUTO_TEST_CASE(it_resets_to_investor_when_it_only_finds_pool_projects)
         )XML",
     }));
 
-    BOOST_CHECK(GRC::Researcher::Get()->Id() == GRC::MiningId::ForInvestor());
+    BOOST_CHECK(GRC::Researcher::Get()->Id() == GRC::MiningId::ForNoncruncher());
     BOOST_CHECK(GRC::Researcher::Get()->Eligible() == false);
     BOOST_CHECK(GRC::Researcher::Get()->Status() == GRC::ResearcherStatus::POOL);
 
@@ -1764,7 +1764,7 @@ BOOST_AUTO_TEST_CASE(it_resets_to_investor_when_it_only_finds_pool_projects)
     BOOST_CHECK(GRC::Researcher::Get()->Status() != GRC::ResearcherStatus::POOL);
 
     // If whitelist membership rule is true and the non-pool project does not match the whitelist,
-    // then researcher should be investor status.
+    // then researcher should be noncruncher status.
     AddProtocolEntry(2, "REQUIRE_TEAM_WHITELIST_MEMBERSHIP", "true", 2, false);
     AddProtocolEntry(2, "TEAM_WHITELIST", "Team 1|Team 2", 3, false);
 
@@ -1789,7 +1789,7 @@ BOOST_AUTO_TEST_CASE(it_resets_to_investor_when_it_only_finds_pool_projects)
         )XML",
     }));
 
-    BOOST_CHECK(GRC::Researcher::Get()->Id() == GRC::MiningId::ForInvestor());
+    BOOST_CHECK(GRC::Researcher::Get()->Id() == GRC::MiningId::ForNoncruncher());
     BOOST_CHECK(GRC::Researcher::Get()->Eligible() == false);
     BOOST_CHECK(GRC::Researcher::Get()->Status() == GRC::ResearcherStatus::POOL);
 

@@ -28,7 +28,7 @@ public:
         PageBeacon,
         PageAuth,
         PageSummary,
-        PageInvestor,
+        PageNoncruncher,
         PagePool,
         PagePoolSummary,
     };
@@ -41,7 +41,7 @@ public:
         ModeUnknown = -1,
         ModeSolo = 0,
         ModePool = 1,
-        ModeInvestor = 2,
+        ModeNoncruncher = 2,
     };
 
     explicit ResearcherWizard(

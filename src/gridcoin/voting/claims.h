@@ -218,7 +218,7 @@ public:
     //!
     //! \brief Initialize an empty magnitude claim.
     //!
-    MagnitudeClaim() : m_mining_id(MiningId::ForInvestor())
+    MagnitudeClaim() : m_mining_id(MiningId::ForNoncruncher())
     {
     }
 

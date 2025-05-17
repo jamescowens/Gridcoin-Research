@@ -2,8 +2,8 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
-#ifndef GRIDCOIN_QT_RESEARCHER_RESEARCHERWIZARDINVESTORPAGE_H
-#define GRIDCOIN_QT_RESEARCHER_RESEARCHERWIZARDINVESTORPAGE_H
+#ifndef GRIDCOIN_QT_RESEARCHER_RESEARCHERWIZARDNONCRUNCHERPAGE_H
+#define GRIDCOIN_QT_RESEARCHER_RESEARCHERWIZARDNONCRUNCHERPAGE_H
 
 #include <QWizardPage>
 
@@ -11,16 +11,16 @@ class QIcon;
 class ResearcherModel;
 
 namespace Ui {
-class ResearcherWizardInvestorPage;
+class ResearcherWizardNoncruncherPage;
 }
 
-class ResearcherWizardInvestorPage : public QWizardPage
+class ResearcherWizardNoncruncherPage : public QWizardPage
 {
     Q_OBJECT
 
 public:
-    explicit ResearcherWizardInvestorPage(QWidget *parent = nullptr);
-    ~ResearcherWizardInvestorPage();
+    explicit ResearcherWizardNoncruncherPage(QWidget *parent = nullptr);
+    ~ResearcherWizardNoncruncherPage();
 
     void setModel(ResearcherModel *researcher_model);
 
@@ -28,8 +28,8 @@ public:
     int nextId() const override;
 
 private:
-    Ui::ResearcherWizardInvestorPage *ui;
+    Ui::ResearcherWizardNoncruncherPage *ui;
     ResearcherModel *m_researcher_model;
 };
 
-#endif // GRIDCOIN_QT_RESEARCHER_RESEARCHERWIZARDINVESTORPAGE_H
+#endif // GRIDCOIN_QT_RESEARCHER_RESEARCHERWIZARDNONCRUNCHERPAGE_H

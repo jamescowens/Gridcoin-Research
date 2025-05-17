@@ -543,7 +543,7 @@ public:
         }
 
         if (!claim.Sign(private_key, message)) {
-            claim.m_mining_id = MiningId::ForInvestor();
+            claim.m_mining_id = MiningId::ForNoncruncher();
             return error("%s: failed to sign magnitude claim");
         }
 

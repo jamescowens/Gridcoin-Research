@@ -541,7 +541,7 @@ UniValue getmrcinfo(const UniValue& params, bool fHelp)
     GRC::CpidOption cpid = mining_id.TryCpid();
 
     if (!output_all_cpids && !cpid) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for investor.");
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for non-cruncher.");
     }
 
     // No MRC's below V12 block height.
@@ -1433,7 +1433,7 @@ UniValue advertisebeacon(const UniValue& params, bool fHelp)
         case GRC::BeaconError::NO_CPID:
             throw JSONRPCError(
                 RPC_INVALID_REQUEST,
-                "No CPID detected. Cannot send a beacon in investor mode");
+                "No CPID detected. Cannot send a beacon in non-cruncher mode");
         case GRC::BeaconError::NOT_NEEDED:
             throw JSONRPCError(
                 RPC_INVALID_REQUEST,
@@ -1720,7 +1720,7 @@ UniValue beaconstatus(const UniValue& params, bool fHelp)
     const GRC::CpidOption cpid = mining_id.TryCpid();
 
     if (!cpid) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "No beacon for investor.");
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "No beacon for non-cruncher.");
     }
 
     const int64_t now = GetAdjustedTime();
@@ -1816,7 +1816,7 @@ UniValue beaconaudit(const UniValue& params, bool fHelp)
     const GRC::CpidOption cpid = mining_id.TryCpid();
 
     if (!global && !cpid) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "No beacon for investor.");
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "No beacon for non-cruncher.");
     }
 
     // Only allow auditing when at or above block V11 threshold.
@@ -1995,7 +1995,7 @@ UniValue explainmagnitude(const UniValue& params, bool fHelp)
     const GRC::CpidOption cpid = mining_id.TryCpid();
 
     if (!cpid) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for investor.");
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for non-cruncher.");
     }
 
     UniValue res(UniValue::VARR);
@@ -2045,7 +2045,7 @@ UniValue lifetime(const UniValue& params, bool fHelp)
     const GRC::CpidOption cpid = mining_id.TryCpid();
 
     if (!cpid) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for investor.");
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for non-cruncher.");
     }
 
     UniValue results(UniValue::VOBJ);
@@ -2090,7 +2090,7 @@ UniValue magnitude(const UniValue& params, bool fHelp)
         return MagnitudeReport(*cpid);
     }
 
-    throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for investor.");
+    throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for non-cruncher.");
 }
 
 UniValue resetcpids(const UniValue& params, bool fHelp)

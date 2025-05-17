@@ -556,7 +556,7 @@ void OverviewPage::showHideMRCToolButton()
     }
 
     if (!researcherModel->hasActiveBeacon()
-            || researcherModel->configuredForInvestorMode()
+            || researcherModel->configuredForNoncruncherMode()
             || researcherModel->detectedPoolMode()) {
         ui->mrcRequestToolButton->hide();
         return;

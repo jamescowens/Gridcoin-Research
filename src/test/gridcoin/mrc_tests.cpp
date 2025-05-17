@@ -89,7 +89,7 @@ struct Setup {
     ~Setup() {
         GRC::GetBeaconRegistry().Reset();
         gArgs.ForceSetArg("forcecpid", "");
-        gArgs.ForceSetArg("email", "investor");
+        gArgs.ForceSetArg("email", "noncruncher");
         GRC::Researcher::Reload();
         gArgs.ForceSetArg("email", "");
         GRC::Tally::RemoveAccount(cpid);
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE(it_rejects_invalid_claims)
     mrc.m_client_version = "6.0.0.0";
     mrc.m_last_block_hash = pindex->GetBlockHash();
 
-    BOOST_CHECK(!mrc.WellFormed()); 
+    BOOST_CHECK(!mrc.WellFormed());
 
     mrc.m_research_subsidy = 72;
     account.m_accrual = 72;
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(it_rejects_invalid_claims)
     BOOST_CHECK(mrc.WellFormed());
 
     BOOST_CHECK(!ValidateMRC(pindex, mrc));
-    
+
     mrc.m_fee = mrc.ComputeMRCFee();
 
     // The hash now includes the fee.

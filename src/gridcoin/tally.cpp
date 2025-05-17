@@ -45,7 +45,7 @@ bool g_newbie_snapshot_fix_enabled;
 //! \brief Set the correct CPID from the block claim when the block index
 //! contains a zero CPID.
 //!
-//! There were reports of 0000 cpid in index where INVESTOR should have been.
+//! There were reports of 0000 cpid in index where INVESTOR (legacy NONCRUNCHER) should have been.
 //!
 //! \param pindex Index of the block to repair.
 //!
