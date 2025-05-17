@@ -228,29 +228,29 @@ Rectangle {
                 popupWidth: 300
                 verticalPadding: 20
                 horiontalPadding: sideBodyMargin
-                text:
-                    "
-                        <html>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Status") + ":</b></font> " +
-                        qsTr("Current wallet status") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Projects")+ ":</b></font> " +
-                        qsTr("Your current projects") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Est. RR/day")+ ":</b></font> " +
-                        qsTr("Estimated research earnings per day") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Est. Staking Frequency")+ ":</b></font> " +
-                        qsTr("Estimated frequency of staking") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Available") + ":</b></font> " +
-                        qsTr("Balance available for spending") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Stake") + ":</b></font> " +
-                        qsTr("Balance that is currently staked") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Unconfirmed") + ":</b></font> " +
-                        qsTr("Coins that have been received but not yet confirmed") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Total") + ":</b></font> " +
-                        qsTr("Your total coins") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Research Rewards") + ":</b></font> " +
-                        qsTr("Earnt research rewards. Stake or make a manual reward claim in the receive view to receive them") + "
-                        </html>
-                    "
+                // text:
+                //     `
+                //         <html>
+                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Status") + ":</b></font> " +
+                //         qsTr("Current wallet status") + "<br><br>
+                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Projects")+ ":</b></font> " +
+                //         qsTr("Your current projects") + "<br><br>
+                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Est. RR/day")+ ":</b></font> " +
+                //         qsTr("Estimated research earnings per day") + "<br><br>
+                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Est. Staking Frequency")+ ":</b></font> " +
+                //         qsTr("Estimated frequency of staking") + "<br><br>
+                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Available") + ":</b></font> " +
+                //         qsTr("Balance available for spending") + "<br><br>
+                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Stake") + ":</b></font> " +
+                //         qsTr("Balance that is currently staked") + "<br><br>
+                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Unconfirmed") + ":</b></font> " +
+                //         qsTr("Coins that have been received but not yet confirmed") + "<br><br>
+                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Total") + ":</b></font> " +
+                //         qsTr("Your total coins") + "<br><br>
+                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Research Rewards") + ":</b></font> " +
+                //         qsTr("Earnt research rewards. Stake or make a manual reward claim in the receive view to receive them") + "
+                //         </html>
+                //     `
 
                 anchors {
                     right: parent.right

@@ -79,7 +79,7 @@ Rectangle {
                 anchors.fill: parent
                 Image {
                     id: calendarIcon
-                    source: MMPTheme.themeSelect("resources/icons/generic/ic_date_light.svg","resources/icons/generic/ic_date_dark.svg")
+                    source: MMPTheme.themeSelect("icons/generic/ic_date_light.svg","icons/generic/ic_date_dark.svg")
                     sourceSize: Qt.size(10, 10)
                     opacity: dateSelectionBox.activeFocus ? 1 : 0.7
                     anchors {
@@ -90,7 +90,7 @@ Rectangle {
                 }
                 Image {
                     id: dateBoxDownChevron
-                    source: MMPTheme.themeSelect("qrc:/resources/icons/generic/ic_chevron_down_light.svg", "qrc:/resources/icons/generic/ic_chevron_down_dark.svg")
+                    source: MMPTheme.themeSelect("qrc:/icons/generic/ic_chevron_down_light.svg", "qrc:/icons/generic/ic_chevron_down_dark.svg")
                     opacity: dateSelectionBox.activeFocus ? 1 : 0.7
                     sourceSize: Qt.size(15, 15)
                     anchors {
@@ -253,17 +253,17 @@ Rectangle {
                                     var dateDiff = (Time.currentTime.getTime() - new Date(date*1000).getTime())/1000   //Age of transaction in seconds
                                     //Arbitrary time diffs
                                     if (dateDiff< 90) {
-                                        return "resources/icons/transactionlevels/ic_tran_lv1.svg"
+                                        return "icons/transactionlevels/ic_tran_lv1.svg"
                                     } else if (dateDiff < 180){
-                                        return "resources/icons/transactionlevels/ic_tran_lv2.svg"
+                                        return "icons/transactionlevels/ic_tran_lv2.svg"
                                     } else if (dateDiff < 270){
-                                        return "resources/icons/transactionlevels/ic_tran_lv3.svg"
+                                        return "icons/transactionlevels/ic_tran_lv3.svg"
                                     } else if (dateDiff < 360){
-                                        return "resources/icons/transactionlevels/ic_tran_lv4.svg"
+                                        return "icons/transactionlevels/ic_tran_lv4.svg"
                                     } else if (dateDiff < 540){
-                                        return "resources/icons/transactionlevels/ic_tran_lv5.svg"
+                                        return "icons/transactionlevels/ic_tran_lv5.svg"
                                     } else {
-                                       return "resources/icons/transactionlevels/ic_tran_lv6.svg"
+                                       return "icons/transactionlevels/ic_tran_lv6.svg"
                                     }
                                 }
                             }
@@ -310,17 +310,17 @@ Rectangle {
                                 source: {
                                     switch (type) {
                                     case ("Incoming"):
-                                        return "resources/icons/events/ic_event_green.svg"
+                                        return "icons/events/ic_event_green.svg"
                                     case ("Outgoing"):
-                                        return "resources/icons/events/ic_event_red.svg"
+                                        return "icons/events/ic_event_red.svg"
                                     case ("BlockReward"):
-                                        return "resources/icons/events/ic_event_yellow.svg"
+                                        return "icons/events/ic_event_yellow.svg"
                                     case ("Research"):
-                                        return "resources/icons/events/ic_event_purple.svg"
+                                        return "icons/events/ic_event_purple.svg"
                                     case ("ResearchSideStake"):
-                                        return "resources/icons/events/ic_event_green_purple.svg"
+                                        return "icons/events/ic_event_green_purple.svg"
                                     case ("InterestSideStake"):
-                                        return "resources/icons/events/ic_event_yellow_purple.svg"
+                                        return "icons/events/ic_event_yellow_purple.svg"
                                     }
                                 }
                             }
