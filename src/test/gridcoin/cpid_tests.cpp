@@ -430,7 +430,7 @@ BOOST_AUTO_TEST_CASE(it_provides_guarded_access_to_stored_cpid_values)
 BOOST_AUTO_TEST_CASE(it_represents_itself_as_a_string)
 {
     BOOST_CHECK(GRC::MiningId().ToString().empty() == true);
-    BOOST_CHECK(GRC::MiningId::ForNoncruncher().ToString() == "noncruncher");
+    BOOST_CHECK(GRC::MiningId::ForNoncruncher().ToString() == "NONCRUNCHER");
 
     GRC::MiningId mining_id(GRC::Cpid(std::vector<unsigned char> {
         0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
