@@ -1114,6 +1114,8 @@ void Researcher::RunRenewBeaconJob()
         return;
     }
 
+    LogPrintf("INFO: %s: Running renew beacon job for %s", __func__, researcher->Id().ToString());
+
     TRY_LOCK(cs_main, locked_main);
 
     if (!locked_main) {
@@ -1137,6 +1139,10 @@ void Researcher::RunRenewBeaconJob()
         }
 
         researcher->AdvertiseBeacon();
+    } else {
+        LogPrint(BCLog::LogFlags::BEACON,
+                 "INFO: %s: Skipping beacon renewal while within scraper beacon consensus window.",
+                 __func__);
     }
 }
 

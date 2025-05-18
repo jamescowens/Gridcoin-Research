@@ -547,7 +547,7 @@ void GRC::ScheduleBackgroundJobs(CScheduler& scheduler)
         LogInstance().archive(false, plogfile_out);
     }, std::chrono::seconds{300});
 
-    scheduler.scheduleEvery(Researcher::RunRenewBeaconJob, std::chrono::hours{4});
+    scheduler.scheduleEvery(Researcher::RunRenewBeaconJob, std::chrono::hours{1});
 
     ScheduleBackups(scheduler);
     ScheduleUpdateChecks(scheduler);
