@@ -65,6 +65,9 @@ bool UpdateRWSettingsForMode(const ResearcherMode mode, const std::string& email
 {
     std::vector<std::pair<std::string, util::SettingsValue>> settings;
 
+    // Ensure old (legacy) investor key is removed.
+    settings.push_back(std::make_pair("investor", util::SettingsValue(UniValue::VNULL)));
+
     if (mode == ResearcherMode::NONCRUNCHER) {
         settings.push_back(std::make_pair("email", util::SettingsValue(UniValue::VNULL)));
         settings.push_back(std::make_pair("noncruncher", "1"));
