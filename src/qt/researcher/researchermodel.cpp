@@ -407,6 +407,12 @@ QString ResearcherModel::formatAccrual(const int display_unit, bool& near_limit)
     return text;
 }
 
+QString ResearcherModel::formatAccrual() const
+{
+    bool near_limit = false;
+    return formatAccrual(BitcoinUnit::BTC, near_limit);
+}
+
 QString ResearcherModel::formatStatus() const
 {
     if (outOfSync()) {

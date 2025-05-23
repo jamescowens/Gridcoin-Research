@@ -231,6 +231,10 @@ QString ClientModel::getMinerWarnings() const
     return QString::fromStdString(g_miner_status.FormatErrors());
 }
 
+double ClientModel::getEttsDays() const {
+    return m_cached_etts_days;
+}
+
 OptionsModel *ClientModel::getOptionsModel()
 {
     return optionsModel;

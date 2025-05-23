@@ -2,6 +2,7 @@
 #define BITCOIN_QT_CLIENTMODEL_H
 
 #include <QObject>
+#include <QDateTime>
 
 #include <atomic>
 
@@ -23,6 +24,12 @@ QT_END_NAMESPACE
 class ClientModel : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(int numBlocks READ getNumBlocks NOTIFY numBlocksChanged)
+    Q_PROPERTY(int numBlocksPeers READ getNumBlocksOfPeers NOTIFY numBlocksChanged)
+    Q_PROPERTY(QDateTime bestBlockTime READ getLastBlockDate NOTIFY numBlocksChanged)
+    Q_PROPERTY(double difficulty READ getDifficulty NOTIFY difficultyChanged)
+    Q_PROPERTY(double networkWeight READ getNetWeight NOTIFY numBlocksChanged)
+    Q_PROPERTY(double ettsDays READ getEttsDays NOTIFY minerStatusChanged);
 public:
     explicit ClientModel(OptionsModel* optionsModel, QObject* parent = nullptr);
     ~ClientModel();
@@ -53,6 +60,8 @@ public:
     QString getStatusBarWarnings() const;
     //! Get miner and staking status warnings
     QString getMinerWarnings() const;
+
+    double getEttsDays() const;
 
     QString formatFullVersion() const;
     QString clientName() const;
