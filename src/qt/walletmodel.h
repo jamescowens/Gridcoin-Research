@@ -37,6 +37,12 @@ public:
 class WalletModel : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(qint64 balance READ getBalance NOTIFY balanceChanged)
+    Q_PROPERTY(qint64 stake READ getStake NOTIFY balanceChanged)
+    Q_PROPERTY(qint64 unconfirmedBalance READ getUnconfirmedBalance NOTIFY balanceChanged)
+    Q_PROPERTY(qint64 immatureBalance READ getImmatureBalance NOTIFY balanceChanged)
+    Q_PROPERTY(int numTransactions READ getNumTransactions NOTIFY numTransactionsChanged)
+    Q_PROPERTY(EncryptionStatus encryptionStatus READ getEncryptionStatus NOTIFY encryptionStatusChanged);
 
 public:
     explicit WalletModel(CWallet* wallet, OptionsModel* optionsModel, QObject* parent = nullptr);
@@ -61,7 +67,8 @@ public:
         Unencrypted,  // !wallet->IsCrypted()
         Locked,       // wallet->IsCrypted() && wallet->IsLocked()
         Unlocked      // wallet->IsCrypted() && !wallet->IsLocked()
-    };
+    }; 
+    Q_ENUM(EncryptionStatus)
 
     OptionsModel *getOptionsModel();
     AddressTableModel *getAddressTableModel();

@@ -88,7 +88,23 @@ public:
 class ResearcherModel : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString email READ email NOTIFY beaconChanged)
+    Q_PROPERTY(QString cpid READ formatCpid NOTIFY beaconChanged)
+    Q_PROPERTY(QString magnitude READ formatMagnitude NOTIFY magnitudeChanged)
+    Q_PROPERTY(QString accrual READ formatAccrual NOTIFY accrualChanged)
+    Q_PROPERTY(QString status READ formatStatus NOTIFY researcherChanged)
+    Q_PROPERTY(QString boincPath READ formatBoincPath NOTIFY researcherChanged)
+    Q_PROPERTY(BeaconStatus beaconStatus READ getBeaconStatus NOTIFY beaconChanged)
+    Q_PROPERTY(QIcon beaconStatusIcon READ getBeaconStatusIcon NOTIFY beaconChanged)
+    Q_PROPERTY(QString beaconStatusString READ formatBeaconStatus NOTIFY beaconChanged)
+    Q_PROPERTY(QString beaconAge READ formatBeaconAge NOTIFY beaconChanged)
+    Q_PROPERTY(QString timeToBeaconExpiration READ formatTimeToBeaconExpiration NOTIFY beaconChanged)
+    Q_PROPERTY(QString timeToPendingBeaconExpiration READ formatTimeToPendingBeaconExpiration NOTIFY beaconChanged)
+    Q_PROPERTY(QString beaconAddress READ formatBeaconAddress NOTIFY beaconChanged)
+    Q_PROPERTY(QString beaconVerificationCode READ formatBeaconVerificationCode NOTIFY beaconChanged)
 
+    Q_ENUM(BeaconStatus)
+    
 public:
     ResearcherModel();
     ~ResearcherModel();
@@ -127,6 +143,7 @@ public:
     QString formatCpid() const;
     QString formatMagnitude() const;
     QString formatAccrual(const int display_unit, bool& near_limit) const;
+    QString formatAccrual() const;
     QString formatStatus() const;
     QString formatBoincPath() const;
 
