@@ -79,7 +79,7 @@ Rectangle {
                 anchors.fill: parent
                 Image {
                     id: calendarIcon
-                    source: MMPTheme.themeSelect("icons/generic/ic_date_light.svg","icons/generic/ic_date_dark.svg")
+                    source: MMPTheme.themeSelect("qrc:/icons/generic/ic_date_light.svg","qrc:/icons/generic/ic_date_dark.svg")
                     sourceSize: Qt.size(10, 10)
                     opacity: dateSelectionBox.activeFocus ? 1 : 0.7
                     anchors {
@@ -253,17 +253,17 @@ Rectangle {
                                     var dateDiff = (Time.currentTime.getTime() - new Date(date*1000).getTime())/1000   //Age of transaction in seconds
                                     //Arbitrary time diffs
                                     if (dateDiff< 90) {
-                                        return "icons/transactionlevels/ic_tran_lv1.svg"
+                                        return "qrc:/icons/transactionlevels/ic_tran_lv1.svg"
                                     } else if (dateDiff < 180){
-                                        return "icons/transactionlevels/ic_tran_lv2.svg"
+                                        return "qrc:/icons/transactionlevels/ic_tran_lv2.svg"
                                     } else if (dateDiff < 270){
-                                        return "icons/transactionlevels/ic_tran_lv3.svg"
+                                        return "qrc:/icons/transactionlevels/ic_tran_lv3.svg"
                                     } else if (dateDiff < 360){
-                                        return "icons/transactionlevels/ic_tran_lv4.svg"
+                                        return "qrc:/icons/transactionlevels/ic_tran_lv4.svg"
                                     } else if (dateDiff < 540){
-                                        return "icons/transactionlevels/ic_tran_lv5.svg"
+                                        return "qrc:/icons/transactionlevels/ic_tran_lv5.svg"
                                     } else {
-                                       return "icons/transactionlevels/ic_tran_lv6.svg"
+                                       return "qrc:/icons/transactionlevels/ic_tran_lv6.svg"
                                     }
                                 }
                             }
@@ -310,17 +310,17 @@ Rectangle {
                                 source: {
                                     switch (type) {
                                     case ("Incoming"):
-                                        return "icons/events/ic_event_green.svg"
+                                        return "qrc:/icons/events/ic_event_green.svg"
                                     case ("Outgoing"):
-                                        return "icons/events/ic_event_red.svg"
+                                        return "qrc:/icons/events/ic_event_red.svg"
                                     case ("BlockReward"):
-                                        return "icons/events/ic_event_yellow.svg"
+                                        return "qrc:/icons/events/ic_event_yellow.svg"
                                     case ("Research"):
-                                        return "icons/events/ic_event_purple.svg"
+                                        return "qrc:/icons/events/ic_event_purple.svg"
                                     case ("ResearchSideStake"):
-                                        return "icons/events/ic_event_green_purple.svg"
+                                        return "qrc:/icons/events/ic_event_green_purple.svg"
                                     case ("InterestSideStake"):
-                                        return "icons/events/ic_event_yellow_purple.svg"
+                                        return "qrc:/icons/events/ic_event_yellow_purple.svg"
                                     }
                                 }
                             }

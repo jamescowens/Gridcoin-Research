@@ -78,8 +78,8 @@ Rectangle {
                     height: 10
                     width: 10
                     source: headerArea.ascending ?
-                                MMPTheme.themeSelect("icons/generic/ic_arrow_up_light.svg","icons/generic/ic_arrow_up_dark.svg") :
-                                MMPTheme.themeSelect("icons/generic/ic_arrow_down_light.svg","icons/generic/ic_arrow_down_dark.svg")
+                                MMPTheme.themeSelect("qrc:/icons/generic/ic_arrow_up_light.svg","qrc:/icons/generic/ic_arrow_up_dark.svg") :
+                                MMPTheme.themeSelect("qrc:/icons/generic/ic_arrow_down_light.svg","qrc:/icons/generic/ic_arrow_down_dark.svg")
                     sourceSize: Qt.size(width, height)
                     anchors {
                         verticalCenter: parent.verticalCenter

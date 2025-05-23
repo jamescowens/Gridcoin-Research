@@ -2,24 +2,25 @@
     Provides an image which can be given different colours programmatically with tintColor
 */
 import QtQuick 2.15
-import QtGraphicalEffects 1.15
+import QtQuick.Effects
 Item {
+    id: root
     property alias tintColor: img.overlayColor
+    property alias colorization : img.colorization
     property alias source: img.source
     implicitHeight: img.implicitHeight
     implicitWidth: img.implicitWidth
     Image {
         id: img
-        property color overlayColor: "transparent"
+        property color overlayColor: "black"
+        property real colorization: 0
         anchors.fill: parent
         fillMode: Image.PreserveAspectFit
         sourceSize: Qt.size(width,height)
-        layer {
-            enabled: true
-            effect: ColorOverlay {
-                id: overlay
-                color: img.overlayColor
-            }
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            colorizationColor: img.overlayColor
+            colorization: img.colorization
         }
     }
 

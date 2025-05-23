@@ -892,7 +892,7 @@ Rectangle{
                 //                Button {
                 //                    id: showDateSelectorButton
                 //                    text: qsTr("Select Date")
-                //                    icon.source: MMPTheme.themeSelect("icons/generic/ic_date_light.svg","icons/generic/ic_date_dark.svg")
+                //                    icon.source: MMPTheme.themeSelect("qrc:/icons/generic/ic_date_light.svg","qrc:/icons/generic/ic_date_dark.svg")
                 //                }
                 CheckBox {
                     id: addressesInTransactionsCheckbox

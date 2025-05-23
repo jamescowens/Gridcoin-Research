@@ -4,7 +4,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import QtGraphicalEffects 1.15
 import MMPTheme 1.0
 Button {
     id: buttonMain
@@ -34,6 +33,7 @@ Button {
             id: buttonIcon
             width: parent.width
             height: parent.height-label.height-col.topPad-col.midPad-col.botPad
+            colorization: 1.0
             tintColor: {
                 if (current || buttonMain.hovered) {
                     return MMPTheme.themeSelect(MMPTheme.cWhite, MMPTheme.cHavelockBlue)
@@ -53,7 +53,7 @@ Button {
             id: label
             width: parent.width
             anchors.horizontalCenter: parent.horizontalCenter
-            font: MMPTheme.font
+            font: MMPTheme.baseFont
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.Wrap
 

@@ -103,7 +103,7 @@ Rectangle {
             Text {
                 id: cpidText
                 color: MMPTheme.textColor
-                text: "8fbacfac0e9ed5531a31644db4d3d992"
+                text: _researcherModel.cpid
                 clip: true
                 font.pixelSize: 10
                 font.weight: Font.Light
@@ -133,11 +133,10 @@ Rectangle {
             }
             Column {
                 id: bal
-                property real balValue: 54069.27
                 anchors.verticalCenter: parent.verticalCenter
                 Text {
                     id: balanceValue
-                    text: bal.balValue.toLocaleString(Qt.locale(), 'f', 2)
+                    text: _walletModel.balance.toLocaleString(Qt.locale(), 'f', 2)
                     color: MMPTheme.highlightColor
                     font.pixelSize: 18
                     font.weight: Font.Medium
@@ -163,11 +162,10 @@ Rectangle {
             }
             Column {
                 id: magnitude
-                property real mag: 610.00
                 anchors.verticalCenter: parent.verticalCenter
                 Text {
                     id: magValue
-                    text: magnitude.mag.toLocaleString(Qt.locale(), 'f', 2)
+                    text: _researcherModel.magnitude
                     color: MMPTheme.highlightColor
                     font.pixelSize: 18
                     font.weight: Font.Medium
@@ -294,10 +292,7 @@ Rectangle {
         }
         Column {
             id: dataValuesColumn
-            property string status: qsTr("BOINC Mining")
             property string projects: "lhc@home"
-            property real rr: 442.71
-            property real tts: 1.14
             spacing: 4
             clip: true
             anchors {
@@ -309,7 +304,7 @@ Rectangle {
             }
             Text {
                 id: statusValue
-                text: dataValuesColumn.status
+                text: _researcherModel.status
                 color: MMPTheme.highlightColor
                 horizontalAlignment: Text.AlignRight
                 anchors.right: parent.right
@@ -323,14 +318,14 @@ Rectangle {
             }
             Text {
                 id: estRRValue
-                text: dataValuesColumn.rr.toLocaleString(Qt.locale(), 'f', 2)
+                text: _researcherModel.accrual
                 color: MMPTheme.lightTextColor
                 horizontalAlignment: Text.AlignRight
                 anchors.right: parent.right
             }
             Text {
                 id: estTTSValue
-                text: dataValuesColumn.tts.toLocaleString(Qt.locale(), 'f', 1) + qsTr(" days")
+                text: _clientModel.ettsDays.toLocaleString(Qt.locale(), 'f', 1) + qsTr(" days")
                 color: MMPTheme.lightTextColor
                 horizontalAlignment: Text.AlignRight
                 anchors.right: parent.right
@@ -382,10 +377,7 @@ Rectangle {
         }
         Column {
             id: balanceValuesColumn
-            property real available: 47197.34593948
-            property real stake: 6871.92793688
-            property real unconfirmed: 17.02145689
-            property real total: available+stake+unconfirmed
+            property real total: _walletModel.balance + _walletModel.stake + _walletModel.unconfirmed
             spacing: 4
             clip: true
             anchors {
@@ -398,7 +390,7 @@ Rectangle {
             }
             Text {
                 id: availableValue
-                text: balanceValuesColumn.available.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
+                text: _walletModel.balance.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
                 color: MMPTheme.lightTextColor
                 horizontalAlignment: Text.AlignRight
                 anchors.right: parent.right
@@ -408,7 +400,7 @@ Rectangle {
 
             Text {
                 id: stakeValue
-                text: balanceValuesColumn.stake.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
+                text: _walletModel.stake.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
                 color: MMPTheme.lightTextColor
                 horizontalAlignment: Text.AlignRight
                 anchors.right: parent.right
@@ -417,7 +409,7 @@ Rectangle {
 
             Text {
                 id: unconfirmedValue
-                text: balanceValuesColumn.unconfirmed.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
+                text: _walletModel.unconfirmedBalance.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
                 color: MMPTheme.lightTextColor
                 horizontalAlignment: Text.AlignRight
                 anchors.right: parent.right
@@ -524,8 +516,6 @@ Rectangle {
         }
         Column {
             id: networkValuesColumn
-            property int blocks: 47197
-            property real difficulty: 6871.92793688
             property real netWeight: 17.02145689
             property real coinWeight: 72283
             spacing: 5
@@ -540,7 +530,7 @@ Rectangle {
             }
             Text {
                 id: blockValue
-                text: networkValuesColumn.blocks
+                text: _clientModel.numBlocks
                 color: MMPTheme.lightTextColor
                 horizontalAlignment: Text.AlignRight
                 anchors.right: parent.right
@@ -548,7 +538,7 @@ Rectangle {
 
             Text {
                 id: difficultyValue
-                text: networkValuesColumn.difficulty.toLocaleString(Qt.locale(), 'f', 3)
+                text: _clientModel.difficulty.toLocaleString(Qt.locale(), 'f', 3)
                 color: MMPTheme.lightTextColor
                 horizontalAlignment: Text.AlignRight
                 anchors.right: parent.right
@@ -556,7 +546,7 @@ Rectangle {
 
             Text {
                 id: netWeightValue
-                text: networkValuesColumn.netWeight.toLocaleString(Qt.locale(), 'f', 8)
+                text: _clientModel.networkWeight.toLocaleString(Qt.locale(), 'f', 8)
                 color: MMPTheme.lightTextColor
                 horizontalAlignment: Text.AlignRight
                 anchors.right: parent.right
