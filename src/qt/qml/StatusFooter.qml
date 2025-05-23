@@ -47,31 +47,31 @@ Rectangle {
 
         HelpHover {
             id: lockIcon
-            imageSource: MMPTheme.themeSelect("icons/statusbar/lock/ic_unlocked_staking_light.svg","icons/statusbar/lock/ic_unlocked_staking_dark.svg")
+            imageSource: MMPTheme.themeSelect("qrc:/icons/statusbar/ic_unlocked_staking_light.svg","qrc:/icons/statusbar/ic_unlocked_staking_dark.svg")
             iconSize: iconsRow.iconSize
             text: "The wallet is unlocked for staking"
         }
         HelpHover {
             id: connectionStrengthIcon
-            imageSource: MMPTheme.themeSelect("icons/statusbar/connection/ic_connection_normal_light.svg","icons/statusbar/connection/ic_connection_normal_dark.svg")
+            imageSource: MMPTheme.themeSelect("qrc:/icons/statusbar/ic_connection_normal_light.svg","qrc:/icons/statusbar/ic_connection_normal_dark.svg")
             iconSize: iconsRow.iconSize
             text: "Connection is strong"
         }
         HelpHover {
             id: stakingIcon
-            imageSource: MMPTheme.themeSelect("icons/statusbar/staking/ic_staking_yes_light.svg","icons/statusbar/staking/ic_staking_yes_dark.svg")
+            imageSource: MMPTheme.themeSelect("qrc:/icons/statusbar/ic_staking_yes_light.svg","qrc:/icons/statusbar/ic_staking_yes_dark.svg")
             iconSize: iconsRow.iconSize
             text: "Currently staking"
         }
         HelpHover {
             id: networkIcon
-            imageSource: "icons/statusbar/network/ic_syncing_uptodate.svg"
+            imageSource: "qrc:/icons/statusbar/ic_syncing_uptodate.svg"
             iconSize: iconsRow.iconSize
             text: "Network is connected"
         }
         HelpHover {
             id: beaconIcon
-            imageSource: MMPTheme.themeSelect("icons/statusbar/beacon/ic_beacon_online_light.svg","icons/statusbar/beacon/ic_beacon_online_dark.svg")
+            imageSource: MMPTheme.themeSelect("qrc:/icons/statusbar/ic_beacon_online_light.svg","qrc:/icons/statusbar/ic_beacon_online_dark.svg")
             iconSize: iconsRow.iconSize
             text: "Beacon is lit"
         }

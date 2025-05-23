@@ -5,7 +5,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Shapes 1.15
-import QtGraphicalEffects 1.15
+import QtQuick.Effects
 import MMPTheme 1.0
 ToolTip {
     id: main
@@ -17,26 +17,12 @@ ToolTip {
     property alias infoText: infoTextItem.text
     background: Item {
         id: background
-        DropShadow {
+        RectangularShadow {
             id: rightShadow
             anchors.fill: backgroundRect
-            horizontalOffset: 2
-            verticalOffset: 2
+            offset.y: 2
             radius: 5
-            samples: 2*radius+1
             cached: true
-            source: backgroundRect
-            color: "#44000000"
-        }
-        DropShadow {
-            id: leftShadow
-            anchors.fill: backgroundRect
-            horizontalOffset: -2
-            verticalOffset: 2
-            radius: 5
-            samples: 2*radius+1
-            cached: true
-            source: backgroundRect
             color: "#44000000"
         }
         Rectangle {

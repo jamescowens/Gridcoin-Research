@@ -108,7 +108,7 @@ Popup {
                             PropertyChanges {
                                 target: dateBackgroundImg
                                 visible: true
-                                source: MMPTheme.themeSelect("icons/calendar/ic_date_start_background_light.svg","icons/calendar/ic_date_start_background_dark.svg")
+                                source: MMPTheme.themeSelect("qrc:/icons/calendar/ic_date_start_background_light.svg","qrc:/icons/calendar/ic_date_start_background_dark.svg")
                             }
                             PropertyChanges { target: dateText; color: MMPTheme.cWhite }
                             PropertyChanges {
@@ -122,7 +122,7 @@ Popup {
                             PropertyChanges {
                                 target: dateBackgroundImg
                                 visible: true
-                                source: MMPTheme.themeSelect("icons/calendar/ic_date_end_background_light.svg","icons/calendar/ic_date_end_background_dark.svg")
+                                source: MMPTheme.themeSelect("qrc:/icons/calendar/ic_date_end_background_light.svg","qrc:/icons/calendar/ic_date_end_background_dark.svg")
                             }
                             PropertyChanges { target: dateText; color: MMPTheme.cWhite }
                             PropertyChanges {
@@ -263,7 +263,7 @@ Popup {
                             color: MMPTheme.secondaryBodyColor
                             Image {
                                 id: leftArrowImg
-                                source: MMPTheme.themeSelect("icons/generic/ic_chevron_left_light.svg","icons/generic/ic_chevron_left_dark.svg")
+                                source: MMPTheme.themeSelect("qrc:/icons/generic/ic_chevron_left_light.svg","qrc:/icons/generic/ic_chevron_left_dark.svg")
                                 sourceSize: Qt.size(20, 20)
                                 anchors.centerIn: parent
                             }
@@ -292,7 +292,7 @@ Popup {
                             color: MMPTheme.secondaryBodyColor
                             Image {
                                 id: rightArrowImg
-                                source: MMPTheme.themeSelect("icons/generic/ic_chevron_right_light.svg","icons/generic/ic_chevron_right_dark.svg")
+                                source: MMPTheme.themeSelect("qrc:/icons/generic/ic_chevron_right_light.svg","qrc:/icons/generic/ic_chevron_right_dark.svg")
                                 sourceSize: Qt.size(20, 20)
                                 anchors.centerIn: parent
                             }

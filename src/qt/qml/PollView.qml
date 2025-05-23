@@ -485,7 +485,7 @@ Rectangle {
                 Button {
                     id: detailsButton
                     text: qsTr("Details")
-                    icon.source: MMPTheme.isLightTheme ? "icons/buttons/ic_btn_details_light.svg" : "icons/buttons/ic_btn_details_dark.svg"
+                    icon.source: MMPTheme.isLightTheme ? "qrc:/icons/buttons/ic_btn_details_light.svg" : "qrc:/icons/buttons/ic_btn_details_dark.svg"
                     onPressed: {
                         var component = Qt.createComponent("PollDetailsWindow.qml")
                         var windowObj = component.createObject(window)
@@ -503,7 +503,7 @@ Rectangle {
                 Button {
                     id: voteButton
                     text: qsTr("Vote")
-                    icon.source: MMPTheme.isLightTheme ? "icons/buttons/ic_btn_vote_light.svg" : "icons/buttons/ic_btn_vote_dark.svg"
+                    icon.source: MMPTheme.isLightTheme ? "qrc:/icons/buttons/ic_btn_vote_light.svg" : "qrc:/icons/buttons/ic_btn_vote_dark.svg"
                     visible: Time.currentTime < new Date(model.expires*1000)
                     onPressed: {
                         var component = Qt.createComponent("PollVoteWindow.qml")
