@@ -4,9 +4,8 @@
 */
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtGraphicalEffects 1.15
 import MMPTheme 1.0
-import Time 1.0
+import CurrentTime 1.0
 
 Rectangle {
     id: main
@@ -504,7 +503,7 @@ Rectangle {
                     id: voteButton
                     text: qsTr("Vote")
                     icon.source: MMPTheme.isLightTheme ? "qrc:/icons/buttons/ic_btn_vote_light.svg" : "qrc:/icons/buttons/ic_btn_vote_dark.svg"
-                    visible: Time.currentTime < new Date(model.expires*1000)
+                    visible: CurrentTime.currentTime < new Date(model.expires*1000)
                     onPressed: {
                         var component = Qt.createComponent("PollVoteWindow.qml")
                         var windowObj = component.createObject(window)
