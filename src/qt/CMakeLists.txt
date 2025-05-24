@@ -169,9 +169,11 @@ qt_add_qml_module(MMPTheme
         qml/plugins/MMPTheme/MMPTheme.qml
         qml/MMPControls/Button.qml
         qml/MMPControls/CheckBox.qml
+        qml/MMPControls/ComboBox.qml
         qml/MMPControls/GroupBox.qml
         qml/MMPControls/RadioButton.qml
         qml/MMPControls/ScrollBar.qml
+        qml/MMPControls/ScrollIndicator.qml
         qml/MMPControls/SpinBox.qml
         qml/MMPControls/TextArea.qml
         qml/MMPControls/TextField.qml
