@@ -4,7 +4,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import MMPTheme 1.0
-import Time 1.0
+import CurrentTime 1.0
 
 Rectangle {
     id: main
@@ -117,14 +117,14 @@ Rectangle {
                 }
             }
             Loader {
-                //Load DatePicker asynchronously
+                // Load DatePicker asynchronously
                 id: datePicker
                 x: -width/2 + dateSelectionBox.width*0.9
                 y: dateSelectionBox.height + 20
                 width: 420
                 height: 330
                 visible: false
-                source: "/DatePicker.qml"
+                source: "qrc:/qml/DatePicker.qml"
                 asynchronous: true
             }
         }
@@ -250,7 +250,7 @@ Rectangle {
                                     leftMargin: 10
                                 }
                                 source: {
-                                    var dateDiff = (Time.currentTime.getTime() - new Date(date*1000).getTime())/1000   //Age of transaction in seconds
+                                    var dateDiff = (CurrentTime.currentTime.getTime() - new Date(date*1000).getTime())/1000   //Age of transaction in seconds
                                     //Arbitrary time diffs
                                     if (dateDiff< 90) {
                                         return "qrc:/icons/transactionlevels/ic_tran_lv1.svg"
