@@ -22,7 +22,7 @@ MouseArea {
     Image {
         id: helpIcon
         anchors.fill: parent
-        source: ":/icons/generic/ic_help.svg"
+        source: "qrc:/icons/generic/ic_help.svg"
         sourceSize: Qt.size(iconSize, iconSize)
         fillMode: Image.Pad
     }

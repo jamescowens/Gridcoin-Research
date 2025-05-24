@@ -2,7 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Controls.impl 2.15
 import QtQuick.Templates 2.15 as T
-import QtGraphicalEffects 1.0
+import QtQuick.Effects
 import MMPTheme 1.0
 
 T.GroupBox {
@@ -53,12 +53,11 @@ T.GroupBox {
             border.width: 0
         }
 
-        DropShadow {
+        RectangularShadow {
             anchors.fill: parent
-            verticalOffset: 1
+            offset.y: 1
             radius: 0
             color: MMPTheme.themeSelect("#0d000000", "#4d000000")
-            source: background
         }
     }
 }
