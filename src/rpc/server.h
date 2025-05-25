@@ -265,6 +265,7 @@ extern UniValue addpoll(const UniValue& params, bool fHelp);
 extern UniValue getpollresults(const UniValue& params, bool fHelp);
 extern UniValue getvotingclaim(const UniValue& params, bool fHelp);
 extern UniValue listpolls(const UniValue& params, bool fHelp);
+extern UniValue testpollnotification(const UniValue& params, bool fHelp);
 extern UniValue vote(const UniValue& params, bool fHelp);
 extern UniValue votebyid(const UniValue& params, bool fHelp);
 extern UniValue votedetails(const UniValue& params, bool fHelp);

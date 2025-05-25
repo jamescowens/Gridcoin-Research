@@ -452,6 +452,7 @@ static const CRPCCommand vRPCCommands[] =
     { "getpollresults",          &getpollresults,          cat_voting        },
     { "getvotingclaim",          &getvotingclaim,          cat_voting        },
     { "listpolls",               &listpolls,               cat_voting        },
+    { "testpollnotification",    &testpollnotification,    cat_voting        },
     { "vote",                    &vote,                    cat_voting        },
     { "votebyid",                &votebyid,                cat_voting        },
     { "votedetails",             &votedetails,             cat_voting        },

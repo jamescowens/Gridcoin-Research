@@ -487,6 +487,15 @@ void ScheduleRegistriesPassivation(CScheduler& scheduler)
 
     scheduler.scheduleEvery(RunDBPassivation, std::chrono::minutes{5});
 }
+
+void SchedulePollNotifications(CScheduler& scheduler)
+{
+    // Run poll notifications every 5 minutes. This is a very thin call most of the time.
+    // Please see the NotifyPoll function and notify_poll.
+
+    scheduler.scheduleEvery(NotifyPoll, std::chrono::minutes{5});
+}
+
 } // Anonymous namespace
 
 // -----------------------------------------------------------------------------
@@ -552,6 +561,10 @@ void GRC::ScheduleBackgroundJobs(CScheduler& scheduler)
     ScheduleBackups(scheduler);
     ScheduleUpdateChecks(scheduler);
     ScheduleRegistriesPassivation(scheduler);
+
+#if HAVE_SYSTEM
+    SchedulePollNotifications(scheduler);
+#endif
 }
 
 bool GRC::CleanConfig() {
@@ -613,5 +626,27 @@ void GRC::RunDBPassivation()
         Registry& registry = RegistryBookmarks::GetRegistryWithDB(contract_type);
 
         registry.PassivateDB();
+    }
+}
+
+void GRC::NotifyPoll()
+{
+    PollRegistry& poll_registry = GetPollRegistry();
+
+    LOCK2(cs_main, poll_registry.cs_poll_registry);
+
+    // Get the expiration warning time from the configuration. Default is 7 days in hours.
+    int64_t expiration_warning_time = gArgs.GetArg("-pollexpirewarningtime", 7 * 24);
+
+    for (const auto& poll : poll_registry.Polls()) {
+        if (!poll->Ref().Expired(GetAdjustedTime())
+            && !poll->Ref().IsExpiringWarningNotified()
+            && poll->Ref().Expiration() - GetAdjustedTime() < expiration_warning_time * 3600) {
+
+            // Note this will set m_is_expiring_warning_notified to true as well as execute the poll notification
+            // free thread to run the provided command. So this is effectively a "single-shot" expiration
+            // warning notification for each expiring poll.
+            poll->Ref().Notify(PollReference::PollNotificationType::POLL_EXPIRE_WARNING);
+        }
     }
 }

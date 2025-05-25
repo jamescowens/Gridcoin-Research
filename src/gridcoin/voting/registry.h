@@ -47,6 +47,15 @@ class PollReference
     friend class PollRegistry;
 
 public:
+    enum PollNotificationType
+    {
+        UNKNOWN,
+        POLL_ADD,
+        POLL_DELETE,
+        POLL_EXPIRE_WARNING,
+        POLL_NOTIFY_TEST
+    };
+
     //!
     //! \brief Initialize an empty, invalid poll reference object.
     //!
@@ -168,6 +177,27 @@ public:
     std::optional<CAmount> GetActiveVoteWeight(const PollResultOption &result) const;
 
     //!
+    //! \brief Provides string equivalent of PollNotificationType
+    //! \param notify_type
+    //! \return string equivalent of PollNotificationType
+    //!
+    std::string NotifyTypeToString(const PollNotificationType& notify_type) const;
+
+    //!
+    //! \brief Runs a free thread executing provided poll notification command. Also sets m_expiration_warn_notified
+    //! to true if the notification type is EXPIRE_WARNING.
+    //! \param notify_type
+    //! \return std::string of command run
+    //!
+    std::string Notify(const PollNotificationType& notify_type) const;
+
+    //!
+    //! \brief Returns whether the expiration warning was sent.
+    //! \return boolean indicating whether the expiration warning was sent.
+    //!
+    bool IsExpiringWarningNotified() const;
+
+    //!
     //! \brief Record a transaction that contains a response to the poll.
     //!
     //! \param txid Hash of the transaction that contains the vote.
@@ -193,6 +223,7 @@ private:
     uint32_t m_duration_days;                   //!< Number of days the poll remains active.
     std::vector<uint256> m_votes;               //!< Hashes of the linked vote transactions.
     mutable Fraction m_magnitude_weight_factor; //!< Magnitude weight factor for the poll (defined at poll start).
+    mutable bool m_expiration_warn_notified;    //!< Flag to indicate whether the expiration warning was sent.
 }; // PollReference
 
 //!
