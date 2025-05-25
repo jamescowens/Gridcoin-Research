@@ -377,7 +377,7 @@ Rectangle {
         }
         Column {
             id: balanceValuesColumn
-            property real total: _walletModel.balance + _walletModel.stake + _walletModel.unconfirmed
+            property real total: _walletModel.balance + _walletModel.stake + _walletModel.unconfirmedBalance
             spacing: 4
             clip: true
             anchors {
@@ -516,8 +516,6 @@ Rectangle {
         }
         Column {
             id: networkValuesColumn
-            property real netWeight: 17.02145689
-            property real coinWeight: 72283
             spacing: 5
             clip: true
             anchors {
@@ -546,7 +544,7 @@ Rectangle {
 
             Text {
                 id: netWeightValue
-                text: _clientModel.networkWeight.toLocaleString(Qt.locale(), 'f', 8)
+                text: _clientModel.networkWeight.toLocaleString(Qt.locale(), 'f', 0)
                 color: MMPTheme.lightTextColor
                 horizontalAlignment: Text.AlignRight
                 anchors.right: parent.right
@@ -554,7 +552,7 @@ Rectangle {
 
             Text {
                 id: coinWeightValue
-                text: networkValuesColumn.coinWeight.toLocaleString(Qt.locale(), 'f', 3)
+                text: _clientModel.coinWeight.toLocaleString(Qt.locale(), 'f', 0)
                 color: MMPTheme.lightTextColor
                 horizontalAlignment: Text.AlignRight
                 anchors.right: parent.right

@@ -29,6 +29,7 @@ class ClientModel : public QObject
     Q_PROPERTY(QDateTime bestBlockTime READ getLastBlockDate NOTIFY numBlocksChanged)
     Q_PROPERTY(double difficulty READ getDifficulty NOTIFY difficultyChanged)
     Q_PROPERTY(double networkWeight READ getNetWeight NOTIFY numBlocksChanged)
+    Q_PROPERTY(double coinWeight READ getCoinWeight NOTIFY minerStatusChanged)
     Q_PROPERTY(double ettsDays READ getEttsDays NOTIFY minerStatusChanged);
 public:
     explicit ClientModel(OptionsModel* optionsModel, QObject* parent = nullptr);
@@ -61,8 +62,6 @@ public:
     //! Get miner and staking status warnings
     QString getMinerWarnings() const;
 
-    double getEttsDays() const;
-
     QString formatFullVersion() const;
     QString clientName() const;
     QString formatClientStartupTime() const;
@@ -85,6 +84,8 @@ private:
 
     void subscribeToCoreSignals();
     void unsubscribeFromCoreSignals();
+    double getEttsDays() const;
+    double getCoinWeight() const;
 signals:
     void numConnectionsChanged(int count);
     void numBlocksChanged(int count, int countOfPeers);
