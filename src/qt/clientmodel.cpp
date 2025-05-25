@@ -96,6 +96,11 @@ double ClientModel::getNetWeight() const
     return m_cached_net_weight;
 }
 
+double ClientModel::getCoinWeight() const
+{
+    return g_miner_status.GetSearchReport().CoinWeight();
+}
+
 quint64 ClientModel::getTotalBytesRecv() const
 {
     return CNode::GetTotalBytesRecv();

@@ -23,7 +23,7 @@ Rectangle {
 
     Text {
         id: clientMessage
-        text: qsTr("Client Message: Stake Weight 3982689")
+        text: _clientModel.statusBarWarnings
         color: MMPTheme.themeSelect("#54575d","#b7b7b7")
         font.pixelSize: 10
         clip: true
