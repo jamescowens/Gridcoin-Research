@@ -226,29 +226,29 @@ Rectangle {
                 popupWidth: 300
                 verticalPadding: 20
                 horiontalPadding: sideBodyMargin
-                // text:
-                //     `
-                //         <html>
-                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Status") + ":</b></font> " +
-                //         qsTr("Current wallet status") + "<br><br>
-                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Projects")+ ":</b></font> " +
-                //         qsTr("Your current projects") + "<br><br>
-                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Est. RR/day")+ ":</b></font> " +
-                //         qsTr("Estimated research earnings per day") + "<br><br>
-                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Est. Staking Frequency")+ ":</b></font> " +
-                //         qsTr("Estimated frequency of staking") + "<br><br>
-                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Available") + ":</b></font> " +
-                //         qsTr("Balance available for spending") + "<br><br>
-                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Stake") + ":</b></font> " +
-                //         qsTr("Balance that is currently staked") + "<br><br>
-                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Unconfirmed") + ":</b></font> " +
-                //         qsTr("Coins that have been received but not yet confirmed") + "<br><br>
-                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Total") + ":</b></font> " +
-                //         qsTr("Your total coins") + "<br><br>
-                //         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Research Rewards") + ":</b></font> " +
-                //         qsTr("Earnt research rewards. Stake or make a manual reward claim in the receive view to receive them") + "
-                //         </html>
-                //     `
+                text:
+                    "
+                        <html>
+                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Status\:") + "</b></font> " +
+                        qsTr("Current wallet status") + "<br><br>
+                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Projects\:")+ "</b></font> " +
+                        qsTr("Your current projects") + "<br><br>
+                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Est. RR/day\:")+ "</b></font> " +
+                        qsTr("Estimated research earnings per day") + "<br><br>
+                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Est. Staking Frequency\:")+ "</b></font> " +
+                        qsTr("Estimated frequency of staking") + "<br><br>
+                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Available") + ":</b></font> " +
+                        qsTr("Balance available for spending") + "<br><br>
+                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Stake") + ":</b></font> " +
+                        qsTr("Balance that is currently staked") + "<br><br>
+                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Unconfirmed") + ":</b></font> " +
+                        qsTr("Coins that have been received but not yet confirmed") + "<br><br>
+                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Total") + ":</b></font> " +
+                        qsTr("Your total coins") + "<br><br>
+                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Research Rewards") + ":</b></font> " +
+                        qsTr("Earnt research rewards. Stake or make a manual reward claim in the receive view to receive them") + "
+                        </html>
+                    "
 
                 anchors {
                     right: parent.right
@@ -589,6 +589,7 @@ Rectangle {
             id: recentTransactionList
             contentWidth: width
             clip: true
+            interactive: false
             anchors {
                 top: recentTransactionsTitle.bottom
                 left: parent.left
@@ -600,78 +601,43 @@ Rectangle {
                 bottomMargin: bottomBodyMargin
             }
 
-            model: ListModel {
-                ListElement {
-                    transactionType: "manualRewardClaim"
-                    transactionAmount: 592.2
-                    transactionTimestamp: "2017-09-17 15:52:06"
-                    transactionAccount: "Main Wallet"
-                }
-                ListElement {
-                    transactionType: "incomingTransaction"
-                    transactionAmount: 17.0214
-                    transactionTimestamp: "2013-09-17 15:56:06"
-                    transactionAccount: "Main Wallet"
-                }
-                ListElement {
-                    transactionType: "incomingTransaction"
-                    transactionAmount: 34928.123
-                    transactionTimestamp: "2013-09-17 10:56:06"
-                    transactionAccount: "Not Main Wallet"
-                }
-                ListElement {
-                    transactionType: "sentTransaction"
-                    transactionAmount: -17.0214
-                    transactionTimestamp: "2013-09-17 10:56:06"
-                    transactionAccount: "Second Address"
-                }
-                ListElement {
-                    transactionType: "proofOfStake"
-                    transactionAmount: 10.0
-                    transactionTimestamp: "2013-09-17 10:56:06"
-                    transactionAccount: "Main Wallet"
-                }
-                ListElement {
-                    transactionType: "proofOfResearch"
-                    transactionAmount: 666.123
-                    transactionTimestamp: "2013-09-17 10:56:06"
-                    transactionAccount: "Main Wallet"
-                }
-                ListElement {
-                    transactionType: "inOut"
-                    transactionAmount: 12.123
-                    transactionTimestamp: "2013-09-17 10:56:06"
-                    transactionAccount: "This is just a string"
-                }
-                ListElement {
-                    transactionType: "incomingTransaction"
-                    transactionAmount: 420.69
-                    transactionTimestamp: "2013-09-17 07:56:06"
-                    transactionAccount: "SBPvphumk9BmzdLqCBy4b7U62tj39iynLo"
-                }
-                ListElement {
-                    transactionType: "beaconAdvertisement"
-                    transactionAmount: -0.5
-                    transactionTimestamp: "2013-09-17 02:56:06"
-                    transactionAccount: "SBPvphumk9BmzdLqCBy4b7U62tj39iynLo"
-                }
-            }
+            model: _walletModel.transactionTableModel
             delegate: RecentTransactionItem {
-                amount: transactionAmount
-                state: transactionType
-                account: transactionAccount
-                transactionDate: Date.fromLocaleString(Qt.locale(),  transactionTimestamp, "yyyy-MM-dd hh:mm:ss")
+                amount: model.AmountRole
+                state: model.TypeRoll
+                account: model.AddressRole
+                transactionDate: model.DateRole
             }
-            ScrollIndicator.vertical: ScrollIndicator {
-                parent: recentTransactionList.parent
-                anchors {
-                    left: recentTransactionList.right
-                    leftMargin: 5
-                    top: recentTransactionList.top
-                    bottom: recentTransactionList.bottom
-                }
-            }
+            // ScrollIndicator.vertical: ScrollIndicator {
+            //     parent: recentTransactionList.parent
+            //     anchors {
+            //         left: recentTransactionList.right
+            //         leftMargin: 5
+            //         top: recentTransactionList.top
+            //         bottom: recentTransactionList.bottom
+            //     }
+            // }
+        }
 
+        Column {
+            id: nothingYet
+            padding: 5
+            visible: recentTransactionList.count === 0
+            anchors {
+                verticalCenter: parent.verticalCenter
+                horizontalCenter: parent.horizontalCenter
+            }
+            Image {
+                // id: clockImg
+                source: "qrc:/icons/generic/ic_no_result.svg"
+                anchors.horizontalCenter: parent.horizontalCenter
+                sourceSize: Qt.size(50, 50)
+            }
+            Text {
+                text: qsTr("Nothing here yet...")
+                color: MMPTheme.lightTextColor
+                horizontalAlignment: Text.AlignHCenter
+            }
         }
     }
     RecentPollPanel {
