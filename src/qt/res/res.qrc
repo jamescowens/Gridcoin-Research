@@ -250,5 +250,6 @@
         <file>fonts/SF-Pro-Text-RegularItalic.otf</file>
         <file>fonts/SF-Pro-Text-Semibold.otf</file>
         <file>fonts/SF-Pro-Text-SemiboldItalic.otf</file>
+        <file>icons/generic/ic_no_result.svg</file>
     </qresource>
 </RCC>

@@ -44,6 +44,8 @@ class WalletModel : public QObject
     Q_PROPERTY(int numTransactions READ getNumTransactions NOTIFY numTransactionsChanged)
     Q_PROPERTY(EncryptionStatus encryptionStatus READ getEncryptionStatus NOTIFY encryptionStatusChanged);
 
+    Q_PROPERTY(TransactionTableModel* transactionTableModel READ getTransactionTableModel CONSTANT)
+
 public:
     explicit WalletModel(CWallet* wallet, OptionsModel* optionsModel, QObject* parent = nullptr);
     ~WalletModel();

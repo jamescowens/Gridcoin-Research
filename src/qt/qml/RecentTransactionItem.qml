@@ -7,8 +7,8 @@ import QtQml 2.15
 import MMPTheme 1.0
 Item {
     id: main
-    property real amount: 2.0
-    property date transactionDate: new Date()
+    property real amount
+    property date transactionDate
     property string account
     height: 42  //Chosen to have a fit of 7 transactions on the page
     width: parent.width
@@ -16,105 +16,90 @@ Item {
         State {
             name: "manualRewardClaim"
             PropertyChanges {
-                target: transactionIcon
-                source: "qrc:/icons/events/ic_event_mrc.svg"
+                transactionIcon.source: "qrc:/icons/events/ic_event_mrc.svg"
             }
         }
 
         ,State {
             name: "incomingTransaction"
             PropertyChanges {
-                target: transactionIcon
-                source: "qrc:/icons/events/ic_event_green.svg"
+                transactionIcon.source: "qrc:/icons/events/ic_event_green.svg"
             }
         },
         State {
             name: "sentTransaction"
             PropertyChanges {
-                target: transactionIcon
-                source: "qrc:/icons/events/ic_event_red.svg"
+                transactionIcon.source: "qrc:/icons/events/ic_event_red.svg"
             }
         },
         State {
             name: "proofOfResearch"
             PropertyChanges {
-                target: transactionIcon
-                source: "qrc:/icons/events/ic_event_purple.svg"
+                transactionIcon.source: "qrc:/icons/events/ic_event_purple.svg"
             }
         },
         State {
             name: "proofOfResearchSideStakeReceive"
             PropertyChanges {
-                target: transactionIcon
-                source: "qrc:/icons/events/ic_event_purple.svg"
+                transactionIcon.source: "qrc:/icons/events/ic_event_purple.svg"
             }
         },
         State {
             name: "proofOfResearchSideStakeSend"
             PropertyChanges {
-                target: transactionIcon
-                source: "qrc:/icons/events/ic_event_red.svg"
+                transactionIcon.source: "qrc:/icons/events/ic_event_red.svg"
             }
         },
         State {
             name: "proofOfStake"
             PropertyChanges {
-                target: transactionIcon
-                source: "qrc:/icons/events/ic_event_yellow.svg"
+                transactionIcon.source: "qrc:/icons/events/ic_event_yellow.svg"
             }
         },
         State {
             name: "proofOfStakeSideStakeReceive"
             PropertyChanges {
-                target: transactionIcon
-                source: "qrc:/icons/events/ic_event_yellow_purple.svg"
+                transactionIcon.source: "qrc:/icons/events/ic_event_yellow_purple.svg"
             }
         },
         State {
             name: "orphaned"
             PropertyChanges {
-                target: transactionIcon
-                source: "qrc:/icons/generic/ic_negative.svg"
+                transactionIcon.source: "qrc:/icons/generic/ic_negative.svg"
             }
         },
         State {
             name: "superblock"
             PropertyChanges {
-                target: transactionIcon
-                source: "qrc:/icons/events/superblock.svg"
+                transactionIcon.source: "qrc:/icons/events/superblock.svg"
             }
         },
         State {
             name: "beaconAdvertisement"
             PropertyChanges {
-                target: transactionIcon
-                source: "qrc:/icons/events/beacon_grey.svg"
-                //source: "qrc:/icons/Status Bar/Beacon/ic_beacon_online_light.svg" //Generic beacon icon, doesn't seem designed for large scale
+                transactionIcon.source: "qrc:/icons/events/beacon_grey.svg"
+                //transactionIcon.source: "qrc:/icons/Status Bar/Beacon/ic_beacon_online_light.svg" //Generic beacon icon, doesn't seem designed for large scale
             }
             PropertyChanges {
-                target: amountLabel
-                color: "#9ca2af"
+                amountLabel.color: "#9ca2af"
             }
         },
         State {
             name: "vote"
             PropertyChanges {
-                target: transactionIcon
-                source: "qrc:/icons/events/voting.svg"
+                transactionIcon.source: "qrc:/icons/events/voting.svg"
             }
         },
         State {
             name: "message"
             PropertyChanges {
-                target: transactionIcon
-                source: "qrc:/icons/events/message.svg"
+                transactionIcon.source: "qrc:/icons/events/message.svg"
             }
         },
         State {
             name: "inOut"
             PropertyChanges {
-                target: transactionIcon
-                source: "qrc:/icons/events/ic_event_green_red.svg"
+                transactionIcon.source: "qrc:/icons/events/ic_event_green_red.svg"
             }
         }
     ]
