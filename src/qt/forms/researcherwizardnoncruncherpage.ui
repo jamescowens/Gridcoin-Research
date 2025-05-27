@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ResearcherWizardInvestorPage</class>
- <widget class="QWizardPage" name="ResearcherWizardInvestorPage">
+ <class>ResearcherWizardNoncruncherPage</class>
+ <widget class="QWizardPage" name="ResearcherWizardNoncruncherPage">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -19,7 +19,7 @@
   <property name="windowTitle">
    <string>Summary</string>
   </property>
-  <layout class="QVBoxLayout" name="investorPageLayout">
+  <layout class="QVBoxLayout" name="noncruncherPageLayout">
    <item>
     <spacer name="headerSpacer">
      <property name="orientation">
@@ -37,7 +37,7 @@
     </spacer>
    </item>
    <item alignment="Qt::AlignHCenter">
-    <widget class="QLabel" name="investorIconLabel">
+    <widget class="QLabel" name="noncruncherIconLabel">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -60,7 +60,7 @@
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap resource="../bitcoin.qrc">:/images/ic_investor_active</pixmap>
+      <pixmap resource="../bitcoin.qrc">:/images/ic_noncruncher_active</pixmap>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
@@ -73,7 +73,7 @@
    <item>
     <widget class="QLabel" name="headerLabel">
      <property name="text">
-      <string>Investor Mode</string>
+      <string>Non-cruncher Mode</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -97,7 +97,7 @@
     </spacer>
    </item>
    <item alignment="Qt::AlignVCenter">
-    <widget class="QLabel" name="investorLabel">
+    <widget class="QLabel" name="noncruncherLabel">
      <property name="text">
       <string>You opted out of research rewards and will earn staking rewards only.</string>
      </property>

@@ -30,9 +30,9 @@ class WhitelistSnapshot;
 //!
 enum class ResearcherMode
 {
-    INVESTOR, //!< Decline participation in the research reward protocol.
-    POOL,     //!< Earn research rewards from a Gridcoin pool.
-    SOLO,     //!< Earn research rewards with a personal BOINC installation.
+    NONCRUNCHER, //!< Decline participation in the research reward protocol.
+    POOL,        //!< Earn research rewards from a Gridcoin pool.
+    SOLO,        //!< Earn research rewards with a personal BOINC installation.
 };
 
 //!
@@ -41,11 +41,11 @@ enum class ResearcherMode
 //!
 enum class ResearcherStatus
 {
-    INVESTOR,    //!< BOINC not present; ineligible for research rewards.
-    ACTIVE,      //!< CPID eligible for research rewards.
-    POOL,        //!< BOINC attached to projects for a Gridcoin mining pool.
-    NO_PROJECTS, //!< BOINC present, but no eligible projects (investor).
-    NO_BEACON,   //!< No active beacon public key advertised.
+    NONCRUNCHER,    //!< BOINC not present; ineligible for research rewards.
+    ACTIVE,         //!< CPID eligible for research rewards.
+    POOL,           //!< BOINC attached to projects for a Gridcoin mining pool.
+    NO_PROJECTS,    //!< BOINC present, but no eligible projects (effectively non-cruncher).
+    NO_BEACON,      //!< No active beacon public key advertised.
 };
 
 //!
@@ -301,7 +301,7 @@ enum class BeaconError
     NONE,               //!< Beacon advertised successfully.
     INSUFFICIENT_FUNDS, //!< Balance too low to send a contract transaction.
     MISSING_KEY,        //!< Beacon private key missing or invalid.
-    NO_CPID,            //!< No valid CPID detected (investor mode).
+    NO_CPID,            //!< No valid CPID detected (non-cruncher mode).
     NOT_NEEDED,         //!< Beacon exists for the CPID. No renewal needed.
     PENDING,            //!< Not enough time elapsed for pending advertisement.
     TX_FAILED,          //!< Beacon contract transacton failed to send.
@@ -378,7 +378,7 @@ class Researcher
 {
 public:
     //!
-    //! \brief Initialize the researcher context to an investor.
+    //! \brief Initialize the researcher context to a non-cruncher.
     //!
     Researcher();
 
@@ -386,7 +386,7 @@ public:
     //! \brief Initialize a researcher context with a mining ID and a set of
     //! local projects.
     //!
-    //! \param mining_id Represents a CPID or an investor.
+    //! \param mining_id Represents a CPID or a non-cruncher.
     //! \param projects  A set of local projects loaded from BOINC.
     //! \param beacon_error Last beacon advertisement error, if any.
     //! \param has_split_cpid Existence of split cpid.
@@ -418,13 +418,13 @@ public:
     static std::string Email();
 
     //!
-    //! \brief Determine whether the wallet must run in investor mode before trying
+    //! \brief Determine whether the wallet must run in non-cruncher mode before trying
     //! to load BOINC CPIDs.
     //!
-    //! \return \c true if the user explicitly configured investor mode or failed
+    //! \return \c true if the user explicitly configured non-cruncher mode or failed
     //! to input a valid email address.
     //!
-    static bool ConfiguredForInvestorMode(bool log = false);
+    static bool ConfiguredForNoncruncherMode(bool log = false);
 
     //!
     //! \brief Get the current global researcher context.
@@ -455,7 +455,7 @@ public:
     //! in the Proof-of-Research protocol. If BOINC is authenticated with at
     //! least one eligible project, the call will set the BOINC context used
     //! to mint blocks that claim Proof-of-Research rewards. Otherwise, this
-    //! method resets the wallet's mining context to investor mode.
+    //! method resets the wallet's mining context to non-cruncher mode.
     //!
     static void Reload();
 
@@ -486,7 +486,7 @@ public:
     //!
     //! \brief Get the primary mining ID that identifies the owner of the wallet.
     //!
-    //! \return Contains a CPID or represents an investor.
+    //! \return Contains a CPID or represents a non-cruncher.
     //!
     const MiningId& Id() const;
 
@@ -519,18 +519,18 @@ public:
 
     //!
     //! \brief Determine whether the wallet will attempt to stake for rewards
-    //! in investor mode only.
+    //! in non-cruncher mode only.
     //!
     //! \return \c true if the wallet loaded no eligible BOINC projects or it
-    //! is configured to start in investor mode.
+    //! is configured to start in non-cruncher mode.
     //!
-    bool IsInvestor() const;
+    bool IsNoncruncher() const;
 
     //!
     //! \brief Get the current magnitude of the CPID loaded by the wallet.
     //!
     //! \return The wallet user's magnitude or zero if the wallet started in
-    //! investor mode.
+    //! non-cruncher mode.
     //!
     GRC::Magnitude Magnitude() const;
 
@@ -616,7 +616,7 @@ public:
     //! This method sends a transaction to advertise a new beacon key when all
     //! of the following are true:
     //!
-    //!  - The node obtained a valid CPID from BOINC (not investor)
+    //!  - The node obtained a valid CPID from BOINC (not a non-cruncher)
     //!  - The node did not send a beacon transaction recently
     //!  - No beacon exists for the CPID or it expired, or...
     //!  - A beacon for the CPID exists and elapsed the renewal threshold
@@ -651,7 +651,7 @@ public:
     AdvertiseBeaconResult RevokeBeacon(const Cpid cpid);
 
 private:
-    MiningId m_mining_id;            //!< CPID or INVESTOR variant.
+    MiningId m_mining_id;            //!< CPID or NONCRUNCHER variant.
     MiningProjectMap m_projects;     //!< Local projects loaded from BOINC.
     GRC::BeaconError m_beacon_error; //!< Last beacon error that occurred, if any.
     bool m_has_split_cpid;           //!< Flag that indicates project list has more than one CPID

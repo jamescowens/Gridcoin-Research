@@ -1874,7 +1874,7 @@ void BitcoinGUI::updateBeaconIcon()
 {
     LogPrint(BCLog::MISC, "BitcoinGUI::updateBeaconIcon()");
 
-    if (researcherModel->configuredForInvestorMode()
+    if (researcherModel->configuredForNoncruncherMode()
         || researcherModel->detectedPoolMode())
     {
         labelBeaconIcon->hide();

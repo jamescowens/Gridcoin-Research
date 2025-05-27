@@ -135,7 +135,7 @@ public:
 //! component values from.
 //!
 //! \return Sum of the RSA weight and magnitude from the claim, or zero when
-//! the claim contains no CPID (for an investor).
+//! the claim contains no CPID (for a non-cruncher).
 //!
 int64_t GetRSAWeightByBlock(const std::string& bb)
 {

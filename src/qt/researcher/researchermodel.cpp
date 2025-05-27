@@ -98,7 +98,7 @@ BeaconStatus MapAdvertiseBeaconError(const BeaconError error)
 
 ResearcherModel::ResearcherModel()
     : m_beacon_status(BeaconStatus::UNKNOWN)
-    , m_configured_for_investor_mode(false)
+    , m_configured_for_noncruncher_mode(false)
     , m_wizard_open(false)
     , m_out_of_sync(true)
     , m_split_cpid(false)
@@ -110,8 +110,8 @@ ResearcherModel::ResearcherModel()
     resetResearcher(Researcher::Get());
     subscribeToCoreSignals();
 
-    if (GRC::Researcher::ConfiguredForInvestorMode()) {
-        m_configured_for_investor_mode = true;
+    if (GRC::Researcher::ConfiguredForNoncruncherMode()) {
+        m_configured_for_noncruncher_mode = true;
     }
 
     QTimer *refresh_timer = new QTimer(this);
@@ -201,8 +201,8 @@ void ResearcherModel::showWizard(WalletModel* wallet_model)
 
     ResearcherWizard *wizard = new ResearcherWizard(nullptr, this, wallet_model);
 
-    if (configuredForInvestorMode()) {
-        wizard->setStartId(ResearcherWizard::PageInvestor);
+    if (configuredForNoncruncherMode()) {
+        wizard->setStartId(ResearcherWizard::PageNoncruncher);
     } else if (detectedPoolMode()) {
         wizard->setStartId(ResearcherWizard::PagePoolSummary);
     } else if (hasSplitCpid()) {
@@ -233,9 +233,9 @@ void ResearcherModel::setMaskCpidMagnitudeAccrual(bool privacy)
     refresh();
 }
 
-bool ResearcherModel::configuredForInvestorMode() const
+bool ResearcherModel::configuredForNoncruncherMode() const
 {
-    return m_configured_for_investor_mode;
+    return m_configured_for_noncruncher_mode;
 }
 
 bool ResearcherModel::outOfSync() const
@@ -254,7 +254,7 @@ bool ResearcherModel::actionNeeded() const
         return false;
     }
 
-    if (configuredForInvestorMode()) {
+    if (configuredForNoncruncherMode()) {
         return false;
     }
 
@@ -688,23 +688,23 @@ void ResearcherModel::resetResearcher(ResearcherPtr researcher)
 
 bool ResearcherModel::switchToSolo(const QString& email)
 {
-    m_configured_for_investor_mode = false;
+    m_configured_for_noncruncher_mode = false;
 
     return m_researcher->ChangeMode(ResearcherMode::SOLO, email.toStdString());
 }
 
 bool ResearcherModel::switchToPool()
 {
-    m_configured_for_investor_mode = false;
+    m_configured_for_noncruncher_mode = false;
 
     return m_researcher->ChangeMode(ResearcherMode::POOL, std::string());
 }
 
-bool ResearcherModel::switchToInvestor()
+bool ResearcherModel::switchToNoncruncher()
 {
-    m_configured_for_investor_mode = true;
+    m_configured_for_noncruncher_mode = true;
 
-    return m_researcher->ChangeMode(ResearcherMode::INVESTOR, std::string());
+    return m_researcher->ChangeMode(ResearcherMode::NONCRUNCHER, std::string());
 }
 
 void ResearcherModel::updateBeacon()

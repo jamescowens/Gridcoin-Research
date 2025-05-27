@@ -250,7 +250,7 @@ UniValue auditsnapshotaccrual(const UniValue& params, bool fHelp)
     const GRC::CpidOption cpid = mining_id.TryCpid();
 
     if (!cpid) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for investor.");
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for non-cruncher.");
     }
 
     if (!pindexBest) {

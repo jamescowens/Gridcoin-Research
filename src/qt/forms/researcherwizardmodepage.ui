@@ -97,6 +97,12 @@
      <property name="sizeType">
       <enum>QSizePolicy::Expanding</enum>
      </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
     </spacer>
    </item>
    <item>
@@ -148,12 +154,12 @@
       </widget>
      </item>
      <item row="0" column="2" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-      <widget class="ClickLabel" name="investorIconLabel">
+      <widget class="ClickLabel" name="noncruncherIconLabel">
        <property name="text">
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="../bitcoin.qrc">:/images/ic_investor_inactive</pixmap>
+        <pixmap resource="../bitcoin.qrc">:/images/ic_noncruncher_inactive</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -161,9 +167,9 @@
       </widget>
      </item>
      <item row="1" column="2" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-      <widget class="QRadioButton" name="investorRadioButton">
+      <widget class="QRadioButton" name="noncruncherRadioButton">
        <property name="text">
-        <string>Investor</string>
+        <string>Non-cruncher</string>
        </property>
        <attribute name="buttonGroup">
         <string notr="true">modeButtonGroup</string>

@@ -269,11 +269,11 @@ BOOST_AUTO_TEST_CASE(it_initializes_to_an_invalid_mining_id)
     BOOST_CHECK(mining_id.Which() == GRC::MiningId::Kind::INVALID);
 }
 
-BOOST_AUTO_TEST_CASE(it_initializes_to_an_investor)
+BOOST_AUTO_TEST_CASE(it_initializes_to_an_noncruncher)
 {
-    GRC::MiningId mining_id = GRC::MiningId::ForInvestor();
+    GRC::MiningId mining_id = GRC::MiningId::ForNoncruncher();
 
-    BOOST_CHECK(mining_id.Which() == GRC::MiningId::Kind::INVESTOR);
+    BOOST_CHECK(mining_id.Which() == GRC::MiningId::Kind::NONCRUNCHER);
 }
 
 BOOST_AUTO_TEST_CASE(it_initializes_to_the_provided_cpid)
@@ -294,15 +294,15 @@ BOOST_AUTO_TEST_CASE(it_initializes_to_the_provided_cpid)
     }
 }
 
-BOOST_AUTO_TEST_CASE(it_parses_an_investor_mining_id)
+BOOST_AUTO_TEST_CASE(it_parses_an_noncruncher_mining_id)
 {
-    GRC::MiningId mining_id = GRC::MiningId::Parse("INVESTOR");
+    GRC::MiningId mining_id = GRC::MiningId::Parse("noncruncher");
 
-    BOOST_CHECK(mining_id.Which() == GRC::MiningId::Kind::INVESTOR);
+    BOOST_CHECK(mining_id.Which() == GRC::MiningId::Kind::NONCRUNCHER);
 
-    mining_id = GRC::MiningId::Parse("investor");
+    mining_id = GRC::MiningId::Parse("noncruncher");
 
-    BOOST_CHECK(mining_id.Which() == GRC::MiningId::Kind::INVESTOR);
+    BOOST_CHECK(mining_id.Which() == GRC::MiningId::Kind::NONCRUNCHER);
 }
 
 BOOST_AUTO_TEST_CASE(it_parses_a_cpid_mining_id)
@@ -333,8 +333,8 @@ BOOST_AUTO_TEST_CASE(it_refuses_to_parse_an_invalid_cpid)
     GRC::MiningId mining_id = GRC::MiningId::Parse("");
     BOOST_CHECK(mining_id.Which() == GRC::MiningId::Kind::INVALID);
 
-    // Bad investor:
-    mining_id = GRC::MiningId::Parse("INVESTOR ");
+    // Bad noncruncher:
+    mining_id = GRC::MiningId::Parse("noncruncher ");
     BOOST_CHECK(mining_id.Which() == GRC::MiningId::Kind::INVALID);
 
     // Too short: 31 characters
@@ -363,11 +363,11 @@ BOOST_AUTO_TEST_CASE(it_compares_another_mining_id_for_equality)
     }));
 
     BOOST_CHECK(GRC::MiningId() == GRC::MiningId());
-    BOOST_CHECK(GRC::MiningId::ForInvestor() == GRC::MiningId::ForInvestor());
+    BOOST_CHECK(GRC::MiningId::ForNoncruncher() == GRC::MiningId::ForNoncruncher());
 
     BOOST_CHECK(mining_id1 == mining_id2);
     BOOST_CHECK(mining_id1 != GRC::MiningId());
-    BOOST_CHECK(mining_id1 != GRC::MiningId::ForInvestor());
+    BOOST_CHECK(mining_id1 != GRC::MiningId::ForNoncruncher());
     BOOST_CHECK(mining_id1 != GRC::MiningId(GRC::Cpid()));
 }
 
@@ -392,8 +392,8 @@ BOOST_AUTO_TEST_CASE(it_determines_which_mining_id_variant_it_exhibits)
     GRC::MiningId mining_id;
     BOOST_CHECK(mining_id.Which() == GRC::MiningId::Kind::INVALID);
 
-    mining_id = GRC::MiningId::ForInvestor();
-    BOOST_CHECK(mining_id.Which() == GRC::MiningId::Kind::INVESTOR);
+    mining_id = GRC::MiningId::ForNoncruncher();
+    BOOST_CHECK(mining_id.Which() == GRC::MiningId::Kind::NONCRUNCHER);
 
     mining_id = GRC::MiningId(GRC::Cpid());
     BOOST_CHECK(mining_id.Which() == GRC::MiningId::Kind::CPID);
@@ -421,7 +421,7 @@ BOOST_AUTO_TEST_CASE(it_provides_guarded_access_to_stored_cpid_values)
         BOOST_FAIL("MiningId variant should not contain the CPID.");
     }
 
-    mining_id = GRC::MiningId::ForInvestor();
+    mining_id = GRC::MiningId::ForNoncruncher();
     if (const GRC::CpidOption cpid = mining_id.TryCpid()) {
         BOOST_FAIL("MiningId variant should not contain the CPID.");
     }
@@ -430,7 +430,7 @@ BOOST_AUTO_TEST_CASE(it_provides_guarded_access_to_stored_cpid_values)
 BOOST_AUTO_TEST_CASE(it_represents_itself_as_a_string)
 {
     BOOST_CHECK(GRC::MiningId().ToString().empty() == true);
-    BOOST_CHECK(GRC::MiningId::ForInvestor().ToString() == "INVESTOR");
+    BOOST_CHECK(GRC::MiningId::ForNoncruncher().ToString() == "NONCRUNCHER");
 
     GRC::MiningId mining_id(GRC::Cpid(std::vector<unsigned char> {
         0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -453,9 +453,9 @@ BOOST_AUTO_TEST_CASE(it_serializes_to_a_stream_for_invalid)
     BOOST_CHECK(stream[0] == std::byte{0x00}); // MiningId::Kind::INVALID
 }
 
-BOOST_AUTO_TEST_CASE(it_serializes_to_a_stream_for_investor)
+BOOST_AUTO_TEST_CASE(it_serializes_to_a_stream_for_noncruncher)
 {
-    GRC::MiningId mining_id = GRC::MiningId::ForInvestor();
+    GRC::MiningId mining_id = GRC::MiningId::ForNoncruncher();
 
     BOOST_CHECK(GetSerializeSize(mining_id, SER_NETWORK, 1) == 1);
 
@@ -463,7 +463,7 @@ BOOST_AUTO_TEST_CASE(it_serializes_to_a_stream_for_investor)
     stream << mining_id;
 
     BOOST_CHECK(stream.size() == 1);
-    BOOST_CHECK(stream[0] == std::byte{0x01}); // MiningId::Kind::INVESTOR
+    BOOST_CHECK(stream[0] == std::byte{0x01}); // MiningId::Kind::noncruncher
 }
 
 BOOST_AUTO_TEST_CASE(it_serializes_to_a_stream_for_cpid)
@@ -493,7 +493,7 @@ BOOST_AUTO_TEST_CASE(it_serializes_to_a_stream_for_cpid)
 BOOST_AUTO_TEST_CASE(it_deserializes_from_a_stream_for_invalid)
 {
     // Initialize mining_id with a valid value to test invalid:
-    GRC::MiningId mining_id = GRC::MiningId::ForInvestor();
+    GRC::MiningId mining_id = GRC::MiningId::ForNoncruncher();
 
     CDataStream stream(SER_NETWORK, 1);
     stream << (unsigned char)0x00; // MiningId::Kind::INVALID
@@ -502,15 +502,15 @@ BOOST_AUTO_TEST_CASE(it_deserializes_from_a_stream_for_invalid)
     BOOST_CHECK(mining_id.Which() == GRC::MiningId::Kind::INVALID);
 }
 
-BOOST_AUTO_TEST_CASE(it_deserializes_from_a_stream_for_investor)
+BOOST_AUTO_TEST_CASE(it_deserializes_from_a_stream_for_noncruncher)
 {
     GRC::MiningId mining_id;
 
     CDataStream stream(SER_NETWORK, 1);
-    stream << (unsigned char)0x01; // MiningId::Kind::INVESTOR
+    stream << (unsigned char)0x01; // MiningId::Kind::noncruncher
     stream >> mining_id;
 
-    BOOST_CHECK(mining_id.Which() == GRC::MiningId::Kind::INVESTOR);
+    BOOST_CHECK(mining_id.Which() == GRC::MiningId::Kind::NONCRUNCHER);
 }
 
 BOOST_AUTO_TEST_CASE(it_deserializes_from_a_stream_for_cpid)

@@ -300,7 +300,7 @@ bool TrySignMRC(
     const GRC::CpidOption cpid = mrc.m_mining_id.TryCpid();
 
     if (!cpid) {
-        return false; // Skip beacon signature for investors.
+        return false; // Skip beacon signature for non-crunchers.
     }
 
     const GRC::BeaconOption beacon = GRC::GetBeaconRegistry().Try(*cpid);
@@ -359,8 +359,8 @@ void GRC::CreateMRC(CBlockIndex* pindex,
         break;
     case GRC::ResearcherStatus::NO_BEACON:
         throw MRC_error(strprintf("%s: CPID eligible but no active beacon key so MRC cannot be formed.", __func__));
-    case GRC::ResearcherStatus::INVESTOR:
-        throw MRC_error(strprintf("%s: MRC request cannot be sent while wallet is in investor mode.", __func__));
+    case GRC::ResearcherStatus::NONCRUNCHER:
+        throw MRC_error(strprintf("%s: MRC request cannot be sent while wallet is in non-cruncher mode.", __func__));
     case GRC::ResearcherStatus::NO_PROJECTS:
         // This is handled as no positive research reward pending below.
         err = false;

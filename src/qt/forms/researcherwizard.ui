@@ -66,7 +66,7 @@
     </sizepolicy>
    </property>
   </widget>
-  <widget class="ResearcherWizardInvestorPage" name="investorPage"/>
+  <widget class="ResearcherWizardNoncruncherPage" name="NoncruncherPage"/>
   <widget class="ResearcherWizardPoolPage" name="poolPage"/>
   <widget class="ResearcherWizardPoolSummaryPage" name="poolSummaryPage"/>
  </widget>
@@ -114,9 +114,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>ResearcherWizardInvestorPage</class>
+   <class>ResearcherWizardNoncruncherPage</class>
    <extends>QWizardPage</extends>
-   <header>researcher/researcherwizardinvestorpage.h</header>
+   <header>researcher/researcherwizardnoncruncherpage.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

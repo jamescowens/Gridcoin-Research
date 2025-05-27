@@ -758,7 +758,7 @@ public:
     {
         return m_claim.HasResearchReward()
             ? CheckResearcherClaim()
-            : CheckInvestorClaim();
+            : CheckNoncruncherClaim();
     }
 
 private:
@@ -1011,7 +1011,7 @@ private:
         return m_total_claimed <= max_owed;
     }
 
-    bool CheckInvestorClaim() const
+    bool CheckNoncruncherClaim() const
     {
         CAmount mrc_rewards = 0;
         CAmount mrc_staker_fees = 0;
@@ -1020,7 +1020,7 @@ private:
         unsigned int mrc_non_zero_outputs = 0;
         std::string error_out;
 
-        // Even if the block is staked by an investor, the claim can include MRC payments to researchers...
+        // Even if the block is staked by a non-cruncher, the claim can include MRC payments to researchers...
         //
         // If block version 12 or higher, this checks the MRC part of the claim, and also returns the total mrc_fees,
         // which are needed because are part of the total claimed. Note that the DoS and log output for MRC
@@ -1050,7 +1050,7 @@ private:
 
         if (GRC::GetBadBlocks().count(m_pindex->GetBlockHash())) {
             LogPrintf(
-                "WARNING: ConnectBlock[%s]: ignored bad investor claim on block %s",
+                "WARNING: ConnectBlock[%s]: ignored bad non-cruncher claim on block %s",
                 __func__,
                 m_pindex->GetBlockHash().ToString());
 
@@ -1058,7 +1058,7 @@ private:
         }
 
         return m_block.DoS(10, error(
-                                   "ConnectBlock[%s]: investor claim %s, expected %s, fees %: %s",
+                                   "ConnectBlock[%s]: non-cruncher claim %s, expected %s, fees %: %s",
                                    __func__,
                                    FormatMoney(m_total_claimed),
                                    FormatMoney(out_stake_owed),
@@ -1158,7 +1158,7 @@ private:
         const GRC::CpidOption cpid = m_claim.m_mining_id.TryCpid();
 
         if (!cpid) {
-            // Investor claims are not signed by a beacon key.
+            // Non-cruncher claims are not signed by a beacon key.
             return false;
         }
 

@@ -80,7 +80,7 @@ public:
     uint32_t m_version = CURRENT_VERSION;
 
     //!
-    //! \brief Indicates whether the claim is for a researcher or investor.
+    //! \brief Indicates whether the claim is for a researcher or non-cruncher.
     //!
     //! If the claim declares research rewards, this field shall contain the
     //! external CPID of the researcher. For this case, it must match a CPID
@@ -118,7 +118,7 @@ public:
     //! \brief The value of the research rewards claimed by the node in units
     //! of 1/100000000 GRC.
     //!
-    //! Contains a value of zero for investor claims.
+    //! Contains a value of zero for non-cruncher claims.
     //!
     //! Claims do not strictly need to contain the block subsidy or research
     //! subsidy values. Nodes will calculate these values anyway to validate

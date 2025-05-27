@@ -14,15 +14,15 @@
 
 namespace {
 //!
-//! \brief Get a complete, valid claim for an investor.
+//! \brief Get a complete, valid claim for an noncruncher.
 //!
-//! \return Investor fields initialized except the superblock-related fields.
+//! \return noncruncher fields initialized except the superblock-related fields.
 //!
-GRC::Claim GetInvestorClaim(const unsigned int& version)
+GRC::Claim GetNoncruncherClaim(const unsigned int& version)
 {
     GRC::Claim claim(version);
 
-    claim.m_mining_id = GRC::MiningId::ForInvestor();
+    claim.m_mining_id = GRC::MiningId::ForNoncruncher();
     claim.m_client_version = "v4.0.4.6-unk";
     claim.m_organization = "Example Org";
     claim.m_block_subsidy = 10.0 * COIN;
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE(it_behaves_like_a_contract_payload)
 
 BOOST_AUTO_TEST_CASE(it_determines_whether_a_claim_is_well_formed)
 {
-    const GRC::Claim claim = GetInvestorClaim(3);
+    const GRC::Claim claim = GetNoncruncherClaim(3);
 
     BOOST_CHECK(claim.WellFormed() == true);
 }
@@ -253,14 +253,14 @@ BOOST_AUTO_TEST_CASE(it_determines_whether_it_is_a_research_reward_claim)
 
     BOOST_CHECK(claim.HasResearchReward() == true);
 
-    claim = GetInvestorClaim(3);
+    claim = GetNoncruncherClaim(3);
 
     BOOST_CHECK(claim.HasResearchReward() == false);
 }
 
 BOOST_AUTO_TEST_CASE(it_determines_whether_it_contains_a_superblock)
 {
-    GRC::Claim claim = GetInvestorClaim(3);
+    GRC::Claim claim = GetNoncruncherClaim(3);
 
     BOOST_CHECK(claim.ContainsSuperblock() == false);
 
@@ -271,7 +271,7 @@ BOOST_AUTO_TEST_CASE(it_determines_whether_it_contains_a_superblock)
 
 BOOST_AUTO_TEST_CASE(it_sums_the_block_and_research_reward_subsidies)
 {
-    GRC::Claim claim = GetInvestorClaim(3);
+    GRC::Claim claim = GetNoncruncherClaim(3);
 
     BOOST_CHECK(claim.TotalSubsidy() == 10.0 * COIN);
 
@@ -334,9 +334,9 @@ BOOST_AUTO_TEST_CASE(it_refuses_to_sign_itself_with_an_invalid_private_key)
     BOOST_CHECK(claim.m_signature.empty() == true);
 }
 
-BOOST_AUTO_TEST_CASE(it_refuses_to_sign_an_investor_claim)
+BOOST_AUTO_TEST_CASE(it_refuses_to_sign_an_noncruncher_claim)
 {
-    GRC::Claim claim = GetInvestorClaim(2);
+    GRC::Claim claim = GetNoncruncherClaim(2);
 
     const uint256 last_block_hash;
     const CTransaction coinstake_tx;
@@ -390,9 +390,9 @@ BOOST_AUTO_TEST_CASE(it_verifies_a_signature_for_a_v2_research_reward_claim)
         coinstake_tx));
 }
 
-BOOST_AUTO_TEST_CASE(it_generates_a_hash_for_an_investor_claim)
+BOOST_AUTO_TEST_CASE(it_generates_a_hash_for_an_noncruncher_claim)
 {
-    GRC::Claim claim = GetInvestorClaim(3);
+    GRC::Claim claim = GetNoncruncherClaim(3);
 
     CHashWriter hasher(SER_GETHASH, claim.m_version);
 
@@ -424,9 +424,9 @@ BOOST_AUTO_TEST_CASE(it_generates_a_hash_for_a_research_reward_claim)
     BOOST_CHECK(claim.GetHash() == hasher.GetHash());
 }
 
-BOOST_AUTO_TEST_CASE(it_serializes_to_a_stream_for_investor)
+BOOST_AUTO_TEST_CASE(it_serializes_to_a_stream_for_noncruncher)
 {
-    GRC::Claim claim = GetInvestorClaim(3);
+    GRC::Claim claim = GetNoncruncherClaim(3);
 
     BOOST_CHECK(claim.m_version == (unsigned int) 3);
 
@@ -449,9 +449,9 @@ BOOST_AUTO_TEST_CASE(it_serializes_to_a_stream_for_investor)
         expected.end()));
 }
 
-BOOST_AUTO_TEST_CASE(it_serializes_to_a_stream_for_investor_with_superblock)
+BOOST_AUTO_TEST_CASE(it_serializes_to_a_stream_for_noncruncher_with_superblock)
 {
-    GRC::Claim claim = GetInvestorClaim(3);
+    GRC::Claim claim = GetNoncruncherClaim(3);
 
     claim.m_superblock.Replace(GetTestSuperblock());
     claim.m_quorum_hash = claim.m_superblock->GetHash();
@@ -478,9 +478,9 @@ BOOST_AUTO_TEST_CASE(it_serializes_to_a_stream_for_investor_with_superblock)
         expected.end()));
 }
 
-BOOST_AUTO_TEST_CASE(it_deserializes_from_a_stream_for_investor)
+BOOST_AUTO_TEST_CASE(it_deserializes_from_a_stream_for_noncruncher)
 {
-    GRC::Claim expected = GetInvestorClaim(3);
+    GRC::Claim expected = GetNoncruncherClaim(3);
     CDataStream stream(SER_NETWORK, PROTOCOL_VERSION);
 
     stream << expected.m_version
@@ -510,9 +510,9 @@ BOOST_AUTO_TEST_CASE(it_deserializes_from_a_stream_for_investor)
     BOOST_CHECK(claim.m_mrc_tx_map.empty() == true);
 }
 
-BOOST_AUTO_TEST_CASE(it_deserializes_from_a_stream_for_investor_with_superblock)
+BOOST_AUTO_TEST_CASE(it_deserializes_from_a_stream_for_noncruncher_with_superblock)
 {
-    GRC::Claim expected = GetInvestorClaim(3);
+    GRC::Claim expected = GetNoncruncherClaim(3);
 
     expected.m_superblock.Replace(GetTestSuperblock());
     expected.m_quorum_hash = expected.m_superblock->GetHash();

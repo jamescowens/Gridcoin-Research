@@ -52,7 +52,7 @@ add_library(gridcoinqt STATIC
     researcher/researcherwizardauthpage.cpp
     researcher/researcherwizardbeaconpage.cpp
     researcher/researcherwizardemailpage.cpp
-    researcher/researcherwizardinvestorpage.cpp
+    researcher/researcherwizardnoncruncherpage.cpp
     researcher/researcherwizardmodedetailpage.cpp
     researcher/researcherwizardmodepage.cpp
     researcher/researcherwizardpoolpage.cpp

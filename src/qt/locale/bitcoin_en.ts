@@ -23,6 +23,21 @@ Distributed under the MIT/X11 software license, see the accompanying file COPYIN
 This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (https://www.openssl.org/) and cryptographic software written by Eric Young (eay@cryptsoft.com) and UPnP software written by Thomas Bernard.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location line="+46"/>
+        <source>Version Information</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../aboutdialog.cpp" line="+37"/>
+        <source>Version information and update check has been disabled by config or startup parameter.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Version information is not available on testnet.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AdditionalFieldsTableDataModel</name>
@@ -227,7 +242,7 @@ This product includes software developed by the OpenSSL Project for use in the O
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+44"/>
         <source>Confirm wallet encryption</source>
         <translation type="unfinished"></translation>
     </message>
@@ -243,12 +258,12 @@ This product includes software developed by the OpenSSL Project for use in the O
     </message>
     <message>
         <location line="+6"/>
-        <location line="+44"/>
+        <location line="+54"/>
         <source>Wallet encrypted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-42"/>
+        <location line="-52"/>
         <source>Gridcoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your coins from being stolen by malware infecting your computer.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -260,40 +275,56 @@ This product includes software developed by the OpenSSL Project for use in the O
     <message>
         <location line="+8"/>
         <location line="+5"/>
-        <location line="+31"/>
-        <location line="+6"/>
+        <location line="+57"/>
         <source>Wallet encryption failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-41"/>
+        <location line="-61"/>
         <source>Wallet encryption failed due to an internal error. Your wallet was not encrypted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+5"/>
-        <location line="+37"/>
+        <location line="+57"/>
         <source>The supplied passphrases do not match.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-27"/>
+        <location line="-46"/>
+        <location line="+3"/>
         <source>Wallet unlock failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location line="+20"/>
+        <location line="-2"/>
+        <location line="+31"/>
         <source>The passphrase entered for the wallet decryption was incorrect.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-6"/>
+        <location line="-28"/>
+        <source>The passphrase entered for the wallet decryption is incorrect. It contains a null character (ie - a zero byte). If the passphrase was set with a version of this software prior to 5.4.6, please try again with only the characters up to — but not including — the first null character. If this is successful, please set a new passphrase to avoid this issue in the future.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
         <source>Wallet passphrase was successfully changed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+47"/>
+        <location line="+7"/>
+        <location line="+3"/>
+        <source>Passphrase change failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The old passphrase entered for the wallet decryption is incorrect. It contains a null character (ie - a zero byte). If the passphrase was set with a version of this software prior to 5.4.6, please try again with only the characters up to — but not including — the first null character.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+46"/>
         <location line="+24"/>
         <source>Warning: The Caps Lock key is on!</source>
         <translation type="unfinished"></translation>
@@ -315,12 +346,12 @@ This product includes software developed by the OpenSSL Project for use in the O
 <context>
     <name>BitcoinGUI</name>
     <message>
-        <location filename="../bitcoin.cpp" line="+242"/>
+        <location filename="../bitcoin.cpp" line="+244"/>
         <source>A fatal error occurred. Gridcoin can no longer continue safely and will quit.</source>
         <translation>A fatal error occurred. Gridcoin can no longer continue safely and will quit.</translation>
     </message>
     <message>
-        <location filename="../bitcoingui.cpp" line="+153"/>
+        <location filename="../bitcoingui.cpp" line="+163"/>
         <source>Gridcoin</source>
         <translation type="unfinished">Gridcoin</translation>
     </message>
@@ -330,7 +361,7 @@ This product includes software developed by the OpenSSL Project for use in the O
         <translation type="unfinished">Wallet</translation>
     </message>
     <message>
-        <location line="+139"/>
+        <location line="+146"/>
         <source>&amp;Overview</source>
         <translation type="unfinished"></translation>
     </message>
@@ -616,7 +647,7 @@ This product includes software developed by the OpenSSL Project for use in the O
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+28"/>
         <source>&amp;Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -658,7 +689,7 @@ This product includes software developed by the OpenSSL Project for use in the O
     </message>
     <message>
         <location line="+0"/>
-        <location line="+133"/>
+        <location line="+142"/>
         <source>Gridcoin client</source>
         <translation type="unfinished"></translation>
     </message>
@@ -736,7 +767,7 @@ This product includes software developed by the OpenSSL Project for use in the O
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+125"/>
+        <location line="+123"/>
         <source>This transaction is over the size limit.  You can still send it for a fee of %1, which goes to the nodes that process your transaction and helps to support the network.  Do you want to pay the fee?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -952,11 +983,28 @@ Scraper(s) not publishing: %5.</source>
     <message>
         <location line="+20"/>
         <source>CPID: %1
-Time left to activate: %2%3</source>
+Time left to activate: %2
+%3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+84"/>
+        <source>The following poll(s) are about to expire:
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Open Gridcoin to vote.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Poll(s) about to expire</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-85"/>
         <source>CPID: %1
 Beacon age: %2
 Current beacon expired!
@@ -1723,6 +1771,64 @@ Expires: %3
     </message>
 </context>
 <context>
+    <name>EditSideStakeDialog</name>
+    <message>
+        <location filename="../forms/editsidestakedialog.ui" line="+14"/>
+        <source>Add or Edit SideStake</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Address</source>
+        <translation type="unfinished">Address</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Allocation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editsidestakedialog.cpp" line="+28"/>
+        <source>New SideStake</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Edit SideStake</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+93"/>
+        <source>The entered address &quot;%1&quot; is not a valid Gridcoin address.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>The entered address &quot;%1&quot; already has a local sidestake entry.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>The entered allocation is not valid. Check to make sure that the allocation is greater than zero and when added to the other allocations totals less than 100.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>The entered description is not valid. Check to make sure that the description only contains letters, numbers, spaces, periods, or underscores.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>FavoritesPage</name>
     <message>
         <location filename="../forms/favoritespage.ui" line="+14"/>
@@ -1870,17 +1976,17 @@ Expires: %3
 <context>
     <name>MRCModel</name>
     <message>
-        <location filename="../mrcmodel.cpp" line="+271"/>
+        <location filename="../mrcmodel.cpp" line="+273"/>
         <source>You must have a mature balance of at least 1 GRC to submit an MRC.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+34"/>
-        <source>Too soon since your last research rewards payment.</source>
+        <source>Too soon to submit an MRC request. At least 14 days must elapse from your original beacon advertisement or last research reward payment, whether by stake or MRC, whichever is later.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+13"/>
         <source>The total fee (the minimum fee + fee boost) is greater than the rewards due.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1949,9 +2055,9 @@ Expires: %3
     </message>
     <message>
         <location line="+10"/>
-        <location filename="../mrcrequestpage.cpp" line="+196"/>
-        <location line="+21"/>
-        <location line="+14"/>
+        <location filename="../mrcrequestpage.cpp" line="+205"/>
+        <location line="+27"/>
+        <location line="+20"/>
         <source>Your Projected MRC Request Position in Queue</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1972,7 +2078,7 @@ Expires: %3
     </message>
     <message>
         <location line="+7"/>
-        <source>The calculated minimum fee for the MRC. This may not be sufficient to submit the MRC if the queue is already full. In that case, you need to use the MRC fee boost to raise the fee to get your MRC in the queue.</source>
+        <source>The calculated minimum fee for the MRC. This may not be sufficient to submit the MRC if the queue is already full. In that case, the MRC Fee Boost field will appear and you need to use it to raise the fee to get your MRC in the queue.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2002,11 +2108,21 @@ Expires: %3
     </message>
     <message>
         <location line="+10"/>
+        <source>This will automatically boost the MRC fee you are paying to get your MRC request in the queue.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Raise to Minimum For Submit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+7"/>
+        <source>This appears if the queue is full and you need to boost the fee you will pay out of your rewards to displace someone else in the queue. It is NOT the amount of reward to be redeemed!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
         <source>Update</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2016,27 +2132,27 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mrcrequestpage.cpp" line="-112"/>
+        <location filename="../mrcrequestpage.cpp" line="-133"/>
         <location line="+6"/>
         <location line="+6"/>
         <location line="+19"/>
+        <location line="+19"/>
+        <location line="+19"/>
         <location line="+16"/>
-        <location line="+16"/>
-        <location line="+13"/>
-        <location line="+21"/>
+        <location line="+27"/>
         <location line="+3"/>
         <source>N/A</source>
         <translation type="unfinished">N/A</translation>
     </message>
     <message>
-        <location line="-71"/>
-        <location line="+16"/>
-        <location line="+16"/>
+        <location line="-86"/>
+        <location line="+19"/>
+        <location line="+19"/>
         <source>Your Submitted MRC Request Position in Queue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+89"/>
         <source>You must have an active beacon and the wallet must be in solo mode to submit MRCs.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2163,7 +2279,7 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+8"/>
         <source>This enables or disables staking (the default is enabled). Note that a change to this setting will permanently override the config file with an entry in the settings file.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2203,7 +2319,27 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+22"/>
+        <source>Enable Locally Specified Sidestaking</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>New</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+45"/>
         <source>Minimize instead of exit the application when the window is closed. When this option is enabled, the application will be closed only after selecting Quit in the menu.</source>
         <translation>Minimize instead of exit the application when the window is closed. When this option is enabled, the application will be closed only after selecting Quit in the menu.</translation>
     </message>
@@ -2223,7 +2359,17 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+9"/>
+        <source>Hours before poll expiry reminder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Valid values are between 0.25 and 168.0 hours.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+57"/>
         <source>The user interface language can be set here. This setting will take effect after restarting Gridcoin.</source>
         <translation>The user interface language can be set here. This setting will take effect after restarting Gridcoin.</translation>
     </message>
@@ -2248,22 +2394,22 @@ Expires: %3
         <translation>&amp;Display addresses in transaction list</translation>
     </message>
     <message>
-        <location line="-136"/>
+        <location line="-167"/>
         <source>&amp;Window</source>
         <translation>&amp;Window</translation>
     </message>
     <message>
-        <location line="+239"/>
+        <location line="+270"/>
         <source>&amp;Apply</source>
         <translation>&amp;Apply</translation>
     </message>
     <message>
-        <location line="-233"/>
+        <location line="-264"/>
         <source>Show only a tray icon after minimizing the window.</source>
         <translation>Show only a tray icon after minimizing the window.</translation>
     </message>
     <message>
-        <location line="-240"/>
+        <location line="-304"/>
         <source>Start minimized</source>
         <translation type="unfinished">Start minimized</translation>
     </message>
@@ -2293,7 +2439,7 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+181"/>
+        <location line="+245"/>
         <source>&amp;Minimize to the tray instead of the taskbar</source>
         <translation>&amp;Minimize to the tray instead of the taskbar</translation>
     </message>
@@ -2303,7 +2449,7 @@ Expires: %3
         <translation>M&amp;inimize on close</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+73"/>
         <source>&amp;Display</source>
         <translation>&amp;Display</translation>
     </message>
@@ -2343,7 +2489,7 @@ Expires: %3
         <translation>&amp;Cancel</translation>
     </message>
     <message>
-        <location filename="../optionsdialog.cpp" line="+72"/>
+        <location filename="../optionsdialog.cpp" line="+83"/>
         <source>default</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2358,19 +2504,35 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+158"/>
-        <location line="+9"/>
+        <location line="+240"/>
+        <location line="+23"/>
+        <source>Error</source>
+        <translation type="unfinished">Error</translation>
+    </message>
+    <message>
+        <location line="-23"/>
+        <source>You can only edit one sidestake at a time.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>You can only delete one sidestake at a time.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <location line="+10"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-9"/>
-        <location line="+9"/>
+        <location line="-10"/>
+        <location line="+10"/>
         <source>This setting will take effect after restarting Gridcoin.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+89"/>
         <source>The supplied proxy address is invalid.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2382,6 +2544,21 @@ Expires: %3
     <message>
         <location line="+19"/>
         <source>The supplied minimum post stake-split UTXO size is invalid.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>The supplied time for notification before poll expires must be between 0.25 and 24 hours.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+140"/>
+        <source>The entered allocation is not valid and is reverted. Check to make sure that the allocation is greater than or equal to zero and when added to the other allocations totals less than 100.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>The entered description is not valid. Check to make sure that the description only contains letters, numbers, spaces, periods, or underscores.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2541,7 +2718,7 @@ Expires: %3
     </message>
     <message>
         <location line="+26"/>
-        <source>You are approaching the accrual limit of 16384 GRC. If you have a relatively low balance, you should request payment via MRC so that you do not lose earned rewards.</source>
+        <source>You are approaching the accrual limit. If you have a relatively low balance, you should request payment via MRC so that you do not lose earned rewards.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2648,12 +2825,12 @@ Expires: %3
     </message>
     <message>
         <location line="+63"/>
-        <source>Your Last Vote:</source>
+        <source>Your Vote(s):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>Your Vote Weight:</source>
+        <source>Your Vote Weight(s):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2673,6 +2850,11 @@ Expires: %3
     </message>
     <message>
         <location line="+20"/>
+        <source>Stale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Validated</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2683,7 +2865,7 @@ Expires: %3
     </message>
     <message>
         <location line="+20"/>
-        <location filename="../voting/pollcard.cpp" line="+112"/>
+        <location filename="../voting/pollcard.cpp" line="+125"/>
         <source>Voting finished.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2768,7 +2950,7 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+249"/>
+        <location line="+254"/>
         <source>Show Results</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2781,7 +2963,7 @@ Expires: %3
 <context>
     <name>PollTableDataModel</name>
     <message>
-        <location filename="../voting/polltablemodel.cpp" line="+25"/>
+        <location filename="../voting/polltablemodel.cpp" line="+24"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2828,6 +3010,11 @@ Expires: %3
     <message>
         <location line="+1"/>
         <source>Top Answer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stale Results</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2912,13 +3099,13 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../voting/pollwizarddetailspage.cpp" line="+143"/>
-        <location line="+156"/>
+        <location filename="../voting/pollwizarddetailspage.cpp" line="+175"/>
+        <location line="+168"/>
         <source>Create Poll</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-137"/>
+        <location line="-149"/>
         <source>Balance</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2943,7 +3130,12 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+133"/>
+        <location line="+34"/>
+        <source>Cannot have more than 20 choices in a poll.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+111"/>
         <source>This poll will cost %1 plus a transaction fee. Continue?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3056,7 +3248,7 @@ Expires: %3
     </message>
     <message>
         <location line="+1"/>
-        <source>Avg. Credit</source>
+        <source>Recent Avg. Credit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3219,6 +3411,66 @@ Expires: %3
         <source>%1 remaining.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../transactionrecord.cpp" line="+374"/>
+        <source>Other</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mined</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sent to Address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sent to Other</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Received with Address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Received from Other</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Self</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Beacon Advertisements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Polls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Votes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>MRCs</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QRCodeDialog</name>
@@ -3312,7 +3564,7 @@ Expires: %3
         <location line="+26"/>
         <location line="+23"/>
         <location line="+23"/>
-        <location filename="../rpcconsole.cpp" line="+484"/>
+        <location filename="../rpcconsole.cpp" line="+486"/>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
@@ -3730,7 +3982,7 @@ Expires: %3
 <context>
     <name>ResearcherModel</name>
     <message>
-        <location filename="../researcher/researchermodel.cpp" line="+128"/>
+        <location filename="../researcher/researchermodel.cpp" line="+131"/>
         <source>Beacon is active.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3791,17 +4043,40 @@ Expires: %3
     </message>
     <message>
         <location line="+2"/>
-        <location line="+237"/>
+        <source>Beacon advertisement transaction already in mempool.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+248"/>
         <source>Waiting for sync...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+140"/>
+        <location line="+129"/>
+        <location line="+74"/>
+        <source>Manually Greylisted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-71"/>
+        <location line="+74"/>
+        <source>Automatically Greylisted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-65"/>
+        <location line="+74"/>
+        <source>Excluded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-44"/>
         <source>Not whitelisted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+25"/>
         <source>Not attached</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3945,29 +4220,6 @@ Expires: %3
     </message>
 </context>
 <context>
-    <name>ResearcherWizardInvestorPage</name>
-    <message>
-        <location filename="../forms/researcherwizardinvestorpage.ui" line="+20"/>
-        <source>Summary</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+56"/>
-        <source>Investor Mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>You opted out of research rewards and will earn staking rewards only.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Press &quot;Start Over&quot; if you want to switch modes.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>ResearcherWizardModeDetailPage</name>
     <message>
         <location filename="../forms/researcherwizardmodedetailpage.ui" line="+20"/>
@@ -3984,7 +4236,7 @@ Expires: %3
         <source>&lt;html&gt;
 &lt;head/&gt;
 &lt;body&gt;
-&lt;p&gt;You can participate as either a miner or investor. &lt;span style=&quot; font-weight:600;&quot;&gt;Miners&lt;/span&gt; earn Gridcoin by participating in whitelisted BOINC projects. To redeem their rewards, miners must stake blocks. &lt;span style=&quot; font-weight:600;&quot;&gt;Solo Miners&lt;/span&gt; stake blocks on their own which typically requires a balance of at least 5000 GRC. &lt;span style=&quot; font-weight:600;&quot;&gt;Pool Miners&lt;/span&gt; avoid this upfront investment by letting a third party (the pool) stake blocks on their behalf. Pool mining is recommended for new users with a low initial balance. &lt;span style=&quot; font-weight:600;&quot;&gt;Investors&lt;/span&gt; own Gridcoin but do not participate in BOINC mining. By using their balance to stake blocks, investors help to secure the network and are rewarded 10 GRC per block.&lt;/p&gt;
+&lt;p&gt;You can participate as either a miner or non-cruncher. &lt;span style=&quot; font-weight:600;&quot;&gt;Miners&lt;/span&gt; earn Gridcoin by participating in whitelisted BOINC projects. To redeem their rewards, miners must stake blocks. &lt;span style=&quot; font-weight:600;&quot;&gt;Solo Miners&lt;/span&gt; stake blocks on their own which typically requires a balance of at least 5000 GRC. &lt;span style=&quot; font-weight:600;&quot;&gt;Pool Miners&lt;/span&gt; avoid this upfront investment by letting a third party (the pool) stake blocks on their behalf. Pool mining is recommended for new users with a low initial balance. &lt;span style=&quot; font-weight:600;&quot;&gt;Non-crunchers&lt;/span&gt; own Gridcoin but do not participate in BOINC mining. By using their balance to stake blocks, non-crunchers help to secure the network and are rewarded 10 GRC per block.&lt;/p&gt;
 &lt;/body&gt;
 &lt;/html&gt;</source>
         <translation type="unfinished"></translation>
@@ -4046,7 +4298,7 @@ Expires: %3
     </message>
     <message>
         <location line="+78"/>
-        <source>Investor</source>
+        <source>Non-cruncher</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4068,7 +4320,7 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+31"/>
         <source>Solo</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4079,12 +4331,35 @@ Expires: %3
     </message>
     <message>
         <location line="+49"/>
-        <source>Investor</source>
+        <source>Non-cruncher</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Help me choose...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ResearcherWizardNoncruncherPage</name>
+    <message>
+        <location filename="../forms/researcherwizardnoncruncherpage.ui" line="+20"/>
+        <source>Summary</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+56"/>
+        <source>Non-cruncher Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>You opted out of research rewards and will earn staking rewards only.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Press &quot;Start Over&quot; if you want to switch modes.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4716,6 +4991,29 @@ Expires: %3
     <message>
         <location line="+33"/>
         <source>Enter a Gridcoin address (e.g. S67nL4vELWwdDVzjgtEP4MxryarTZ9a8GB)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SideStakeTableModel</name>
+    <message>
+        <location filename="../sidestaketablemodel.cpp" line="+116"/>
+        <source>Address</source>
+        <translation type="unfinished">Address</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Allocation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5431,37 +5729,12 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+6"/>
         <source>All Types</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Received with</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Sent to</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>To yourself</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Mined</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Other</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
+        <location line="+12"/>
         <source>Min amount</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5563,9 +5836,32 @@ Expires: %3
     </message>
 </context>
 <context>
+    <name>UpdateDialog</name>
+    <message>
+        <location filename="../forms/updatedialog.ui" line="+14"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>changelog</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>UpgradeQt</name>
     <message>
-        <location filename="../upgradeqt.cpp" line="+65"/>
+        <location filename="../upgradeqt.cpp" line="+67"/>
         <source>E&amp;xit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5617,7 +5913,7 @@ Expires: %3
 <context>
     <name>VotingModel</name>
     <message>
-        <location filename="../voting/votingmodel.cpp" line="+389"/>
+        <location filename="../voting/votingmodel.cpp" line="+489"/>
         <location line="+40"/>
         <source>Please unlock the wallet.</source>
         <translation type="unfinished"></translation>
@@ -5723,17 +6019,17 @@ Expires: %3
         <translation></translation>
     </message>
     <message>
-        <location line="+426"/>
+        <location line="+451"/>
         <source>Usage:</source>
         <translation>Usage:</translation>
     </message>
     <message>
-        <location line="-105"/>
+        <location line="-109"/>
         <source>List commands</source>
         <translation>List commands</translation>
     </message>
     <message>
-        <location line="-324"/>
+        <location line="-345"/>
         <source>A poll with a yes/no/abstain response type cannot include any additional custom choices.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5753,12 +6049,31 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+6"/>
+        <source>ERROR: Checkpoint mismatch: Blockchain data may be corrupted.
+
+Gridcoin detected bad index entries. This may occur because of a late software upgrade, unexpected exit, or a power failure. Please run gridcoinresearchd with the -resetblockchaindata parameter. Your wallet will re-download the blockchain. Your balance may appear incorrect until the synchronization finishes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>ERROR: Checkpoint mismatch: Blockchain data may be corrupted.
+
+Gridcoin detected bad index entries. This may occur because of a late software upgrade, unexpected exit, or a power failure. Your blockchain data is being reset and your wallet will resync from genesis when you restart. Your balance may appear incorrect until the synchronization finishes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
         <source>Error: Clock skew is 5 minutes or greater. Please check your clock settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+2"/>
+        <source>Error: The mandatory sidestake transaction was rejected. There is already a mandatory sidestake transaction in the mempool. Wait until that transaction is bound in a block.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <source>Error: The transaction was rejected. This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.</source>
         <translation type="unfinished">Error: The transaction was rejected. This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.</translation>
     </message>
@@ -5768,7 +6083,12 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+8"/>
+        <source>Failed: 80 block difficulty is less than %1. This wallet is almost certainly forked.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <source>For initiatives related to the Gridcoin community not covered by other poll types.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5863,7 +6183,17 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+3"/>
+        <source>WARNING: You are running a version that is higher than the latest release.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Warning: 80 block difficulty is less than %1. This wallet is probably forked.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Warning: Clock skew is between 3 and 5 minutes. Please check your clock settings.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5954,7 +6284,27 @@ Expires: %3
     </message>
     <message>
         <location line="+1"/>
+        <source>Active by Greylist Override</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Active</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Are you sure you want to cancel the snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Authorized</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Automatically Greylisted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5988,12 +6338,7 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Click &quot;Show Details&quot; to view changes in latest update.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Community</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6003,7 +6348,7 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>Duplicate poll additional field: %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6038,7 +6383,7 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Failed to download snapshot.zip; See debug.log</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6048,17 +6393,7 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Failed: 80 block difficulty is less than</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Failed: Count =</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Fees Collected</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6103,17 +6438,12 @@ Expires: %3
         <translation type="unfinished">Gridcoin</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Initializing beacon registry from stored history...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+6"/>
         <source>Initializing local researcher context...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Initializing research reward accounting...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6128,12 +6458,7 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Loading beacon history...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+8"/>
         <source>Loading superblock cache...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6158,7 +6483,7 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>Marketing</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6203,13 +6528,8 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Outbound communication to TCP port %1 appears to be blocked. </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Outbound communication to TCP port</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6228,22 +6548,7 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Passed: 80 block difficulty is</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Passed: Count =</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Passed: ETTS =</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+5"/>
         <source>Please enter a poll discussion website URL.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6364,7 +6669,17 @@ Expires: %3
     </message>
     <message>
         <location line="+1"/>
+        <source>Renewal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Replaying contracts...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Rescanning for MRC requests...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6423,7 +6738,12 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+4"/>
+        <source>Staking Only - Non-cruncher Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Survey</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6439,6 +6759,11 @@ Expires: %3
     </message>
     <message>
         <location line="+1"/>
+        <source>The latest release is </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>The wallet is now shutting down. Please restart your wallet.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6448,17 +6773,7 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>This wallet is almost certainly forked.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>This wallet is probably forked.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Unable to create the PID file &apos;%s&apos;: %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6468,33 +6783,23 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
-        <source>Warning: 45 days &lt; ETTS =</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Warning: 80 block difficulty is less than</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+13"/>
         <source>Warning: Cannot connect to NTP server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Warning: Count =</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>Wrong Payload version specified for current block height.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Yes/No/Abstain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>You are running the latest release.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6513,12 +6818,7 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>appears to be blocked.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>leisure</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6528,27 +6828,27 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+8"/>
         <source>unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-207"/>
+        <location line="-224"/>
         <source>Balance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-256"/>
+        <location line="-274"/>
         <source>The %s developers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+52"/>
+        <location line="+71"/>
         <source>Error: Unsupported argument -socks found. Setting SOCKS version isn&apos;t possible anymore, only SOCKS5 proxies are supported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+205"/>
+        <location line="+204"/>
         <source>Block Version</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6588,13 +6888,23 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+7"/>
+        <source>Checking block index...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Client Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Datadir: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Deleted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6628,7 +6938,22 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+4"/>
+        <source>Expired while pending</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Explorer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Failed: Count = %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>GitHub version: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -6643,7 +6968,17 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+2"/>
+        <source>Inactive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Initializing registry from stored history for contract type </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Interest</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6678,7 +7013,12 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+2"/>
+        <source>Loading history for contract type </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Magnitude</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6688,22 +7028,57 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+1"/>
+        <source>Mandatory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Manually Greylisted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Not authorized</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Organization</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+5"/>
+        <source>Passed: 80 block difficulty is %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Passed: Count = %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Passed: ETTS = %1 &lt;= 45 days</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Pending</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
         <source>Project email mismatch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-239"/>
+        <location line="-251"/>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
         <translation>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+22"/>
         <source>Warning: wallet.dat corrupt, data salvaged! Original wallet.dat saved as wallet.{timestamp}.bak in %s; if your balance or transactions are incorrect you should restore from a backup.</source>
         <translation>Warning: wallet.dat corrupt, data salvaged! Original wallet.dat saved as wallet.{timestamp}.bak in %s; if your balance or transactions are incorrect you should restore from a backup.</translation>
     </message>
@@ -6713,7 +7088,7 @@ Expires: %3
         <translation>Warning: error reading wallet.dat! All keys read correctly, but transaction data or address book entries might be missing or incorrect.</translation>
     </message>
     <message>
-        <location line="+125"/>
+        <location line="+130"/>
         <source>Error: Transaction creation failed  </source>
         <translation></translation>
     </message>
@@ -6723,12 +7098,12 @@ Expires: %3
         <translation></translation>
     </message>
     <message>
-        <location line="+264"/>
+        <location line="+266"/>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
         <translation>Failed to listen on any port. Use -listen=0 if you want this.</translation>
     </message>
     <message>
-        <location line="+102"/>
+        <location line="+107"/>
         <source>Single Choice</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6743,12 +7118,12 @@ Expires: %3
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+26"/>
         <source>To use the %s option</source>
         <translation>To use the %s option</translation>
     </message>
     <message>
-        <location line="-432"/>
+        <location line="-457"/>
         <source>%s, you must set a rpcpassword in the configuration file:
  %s
 It is recommended you use the following random password:
@@ -6768,12 +7143,12 @@ for example: alertnotify=echo %%s | mail -s &quot;Gridcoin Alert&quot; admin@foo
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+44"/>
         <source>Failed to download snapshot as mandatory client is available for download.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+5"/>
         <source>Failure to do so will result in undefined behaviour or failure to start wallet.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6783,21 +7158,7 @@ for example: alertnotify=echo %%s | mail -s &quot;Gridcoin Alert&quot; admin@foo
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
-        <source>WARNING: Blockchain data may be corrupted.
-
-Gridcoin detected bad index entries. This may occur because of an unexpected exit, a power failure, or a late software upgrade.
-
-Please exit Gridcoin, open the data directory, and delete:
- - the blk****.dat files
- - the txleveldb folder
-
-Your wallet will re-download the blockchain. Your balance may appear incorrect until the synchronization finishes.
-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+41"/>
+        <location line="+50"/>
         <source>You must set rpcpassword=&lt;password&gt; in the configuration file:
 %s
 If the file does not exist, create it with owner-readable-only file permissions.</source>
@@ -6806,12 +7167,12 @@ If the file does not exist, create it with owner-readable-only file permissions.
 If the file does not exist, create it with owner-readable-only file permissions.</translation>
     </message>
     <message>
-        <location line="+134"/>
+        <location line="+140"/>
         <source>Gridcoin version</source>
         <translation>Gridcoin version</translation>
     </message>
     <message>
-        <location line="+86"/>
+        <location line="+92"/>
         <source>Resetting block chain index to prepare for reindexing...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6837,21 +7198,16 @@ If the file does not exist, create it with owner-readable-only file permissions.
     </message>
     <message>
         <location line="+1"/>
-        <source>Staking Only - Investor Mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Staking Only - No Eligible Research Projects</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Testnet-only version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+10"/>
         <source>Unknown error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6866,7 +7222,7 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Staking Only - Pool Detected</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6876,12 +7232,12 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+8"/>
         <source>This update is </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+6"/>
         <source>Unknown poll response type.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6896,17 +7252,17 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-442"/>
+        <location line="-467"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+359"/>
+        <location line="+382"/>
         <source>No current polls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-28"/>
+        <location line="-30"/>
         <source>Invalid amount for -paytxfee=&lt;amount&gt;: &apos;%s&apos;</source>
         <translation>Invalid amount for -paytxfee=&lt;amount&gt;: &apos;%s&apos;</translation>
     </message>
@@ -6921,7 +7277,7 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+127"/>
+        <location line="+131"/>
         <source>Wallet %s resides outside data directory %s.</source>
         <translation>Wallet %s resides outside data directory %s.</translation>
     </message>
@@ -6931,17 +7287,67 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation></translation>
     </message>
     <message>
-        <location line="-412"/>
+        <location line="-422"/>
         <source>Error initializing database environment %s! To recover, BACKUP THAT DIRECTORY, then remove everything from it except for wallet.dat.</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+431"/>
+        <location line="+439"/>
+        <source>beacon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>claim</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>message</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>mrc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>poll</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>protocol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>scraper</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>sidestake</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>vote</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>wallet.dat corrupt, salvage failed</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-137"/>
+        <location line="-152"/>
         <source>Invalid -proxy address: &apos;%s&apos;</source>
         <translation>Invalid -proxy address: &apos;%s&apos;</translation>
     </message>
@@ -6951,7 +7357,7 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Invalid -tor address: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-59"/>
+        <location line="-62"/>
         <source>Cannot resolve -bind address: &apos;%s&apos;</source>
         <translation>Cannot resolve -bind address: &apos;%s&apos;</translation>
     </message>
@@ -6961,12 +7367,12 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Cannot resolve -externalip address: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="+62"/>
+        <location line="+65"/>
         <source>Invalid amount for -reservebalance=&lt;amount&gt;</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-43"/>
+        <location line="-45"/>
         <source>Error loading blkindex.dat</source>
         <translation>Error loading blkindex.dat</translation>
     </message>
@@ -6981,12 +7387,12 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Error loading wallet.dat: Wallet requires newer version of Gridcoin</translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+75"/>
         <source>Offline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+82"/>
+        <location line="+83"/>
         <source>Verifying checkpoints...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7001,37 +7407,37 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Wallet needed to be rewritten: restart Gridcoin to complete</translation>
     </message>
     <message>
-        <location line="-159"/>
+        <location line="-165"/>
         <source>Error loading wallet.dat</source>
         <translation>Error loading wallet.dat</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+30"/>
         <source>Importing bootstrap blockchain data file.</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+22"/>
         <source>Loading addresses...</source>
         <translation>Loading addresses...</translation>
     </message>
     <message>
-        <location line="-41"/>
+        <location line="-43"/>
         <source>Error: could not start node</source>
         <translation>Error: could not start node</translation>
     </message>
     <message>
-        <location line="-178"/>
+        <location line="-175"/>
         <source>Unable to bind to %s on this computer. Gridcoin is probably already running.</source>
         <translation>Unable to bind to %s on this computer. Gridcoin is probably already running.</translation>
     </message>
     <message>
-        <location line="+313"/>
+        <location line="+316"/>
         <source>Unable to bind to %s on this computer (bind returned error %d, %s)</source>
         <translation>Unable to bind to %s on this computer (bind returned error %d, %s)</translation>
     </message>
     <message>
-        <location line="-138"/>
+        <location line="-144"/>
         <source>Error: Wallet locked, unable to create transaction  </source>
         <translation></translation>
     </message>
@@ -7046,62 +7452,82 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation></translation>
     </message>
     <message>
-        <location line="+357"/>
+        <location line="+364"/>
         <source>Sending...</source>
         <translation>Sending...</translation>
     </message>
     <message>
-        <location line="-70"/>
+        <location line="-75"/>
         <source>Invalid amount</source>
         <translation>Invalid amount</translation>
     </message>
     <message>
-        <location line="-167"/>
+        <location line="-174"/>
         <source>Warning: Please check that your computer&apos;s date and time are correct! If your clock is wrong Gridcoin will not work properly.</source>
         <translation>Warning: Please check that your computer&apos;s date and time are correct! If your clock is wrong Gridcoin will not work properly.</translation>
     </message>
     <message>
-        <location line="+280"/>
+        <location line="+291"/>
         <source>Vote signature failed. See debug.log.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+4"/>
+        <source>Warning: 45 days &lt; ETTS = %1 &lt;= 90 days</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Warning: 80 block difficulty is less than %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Warning: Count = %1 (Pass = 8+)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Warning: Count = %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Warning: Disk space is low!</source>
         <translation>Warning: Disk space is low!</translation>
     </message>
     <message>
-        <location line="-17"/>
+        <location line="-18"/>
         <source>Unknown network specified in -onlynet: &apos;%s&apos;</source>
         <translation>Unknown network specified in -onlynet: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-113"/>
+        <location line="-117"/>
         <source>Insufficient funds</source>
         <translation>Insufficient funds</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+18"/>
         <source>Loading block index...</source>
         <translation>Loading block index...</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Loading wallet...</source>
         <translation>Loading wallet...</translation>
     </message>
     <message>
-        <location line="-74"/>
+        <location line="-77"/>
         <source>Cannot write default address</source>
         <translation>Cannot write default address</translation>
     </message>
     <message>
-        <location line="+127"/>
+        <location line="+135"/>
         <source>Rescanning...</source>
         <translation>Rescanning...</translation>
     </message>
     <message>
-        <location line="-117"/>
+        <location line="-124"/>
         <source>Done loading</source>
         <translation>Done loading</translation>
     </message>

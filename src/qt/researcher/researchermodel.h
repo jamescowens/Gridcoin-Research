@@ -96,7 +96,7 @@ public:
     void setTheme(const QString& theme_name);
     void setMaskCpidMagnitudeAccrual(bool privacy);
 
-    bool configuredForInvestorMode() const;
+    bool configuredForNoncruncherMode() const;
     bool outOfSync() const;
     bool detectedPoolMode() const;
     bool actionNeeded() const;
@@ -142,7 +142,7 @@ private:
     std::unique_ptr<GRC::Beacon> m_beacon;
     std::unique_ptr<GRC::Beacon> m_pending_beacon;
     BeaconStatus m_beacon_status;
-    bool m_configured_for_investor_mode;
+    bool m_configured_for_noncruncher_mode;
     bool m_wizard_open;
     bool m_out_of_sync;
     bool m_split_cpid;
@@ -169,7 +169,7 @@ public slots:
     void resetResearcher(GRC::ResearcherPtr researcher);
     bool switchToSolo(const QString& email);
     bool switchToPool();
-    bool switchToInvestor();
+    bool switchToNoncruncher();
     void updateBeacon();
     BeaconStatus advertiseBeacon();
     void onWizardClose();

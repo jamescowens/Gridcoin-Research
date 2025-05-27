@@ -39,8 +39,8 @@ private slots:
     void selectSolo(bool checked);
     void selectPool();
     void selectPool(bool checked);
-    void selectInvestor();
-    void selectInvestor(bool checked);
+    void selectNoncruncher();
+    void selectNoncruncher(bool checked);
     void on_detailLinkButton_clicked();
 };
 

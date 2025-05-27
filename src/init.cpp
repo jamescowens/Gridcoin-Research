@@ -476,7 +476,10 @@ void SetupServerArgs()
                    ArgsManager::ALLOW_ANY, OptionsCategory::RESEARCHER);
     argsman.AddArg("-forcecpid=<cpid>", "Override automatic CPID detection with the specified CPID",
                    ArgsManager::ALLOW_ANY, OptionsCategory::RESEARCHER);
-    argsman.AddArg("-investor", "Disable CPID detection and do not participate in the research reward system",
+    argsman.AddArg("-investor", "Disable CPID detection and do not participate in the research reward system (deprecated - "
+                                "replaced by -noncruncher).",
+                   ArgsManager::ALLOW_ANY, OptionsCategory::RESEARCHER);
+    argsman.AddArg("-noncruncher", "Disable CPID detection and do not participate in the research reward system",
                    ArgsManager::ALLOW_ANY, OptionsCategory::RESEARCHER);
     argsman.AddArg("-pooloperator", "Skip pool CPID checks for staking nodes run by pool administrators",
                    ArgsManager::ALLOW_ANY, OptionsCategory::RESEARCHER);

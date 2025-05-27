@@ -53,11 +53,11 @@ ResearcherPtr g_researcher = std::make_shared<Researcher>();
 std::atomic<bool> g_researcher_dirty(true);
 
 //!
-//! \brief Change investor mode and set the email address directive in the
+//! \brief Change non-cruncher mode and set the email address directive in the
 //! read-write JSON settings file
 //!
 //! \param email The email address to update the directive to. If empty, set
-//! the configuration to investor mode.
+//! the configuration to non-cruncher mode.
 //!
 //! \return \c false if an error occurs during the update.
 //!
@@ -65,12 +65,15 @@ bool UpdateRWSettingsForMode(const ResearcherMode mode, const std::string& email
 {
     std::vector<std::pair<std::string, util::SettingsValue>> settings;
 
-    if (mode == ResearcherMode::INVESTOR) {
+    // Ensure old (legacy) investor key is removed.
+    settings.push_back(std::make_pair("investor", util::SettingsValue(UniValue::VNULL)));
+
+    if (mode == ResearcherMode::NONCRUNCHER) {
         settings.push_back(std::make_pair("email", util::SettingsValue(UniValue::VNULL)));
-        settings.push_back(std::make_pair("investor", "1"));
+        settings.push_back(std::make_pair("noncruncher", "1"));
     } else if (mode == ResearcherMode::SOLO) {
         settings.push_back(std::make_pair("email", util::SettingsValue(email)));
-        settings.push_back(std::make_pair("investor", "0"));
+        settings.push_back(std::make_pair("noncruncher", "0"));
     }
 
     return ::updateRwSettings(settings);
@@ -467,8 +470,8 @@ void StoreResearcher(Researcher context)
         case ResearcherStatus::NO_BEACON:
             msMiningErrors = _("Staking Only - No active beacon");
             break;
-        case ResearcherStatus::INVESTOR:
-            msMiningErrors = _("Staking Only - Investor Mode");
+        case ResearcherStatus::NONCRUNCHER:
+            msMiningErrors = _("Staking Only - Non-cruncher Mode");
             break;
     }
 
@@ -1074,7 +1077,7 @@ BeaconError AdvertiseBeaconResult::Error() const
 // -----------------------------------------------------------------------------
 
 Researcher::Researcher()
-    : m_mining_id(MiningId::ForInvestor())
+    : m_mining_id(MiningId::ForNoncruncher())
     , m_beacon_error(GRC::BeaconError::NONE)
 {
 }
@@ -1150,9 +1153,10 @@ std::string Researcher::Email()
 {
     std::string email;
 
-    // If the investor mode flag is set, it should override the email setting. This is especially important now
-    // that the read-write settings file is populated, which overrides the settings in the config file.
-    if (gArgs.GetBoolArg("-investor", false)) return email;
+    // If the non-cruncher mode flag is set, it should override the email setting. This is especially important now
+    // that the read-write settings file is populated, which overrides the settings in the config file. The legacy
+    // -investor argument is also supported for backward compatibility.
+    if (gArgs.GetBoolArg("-noncruncher", false) || gArgs.GetBoolArg("-investor", false)) return email;
 
     email = gArgs.GetArg("-email", "");
     email = ToLower(email);
@@ -1160,10 +1164,11 @@ std::string Researcher::Email()
     return email;
 }
 
-bool Researcher::ConfiguredForInvestorMode(bool log)
+bool Researcher::ConfiguredForNoncruncherMode(bool log)
 {
-    if (gArgs.GetBoolArg("-investor", false) || Researcher::Email() == "investor") {
-        if (log) LogPrintf("Investor mode configured. Skipping CPID import.");
+    if (gArgs.GetBoolArg("-noncruncher", false) || Researcher::Email() == "noncruncher"
+        || gArgs.GetBoolArg("-investor", false) || Researcher::Email() == "investor") {
+        if (log) LogPrintf("Non-cruncher mode configured. Skipping CPID import.");
         return true;
     }
 
@@ -1182,16 +1187,16 @@ void Researcher::MarkDirty()
 
 void Researcher::Reload()
 {
-    if (ConfiguredForInvestorMode(true)) {
-        StoreResearcher(Researcher()); // Investor
+    if (ConfiguredForNoncruncherMode(true)) {
+        StoreResearcher(Researcher()); // Non-cruncher
         return;
     }
 
-    // Don't force an empty email to investor mode for pool detection:
+    // Don't force an empty email to non-cruncher mode for pool detection:
     if (Researcher::Email().empty()) {
         LogPrintf(
             "WARNING: Please set 'email=<your BOINC account email>' in "
-            "gridcoinresearch.conf or 'investor=1' to decline research "
+            "gridcoinresearch.conf or 'noncruncher=1' to decline research "
             "rewards");
     }
 
@@ -1220,7 +1225,7 @@ void Researcher::Reload(MiningProjectMap projects, GRC::BeaconError beacon_error
 
     projects.ApplyTeamWhitelist(team_whitelist);
 
-    MiningId mining_id = MiningId::ForInvestor();
+    MiningId mining_id = MiningId::ForNoncruncher();
 
     // Enable a user to override CPIDs detected from BOINC's client_state.xml
     // file. This provides some flexibility for a user that needs to manage a
@@ -1234,7 +1239,7 @@ void Researcher::Reload(MiningProjectMap projects, GRC::BeaconError beacon_error
             LogPrintf("Configuration forces CPID: %s", mining_id.ToString());
         } else {
             LogPrintf("ERROR: invalid CPID in -forcecpid");
-            mining_id = MiningId::ForInvestor();
+            mining_id = MiningId::ForNoncruncher();
         }
     }
 
@@ -1306,9 +1311,9 @@ bool Researcher::Eligible() const
     return false;
 }
 
-bool Researcher::IsInvestor() const
+bool Researcher::IsNoncruncher() const
 {
-    return m_mining_id.Which() == MiningId::Kind::INVESTOR;
+    return m_mining_id.Which() == MiningId::Kind::NONCRUNCHER;
 }
 
 GRC::Magnitude Researcher::Magnitude() const
@@ -1387,7 +1392,7 @@ ResearcherStatus Researcher::Status() const
         return ResearcherStatus::NO_PROJECTS;
     }
 
-    return ResearcherStatus::INVESTOR;
+    return ResearcherStatus::NONCRUNCHER;
 }
 
 std::optional<Beacon> Researcher::TryBeacon() const
@@ -1442,7 +1447,7 @@ bool Researcher::ChangeMode(const ResearcherMode mode, std::string email)
 {
     email = ToLower(email);
 
-    if (mode == ResearcherMode::INVESTOR && ConfiguredForInvestorMode()) {
+    if (mode == ResearcherMode::NONCRUNCHER && ConfiguredForNoncruncherMode()) {
         return true;
     } else if (mode == ResearcherMode::SOLO && email == Email()) {
         return true;
@@ -1453,7 +1458,7 @@ bool Researcher::ChangeMode(const ResearcherMode mode, std::string email)
     }
 
     gArgs.ForceSetArg("-email", email);
-    gArgs.ForceSetArg("-investor", mode == ResearcherMode::INVESTOR ? "1" : "0");
+    gArgs.ForceSetArg("-noncruncher", mode == ResearcherMode::NONCRUNCHER ? "1" : "0");
 
     Reload();
 

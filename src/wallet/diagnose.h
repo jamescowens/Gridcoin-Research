@@ -51,7 +51,7 @@ public:
     static bool m_researcher_mode;
     static bool m_hasEligibleProjects;
     static bool m_hasPoolProjects;
-    static bool m_configured_for_investor_mode;
+    static bool m_configured_for_noncruncher_mode;
 
     enum diagnoseResults { PASS,
                            WARNING,
@@ -141,14 +141,14 @@ public:
     static void setResearcherModel()
     {
         GRC::ResearcherPtr researcher = GRC::Researcher::Get();
-        bool configured_for_investor_mode = false;
-        if (GRC::Researcher::ConfiguredForInvestorMode()) {
-            configured_for_investor_mode = true;
+        bool configured_for_noncruncher_mode = false;
+        if (GRC::Researcher::ConfiguredForNoncruncherMode()) {
+            configured_for_noncruncher_mode = true;
         }
 
         m_hasEligibleProjects = researcher->Id().Which() == GRC::MiningId::Kind::CPID;
         m_hasPoolProjects = researcher->Projects().ContainsPool();
-        m_researcher_mode = !(configured_for_investor_mode || (!m_hasEligibleProjects && !m_hasPoolProjects));
+        m_researcher_mode = !(configured_for_noncruncher_mode || (!m_hasEligibleProjects && !m_hasPoolProjects));
     }
 
     /**
