@@ -14,7 +14,7 @@ sudo apt-get install \
     cmake git curl \
     libssl-dev libevent-dev libboost-all-dev \
     libminiupnpc-dev libqrencode-dev libzip-dev \
-    qt6-base-dev qt6-tools-dev qt6-l10n-tools libqt6charts6-dev
+    qt6-base-dev qt6-tools-dev qt6-l10n-tools qt6-declarative-dev libqt6charts6-dev
 ````
 
 ### Fedora / RHEL
@@ -41,7 +41,7 @@ sudo zypper install \
     cmake git curl \
     libopenssl-devel libevent-devel boost-devel \
     miniupnpc-devel qrencode-devel libzip-devel \
-    qt6-base-devel qt6-tools-devel qt6-charts-devel
+    qt6-base-devel qt6-tools-devel qt6-charts-devel qt6-declarative-devel
 ```
 
 ### Arch Linux / Manjaro
@@ -50,7 +50,7 @@ sudo zypper install \
 sudo pacman -S \
     base-devel python cmake git \
     boost libevent miniupnpc libzip qrencode \
-    qt6-base qt6-tools qt6-charts
+    qt6-base qt6-tools qt6-charts qt6-declarative
 ```
 
 -----

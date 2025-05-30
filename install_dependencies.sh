@@ -99,7 +99,7 @@ install_deps() {
             append_base libssl-dev libevent-dev libboost-all-dev libminiupnpc-dev libqrencode-dev libzip-dev libcurl4-openssl-dev zipcmp zipmerge ziptool
 
             # Qt6 Packages (Qt5 names are not defined here as most are EOL)
-            append_qt qt6-base-dev qt6-tools-dev qt6-l10n-tools qt6-tools-dev-tools libqt6charts6-dev libqt6svg6-dev libqt6core5compat6-dev
+            append_qt qt6-base-dev qt6-tools-dev qt6-l10n-tools qt6-tools-dev-tools libqt6charts6-dev libqt6svg6-dev libqt6core5compat6-dev qt6-declarative-dev
 
             # Windows Cross-Compile Tools
             # NOTE: We only append NSIS here. The MinGW compiler (g++-mingw-w64-x86-64)
@@ -263,7 +263,7 @@ install_deps() {
                 append_base libboost_system-devel
             fi
 
-            append_qt qt6-base-devel qt6-tools-devel qt6-charts-devel qt6-svg-devel qt6-qt5compat-devel qt6-linguist-devel
+            append_qt qt6-base-devel qt6-tools-devel qt6-charts-devel qt6-svg-devel qt6-qt5compat-devel qt6-linguist-devel qt6-declarative-devel
 
             append_mingw mingw64-cross-gcc-c++ nsis
 
@@ -277,7 +277,7 @@ install_deps() {
             append_base base-devel python cmake git ccache doxygen graphviz
             append_base boost libevent miniupnpc libzip qrencode curl icu
 
-            append_qt qt6-base qt6-tools qt6-charts qt6-svg qt6-5compat
+            append_qt qt6-base qt6-tools qt6-charts qt6-svg qt6-5compat qt6-declarative
 
             append_mingw mingw-w64-gcc nsis
 
