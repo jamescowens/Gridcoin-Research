@@ -194,7 +194,8 @@ static void InitMessage(const std::string &message)
 
 static void InitProgress(unsigned int loaded, unsigned int total)
 {
-    if(initRef) {
+    if(initRef) 
+    {
         initRef->setLoadandTotal(loaded, total);
     }
 }
