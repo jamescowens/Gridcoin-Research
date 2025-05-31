@@ -60,7 +60,7 @@ public:
         qint64 amount = index.data(TransactionTableModel::AmountRole).toLongLong();
         bool confirmed = index.data(TransactionTableModel::ConfirmedRole).toBool();
 
-		QColor foreground = QColor(200, 0, 0);
+        QColor foreground = QColor(200, 0, 0);
         QVariant value = index.data(Qt::ForegroundRole);
         if(value.canConvert<QColor>())
         {
@@ -373,7 +373,7 @@ void OverviewPage::setResearcherModel(ResearcherModel *researcherModel)
     connect(researcherModel, &ResearcherModel::researcherChanged, this, &OverviewPage::updateResearcherStatus);
     connect(researcherModel, &ResearcherModel::magnitudeChanged, this, &OverviewPage::updateMagnitude);
     connect(researcherModel, &ResearcherModel::accrualChanged, this, &OverviewPage::updatePendingAccrual);
-    connect(researcherModel, &ResearcherModel::beaconChanged, this, &OverviewPage::updateResearcherAlert);
+    connect(researcherModel, &ResearcherModel::beaconChanged, this, &OverviewPage::updateResearcherStatus);
 
     // Show or hide the MRC request tool button based on the researcher and beacon status.
     connect(researcherModel, &ResearcherModel::researcherChanged, this, &OverviewPage::showHideMRCToolButton);
