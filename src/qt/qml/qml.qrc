@@ -17,7 +17,7 @@
         <file>OnboardingButton.qml</file>
         <file>OnboardingPageIndicator.qml</file>
         <file>OnboardingWindow.qml</file>
-        <file>OverviewResearcherView.qml</file>
+        <file>OverviewView.qml</file>
         <file>PanelTitle.qml</file>
         <file>PollCreationWindow.qml</file>
         <file>PollDetailsWindow.qml</file>

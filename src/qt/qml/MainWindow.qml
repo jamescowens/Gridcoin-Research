@@ -34,7 +34,7 @@ ApplicationWindow {
 
     Loader {
         id: loader
-        source: "OverviewResearcherView.qml"
+        source: "OverviewView.qml"
         anchors {
             top: parent.top
             bottom: statusBar.top
