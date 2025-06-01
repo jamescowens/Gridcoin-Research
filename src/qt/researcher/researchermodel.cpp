@@ -595,12 +595,17 @@ std::vector<ProjectRow> ResearcherModel::buildProjectTable(bool extended) const
 
         // the external adapter code below only appears here because if the project is in BOINC it does not need
         // an external adapter.
-        if (!project.RequiresExtAdapter() && std::find(external_adapter_projects.begin(),
-                      external_adapter_projects.end(),
-                      project.m_name) == external_adapter_projects.end()) {
-            row.m_error = tr("Not attached");
-        } else {
+
+        bool project_requires_external_adapter = (project.RequiresExtAdapter().has_value() && project.RequiresExtAdapter().value());
+
+        bool legacy_external_adapter_project_found = (std::find(external_adapter_projects.begin(),
+                                                              external_adapter_projects.end(),
+                                                              project.m_name) != external_adapter_projects.end());
+
+        if (project_requires_external_adapter || legacy_external_adapter_project_found) {
             row.m_error = tr("Uses external adapter");
+        } else {
+            row.m_error = tr("Not attached");
         }
 
         if (project.m_status == ProjectEntryStatus::MAN_GREYLISTED) {
