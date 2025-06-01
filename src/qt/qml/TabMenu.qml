@@ -26,7 +26,7 @@ Rectangle {
             label: qsTr("Overview")
             lightImageSource: "qrc:/icons/menu/ic_menu_overview_white.svg"
             darkImageSource: "qrc:/icons/menu/ic_menu_overview_blue.svg"
-            path: "OverviewResearcherView.qml"
+            path: "OverviewView.qml"
         }
         ListElement {
             label: qsTr("Send")
