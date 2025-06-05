@@ -17,7 +17,6 @@
 #include <QThread>
 #include <QTextEdit>
 #include <QUrl>
-#include <QDesktopWidget>
 #include <QKeyEvent>
 #include <QMenu>
 #include <QMessageBox>
@@ -273,7 +272,11 @@ bool RPCConsole::eventFilter(QObject* obj, QEvent *event)
         case Qt::Key_PageDown:
             if(obj == ui->lineEdit)
             {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                QApplication::postEvent(ui->messagesWidget, keyevt->clone());
+#else
                 QApplication::postEvent(ui->messagesWidget, new QKeyEvent(*keyevt));
+#endif
                 return true;
             }
             break;
@@ -286,7 +289,11 @@ bool RPCConsole::eventFilter(QObject* obj, QEvent *event)
                   ((mod & Qt::ShiftModifier) && key == Qt::Key_Insert)))
             {
                 ui->lineEdit->setFocus();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                QApplication::postEvent(ui->lineEdit, keyevt->clone());
+#else
                 QApplication::postEvent(ui->lineEdit, new QKeyEvent(*keyevt));
+#endif
                 return true;
             }
         }

@@ -6,7 +6,10 @@
 #include "gridcoin/upgrade.h"
 #include "util.h"
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QMainWindow>
+#include <QAction>
+#include <QMenuBar>
 #include <QProgressDialog>
 #include <QMessageBox>
 #include <QPixmap>

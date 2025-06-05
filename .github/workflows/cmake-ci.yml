@@ -17,6 +17,7 @@ jobs:
                     - minimal
                     - no-asm
                     - gui-full
+                    - gui-qt6
                     - system-libs
                 include:
                     - tag: no-asm
@@ -33,6 +34,15 @@ jobs:
                           -DENABLE_QRENCODE=ON
                           -DENABLE_UPNP=ON
                           -DUSE_DBUS=ON
+                    - tag: gui-qt6
+                      deps: >-
+                          qt6-base-dev
+                          qt6-5compat-dev
+                          qt6-tools-dev
+                      options: >-
+                          -DENABLE_GUI=ON
+                          -DUSE_DBUS=ON
+                          -DUSE_QT6=ON
                     - tag: system-libs
                       deps: >-
                           libdb5.3++-dev
@@ -49,23 +59,10 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
             - name: Install dependencies
-              uses: awalsh128/cache-apt-pkgs-action@v1
-              with:
-                  packages: >-
-                      ${{matrix.deps}}
-                      ccache
-                      cmake
-                      libcurl4-openssl-dev
-                      libssl-dev
-                      libzip-dev
-                      ninja-build
-                      pkgconf
-                      zipcmp
-                      zipmerge
-                      ziptool
-                  version: ${{matrix.tag}}
-            - name: Install Boost dependencies
               run: sudo apt-get install -y --no-install-recommends
+                  ${{matrix.deps}}
+                  ccache
+                  cmake
                   libboost-dev
                   libboost-date-time-dev
                   libboost-exception-dev
@@ -74,6 +71,14 @@ jobs:
                   libboost-serialization-dev
                   libboost-test-dev
                   libboost-thread-dev
+                  libcurl4-openssl-dev
+                  libssl-dev
+                  libzip-dev
+                  ninja-build
+                  pkgconf
+                  zipcmp
+                  zipmerge
+                  ziptool
             - name: Configure
               run: cmake
                   -B ${{github.workspace}}/build -G Ninja
@@ -118,6 +123,7 @@ jobs:
                     - minimal
                     - no-asm
                     - gui-full
+                    - gui-qt6
                     - system-libs
                 include:
                     - tag: no-asm
@@ -133,6 +139,13 @@ jobs:
                           -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5
                           -DENABLE_QRENCODE=ON
                           -DENABLE_UPNP=ON
+                    - tag: gui-qt6
+                      deps: >-
+                          qt@6
+                      options: >-
+                          -DENABLE_GUI=ON
+                          -DQt6_DIR=$(brew --prefix qt@6)/lib/cmake/Qt6
+                          -DUSE_QT6=ON
                     - tag: system-libs
                       deps: >-
                           berkeley-db@5
@@ -209,6 +222,7 @@ jobs:
                     - minimal
                     - no-asm
                     - gui-full
+                    - gui-qt6
                 include:
                     - tag: no-asm
                       deps: null
@@ -223,6 +237,14 @@ jobs:
                           -DENABLE_GUI=ON
                           -DENABLE_QRENCODE=ON
                           -DENABLE_UPNP=ON
+                    - tag: gui-qt6
+                      deps: >-
+                          qt6-base:p
+                          qt6-5compat:p
+                          qt6-tools:p
+                      options: >-
+                          -DENABLE_GUI=ON
+                          -DUSE_QT6=ON
         steps:
             - name: Checkout
               uses: actions/checkout@v4

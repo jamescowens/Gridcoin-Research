@@ -22,6 +22,8 @@ class QProgressDialog;
 
 class UpgradeQt : QObject
 {
+    Q_OBJECT
+
 public:
     //!
     //! \brief Constructor.

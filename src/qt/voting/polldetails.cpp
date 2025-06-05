@@ -36,8 +36,8 @@ PollDetails::~PollDetails()
 void PollDetails::setItem(const PollItem& poll_item)
 {
     ui->dateRangeLabel->setText(QStringLiteral("%1 → %2")
-        .arg(GUIUtil::dateTimeStr(poll_item.m_start_time))
-        .arg(GUIUtil::dateTimeStr(poll_item.m_expiration)));
+        .arg(GUIUtil::dateTimeStr(poll_item.m_start_time),
+             GUIUtil::dateTimeStr(poll_item.m_expiration)));
 
     ui->titleLabel->setText(poll_item.m_title);
     ui->urlLabel->setText(QStringLiteral("<a href=\"%1\">%1</a>").arg(poll_item.m_url));

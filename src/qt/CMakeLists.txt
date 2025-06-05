@@ -141,13 +141,20 @@ set_source_files_properties(
 # =================
 
 target_link_libraries(gridcoinqt PUBLIC
-    Qt5::Concurrent
-    Qt5::Core
-    Qt5::Gui
-    Qt5::Network
-    Qt5::Widgets
+    ${QT}::Core
+    ${QT}::Concurrent
+    ${QT}::Gui
+    ${QT}::Network
+    ${QT}::Widgets
     gridcoin_util
 )
+
+if(USE_QT6)
+    target_link_libraries(gridcoinqt PUBLIC ${QT}::Core5Compat)
+endif()
+if(USE_DBUS)
+    target_link_libraries(gridcoinqt PUBLIC ${QT}::DBus)
+endif()
 
 if(APPLE)
     target_link_libraries(gridcoinqt PUBLIC
@@ -160,10 +167,7 @@ elseif(WIN32)
 endif()
 
 target_compile_definitions(gridcoinqt PUBLIC HAVE_CONFIG_H)
-
-if(USE_DBUS)
-    target_link_libraries(gridcoinqt PUBLIC Qt5::DBus)
-endif()
+target_compile_definitions(gridcoinqt PUBLIC QT_DISABLE_DEPRECATED_UP_TO=0x050F00)
 
 if(ENABLE_UPNP)
     if(DEFAULT_UPNP)
@@ -179,13 +183,25 @@ add_dependencies(gridcoinqt gridcoinqt_l10n)
 # Application
 # ===========
 
-add_executable(gridcoinresearch WIN32 MACOSX_BUNDLE bitcoin.cpp)
+add_executable(gridcoinresearch bitcoin.cpp)
+
+set(MACOSX_BUNDLE_RESOURCE_FILES res/icons/gridcoin.icns)
+if(APPLE)
+    target_sources(gridcoinresearch PRIVATE ${MACOSX_BUNDLE_RESOURCE_FILES})
+endif()
 
 target_link_libraries(gridcoinresearch PRIVATE
     ${RUNTIME_LIBS}
-    Qt5::Widgets
+    ${QT}::Widgets
     gridcoin_util
     gridcoinqt
+)
+
+set_target_properties(gridcoinresearch PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/share/qt/Info.plist.cmake.in"
+    RESOURCE ${MACOSX_BUNDLE_RESOURCE_FILES}
 )
 
 if(UNIX AND NOT APPLE)
