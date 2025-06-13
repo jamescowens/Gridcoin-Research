@@ -430,15 +430,35 @@ gridcoinresearchd_CPPFLAGS = $(AM_CPPFLAGS) $(GRIDCOIN_INCLUDES)
 gridcoinresearchd_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 gridcoinresearchd_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
+#
+# LINKING
+#
+# The order of libraries is critical. Higher-level libraries that depend on
+# others must come first. Lower-level dependencies are last.
+#
 gridcoinresearchd_LDADD = \
- $(LIBGRIDCOIN_UTIL) \
- $(LIBGRIDCOIN_CRYPTO) \
- $(LIBUNIVALUE) \
- $(LIBLEVELDB) \
- $(LIBLEVELDB_SSE42) \
- $(LIBMEMENV) \
- $(LIBSECP256K1)
+    $(LIBGRIDCOIN_SERVER) \
+    $(LIBGRIDCOIN_COMMON) \
+    $(LIBGRIDCOIN_UTIL) \
+    $(LIBGRIDCOIN_CONSENSUS) \
+    $(LIBGRIDCOIN_CRYPTO) \
+    $(LIBUNIVALUE) \
+    $(LIBLEVELDB) \
+    $(LIBLEVELDB_SSE42) \
+    $(LIBMEMENV) \
+    $(LIBSECP256K1)
 
+# External dependencies are added next. The order is critical.
+gridcoinresearchd_LDADD += \
+    $(MINIUPNPC_LIBS) \
+    $(CURL_LIBS) \
+    $(BOOST_LIBS) \
+    $(LIBZIP_LIBS) \
+    $(ZLIB_LIBS) \
+    $(EVENT_LIBS) \
+    $(SSL_LIBS)
+
+# Wallet-specific database library
 if ENABLE_WALLET
 if EMBEDDED_BDB
 gridcoinresearchd_LDADD += $(LIBDB)
@@ -447,7 +467,15 @@ gridcoinresearchd_LDADD += $(BDB_LIBS)
 endif
 endif
 
-gridcoinresearchd_LDADD += $(CURL_LIBS) $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(LIBZIP_LIBS)
+# These are the lowest-level dependencies and must come after the libraries that use them.
+gridcoinresearchd_LDADD += \
+    $(CRYPTO_LIBS) \
+    $(ZLIB_LIBS)
+
+# Finally, add required system libraries.
+gridcoinresearchd_LDADD += \
+    $(EVENT_PTHREADS_LIBS) \
+    $(LIBS)
 
 if TARGET_WINDOWS
 gridcoinresearchd_SOURCES += gridcoinresearchd-res.rc

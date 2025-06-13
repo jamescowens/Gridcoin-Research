@@ -7,11 +7,14 @@ $(package)_sha256_hash=cdb38b72e36bc5d33d5b8810f8018ece1baa29a8f215b4495e495ded8
 $(package)_dependencies=openssl
 
 define $(package)_set_vars
-  $(package)_config_opts=--disable-shared
+  $(package)_config_opts= --disable-shared
   $(package)_config_opts+= --enable-static
+  $(package)_config_opts+= --disable-ldap
+  $(package)_config_opts+= --disable-ldaps
+  $(package)_config_opts+= --without-zstd
   $(package)_config_opts+= --without-brotli
   $(package)_config_opts+= --libdir=$($($(package)_type)_prefix)/lib
-  $(package)_config_opts_release+=--disable-debug-mode
+  $(package)_config_opts_release+=--disable-debug
   $(package)_config_opts_linux+=--with-pic -with-openssl
   # Disable OpenSSL for Windows and use native SSL stack (SSPI/Schannel):
   $(package)_config_opts_mingw32+= --with-schannel

@@ -14,6 +14,150 @@ AC_CONFIG_HEADERS([src/config/gridcoin-config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([build-aux/m4])
 
+# This static build block must be right after AC_INIT to preempt all other library checks.
+# --- Block for conditional static linking ---
+AC_ARG_WITH([static-libs],
+  [AS_HELP_STRING([--with-static-libs],
+                  [Link against static libraries built by the depends system. (Default: no)])],
+  [use_static_libs=$withval],
+  [use_static_libs=no])
+
+if test "x$use_static_libs" = "xyes"; then
+  AC_MSG_CHECKING([for static linking via --with-static-libs])
+
+  if test "x$CONFIG_SITE" = "x"; then
+      AC_MSG_RESULT([no])
+      AC_MSG_ERROR([--with-static-libs requires the CONFIG_SITE environment variable to be set.])
+  fi
+  AC_MSG_RESULT([yes])
+
+  depends_prefix=$(dirname "$CONFIG_SITE")
+  depends_prefix=$(dirname "$depends_prefix")
+
+  CPPFLAGS="-I$depends_prefix/include -DQT_STATICPLUGIN -DQT_QPA_PLATFORM_XCB $CPPFLAGS"
+  LDFLAGS="-L$depends_prefix/lib $LDFLAGS -static-libstdc++"
+
+  # --- Explicitly define ALL dependency variables ---
+  BOOST_LIBS="$depends_prefix/lib/libboost_filesystem-mt-x64.a $depends_prefix/lib/libboost_thread-mt-x64.a $depends_prefix/lib/libboost_iostreams-mt-x64.a $depends_prefix/lib/libboost_system-mt-x64.a $depends_prefix/lib/libboost_atomic-mt-x64.a $depends_prefix/lib/libboost_prg_exec_monitor-mt-x64.a  $depends_prefix/lib/libboost_test_exec_monitor-mt-x64.a"
+  BOOST_UNIT_TEST_FRAMEWORK_LIB="$depends_prefix/lib/libboost_unit_test_framework-mt-x64.a"
+  SSL_LIBS="$depends_prefix/lib/libssl.a"
+  CRYPTO_LIBS="$depends_prefix/lib/libcrypto.a -ldl"
+  EVENT_LIBS="$depends_prefix/lib/libevent.a"
+  MINIUPNPC_LIBS="$depends_prefix/lib/libminiupnpc.a"
+  LIBZIP_LIBS="$depends_prefix/lib/libzip.a"
+  CURL_LIBS="$depends_prefix/lib/libcurl.a"
+  BDB_LIBS="$depends_prefix/lib/libdb_cxx.a"
+  ZLIB_LIBS="$depends_prefix/lib/libz.a"
+  QR_LIBS="$depends_prefix/lib/libqrencode.a"
+  EVENT_PTHREADS_LIBS="-lpthread"
+
+  # --- Qt and its platform/plugin dependencies ---
+  FREETYPE_LIBS="$depends_prefix/lib/libfreetype.a"
+  FONTCONFIG_LIBS="$depends_prefix/lib/libfontconfig.a $depends_prefix/lib/libexpat.a"
+  XCB_LIBS="$depends_prefix/lib/libxcb.a $depends_prefix/lib/libXau.a" # Base XCB libs
+  XKBCOMMON_LIBS="$depends_prefix/lib/libxkbcommon.a"
+  QT_TEST_LIBS="$depends_prefix/lib/libQt5Test.a"
+
+  # --- Statically define Qt and ALL its dependencies ---
+  # This section replicates the logic of BITCOIN_QT_CONFIGURE for a static build.
+  have_qt5=yes
+  bitcoin_enable_qt=yes
+  bitcoin_enable_qt_test=yes
+  bitcoin_enable_qt_dbus=yes
+  have_dbus=yes
+  have_qrencode=yes
+  use_qr=yes
+  MOC=$depends_prefix/native/bin/moc
+  RCC=$depends_prefix/native/bin/rcc
+  UIC=$depends_prefix/native/bin/uic
+  LRELEASE=$depends_prefix/native/bin/lrelease
+  QT_PIE_FLAGS="$PIE_FLAGS"
+
+  QT_LIBS="\
+    $depends_prefix/plugins/iconengines/libqsvgicon.a \
+    $depends_prefix/plugins/imageformats/libqsvg.a \
+    $depends_prefix/plugins/platforms/libqxcb.a \
+    $depends_prefix/lib/libQt5XcbQpa.a \
+    $depends_prefix/lib/libQt5AccessibilitySupport.a \
+    $depends_prefix/lib/libQt5DeviceDiscoverySupport.a \
+    $depends_prefix/lib/libQt5EdidSupport.a \
+    $depends_prefix/lib/libQt5EventDispatcherSupport.a \
+    $depends_prefix/lib/libQt5FbSupport.a \
+    $depends_prefix/lib/libQt5FontDatabaseSupport.a \
+    $depends_prefix/lib/libQt5InputSupport.a \
+    $depends_prefix/lib/libQt5ServiceSupport.a \
+    $depends_prefix/lib/libQt5ThemeSupport.a \
+    $depends_prefix/lib/libQt5Svg.a \
+    $depends_prefix/lib/libQt5Widgets.a \
+    $depends_prefix/lib/libQt5Network.a \
+    $depends_prefix/lib/libQt5DBus.a \
+    $depends_prefix/lib/libQt5Gui.a \
+    $depends_prefix/lib/libQt5Concurrent.a \
+    $depends_prefix/lib/libQt5Core.a \
+    $depends_prefix/lib/libQt5XkbCommonSupport.a \
+    $depends_prefix/lib/libxkbcommon-x11.a \
+    $XKBCOMMON_LIBS \
+    $FONTCONFIG_LIBS $FREETYPE_LIBS \
+    $depends_prefix/lib/libxcb-dbe.a \
+    $depends_prefix/lib/libxcb-ewmh.a \
+    $depends_prefix/lib/libxcb-icccm.a \
+    $depends_prefix/lib/libxcb-image.a \
+    $depends_prefix/lib/libxcb-keysyms.a \
+    $depends_prefix/lib/libxcb-render-util.a \
+    $depends_prefix/lib/libxcb-render.a \
+    $depends_prefix/lib/libxcb-randr.a \
+    $depends_prefix/lib/libxcb-shape.a \
+    $depends_prefix/lib/libxcb-shm.a \
+    $depends_prefix/lib/libxcb-sync.a \
+    $depends_prefix/lib/libxcb-util.a \
+    $depends_prefix/lib/libxcb-xfixes.a \
+    $depends_prefix/lib/libxcb-xinerama.a \
+    $depends_prefix/lib/libxcb-xkb.a \
+    $depends_prefix/lib/libxcb-xinput.a \
+    $XCB_LIBS \
+    $depends_prefix/lib/libharfbuzz-subset.a \
+    $depends_prefix/lib/libharfbuzz.a \
+    $depends_prefix/lib/libpcre2-8.a \
+    $depends_prefix/lib/libpcre2-16.a \
+    $depends_prefix/lib/libpcre2-posix.a \
+    $depends_prefix/lib/libpng16.a"
+
+  # Put everything in QT_LIBS because the autotools makefiles are not properly using the other QT variables.
+  QT_LIBS="-L$depends_prefix/lib $QT_TEST_LIBS $QT_LIBS"
+
+  # Define Qt INCLUDES and LIBS to ensure headers are found and libraries are linked.
+  QT_INCLUDES="-I$depends_prefix/include \
+    -I$depends_prefix/include/QtCore \
+    -I$depends_prefix/include/QtGui \
+    -I$depends_prefix/include/QtWidgets \
+    -I$depends_prefix/include/QtNetwork \
+    -I$depends_prefix/include/QtConcurrent \
+    -I$depends_prefix/include/QtAccessibilitySupport \
+    -I$depends_prefix/include/QtDBus \
+    -I$depends_prefix/include/QtDeviceDiscoverySupport \
+    -I$depends_prefix/include/QtEdidSupport \
+    -I$depends_prefix/include/QtEventDispatcherSupport \
+    -I$depends_prefix/include/QtFbSupport \
+    -I$depends_prefix/include/QtFontDatabaseSupport \
+    -I$depends_prefix/include/qtharfbuzz \
+    -I$depends_prefix/include/QtInputSupport \
+    -I$depends_prefix/include/qtlibpng \
+    -I$depends_prefix/include/QtPlatformHeaders \
+    -I$depends_prefix/include/QtServiceSupport \
+    -I$depends_prefix/include/QtSvg \
+    -I$depends_prefix/include/QtThemeSupport \
+    -I$depends_prefix/include/QtXkbCommonSupport"
+
+  QT_TEST_INCLUDES="-I$depends_prefix/include/QtTest"
+  QT_DBUS_INCLUDES="-I$depends_prefix/include/QtDBus"
+
+  # Prevent configure from trying to find them again
+  have_ssl=yes
+  have_event=yes
+  have_boost=yes
+fi
+# --- End of block ---
+
 m4_ifndef([PKG_PROG_PKG_CONFIG], [m4_fatal([PKG_PROG_PKG_CONFIG macro not found. Please install pkg-config and re-run autogen.sh])])
 PKG_PROG_PKG_CONFIG
 if test "$PKG_CONFIG" = ""; then
@@ -1029,11 +1173,13 @@ fi
 
 dnl Check for libminiupnpc (optional)
 if test "$use_upnp" != "no"; then
+  if test "x$use_static_libs" != "xyes"; then
   AC_CHECK_HEADERS(
     [miniupnpc/miniwget.h miniupnpc/miniupnpc.h miniupnpc/upnpcommands.h miniupnpc/upnperrors.h],
     [AC_CHECK_LIB([miniupnpc], [main],[MINIUPNPC_LIBS=-lminiupnpc], [have_miniupnpc=no])],
     [have_miniupnpc=no]
   )
+  fi
 dnl The minimum supported miniUPnPc API version is set to 10. This keeps compatibility
 dnl with Ubuntu 16.04 LTS and Debian 8 libminiupnpc-dev packages.
 if test "$have_miniupnpc" != "no"; then
@@ -1056,11 +1202,12 @@ if test "$have_miniupnpc" != "no"; then
 fi
 fi
 
+if test "x$use_static_libs" != "xyes"; then
+  BITCOIN_QT_INIT
+  dnl sets $bitcoin_enable_qt, $bitcoin_enable_qt_test, $bitcoin_enable_qt_dbus
 
-BITCOIN_QT_INIT
-
-dnl sets $bitcoin_enable_qt, $bitcoin_enable_qt_test, $bitcoin_enable_qt_dbus
-BITCOIN_QT_CONFIGURE([5.9.5])
+  BITCOIN_QT_CONFIGURE([5.9.5])
+fi
 
 if test "$build_bitcoin_utils$build_gridcoinresearchd$bitcoin_enable_qt$use_tests$use_bench" = "nonononono"; then
     use_boost=no
@@ -1069,34 +1216,35 @@ else
 fi
 
 if test "$use_boost" = "yes"; then
+  if test "x$use_static_libs" != "xyes"; then
+    dnl Minimum required Boost version
+    define(MINIMUM_REQUIRED_BOOST, 1.60.0)
 
-dnl Minimum required Boost version
-define(MINIMUM_REQUIRED_BOOST, 1.60.0)
+    dnl Check for Boost libs
+    AX_BOOST_BASE([MINIMUM_REQUIRED_BOOST])
+    AX_BOOST_SYSTEM
+    AX_BOOST_FILESYSTEM
+    AX_BOOST_ZLIB
+    AX_BOOST_IOSTREAMS
 
-dnl Check for Boost libs
-AX_BOOST_BASE([MINIMUM_REQUIRED_BOOST])
-AX_BOOST_SYSTEM
-AX_BOOST_FILESYSTEM
-AX_BOOST_ZLIB
-AX_BOOST_IOSTREAMS
+    dnl Prevent use of std::unary_function, which was removed in C++17,
+    dnl and will generate warnings with newer compilers for Boost
+    dnl older than 1.80.
+    dnl See: https://github.com/boostorg/config/pull/430.
+    AX_CHECK_PREPROC_FLAG([-DBOOST_NO_CXX98_FUNCTION_BASE], [BOOST_CPPFLAGS="$BOOST_CPPFLAGS -DBOOST_NO_CXX98_FUNCTION_BASE"], [], [$CXXFLAG_WERROR],
+                          [AC_LANG_PROGRAM([[#include <boost/config.hpp>]])])
 
-dnl Prevent use of std::unary_function, which was removed in C++17,
-dnl and will generate warnings with newer compilers for Boost
-dnl older than 1.80.
-dnl See: https://github.com/boostorg/config/pull/430.
-AX_CHECK_PREPROC_FLAG([-DBOOST_NO_CXX98_FUNCTION_BASE], [BOOST_CPPFLAGS="$BOOST_CPPFLAGS -DBOOST_NO_CXX98_FUNCTION_BASE"], [], [$CXXFLAG_WERROR],
-                      [AC_LANG_PROGRAM([[#include <boost/config.hpp>]])])
+    dnl AX_BOOST_THREAD check also triggers the same issue, so it has to be checked after
+    dnl setting -DBOOST_NO_CXX98_FUNCTION_BASE.
+    AX_BOOST_THREAD
 
-dnl AX_BOOST_THREAD check also triggers the same issue, so it has to be checked after
-dnl setting -DBOOST_NO_CXX98_FUNCTION_BASE.
-AX_BOOST_THREAD
+    dnl Boost 1.56 through 1.62 allow using std::atomic instead of its own atomic
+    dnl counter implementations. In 1.63 and later the std::atomic approach is default.
+    m4_pattern_allow(DBOOST_AC_USE_STD_ATOMIC) dnl otherwise it's treated like a macro
+    BOOST_CPPFLAGS="-DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC $BOOST_CPPFLAGS"
 
-dnl Boost 1.56 through 1.62 allow using std::atomic instead of its own atomic
-dnl counter implementations. In 1.63 and later the std::atomic approach is default.
-m4_pattern_allow(DBOOST_AC_USE_STD_ATOMIC) dnl otherwise it's treated like a macro
-BOOST_CPPFLAGS="-DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC $BOOST_CPPFLAGS"
-
-BOOST_LIBS="$BOOST_LDFLAGS $BOOST_SYSTEM_LIB $BOOST_FILESYSTEM_LIB $BOOST_IOSTREAMS_LIB $BOOST_THREAD_LIB $BOOST_ZLIB_LIB"
+    BOOST_LIBS="$BOOST_LDFLAGS $BOOST_SYSTEM_LIB $BOOST_FILESYSTEM_LIB $BOOST_IOSTREAMS_LIB $BOOST_THREAD_LIB $BOOST_ZLIB_LIB"
+  fi
 fi
 
 if test "$use_reduce_exports" = "yes"; then
@@ -1112,28 +1260,30 @@ if test "$use_tests" = "yes"; then
 
 
   if test "$use_boost" = "yes"; then
+    if test "x$use_static_libs" != "xyes"; then
 
-  AX_BOOST_UNIT_TEST_FRAMEWORK
+      AX_BOOST_UNIT_TEST_FRAMEWORK
 
-  dnl Determine if -DBOOST_TEST_DYN_LINK is needed
-  AC_MSG_CHECKING([for dynamic linked boost test])
-  TEMP_LIBS="$LIBS"
-  LIBS="$LIBS $BOOST_LDFLAGS $BOOST_UNIT_TEST_FRAMEWORK_LIB"
-  TEMP_CPPFLAGS="$CPPFLAGS"
-  CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-  AC_LINK_IFELSE([AC_LANG_SOURCE([
-       #define BOOST_TEST_DYN_LINK
-       #define BOOST_TEST_MAIN
-        #include <boost/test/unit_test.hpp>
+      dnl Determine if -DBOOST_TEST_DYN_LINK is needed
+      AC_MSG_CHECKING([for dynamic linked boost test])
+      TEMP_LIBS="$LIBS"
+      LIBS="$LIBS $BOOST_LDFLAGS $BOOST_UNIT_TEST_FRAMEWORK_LIB"
+      TEMP_CPPFLAGS="$CPPFLAGS"
+      CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+      AC_LINK_IFELSE([AC_LANG_SOURCE([
+          #define BOOST_TEST_DYN_LINK
+          #define BOOST_TEST_MAIN
+            #include <boost/test/unit_test.hpp>
 
-       ])],
-    [AC_MSG_RESULT(yes)]
-    [TESTDEFS="$TESTDEFS -DBOOST_TEST_DYN_LINK"],
-    [AC_MSG_RESULT(no)])
-  LIBS="$TEMP_LIBS"
-  CPPFLAGS="$TEMP_CPPFLAGS"
-
+          ])],
+        [AC_MSG_RESULT(yes)]
+        [TESTDEFS="$TESTDEFS -DBOOST_TEST_DYN_LINK"],
+        [AC_MSG_RESULT(no)])
+      LIBS="$TEMP_LIBS"
+      CPPFLAGS="$TEMP_CPPFLAGS"
+    fi
   fi
+
 fi
 
 PKG_CHECK_MODULES([SSL], [libssl],, [AC_MSG_ERROR(openssl not found.)])
@@ -1389,6 +1539,13 @@ AC_SUBST(CRYPTO_LIBS)
 AC_SUBST(SSL_LIBS)
 AC_SUBST(CURL_LIBS)
 AC_SUBST(LIBZIP_LIBS)
+AC_SUBST(ZLIB_LIBS)
+AC_SUBST(QT_TEST_LIBS)
+AC_SUBST(QT_LIBS)
+AC_SUBST(QT_INCLUDES)
+AC_SUBST(QT_TEST_INCLUDES)
+AC_SUBST(QT_DBUS_INCLUDES)
+AC_SUBST(QT_PIE_FLAGS)
 AC_SUBST(EVENT_LIBS)
 AC_SUBST(EVENT_PTHREADS_LIBS)
 AC_SUBST(ZMQ_LIBS)

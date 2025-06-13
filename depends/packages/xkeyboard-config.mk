@@ -1,19 +1,16 @@
-package=libICE
+package=xkeyboard-config
 GCCFLAGS?=
-$(package)_version=1.0.9
-$(package)_download_path=https://xorg.freedesktop.org/releases/individual/lib/
+$(package)_version=2.34
+$(package)_download_path=http://www.x.org/releases/individual/data/xkeyboard-config
 $(package)_file_name=$(package)-$($(package)_version).tar.bz2
-$(package)_sha256_hash=8f7032f2c1c64352b5423f6b48a8ebdc339cc63064af34d66a6c9aa79759e202
-$(package)_dependencies=xtrans xproto
+$(package)_sha256_hash=b321d27686ee7e6610ffe7b56e28d5bbf60625a1f595124cd320c0caa717b8ce
 
 define $(package)_set_vars
-  $(package)_config_opts=--disable-shared --enable-static --disable-docs --disable-specs --without-xsltproc
-  $(package)_config_opts_linux=--with-pic
+  $(package)_config_opts +=--libdir=$($($(package)_type)_prefix)/lib --disable-runtime-deps
   $(package)_cxxflags_aarch64_linux = $(GCCFLAGS)
   $(package)_cflags_aarch64_linux = $(GCCFLAGS)
   $(package)_cxxflags_arm_linux = $(GCCFLAGS)
   $(package)_cflags_arm_linux = $(GCCFLAGS)
-  $(package)_config_opts +=--libdir=$($($(package)_type)_prefix)/lib
 endef
 
 define $(package)_config_cmds
@@ -26,4 +23,8 @@ endef
 
 define $(package)_stage_cmds
   $(MAKE) DESTDIR=$($(package)_staging_dir) install
+endef
+
+define $(package)_postprocess_cmds
+  rm -rf lib/python*/site-packages/xcbgen/__pycache__
 endef

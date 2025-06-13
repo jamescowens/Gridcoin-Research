@@ -4,7 +4,7 @@ $(package)_download_path=https://download.qt.io/official_releases/qt/5.15/$($(pa
 $(package)_suffix=everywhere-opensource-src-$($(package)_version).tar.xz
 $(package)_file_name=qtbase-$($(package)_suffix)
 $(package)_sha256_hash=0c42c799aa7c89e479a07c451bf5a301e291266ba789e81afc18f95049524edc
-$(package)_linux_dependencies=freetype fontconfig libxcb libxkbcommon libxcb_util libxcb_util_render libxcb_util_keysyms libxcb_util_image libxcb_util_wm
+$(package)_linux_dependencies=freetype fontconfig libxcb libxkbcommon libxcb_util libxcb_util_render libxcb_util_keysyms libxcb_util_image libxcb_util_wm xcb_proto xkeyboard-config libpng harfbuzz pcre2
 $(package)_qt_libs=corelib network widgets gui plugins testlib concurrent
 $(package)_patches = fix_qt_pkgconfig.patch
 $(package)_patches += mac-qmake.conf
@@ -91,6 +91,7 @@ $(package)_config_opts += -qt-harfbuzz
 $(package)_config_opts += -qt-zlib
 $(package)_config_opts += -static
 $(package)_config_opts += -v
+$(package)_config_opts += 'QMAKE_LIBS_XCB=-lxcb -lXau'
 $(package)_config_opts += -no-feature-bearermanagement
 $(package)_config_opts += -no-feature-colordialog
 $(package)_config_opts += -no-feature-commandlineparser
@@ -153,14 +154,16 @@ $(package)_config_opts_aarch64_darwin += -device-option QMAKE_APPLE_DEVICE_ARCHS
 $(package)_config_opts_x86_64_darwin += -device-option QMAKE_APPLE_DEVICE_ARCHS=x86_64
 endif
 
-$(package)_config_opts_linux = -xcb
+$(package)_config_opts_linux += -platform linux-g++ -xplatform linux-g++-64 'QMAKE_LFLAGS+=-pie -L$(host_prefix)/lib -lXau -lxkbcommon -lfontconfig -lfreetype -lexpat'
+$(package)_config_opts_linux += 'QMAKE_CFLAGS+=-fPIE -fPIC'
+$(package)_config_opts_linux += 'QMAKE_CXXFLAGS+=-fPIE -fPIC'
 $(package)_config_opts_linux += -no-xcb-xlib
 $(package)_config_opts_linux += -no-feature-xlib
 $(package)_config_opts_linux += -system-freetype
 $(package)_config_opts_linux += -fontconfig
 $(package)_config_opts_linux += -no-opengl
 $(package)_config_opts_linux += -no-feature-vulkan
-$(package)_config_opts_linux += -dbus-runtime
+#$(package)_config_opts_linux += -dbus-runtime
 $(package)_config_opts_arm_linux += -platform linux-g++ -xplatform bitcoin-linux-g++
 $(package)_config_opts_i686_linux  = -xplatform linux-g++-32
 $(package)_config_opts_x86_64_linux = -xplatform linux-g++-64
@@ -289,8 +292,10 @@ endef
 
 define $(package)_config_cmds
   export PKG_CONFIG_SYSROOT_DIR=/ && \
-  export PKG_CONFIG_LIBDIR=$(host_prefix)/lib/pkgconfig && \
-  export PKG_CONFIG_PATH=$(host_prefix)/share/pkgconfig  && \
+  export PKG_CONFIG_LIBDIR="$(host_prefix)/lib/pkgconfig" && \
+  export PKG_CONFIG_PATH="$(host_prefix)/share/pkgconfig:$(host_prefix)/lib/pkgconfig" && \
+  export CPPFLAGS="-I$(host_prefix)/include" && \
+  export LDFLAGS="-L$(host_prefix)/lib" && \
   export QT_MAC_SDK_NO_VERSION_CHECK=1 && \
   cd qtbase && \
   ./configure -top-level $($(package)_config_opts) && \
