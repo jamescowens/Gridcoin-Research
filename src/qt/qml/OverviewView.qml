@@ -231,8 +231,6 @@ Rectangle {
                         <html>
                         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Status\:") + "</b></font> " +
                         qsTr("Current wallet status") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Projects\:")+ "</b></font> " +
-                        qsTr("Your current projects") + "<br><br>
                         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Est. RR/day\:")+ "</b></font> " +
                         qsTr("Estimated research earnings per day") + "<br><br>
                         <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Est. Staking Frequency\:")+ "</b></font> " +
@@ -260,7 +258,7 @@ Rectangle {
 
         Column {
             id:dataTitlesColumn
-            height: statusLabel.height+projectLabel.height+estRRLabel.height+estTTSLabel.height
+            height: statusLabel.height+estRRLabel.height+estTTSLabel.height
             spacing: 4
             anchors {
                 left: parent.left
@@ -275,11 +273,6 @@ Rectangle {
                 text: qsTr("Status")+":"
             }
             Text {
-                id: projectLabel
-                color: MMPTheme.textColor
-                text: qsTr("Projects")+":"
-            }
-            Text {
                 id: estRRLabel
                 color: MMPTheme.textColor
                 text: qsTr("Est. RR/day")+":"
@@ -292,7 +285,6 @@ Rectangle {
         }
         Column {
             id: dataValuesColumn
-            property string projects: "lhc@home"
             spacing: 4
             clip: true
             anchors {
@@ -305,14 +297,7 @@ Rectangle {
             Text {
                 id: statusValue
                 text: _researcherModel.status
-                color: MMPTheme.highlightColor
-                horizontalAlignment: Text.AlignRight
-                anchors.right: parent.right
-            }
-            Text {
-                id: projectValue
-                text: dataValuesColumn.projects
-                color: MMPTheme.lightTextColor
+                color: text != qsTr("Waiting for sync...") ? MMPTheme.highlightColor : MMPTheme.cCarminePink
                 horizontalAlignment: Text.AlignRight
                 anchors.right: parent.right
             }
