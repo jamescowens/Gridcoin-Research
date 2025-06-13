@@ -145,11 +145,11 @@
         <file>icons/onboarding/img_onboarding_congrats_solo.svg</file>
         <file>icons/onboarding/img_onboarding_investor.svg</file>
         <file>icons/onboarding/img_onboarding_noboinc.svg</file>
-        <file>icons/onboarding/iс_investor_inactive.svg</file>
-        <file>icons/onboarding/iс_pool_active.svg</file>
-        <file>icons/onboarding/iс_pool_inactive.svg</file>
-        <file>icons/onboarding/iс_solo_active.svg</file>
-        <file>icons/onboarding/iс_solo_inactive.svg</file>
+        <file>icons/onboarding/ic_investor_inactive.svg</file>
+        <file>icons/onboarding/ic_pool_active.svg</file>
+        <file>icons/onboarding/ic_pool_inactive.svg</file>
+        <file>icons/onboarding/ic_solo_active.svg</file>
+        <file>icons/onboarding/ic_solo_inactive.svg</file>
         <file>icons/statusbar/ic_beacon_offline_dark.svg</file>
         <file>icons/statusbar/ic_beacon_offline_light.svg</file>
         <file>icons/statusbar/ic_beacon_online_dark.svg</file>
