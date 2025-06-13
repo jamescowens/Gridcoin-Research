@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.21)
-
 # Translations
 # ============
 add_subdirectory(locale)
@@ -160,7 +158,10 @@ set_source_files_properties(
         SKIP_AUTOUIC ON
 )
 
-qt_policy(SET QTP0004 NEW)
+if (COMMAND qt_policy)
+    qt_policy(SET QTP0004 NEW)
+endif()
+
 set_source_files_properties(qml/plugins/MMPTheme/MMPTheme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 qt_add_qml_module(MMPTheme
     URI MMPTheme
