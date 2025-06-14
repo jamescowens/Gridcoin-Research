@@ -113,7 +113,7 @@ private:
 class VotingModel : public QObject
 {
     Q_OBJECT
-
+    Q_PROPERTY(QString currentPollTitle READ getCurrentPollTitle NOTIFY newPollReceived)
 public:
     VotingModel(
         ClientModel& client_model,

@@ -26,7 +26,6 @@
         <file>PollVoteWindow.qml</file>
         <file>QRCodeWindow.qml</file>
         <file>ReceiveView.qml</file>
-        <file>RecentPollPanel.qml</file>
         <file>RecentTransactionItem.qml</file>
         <file>SearchBox.qml</file>
         <file>SendView.qml</file>
