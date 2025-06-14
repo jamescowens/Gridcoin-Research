@@ -4,6 +4,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Controls.Material 2.15
+import QtQuick.Layouts
 import MMPTheme 1.0
 Rectangle {
     id: main
@@ -191,376 +192,406 @@ Rectangle {
     property int topBodyMargin: 10
     property int bottomBodyMargin: 10
 
-    Rectangle {
-        id: walletDetailsPanel
-        color: MMPTheme.bodyColor
-        radius: panelRadius
-        height: walletDetailsTitle.height+walletDetailsTitle.anchors.topMargin+
-                dataTitlesColumn.height+dataTitlesColumn.anchors.topMargin+
-                balanceTitlesColumn.height+balanceTitlesColumn.anchors.topMargin+
-                walletDetailsSeparator.height+walletDetailsSeparator.anchors.topMargin+
-                bottomBodyMargin+topBodyMargin  //Technically wrong but works. topBodyMargin included twice, first from walletDetailsTitle.topMargin
-
+    Column {
+        // id: infoColumn
+        spacing: panelSpacing
         anchors {
             top: header.bottom
+            bottom: parent.bottom
             left: parent.left
             right: parent.horizontalCenter
-            leftMargin: panelSpacing
             topMargin: panelSpacing
-            rightMargin: panelSpacing/2
+            rightMargin: panelSpacing / 2
+            leftMargin: panelSpacing
+            bottomMargin: panelSpacing
         }
-        PanelTitle {
-            id: walletDetailsTitle
-            text: "Wallet Details"
-            anchors {
-                left: parent.left
-                right: parent.right
-                top: parent.top
-                topMargin: topBodyMargin
-                leftMargin: sideBodyMargin
-                rightMargin: sideBodyMargin
-            }
+        Rectangle {
+            id: walletDetailsPanel
+            color: MMPTheme.bodyColor
+            radius: panelRadius
+            width: parent.width
+            height: walletDetailsTitle.height+walletDetailsTitle.anchors.topMargin+
+                    dataTitlesColumn.height+dataTitlesColumn.anchors.topMargin+
+                    balanceTitlesColumn.height+balanceTitlesColumn.anchors.topMargin+
+                    walletDetailsSeparator.height+walletDetailsSeparator.anchors.topMargin+
+                    bottomBodyMargin+topBodyMargin  //Technically wrong but works. topBodyMargin included twice, first from walletDetailsTitle.topMargin
 
-            HelpHover{
-                id: questionMarkMouseOver
-                popupWidth: 300
-                verticalPadding: 20
-                horiontalPadding: sideBodyMargin
-                text:
-                    "
-                        <html>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Status\:") + "</b></font> " +
-                        qsTr("Current wallet status") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Est. RR/day\:")+ "</b></font> " +
-                        qsTr("Estimated research earnings per day") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Est. Staking Frequency\:")+ "</b></font> " +
-                        qsTr("Estimated frequency of staking") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Available") + ":</b></font> " +
-                        qsTr("Balance available for spending") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Stake") + ":</b></font> " +
-                        qsTr("Balance that is currently staked") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Unconfirmed") + ":</b></font> " +
-                        qsTr("Coins that have been received but not yet confirmed") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Total") + ":</b></font> " +
-                        qsTr("Your total coins") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Research Rewards") + ":</b></font> " +
-                        qsTr("Earnt research rewards. Stake or make a manual reward claim in the receive view to receive them") + "
-                        </html>
-                    "
-
+            PanelTitle {
+                id: walletDetailsTitle
+                text: qsTr("Wallet")
                 anchors {
+                    left: parent.left
                     right: parent.right
-                    verticalCenter: parent.verticalCenter
+                    top: parent.top
+                    topMargin: topBodyMargin
+                    leftMargin: sideBodyMargin
+                    rightMargin: sideBodyMargin
                 }
 
+                HelpHover{
+                    id: questionMarkMouseOver
+                    popupWidth: 300
+                    verticalPadding: 20
+                    horiontalPadding: sideBodyMargin
+                    text:
+                        "
+                            <html>
+                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Status\:") + "</b></font> " +
+                            qsTr("Current wallet status") + "<br><br>
+                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Est. RR/day\:")+ "</b></font> " +
+                            qsTr("Estimated research earnings per day") + "<br><br>
+                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Est. Staking Frequency\:")+ "</b></font> " +
+                            qsTr("Estimated frequency of staking") + "<br><br>
+                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Available") + ":</b></font> " +
+                            qsTr("Balance available for spending") + "<br><br>
+                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Stake") + ":</b></font> " +
+                            qsTr("Balance that is currently staked") + "<br><br>
+                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Unconfirmed") + ":</b></font> " +
+                            qsTr("Coins that have been received but not yet confirmed") + "<br><br>
+                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Total") + ":</b></font> " +
+                            qsTr("Your total coins") + "<br><br>
+                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Research Rewards") + ":</b></font> " +
+                            qsTr("Earnt research rewards. Stake or make a manual reward claim in the receive view to receive them") + "
+                            </html>
+                        "
+
+                    anchors {
+                        right: parent.right
+                        verticalCenter: parent.verticalCenter
+                    }
+
+                }
+            }
+
+            Column {
+                id:dataTitlesColumn
+                height: statusLabel.height+estRRLabel.height+estTTSLabel.height
+                spacing: 4
+                anchors {
+                    left: parent.left
+                    top: walletDetailsTitle.bottom
+                    topMargin: 10
+                    leftMargin: sideBodyMargin
+                }
+                Text {
+                    id: statusLabel
+                    color: MMPTheme.textColor
+                    font.pixelSize: 12
+                    text: qsTr("Status")+":"
+                }
+                Text {
+                    id: estRRLabel
+                    color: MMPTheme.textColor
+                    text: qsTr("Est. RR/day")+":"
+                }
+                Text {
+                    id: estTTSLabel
+                    color: MMPTheme.textColor
+                    text: qsTr("Est. Staking Frequency")+":"
+                }
+            }
+            Column {
+                id: dataValuesColumn
+                spacing: 4
+                clip: true
+                anchors {
+                    left: dataTitlesColumn.right
+                    top: walletDetailsTitle.bottom
+                    topMargin: 10
+                    right: parent.right
+                    rightMargin: sideBodyMargin
+                }
+                Text {
+                    id: statusValue
+                    text: _researcherModel.status
+                    color: text != qsTr("Waiting for sync...") ? MMPTheme.highlightColor : MMPTheme.cCarminePink
+                    horizontalAlignment: Text.AlignRight
+                    anchors.right: parent.right
+                }
+                Text {
+                    id: estRRValue
+                    text: _researcherModel.accrual
+                    color: MMPTheme.lightTextColor
+                    horizontalAlignment: Text.AlignRight
+                    anchors.right: parent.right
+                }
+                Text {
+                    id: estTTSValue
+                    text: _clientModel.ettsDays.toLocaleString(Qt.locale(), 'f', 1) + qsTr(" days")
+                    color: MMPTheme.lightTextColor
+                    horizontalAlignment: Text.AlignRight
+                    anchors.right: parent.right
+                }
+            }
+            Rectangle {
+                id: walletDetailsSeparator
+                height: 1
+                width: parent.width-40
+                color: MMPTheme.separatorColor
+                anchors {
+                    horizontalCenter: parent.horizontalCenter
+                    top: dataTitlesColumn.bottom
+                    topMargin: 20
+                }
+            }
+
+            Column {
+                id:balanceTitlesColumn
+                spacing: 4
+                height: availableLabel.height+stakeLabel.height+unconfirmedLabel.height+totalLabel.height
+                anchors {
+                    left: parent.left
+                    top: walletDetailsSeparator.bottom
+                    topMargin: 10
+                    leftMargin: sideBodyMargin
+                }
+                Text {
+                    id: availableLabel
+                    color: MMPTheme.textColor
+                    text: qsTr("Available")+":"
+                }
+                Text {
+                    id: stakeLabel
+                    color: MMPTheme.textColor
+                    text: qsTr("Stake")+":"
+                }
+                Text {
+                    id: unconfirmedLabel
+                    color: MMPTheme.textColor
+                    text: qsTr("Unconfirmed")+":"
+                }
+                Text {
+                    id: totalLabel
+                    color: MMPTheme.textColor
+                    font.weight: Font.DemiBold
+                    text: qsTr("Total")+":"
+                }
+            }
+            Column {
+                id: balanceValuesColumn
+                property real total: _walletModel.balance + _walletModel.stake + _walletModel.unconfirmedBalance
+                spacing: 4
+                clip: true
+                anchors {
+                    left: balanceTitlesColumn.right
+                    top: walletDetailsSeparator.bottom
+                    topMargin: 10
+                    leftMargin: 0
+                    right: parent.right
+                    rightMargin: sideBodyMargin
+                }
+                Text {
+                    id: availableValue
+                    text: _walletModel.balance.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
+                    color: MMPTheme.lightTextColor
+                    horizontalAlignment: Text.AlignRight
+                    anchors.right: parent.right
+                }
+
+                Text {
+                    id: stakeValue
+                    text: _walletModel.stake.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
+                    color: MMPTheme.lightTextColor
+                    horizontalAlignment: Text.AlignRight
+                    anchors.right: parent.right
+                }
+
+                Text {
+                    id: unconfirmedValue
+                    text: _walletModel.unconfirmedBalance.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
+                    color: MMPTheme.lightTextColor
+                    horizontalAlignment: Text.AlignRight
+                    anchors.right: parent.right
+                }
+
+                Text {
+                    id: totalValue
+                    text: balanceValuesColumn.total.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
+                    color: MMPTheme.lightTextColor
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignRight
+                    anchors.right: parent.right
+                }
             }
         }
 
-        Column {
-            id:dataTitlesColumn
-            height: statusLabel.height+estRRLabel.height+estTTSLabel.height
-            spacing: 4
-            anchors {
-                left: parent.left
-                top: walletDetailsTitle.bottom
-                topMargin: 10
-                leftMargin: sideBodyMargin
+        Rectangle {
+            id:networkStatePanel
+            color: MMPTheme.bodyColor
+            radius: panelRadius
+            width: parent.width
+            height: networkStateTitle.implicitHeight+networkStateTitle.anchors.topMargin+
+                    networkTitlesColumn.height+networkTitlesColumn.anchors.topMargin+
+                    bottomBodyMargin+topBodyMargin
+
+            PanelTitle {
+                id: networkStateTitle
+                text: qsTr("Staking")
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    top: parent.top
+                    topMargin: topBodyMargin
+                    leftMargin: sideBodyMargin
+                    rightMargin: sideBodyMargin
+                }
+
+                HelpHover{
+                    id: networkStateQuestionMarkMouseOver
+                    popupWidth: 300
+                    verticalPadding: 20
+                    horiontalPadding: sideBodyMargin
+                    text:
+                        "
+                            <html>
+                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Blocks") + ":</b></font> " +
+                            qsTr("The number of blocks your client currently has on the chain") + "<br><br>
+                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Difficulty")+ ":</b></font> " +
+                            qsTr("Current network difficulty. A larger value corresponds to smaller odds of staking") + "<br><br>
+                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Net Weight")+ ":</b></font> " +
+                            qsTr("Total number of coins on the entire network which are actively trying to stake") + "<br><br>
+                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Coin Weight")+ ":</b></font> " +
+                            qsTr("Number of your coins which are actively trying to stake") + "<br><br>
+                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Magnitude") + ":</b></font> " +
+                            qsTr("Relative measure of your mining contributions") + "
+                            </html>
+                        "
+
+                    anchors {
+                        right: parent.right
+                        verticalCenter: parent.verticalCenter
+                    }
+
+                }
             }
-            Text {
-                id: statusLabel
-                color: MMPTheme.textColor
-                font.pixelSize: 12
-                text: qsTr("Status")+":"
+
+            Column {
+                id:networkTitlesColumn
+                spacing: 4
+                height: blocksLabel.implicitHeight+difficultyLabel.implicitHeight+netWeightLabel.implicitHeight+coinWeightLabel.implicitHeight
+                anchors {
+                    left: parent.left
+                    top: networkStateTitle.bottom
+                    topMargin: topBodyMargin
+                    leftMargin: sideBodyMargin
+                }
+                Text {
+                    id: blocksLabel
+                    color: MMPTheme.textColor
+                    text: qsTr("Blocks")+":"
+                }
+                Text {
+                    id: difficultyLabel
+                    color: MMPTheme.textColor
+                    text: qsTr("Difficulty")+":"
+                }
+                Text {
+                    id: netWeightLabel
+                    color: MMPTheme.textColor
+                    text: qsTr("Net Weight")+":"
+                }
+                Text {
+                    id: coinWeightLabel
+                    color: MMPTheme.textColor
+                    text: qsTr("Coin Weight")+":"
+                }
             }
-            Text {
-                id: estRRLabel
-                color: MMPTheme.textColor
-                text: qsTr("Est. RR/day")+":"
-            }
-            Text {
-                id: estTTSLabel
-                color: MMPTheme.textColor
-                text: qsTr("Est. Staking Frequency")+":"
-            }
-        }
-        Column {
-            id: dataValuesColumn
-            spacing: 4
-            clip: true
-            anchors {
-                left: dataTitlesColumn.right
-                top: walletDetailsTitle.bottom
-                topMargin: 10
-                right: parent.right
-                rightMargin: sideBodyMargin
-            }
-            Text {
-                id: statusValue
-                text: _researcherModel.status
-                color: text != qsTr("Waiting for sync...") ? MMPTheme.highlightColor : MMPTheme.cCarminePink
-                horizontalAlignment: Text.AlignRight
-                anchors.right: parent.right
-            }
-            Text {
-                id: estRRValue
-                text: _researcherModel.accrual
-                color: MMPTheme.lightTextColor
-                horizontalAlignment: Text.AlignRight
-                anchors.right: parent.right
-            }
-            Text {
-                id: estTTSValue
-                text: _clientModel.ettsDays.toLocaleString(Qt.locale(), 'f', 1) + qsTr(" days")
-                color: MMPTheme.lightTextColor
-                horizontalAlignment: Text.AlignRight
-                anchors.right: parent.right
+            Column {
+                id: networkValuesColumn
+                spacing: 5
+                clip: true
+                anchors {
+                    left: networkTitlesColumn.right
+                    top: networkStateTitle.bottom
+                    topMargin: 10
+                    leftMargin: 0
+                    right: parent.right
+                    rightMargin: sideBodyMargin
+                }
+                Text {
+                    id: blockValue
+                    text: _clientModel.numBlocks
+                    color: MMPTheme.lightTextColor
+                    horizontalAlignment: Text.AlignRight
+                    anchors.right: parent.right
+                }
+
+                Text {
+                    id: difficultyValue
+                    text: _clientModel.difficulty.toLocaleString(Qt.locale(), 'f', 3)
+                    color: MMPTheme.lightTextColor
+                    horizontalAlignment: Text.AlignRight
+                    anchors.right: parent.right
+                }
+
+                Text {
+                    id: netWeightValue
+                    text: _clientModel.networkWeight.toLocaleString(Qt.locale(), 'f', 0)
+                    color: MMPTheme.lightTextColor
+                    horizontalAlignment: Text.AlignRight
+                    anchors.right: parent.right
+                }
+
+                Text {
+                    id: coinWeightValue
+                    text: _clientModel.coinWeight.toLocaleString(Qt.locale(), 'f', 0)
+                    color: MMPTheme.lightTextColor
+                    horizontalAlignment: Text.AlignRight
+                    anchors.right: parent.right
+                }
             }
         }
         Rectangle {
-            id: walletDetailsSeparator
-            height: 1
-            width: parent.width-40
-            color: MMPTheme.separatorColor
-            anchors {
-                horizontalCenter: parent.horizontalCenter
-                top: dataTitlesColumn.bottom
-                topMargin: 20
-            }
-        }
-
-        Column {
-            id:balanceTitlesColumn
-            spacing: 4
-            height: availableLabel.height+stakeLabel.height+unconfirmedLabel.height+totalLabel.height
-            anchors {
-                left: parent.left
-                top: walletDetailsSeparator.bottom
-                topMargin: 10
-                leftMargin: sideBodyMargin
-            }
-            Text {
-                id: availableLabel
-                color: MMPTheme.textColor
-                text: qsTr("Available")+":"
-            }
-            Text {
-                id: stakeLabel
-                color: MMPTheme.textColor
-                text: qsTr("Stake")+":"
-            }
-            Text {
-                id: unconfirmedLabel
-                color: MMPTheme.textColor
-                text: qsTr("Unconfirmed")+":"
-            }
-            Text {
-                id: totalLabel
-                color: MMPTheme.textColor
-                font.weight: Font.DemiBold
-                text: qsTr("Total")+":"
-            }
-        }
-        Column {
-            id: balanceValuesColumn
-            property real total: _walletModel.balance + _walletModel.stake + _walletModel.unconfirmedBalance
-            spacing: 4
-            clip: true
-            anchors {
-                left: balanceTitlesColumn.right
-                top: walletDetailsSeparator.bottom
-                topMargin: 10
-                leftMargin: 0
-                right: parent.right
-                rightMargin: sideBodyMargin
-            }
-            Text {
-                id: availableValue
-                text: _walletModel.balance.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
-                color: MMPTheme.lightTextColor
-                horizontalAlignment: Text.AlignRight
-                anchors.right: parent.right
-            }
-
-
-
-            Text {
-                id: stakeValue
-                text: _walletModel.stake.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
-                color: MMPTheme.lightTextColor
-                horizontalAlignment: Text.AlignRight
-                anchors.right: parent.right
-            }
-
-
-            Text {
-                id: unconfirmedValue
-                text: _walletModel.unconfirmedBalance.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
-                color: MMPTheme.lightTextColor
-                horizontalAlignment: Text.AlignRight
-                anchors.right: parent.right
-            }
-
-            Text {
-                id: totalValue
-                text: balanceValuesColumn.total.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
-                color: MMPTheme.lightTextColor
-                font.weight: Font.DemiBold
-                horizontalAlignment: Text.AlignRight
-                anchors.right: parent.right
-            }
-        }
-    }
-
-    Rectangle {
-        id:networkStatePanel
-        color: MMPTheme.bodyColor
-        radius: panelRadius
-        height: networkStateTitle.implicitHeight+networkStateTitle.anchors.topMargin+
-                networkTitlesColumn.height+networkTitlesColumn.anchors.topMargin+
-                bottomBodyMargin+topBodyMargin
-        anchors {
-            top: walletDetailsPanel.bottom
-            left: parent.left
-            right: parent.horizontalCenter
-            leftMargin: panelSpacing
-            topMargin: panelSpacing
-            rightMargin: panelSpacing/2
-        }
-
-        PanelTitle {
-            id: networkStateTitle
-            text: "Network State"
-            anchors {
-                left: parent.left
-                right: parent.right
-                top: parent.top
-                topMargin: topBodyMargin
-                leftMargin: sideBodyMargin
-                rightMargin: sideBodyMargin
-            }
-
-            HelpHover{
-                id: networkStateQuestionMarkMouseOver
-                popupWidth: 300
-                verticalPadding: 20
-                horiontalPadding: sideBodyMargin
-                text:
-                    "
-                        <html>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Blocks") + ":</b></font> " +
-                        qsTr("The number of blocks your client currently has on the chain") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Difficulty")+ ":</b></font> " +
-                        qsTr("Current network difficulty. A larger value corresponds to smaller odds of staking") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Net Weight")+ ":</b></font> " +
-                        qsTr("Total number of coins on the entire network which are actively trying to stake") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Coin Weight")+ ":</b></font> " +
-                        qsTr("Number of your coins which are actively trying to stake") + "<br><br>
-                        <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Magnitude") + ":</b></font> " +
-                        qsTr("Relative measure of your mining contributions") + "
-                        </html>
-                    "
-
+            id: latestPollsPanel
+            color: MMPTheme.bodyColor
+            radius: panelRadius
+            width: parent.width
+            height: pollsTitle.anchors.topMargin + pollsTitle.height + pollsInfo.anchors.topMargin + pollsInfo.height + bottomBodyMargin
+            PanelTitle {
+                id: pollsTitle
+                text: qsTr("Current Polls")
                 anchors {
+                    left: parent.left
                     right: parent.right
-                    verticalCenter: parent.verticalCenter
+                    top: parent.top
+                    topMargin: topBodyMargin
+                    leftMargin: sideBodyMargin
+                    rightMargin: sideBodyMargin
                 }
-
-            }
-        }
-
-        Column {
-            id:networkTitlesColumn
-            spacing: 4
-            height: blocksLabel.implicitHeight+difficultyLabel.implicitHeight+netWeightLabel.implicitHeight+coinWeightLabel.implicitHeight
-            anchors {
-                left: parent.left
-                top: networkStateTitle.bottom
-                topMargin: topBodyMargin
-                leftMargin: sideBodyMargin
             }
             Text {
-                id: blocksLabel
+                id: pollsInfo
                 color: MMPTheme.textColor
-                text: qsTr("Blocks")+":"
-            }
-            Text {
-                id: difficultyLabel
-                color: MMPTheme.textColor
-                text: qsTr("Difficulty")+":"
-            }
-            Text {
-                id: netWeightLabel
-                color: MMPTheme.textColor
-                text: qsTr("Net Weight")+":"
-            }
-            Text {
-                id: coinWeightLabel
-                color: MMPTheme.textColor
-                text: qsTr("Coin Weight")+":"
-            }
-        }
-        Column {
-            id: networkValuesColumn
-            spacing: 5
-            clip: true
-            anchors {
-                left: networkTitlesColumn.right
-                top: networkStateTitle.bottom
-                topMargin: 10
-                leftMargin: 0
-                right: parent.right
-                rightMargin: sideBodyMargin
-            }
-            Text {
-                id: blockValue
-                text: _clientModel.numBlocks
-                color: MMPTheme.lightTextColor
-                horizontalAlignment: Text.AlignRight
-                anchors.right: parent.right
-            }
-
-            Text {
-                id: difficultyValue
-                text: _clientModel.difficulty.toLocaleString(Qt.locale(), 'f', 3)
-                color: MMPTheme.lightTextColor
-                horizontalAlignment: Text.AlignRight
-                anchors.right: parent.right
-            }
-
-            Text {
-                id: netWeightValue
-                text: _clientModel.networkWeight.toLocaleString(Qt.locale(), 'f', 0)
-                color: MMPTheme.lightTextColor
-                horizontalAlignment: Text.AlignRight
-                anchors.right: parent.right
-            }
-
-            Text {
-                id: coinWeightValue
-                text: _clientModel.coinWeight.toLocaleString(Qt.locale(), 'f', 0)
-                color: MMPTheme.lightTextColor
-                horizontalAlignment: Text.AlignRight
-                anchors.right: parent.right
+                text: _votingModel.currentPollTitle
+                wrapMode: Text.WordWrap
+                anchors {
+                    top: pollsTitle.bottom
+                    left: parent.left
+                    right: parent.right
+                    leftMargin: sideBodyMargin
+                    rightMargin: sideBodyMargin
+                    topMargin: topBodyMargin
+                }
             }
         }
     }
-
     Rectangle {
         id: recentTransactionsPanel
         color: MMPTheme.bodyColor
         radius: panelRadius
-        height: networkStatePanel.height+walletDetailsPanel.height+panelSpacing
         anchors {
             top: header.bottom
+            bottom: parent.bottom
             right: parent.right
             left: parent.horizontalCenter
             topMargin: panelSpacing
             rightMargin: panelSpacing
             leftMargin: panelSpacing/2 
+            bottomMargin: panelSpacing
         }
         PanelTitle {
             id: recentTransactionsTitle
-            text: "Recent Transactions"
+            text: qsTr("Recent Transactions")
             anchors {
                 left: parent.left
                 right: parent.right
@@ -624,20 +655,5 @@ Rectangle {
                 horizontalAlignment: Text.AlignHCenter
             }
         }
-    }
-    RecentPollPanel {
-        id: latestPollsPanel
-        radius: panelRadius
-        anchors {
-            left: parent.left
-            right: parent.right
-            bottom: parent.bottom
-            top: recentTransactionsPanel.bottom
-            leftMargin: panelSpacing
-            rightMargin: panelSpacing
-            bottomMargin: panelSpacing
-            topMargin: panelSpacing
-        }
-
     }
 }
