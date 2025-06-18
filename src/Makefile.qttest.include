@@ -29,7 +29,6 @@ qt_test_test_gridcoin_qt_LDADD += \
   $(LIBGRIDCOIN_CRYPTO) \
   $(LIBLEVELDB_SSE42) \
   $(LIBMEMENV) \
-  $(BOOST_LIBS) \
   $(QT_DBUS_LIBS) \
   $(QT_TEST_LIBS) \
   $(QT_LIBS) \
@@ -43,6 +42,8 @@ qt_test_test_gridcoin_qt_LDADD += \
   $(CURL_LIBS) \
   $(SSL_LIBS) \
   $(CRYPTO_LIBS) \
+  $(LIBSECP256K1) \
+  $(BOOST_LIBS) \
   $(LIBZIP_LIBS) \
   $(ZLIB_LIBS)
 

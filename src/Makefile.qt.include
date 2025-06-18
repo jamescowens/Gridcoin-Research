@@ -683,7 +683,6 @@ qt_gridcoinresearch_LDADD += \
   $(LIBLEVELDB_SSE42) \
   $(LIBGRIDCOIN_CRYPTO) \
   $(LIBMEMENV) \
-  $(BOOST_LIBS) \
   $(QR_LIBS) \
   $(QT_LIBS) \
   $(QT_DBUS_LIBS) \
@@ -691,15 +690,16 @@ qt_gridcoinresearch_LDADD += \
   $(QSVG_LIBS) \
   $(QSVGICON_LIBS) \
   $(PROTOBUF_LIBS) \
-  $(MINIUPNPC_LIBS)\
+  $(MINIUPNPC_LIBS) \
   $(EVENT_PTHREADS_LIBS) \
   $(EVENT_LIBS) \
   $(CURL_LIBS) \
   $(SSL_LIBS) \
   $(CRYPTO_LIBS) \
+  $(LIBSECP256K1) \
+  $(BOOST_LIBS) \
   $(LIBZIP_LIBS) \
-  $(ZLIB_LIBS) \
-  $(LIBSECP256K1)
+  $(ZLIB_LIBS)
 
 qt_gridcoinresearch_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(QT_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 qt_gridcoinresearch_LIBTOOLFLAGS = $(AM_LIBTOOLFLAGS) --tag CXX

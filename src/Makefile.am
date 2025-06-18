@@ -454,7 +454,6 @@ gridcoinresearchd_LDADD += \
     $(CURL_LIBS) \
     $(BOOST_LIBS) \
     $(LIBZIP_LIBS) \
-    $(ZLIB_LIBS) \
     $(EVENT_LIBS) \
     $(SSL_LIBS)
 
