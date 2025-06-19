@@ -501,13 +501,15 @@ EXCLUSIVE_LOCKS_REQUIRED(CScraperManifest::cs_mapManifest, CSplitBlob::cs_manife
     // is set to below 0.5, both to prevent a divide by zero exception, and also prevent unreasonably lose limits. So this
     // means the loosest limit that is allowed is essentially 2 * whitelist + 2.
 
+    // Note that the whitelist size is taken from the snapshot including all projects but deleted.
     unsigned int nMaxProjects = 0;
 
     {
         LOCK(cs_ScraperGlobals);
 
-        nMaxProjects = static_cast<unsigned int>(std::ceil(static_cast<double>(GRC::GetWhitelist().Snapshot().size()) /
-                                                                    std::max(0.5, CONVERGENCE_BY_PROJECT_RATIO)) + 2);
+        nMaxProjects = static_cast<unsigned int>(
+            std::ceil(static_cast<double>(GRC::GetWhitelist().Snapshot(GRC::ProjectEntry::ProjectFilterFlag::ALL_BUT_DELETED).size()) /
+                      std::max(0.5, CONVERGENCE_BY_PROJECT_RATIO)) + 2);
     }
 
     if (!OutOfSyncByAge() && projects.size() > nMaxProjects)
