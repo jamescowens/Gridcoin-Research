@@ -10,7 +10,6 @@
 #include "gridcoin/magnitude.h"
 #include "gridcoin/project.h"
 #include "gridcoin/quorum.h"
-#include "gridcoin/researcher.h"
 #include "gridcoin/scraper/scraper.h"
 #include "gridcoin/superblock.h"
 #include "gridcoin/support/xml.h"
@@ -486,6 +485,16 @@ QString ResearcherModel::formatBeaconVerificationCode() const
     }
 
     return QString::fromStdString(m_pending_beacon->GetVerificationCode());
+}
+
+GRC::ResearcherMode ResearcherModel::getResearcherMode() const {
+    if (hasEligibleProjects()) {
+        return GRC::ResearcherMode::SOLO;
+    } else if (hasPoolProjects()) {
+        return GRC::ResearcherMode::POOL;
+    } else {
+        return GRC::ResearcherMode::INVESTOR;
+    }
 }
 
 std::vector<ProjectRow> ResearcherModel::buildProjectTable(bool extended) const

@@ -72,7 +72,15 @@ Rectangle {
                 }
                 Text {
                     id: cpidTitleText
-                    text: qsTr("CPID")
+                    text: {
+                        if (_researcherModel.researcherMode == 0) {
+                            return qsTr("Non-cruncher");
+                        } else if (_researcherModel.researcherMode == 1) {
+                            return qsTr("Pool");
+                        } else {
+                            return qsTr("CPID");
+                        }
+                    }
                     color: MMPTheme.textColor
                     font.weight: Font.Light
                     anchors.centerIn: parent
@@ -103,6 +111,7 @@ Rectangle {
 
             Text {
                 id: cpidText
+                visible: _researcherModel.researcherMode == 2
                 color: MMPTheme.textColor
                 text: _researcherModel.cpid
                 clip: true
@@ -186,11 +195,10 @@ Rectangle {
         }
 
     }
-    property int panelSpacing: 10
-    property int panelRadius: 4
-    property int sideBodyMargin: 20
-    property int topBodyMargin: 10
-    property int bottomBodyMargin: 10
+    readonly property int panelSpacing: 10
+    readonly property int panelRadius: 4
+    readonly property int horBodyMargin: 20
+    readonly property int vertBodyMargin: 10
 
     Column {
         // id: infoColumn
@@ -211,10 +219,8 @@ Rectangle {
             radius: panelRadius
             width: parent.width
             height: walletDetailsTitle.height+walletDetailsTitle.anchors.topMargin+
-                    dataTitlesColumn.height+dataTitlesColumn.anchors.topMargin+
                     balanceTitlesColumn.height+balanceTitlesColumn.anchors.topMargin+
-                    walletDetailsSeparator.height+walletDetailsSeparator.anchors.topMargin+
-                    bottomBodyMargin+topBodyMargin  //Technically wrong but works. topBodyMargin included twice, first from walletDetailsTitle.topMargin
+                    2*vertBodyMargin
 
             PanelTitle {
                 id: walletDetailsTitle
@@ -223,25 +229,19 @@ Rectangle {
                     left: parent.left
                     right: parent.right
                     top: parent.top
-                    topMargin: topBodyMargin
-                    leftMargin: sideBodyMargin
-                    rightMargin: sideBodyMargin
+                    topMargin: vertBodyMargin
+                    leftMargin: horBodyMargin
+                    rightMargin: horBodyMargin
                 }
 
                 HelpHover{
-                    id: questionMarkMouseOver
+                    id: walletHelp
                     popupWidth: 300
                     verticalPadding: 20
-                    horiontalPadding: sideBodyMargin
+                    horiontalPadding: horBodyMargin
                     text:
                         "
                             <html>
-                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Status\:") + "</b></font> " +
-                            qsTr("Current wallet status") + "<br><br>
-                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Est. RR/day\:")+ "</b></font> " +
-                            qsTr("Estimated research earnings per day") + "<br><br>
-                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Est. Staking Frequency\:")+ "</b></font> " +
-                            qsTr("Estimated frequency of staking") + "<br><br>
                             <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Available") + ":</b></font> " +
                             qsTr("Balance available for spending") + "<br><br>
                             <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Stake") + ":</b></font> " +
@@ -264,86 +264,14 @@ Rectangle {
             }
 
             Column {
-                id:dataTitlesColumn
-                height: statusLabel.height+estRRLabel.height+estTTSLabel.height
-                spacing: 4
-                anchors {
-                    left: parent.left
-                    top: walletDetailsTitle.bottom
-                    topMargin: 10
-                    leftMargin: sideBodyMargin
-                }
-                Text {
-                    id: statusLabel
-                    color: MMPTheme.textColor
-                    font.pixelSize: 12
-                    text: qsTr("Status")+":"
-                }
-                Text {
-                    id: estRRLabel
-                    color: MMPTheme.textColor
-                    text: qsTr("Est. RR/day")+":"
-                }
-                Text {
-                    id: estTTSLabel
-                    color: MMPTheme.textColor
-                    text: qsTr("Est. Staking Frequency")+":"
-                }
-            }
-            Column {
-                id: dataValuesColumn
-                spacing: 4
-                clip: true
-                anchors {
-                    left: dataTitlesColumn.right
-                    top: walletDetailsTitle.bottom
-                    topMargin: 10
-                    right: parent.right
-                    rightMargin: sideBodyMargin
-                }
-                Text {
-                    id: statusValue
-                    text: _researcherModel.status
-                    color: text != qsTr("Waiting for sync...") ? MMPTheme.highlightColor : MMPTheme.cCarminePink
-                    horizontalAlignment: Text.AlignRight
-                    anchors.right: parent.right
-                }
-                Text {
-                    id: estRRValue
-                    text: _researcherModel.accrual
-                    color: MMPTheme.lightTextColor
-                    horizontalAlignment: Text.AlignRight
-                    anchors.right: parent.right
-                }
-                Text {
-                    id: estTTSValue
-                    text: _clientModel.ettsDays.toLocaleString(Qt.locale(), 'f', 1) + qsTr(" days")
-                    color: MMPTheme.lightTextColor
-                    horizontalAlignment: Text.AlignRight
-                    anchors.right: parent.right
-                }
-            }
-            Rectangle {
-                id: walletDetailsSeparator
-                height: 1
-                width: parent.width-40
-                color: MMPTheme.separatorColor
-                anchors {
-                    horizontalCenter: parent.horizontalCenter
-                    top: dataTitlesColumn.bottom
-                    topMargin: 20
-                }
-            }
-
-            Column {
                 id:balanceTitlesColumn
                 spacing: 4
                 height: availableLabel.height+stakeLabel.height+unconfirmedLabel.height+totalLabel.height
                 anchors {
                     left: parent.left
-                    top: walletDetailsSeparator.bottom
+                    top: walletDetailsTitle.bottom
                     topMargin: 10
-                    leftMargin: sideBodyMargin
+                    leftMargin: horBodyMargin
                 }
                 Text {
                     id: availableLabel
@@ -374,15 +302,15 @@ Rectangle {
                 clip: true
                 anchors {
                     left: balanceTitlesColumn.right
-                    top: walletDetailsSeparator.bottom
+                    top: walletDetailsTitle.bottom
                     topMargin: 10
                     leftMargin: 0
                     right: parent.right
-                    rightMargin: sideBodyMargin
+                    rightMargin: horBodyMargin
                 }
                 Text {
                     id: availableValue
-                    text: _walletModel.balance.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
+                    text: _walletModel.balance.toLocaleString(Qt.locale(), 'f', 2) + qsTr(" GRC")
                     color: MMPTheme.lightTextColor
                     horizontalAlignment: Text.AlignRight
                     anchors.right: parent.right
@@ -390,7 +318,7 @@ Rectangle {
 
                 Text {
                     id: stakeValue
-                    text: _walletModel.stake.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
+                    text: _walletModel.stake.toLocaleString(Qt.locale(), 'f', 2) + qsTr(" GRC")
                     color: MMPTheme.lightTextColor
                     horizontalAlignment: Text.AlignRight
                     anchors.right: parent.right
@@ -398,7 +326,7 @@ Rectangle {
 
                 Text {
                     id: unconfirmedValue
-                    text: _walletModel.unconfirmedBalance.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
+                    text: _walletModel.unconfirmedBalance.toLocaleString(Qt.locale(), 'f', 2) + qsTr(" GRC")
                     color: MMPTheme.lightTextColor
                     horizontalAlignment: Text.AlignRight
                     anchors.right: parent.right
@@ -406,7 +334,7 @@ Rectangle {
 
                 Text {
                     id: totalValue
-                    text: balanceValuesColumn.total.toLocaleString(Qt.locale(), 'f', 8) + qsTr(" GRC")
+                    text: balanceValuesColumn.total.toLocaleString(Qt.locale(), 'f', 2) + qsTr(" GRC")
                     color: MMPTheme.lightTextColor
                     font.weight: Font.DemiBold
                     horizontalAlignment: Text.AlignRight
@@ -422,7 +350,7 @@ Rectangle {
             width: parent.width
             height: networkStateTitle.implicitHeight+networkStateTitle.anchors.topMargin+
                     networkTitlesColumn.height+networkTitlesColumn.anchors.topMargin+
-                    bottomBodyMargin+topBodyMargin
+                    vertBodyMargin+vertBodyMargin
 
             PanelTitle {
                 id: networkStateTitle
@@ -431,16 +359,16 @@ Rectangle {
                     left: parent.left
                     right: parent.right
                     top: parent.top
-                    topMargin: topBodyMargin
-                    leftMargin: sideBodyMargin
-                    rightMargin: sideBodyMargin
+                    topMargin: vertBodyMargin
+                    leftMargin: horBodyMargin
+                    rightMargin: horBodyMargin
                 }
 
                 HelpHover{
                     id: networkStateQuestionMarkMouseOver
                     popupWidth: 300
                     verticalPadding: 20
-                    horiontalPadding: sideBodyMargin
+                    horiontalPadding: horBodyMargin
                     text:
                         "
                             <html>
@@ -461,7 +389,6 @@ Rectangle {
                         right: parent.right
                         verticalCenter: parent.verticalCenter
                     }
-
                 }
             }
 
@@ -472,8 +399,8 @@ Rectangle {
                 anchors {
                     left: parent.left
                     top: networkStateTitle.bottom
-                    topMargin: topBodyMargin
-                    leftMargin: sideBodyMargin
+                    topMargin: vertBodyMargin
+                    leftMargin: horBodyMargin
                 }
                 Text {
                     id: blocksLabel
@@ -506,11 +433,18 @@ Rectangle {
                     topMargin: 10
                     leftMargin: 0
                     right: parent.right
-                    rightMargin: sideBodyMargin
+                    rightMargin: horBodyMargin
                 }
                 Text {
                     id: blockValue
-                    text: _clientModel.numBlocks
+                    text: {
+                        if  (_clientModel.numBlocks != _clientModel.numBlocksPeers) {
+                            var percent = Math.round((_clientModel.numBlocks / _clientModel.numBlocksPeers) * 100)
+                            return qsTr("%1 of %2 (%3%)").arg(_clientModel.numBlocks).arg(_clientModel.numBlocksPeers).arg(percent)
+                        } else {
+                            return _clientModel.numBlocks
+                        }
+                    }
                     color: MMPTheme.lightTextColor
                     horizontalAlignment: Text.AlignRight
                     anchors.right: parent.right
@@ -542,11 +476,113 @@ Rectangle {
             }
         }
         Rectangle {
+            id: researcherPanel
+            color: MMPTheme.bodyColor
+            radius: panelRadius
+            width: parent.width
+            height: reseacherTitle.anchors.topMargin + reseacherTitle.height + dataTitlesColumn.anchors.topMargin + dataTitlesColumn.height + 2*vertBodyMargin
+            PanelTitle {
+                id: reseacherTitle
+                text: qsTr("Researcher")
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    top: parent.top
+                    topMargin: vertBodyMargin
+                    leftMargin: horBodyMargin
+                    rightMargin: horBodyMargin
+                }
+                HelpHover{
+                    id: researcherHelp
+                    popupWidth: 300
+                    verticalPadding: 20
+                    horiontalPadding: horBodyMargin
+                    text:
+                        "
+                            <html>
+                            <font color='"+MMPTheme.textColor+"'><b>" + qsTr("Status\:") + "</b></font> " +
+                            qsTr("Current wallet status") + "<br><br>" +
+                            "<font color='"+MMPTheme.textColor+"'><b>" + qsTr("Magnitude") + ":</b></font> " +
+                            qsTr("Relative crunching") + "<br><br>" +
+                            "<font color='"+MMPTheme.textColor+"'><b>" + qsTr("Research Rewards") + ":</b></font> " +
+                            qsTr("Magnitude is a measure of your contribution to BOINC projects, calculated from your share of recent average credit (RAC) across whitelisted projects, and used to determine your daily Gridcoin rewards") + "
+                            </html>
+                        "
+
+                    anchors {
+                        right: parent.right
+                        verticalCenter: parent.verticalCenter
+                    }
+
+                }
+            }
+            Column {
+                id:dataTitlesColumn
+                height: statusLabel.height+magnitudeLabel.height+pendingLabel.height
+                spacing: 4
+                anchors {
+                    left: parent.left
+                    top: reseacherTitle.bottom
+                    topMargin: vertBodyMargin
+                    leftMargin: horBodyMargin
+                }
+                Text {
+                    id: statusLabel
+                    color: MMPTheme.textColor
+                    font.pixelSize: 12
+                    text: qsTr("Status:")
+                }
+                Text {
+                    id: magnitudeLabel
+                    color: MMPTheme.textColor
+                    text: qsTr("Magnitude:")
+                }
+                Text {
+                    id: pendingLabel
+                    color: MMPTheme.textColor
+                    text: qsTr("Pending Rewards:")
+                }
+            }
+            Column {
+                id: dataValuesColumn
+                spacing: 4
+                clip: true
+                anchors {
+                    left: dataTitlesColumn.right
+                    top: reseacherTitle.bottom
+                    topMargin: 10
+                    right: parent.right
+                    rightMargin: horBodyMargin
+                }
+                Text {
+                    id: statusValue
+                    text: _researcherModel.status
+                    color: text != qsTr("Waiting for sync...") ? MMPTheme.highlightColor : MMPTheme.cCarminePink
+                    horizontalAlignment: Text.AlignRight
+                    anchors.right: parent.right
+                }
+                Text {
+                    id: magnitudeValue
+                    text: _researcherModel.magnitude
+                    color: MMPTheme.lightTextColor
+                    horizontalAlignment: Text.AlignRight
+                    anchors.right: parent.right
+                }
+                Text {
+                    id: estRRValue
+                    text: _researcherModel.accrual
+                    color: MMPTheme.lightTextColor
+                    horizontalAlignment: Text.AlignRight
+                    anchors.right: parent.right
+                }
+            }
+        }
+        Rectangle {
             id: latestPollsPanel
             color: MMPTheme.bodyColor
             radius: panelRadius
             width: parent.width
-            height: pollsTitle.anchors.topMargin + pollsTitle.height + pollsInfo.anchors.topMargin + pollsInfo.height + bottomBodyMargin
+            height: pollsTitle.anchors.topMargin + pollsTitle.height + pollsInfo.anchors.topMargin + pollsInfo.height + vertBodyMargin
             PanelTitle {
                 id: pollsTitle
                 text: qsTr("Current Polls")
@@ -554,9 +590,9 @@ Rectangle {
                     left: parent.left
                     right: parent.right
                     top: parent.top
-                    topMargin: topBodyMargin
-                    leftMargin: sideBodyMargin
-                    rightMargin: sideBodyMargin
+                    topMargin: vertBodyMargin
+                    leftMargin: horBodyMargin
+                    rightMargin: horBodyMargin
                 }
             }
             Text {
@@ -568,9 +604,9 @@ Rectangle {
                     top: pollsTitle.bottom
                     left: parent.left
                     right: parent.right
-                    leftMargin: sideBodyMargin
-                    rightMargin: sideBodyMargin
-                    topMargin: topBodyMargin
+                    leftMargin: horBodyMargin
+                    rightMargin: horBodyMargin
+                    topMargin: vertBodyMargin
                 }
             }
         }
@@ -596,9 +632,9 @@ Rectangle {
                 left: parent.left
                 right: parent.right
                 top: parent.top
-                topMargin: topBodyMargin
-                leftMargin: sideBodyMargin
-                rightMargin: sideBodyMargin
+                topMargin: vertBodyMargin
+                leftMargin: horBodyMargin
+                rightMargin: horBodyMargin
             }
         }
         ListView {
@@ -611,10 +647,10 @@ Rectangle {
                 left: parent.left
                 right: parent.right
                 bottom: parent.bottom
-                topMargin: topBodyMargin
-                leftMargin: sideBodyMargin
-                rightMargin: sideBodyMargin
-                bottomMargin: bottomBodyMargin
+                topMargin: vertBodyMargin
+                leftMargin: horBodyMargin
+                rightMargin: horBodyMargin
+                bottomMargin: vertBodyMargin
             }
 
             model: _walletModel.transactionTableModel
