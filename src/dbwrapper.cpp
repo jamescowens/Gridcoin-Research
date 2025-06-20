@@ -450,7 +450,6 @@ bool CTxDB::LoadBlockIndex()
       nBestHeight,
       DateTimeStrFormat("%x %H:%M:%S", pindexBest->GetBlockTime()));
 
-    nLoaded = 0;
     // Verify blocks in the best chain
     int nCheckLevel = gArgs.GetArg("-checklevel", 1);
     int nCheckDepth = gArgs.GetArg( "-checkblocks", 1000);
@@ -460,7 +459,8 @@ bool CTxDB::LoadBlockIndex()
     map<pair<unsigned int, unsigned int>, CBlockIndex*> mapBlockPos;
     for (CBlockIndex* pindex = pindexBest; pindex && pindex->pprev; pindex = pindex->pprev)
     {
-        if (fRequestShutdown || pindex->nHeight < nBestHeight-nCheckDepth)
+        int nCurrentDepth = nBestHeight - pindex->nHeight + 1;
+        if (fRequestShutdown || nCurrentDepth > nCheckDepth)
             break;
         CBlock block;
         if (!ReadBlockFromDisk(block, pindex, Params().GetConsensus()))
@@ -470,12 +470,9 @@ bool CTxDB::LoadBlockIndex()
 
         if(fQtActive)
         {
-            if ((pindex->nHeight % 1000) == 0)
+            if ((nCurrentDepth % 1000) == 0)
             {
-                nLoaded +=1000;
-                if (nLoaded > nHighest) nHighest=nLoaded;
-                if (nHighest < nGrandfather) nHighest=nGrandfather;
-                uiInterface.InitMessage(strprintf("%" PRId64 "/%" PRId64 " %s", nLoaded, nHighest, _("Blocks Verified")));
+                uiInterface.InitMessage(strprintf("%" PRId64 "/%" PRId64 " %s", nCurrentDepth, nCheckDepth, _("Blocks Verified")));
             }
         }
 
