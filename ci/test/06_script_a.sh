@@ -20,6 +20,11 @@ END_FOLD
 DOCKER_EXEC mkdir -p "${BASE_BUILD_DIR}"
 export P_CI_DIR="${BASE_BUILD_DIR}"
 
+if [ -z "$NO_DEPENDS" ]; then # Only if depends are being used
+  DOCKER_EXEC export PKG_CONFIG_PATH="${DEPENDS_DIR}/${HOST}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+  DOCKER_EXEC echo "PKG_CONFIG_PATH set to: ${PKG_CONFIG_PATH}" # For debugging
+fi
+
 BEGIN_FOLD configure
 DOCKER_EXEC "${BASE_ROOT_DIR}/configure" --cache-file=config.cache $GRIDCOIN_CONFIG_ALL $GRIDCOIN_CONFIG || ( (DOCKER_EXEC cat config.log) && false)
 END_FOLD
