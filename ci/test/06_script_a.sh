@@ -6,9 +6,16 @@
 
 export LC_ALL=C.UTF-8
 
+# Define common configuration flags for Autotools.
+# These set the installation prefixes for binaries and libraries to the depends output directory.
 GRIDCOIN_CONFIG_ALL="--disable-dependency-tracking --prefix=$DEPENDS_DIR/$HOST --bindir=$BASE_OUTDIR/bin --libdir=$BASE_OUTDIR/lib"
+
+# Zero out ccache statistics and set its maximum size for the current build.
 DOCKER_EXEC "ccache --zero-stats --max-size=$CCACHE_SIZE"
 
+# --- Autogen Step ---
+# Run the autogen.sh script to generate configure and other build system files.
+# This step is conditional on whether CONFIG_SHELL is defined.
 BEGIN_FOLD autogen
 if [ -n "$CONFIG_SHELL" ]; then
   DOCKER_EXEC "$CONFIG_SHELL" -c "./autogen.sh"
@@ -17,43 +24,81 @@ else
 fi
 END_FOLD
 
+# Create the base build directory if it doesn't exist.
 DOCKER_EXEC mkdir -p "${BASE_BUILD_DIR}"
+# Set the current CI directory context.
 export P_CI_DIR="${BASE_BUILD_DIR}"
 
-# We need to run these commands in a single DOCKER_EXEC call
-# to ensure PKG_CONFIG_PATH is set for the configure command.
+# --- First Configure Pass (in BASE_ROOT_DIR) ---
+# This block handles the initial configure script execution.
+# It ensures PKG_CONFIG_PATH is correctly set for depends-based builds
+# and clears the config.cache to prevent "environment changed" errors.
+
+# Clear the config.cache before running configure to ensure a clean state.
+# This prevents errors if environment variables like PKG_CONFIG_PATH change between runs.
+DOCKER_EXEC rm -f config.cache
+
 if [ -z "$NO_DEPENDS" ]; then
+  # If NO_DEPENDS is NOT set (meaning depends are used, e.g., cross-compilation),
+  # we export PKG_CONFIG_PATH within the same DOCKER_EXEC subshell as configure.
   DOCKER_EXEC bash -c "
     export PKG_CONFIG_PATH=\"${DEPENDS_DIR}/${HOST}/lib/pkgconfig:\$PKG_CONFIG_PATH\"
-    echo \"PKG_CONFIG_PATH set to: \$PKG_CONFIG_PATH\"
+    echo \"PKG_CONFIG_PATH set for first configure: \$PKG_CONFIG_PATH\"
     \"${BASE_ROOT_DIR}/configure\" --cache-file=config.cache ${GRIDCOIN_CONFIG_ALL} ${GRIDCOIN_CONFIG} || ( (cat config.log) && false)
   "
 else
-  # If no depends, run configure directly without setting PKG_CONFIG_PATH
+  # If NO_DEPENDS IS set (meaning system libs are used, e.g., native builds),
+  # run configure directly without modifying PKG_CONFIG_PATH.
   DOCKER_EXEC "${BASE_ROOT_DIR}/configure" --cache-file=config.cache ${GRIDCOIN_CONFIG_ALL} ${GRIDCOIN_CONFIG} || ( (cat config.log) && false)
 fi
 
-BEGIN_FOLD configure
-DOCKER_EXEC "${BASE_ROOT_DIR}/configure" --cache-file=config.cache $GRIDCOIN_CONFIG_ALL $GRIDCOIN_CONFIG || ( (DOCKER_EXEC cat config.log) && false)
-END_FOLD
-
+# --- Make Distdir Step ---
+# Create a distribution tarball of the source code.
 BEGIN_FOLD distdir
 DOCKER_EXEC make distdir VERSION=$HOST
 END_FOLD
 
+# Update the current CI directory context to the newly created distdir.
 export P_CI_DIR="${BASE_BUILD_DIR}/gridcoin-$HOST"
 
-BEGIN_FOLD configure
-DOCKER_EXEC ./configure --cache-file=../config.cache $GRIDCOIN_CONFIG_ALL $GRIDCOIN_CONFIG || ( (DOCKER_EXEC cat config.log) && false)
-END_FOLD
+# --- Second Configure Pass (in distdir) ---
+# This block handles the configure script execution within the distribution directory.
+# It also ensures PKG_CONFIG_PATH is correctly set and clears config.cache.
 
+# Push the current directory onto the stack, then change to the build directory (distdir).
+# This is crucial for running the second configure within the correct context.
+DOCKER_EXEC pushd "${BASE_BUILD_DIR}/gridcoin-${HOST}" >/dev/null
+
+# Clear the config.cache within the distdir before its configure run.
+DOCKER_EXEC rm -f config.cache
+
+if [ -z "$NO_DEPENDS" ]; then
+  # If NO_DEPENDS is NOT set, set PKG_CONFIG_PATH within the same DOCKER_EXEC subshell.
+  DOCKER_EXEC bash -c "
+    export PKG_CONFIG_PATH=\"${DEPENDS_DIR}/${HOST}/lib/pkgconfig:\$PKG_CONFIG_PATH\"
+    echo \"PKG_CONFIG_PATH set for second configure: \$PKG_CONFIG_PATH\"
+    ./configure --cache-file=../config.cache ${GRIDCOIN_CONFIG_ALL} ${GRIDCOIN_CONFIG} || ( (cat config.log) && false)
+  "
+else
+  # If NO_DEPENDS IS set, run configure directly.
+  DOCKER_EXEC ./configure --cache-file=../config.cache ${GRIDCOIN_CONFIG_ALL} ${GRIDCOIN_CONFIG} || ( (cat config.log) && false)
+fi
+# Pop back to the previous directory (BASE_BUILD_DIR).
+DOCKER_EXEC popd >/dev/null
+
+# --- Error Trace Trap (for Sanitizer Output) ---
+# Set up a trap to output sanitizer logs if the build fails.
 set -o errtrace
 trap 'DOCKER_EXEC "cat ${BASE_SCRATCH_DIR}/sanitizer-output/* 2> /dev/null"' ERR
 
+# --- Build Step ---
+# Compile the project using make. If it fails, rerun with verbose output for debugging.
 BEGIN_FOLD build
 DOCKER_EXEC make $MAKEJOBS $GOAL || ( echo "Build failure. Verbose build follows." && DOCKER_EXEC make $GOAL V=1 ; false )
 END_FOLD
 
+# --- Cache Statistics ---
+# Display ccache statistics and disk usage of depends and previous releases directories.
 BEGIN_FOLD cache_stats
 DOCKER_EXEC "ccache --version | head -n 1 && ccache --show-stats"
 DOCKER_EXEC du -sh "${DEPENDS_DIR}"/*/
