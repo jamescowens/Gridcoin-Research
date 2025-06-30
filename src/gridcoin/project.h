@@ -188,7 +188,7 @@ public:
     std::optional<bool> HasGDPRControls() const;
 
     //!
-    //! \brief Returns true if project requires an externel adapter for statistics collection.
+    //! \brief Returns true if project requires an external adapter for statistics collection.
     //!
     std::optional<bool> RequiresExtAdapter() const;
 
@@ -616,7 +616,7 @@ public:
         //! v3 superblock history is less than 7, the WAS will be equal to 1.0 unless there are no collected statistics
         //! on two superblocks during that interval, in which case the WAS will be 0.0.
         //!
-        //! \return Fraction of Work Availablity Score.
+        //! \return Fraction of Work Availability Score.
         //!
         Fraction GetWAS()
         {

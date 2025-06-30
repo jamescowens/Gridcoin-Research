@@ -231,7 +231,7 @@ Fraction Poll::ResolveMagnitudeWeightFactor(CBlockIndex *index) const
     // Find the current protocol entry value for Magnitude Weight Factor, if it exists.
     ProtocolEntryOption protocol_entry = GetProtocolRegistry().TryLastBeforeTimestamp("magnitudeweightfactor", m_timestamp);
 
-    // If their is an entry prior or equal in timestemp to the start of the poll and it is active then set the magnitude weight
+    // If their is an entry prior or equal in timestamp to the start of the poll and it is active then set the magnitude weight
     // factor to that value. If the last entry is not active (i.e. deleted), then leave at the default.
     if (protocol_entry != nullptr && protocol_entry->m_status == ProtocolEntryStatus::ACTIVE) {
         magnitude_weight_factor = Fraction().FromString(protocol_entry->m_value);
