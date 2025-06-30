@@ -20,9 +20,17 @@ END_FOLD
 DOCKER_EXEC mkdir -p "${BASE_BUILD_DIR}"
 export P_CI_DIR="${BASE_BUILD_DIR}"
 
-if [ -z "$NO_DEPENDS" ]; then # Only if depends are being used
-  DOCKER_EXEC export PKG_CONFIG_PATH="${DEPENDS_DIR}/${HOST}/lib/pkgconfig:${PKG_CONFIG_PATH}"
-  DOCKER_EXEC echo "PKG_CONFIG_PATH set to: ${PKG_CONFIG_PATH}" # For debugging
+# We need to run these commands in a single DOCKER_EXEC call
+# to ensure PKG_CONFIG_PATH is set for the configure command.
+if [ -z "$NO_DEPENDS" ]; then
+  DOCKER_EXEC bash -c "
+    export PKG_CONFIG_PATH=\"${DEPENDS_DIR}/${HOST}/lib/pkgconfig:\$PKG_CONFIG_PATH\"
+    echo \"PKG_CONFIG_PATH set to: \$PKG_CONFIG_PATH\"
+    \"${BASE_ROOT_DIR}/configure\" --cache-file=config.cache ${GRIDCOIN_CONFIG_ALL} ${GRIDCOIN_CONFIG} || ( (cat config.log) && false)
+  "
+else
+  # If no depends, run configure directly without setting PKG_CONFIG_PATH
+  DOCKER_EXEC "${BASE_ROOT_DIR}/configure" --cache-file=config.cache ${GRIDCOIN_CONFIG_ALL} ${GRIDCOIN_CONFIG} || ( (cat config.log) && false)
 fi
 
 BEGIN_FOLD configure
