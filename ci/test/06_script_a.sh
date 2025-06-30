@@ -85,7 +85,6 @@ else
   "
 fi
 
-
 # --- Error Trace Trap (for Sanitizer Output) ---
 # Set up a trap to output sanitizer logs if the build fails.
 set -o errtrace
@@ -93,9 +92,24 @@ trap 'DOCKER_EXEC "cat ${BASE_SCRATCH_DIR}/sanitizer-output/* 2> /dev/null"' ERR
 
 # --- Build Step ---
 # Compile the project using make. If it fails, rerun with verbose output for debugging.
-BEGIN_FOLD build
-DOCKER_EXEC make $MAKEJOBS $GOAL || ( echo "Build failure. Verbose build follows." && DOCKER_EXEC make $GOAL V=1 ; false )
-END_FOLD
+# This ensures that zlib is linked after Boost libraries that depend on it.
+# This appends -lz to the LDFLAGS just before the main build.
+# This should happen within the DOCKER_EXEC context for the build.
+if [ -z "$NO_DEPENDS" ]; then
+  # For depends builds, prepend depends-built zlib path and library.
+  DOCKER_EXEC bash -c "
+    export LDFLAGS=\"\$LDFLAGS -L${DEPENDS_DIR}/${HOST}/lib -lz\"
+    echo \"Adjusted LDFLAGS for build: \$LDFLAGS\"
+    make \$MAKEJOBS \$GOAL || ( echo \"Build failure. Verbose build follows.\" && make \$GOAL V=1 ; false )
+  "
+else
+  # For non-depends builds, use system zlib
+  DOCKER_EXEC bash -c "
+    export LDFLAGS=\"\$LDFLAGS -lz\"
+    echo \"Adjusted LDFLAGS for build: \$LDFLAGS\"
+    make \$MAKEJOBS \$GOAL || ( echo \"Build failure. Verbose build follows.\" && make \$GOAL V=1 ; false )
+  "
+fi
 
 # --- Cache Statistics ---
 # Display ccache statistics and disk usage of depends and previous releases directories.
