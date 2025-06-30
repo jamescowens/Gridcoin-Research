@@ -16,3 +16,8 @@ export RUN_UNIT_TESTS=false
 export RUN_FUNCTIONAL_TESTS=false
 export GOAL="deploy"
 export GRIDCOIN_CONFIG="--with-gui --enable-reduce-exports"
+
+# Set the macOS deployment target for the depends build.
+# This ensures that libraries compiled by 'depends' are compatible with the target macOS version.
+# The value '10.14' matches the '-mmacos-version-min=10.14' used in CFLAGS/CXXFLAGS.
+export DEP_OPTS="MACOSX_DEPLOYMENT_TARGET=10.14"
