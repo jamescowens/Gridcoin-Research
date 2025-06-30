@@ -92,24 +92,33 @@ trap 'DOCKER_EXEC "cat ${BASE_SCRATCH_DIR}/sanitizer-output/* 2> /dev/null"' ERR
 
 # --- Build Step ---
 # Compile the project using make. If it fails, rerun with verbose output for debugging.
+# --- Adjust LDFLAGS and CPPFLAGS for linking and compilation issues ---
 # This ensures that zlib is linked after Boost libraries that depend on it.
-# This appends -lz to the LDFLAGS just before the main build.
+# This also suppresses 'sprintf' deprecation warnings from Boost headers.
 # This should happen within the DOCKER_EXEC context for the build.
 if [ -z "$NO_DEPENDS" ]; then
-  # For depends builds, prepend depends-built zlib path and library.
+  # For depends builds, prepend depends-built zlib path and library,
+  # and add warning suppression for Boost/system headers.
   DOCKER_EXEC bash -c "
     export LDFLAGS=\"\$LDFLAGS -L${DEPENDS_DIR}/${HOST}/lib -lz\"
+    # Suppress -Wdeprecated-declarations warnings, especially from Boost and system headers.
+    export CPPFLAGS=\"\$CPPFLAGS -Wno-deprecated-declarations\"
     echo \"Adjusted LDFLAGS for build: \$LDFLAGS\"
+    echo \"Adjusted CPPFLAGS for build: \$CPPFLAGS\"
     make \$MAKEJOBS \$GOAL || ( echo \"Build failure. Verbose build follows.\" && make \$GOAL V=1 ; false )
   "
 else
-  # For non-depends builds, use system zlib
+  # For non-depends builds, use system zlib and add warning suppression.
   DOCKER_EXEC bash -c "
     export LDFLAGS=\"\$LDFLAGS -lz\"
+    # Suppress -Wdeprecated-declarations warnings, especially from Boost and system headers.
+    export CPPFLAGS=\"\$CPPFLAGS -Wno-deprecated-declarations\"
     echo \"Adjusted LDFLAGS for build: \$LDFLAGS\"
+    echo \"Adjusted CPPFLAGS for build: \$CPPFLAGS\"
     make \$MAKEJOBS \$GOAL || ( echo \"Build failure. Verbose build follows.\" && make \$GOAL V=1 ; false )
   "
 fi
+# --- END ADJUSTMENT ---
 
 # --- Cache Statistics ---
 # Display ccache statistics and disk usage of depends and previous releases directories.
