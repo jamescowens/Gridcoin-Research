@@ -63,28 +63,28 @@ export P_CI_DIR="${BASE_BUILD_DIR}/gridcoin-$HOST"
 
 # --- Second Configure Pass (in distdir) ---
 # This block handles the configure script execution within the distribution directory.
-# It also ensures PKG_CONFIG_PATH is correctly set and clears config.cache.
+# It also ensures PKG_CONFIG_PATH is correctly set and clears config.cache,
+# all within a single DOCKER_EXEC invocation.
 
-# Push the current directory onto the stack, then change to the build directory (distdir).
-# This is crucial for running the second configure within the correct context.
-DOCKER_EXEC pushd "${BASE_BUILD_DIR}/gridcoin-${HOST}" >/dev/null
-
-# Clear the config.cache within the distdir before its configure run.
-DOCKER_EXEC rm -f config.cache
-
+# Perform the operations in the distdir within a single DOCKER_EXEC call.
 if [ -z "$NO_DEPENDS" ]; then
-  # If NO_DEPENDS is NOT set, set PKG_CONFIG_PATH within the same DOCKER_EXEC subshell.
   DOCKER_EXEC bash -c "
-    export PKG_CONFIG_PATH=\"${DEPENDS_DIR}/${HOST}/lib/pkgconfig:\$PKG_CONFIG_PATH\"
-    echo \"PKG_CONFIG_PATH set for second configure: \$PKG_CONFIG_PATH\"
-    ./configure --cache-file=../config.cache ${GRIDCOIN_CONFIG_ALL} ${GRIDCOIN_CONFIG} || ( (cat config.log) && false)
+    pushd \"${BASE_BUILD_DIR}/gridcoin-${HOST}\" >/dev/null && \
+    rm -f config.cache && \
+    export PKG_CONFIG_PATH=\"${DEPENDS_DIR}/${HOST}/lib/pkgconfig:\$PKG_CONFIG_PATH\" && \
+    echo \"PKG_CONFIG_PATH set for second configure: \$PKG_CONFIG_PATH\" && \
+    ./configure --cache-file=../config.cache ${GRIDCOIN_CONFIG_ALL} ${GRIDCOIN_CONFIG} || ( (cat config.log) && false) && \
+    popd >/dev/null
   "
 else
-  # If NO_DEPENDS IS set, run configure directly.
-  DOCKER_EXEC ./configure --cache-file=../config.cache ${GRIDCOIN_CONFIG_ALL} ${GRIDCOIN_CONFIG} || ( (cat config.log) && false)
+  DOCKER_EXEC bash -c "
+    pushd \"${BASE_BUILD_DIR}/gridcoin-${HOST}\" >/dev/null && \
+    rm -f config.cache && \
+    ./configure --cache-file=../config.cache ${GRIDCOIN_CONFIG_ALL} ${GRIDCOIN_CONFIG} || ( (cat config.log) && false) && \
+    popd >/dev/null
+  "
 fi
-# Pop back to the previous directory (BASE_BUILD_DIR).
-DOCKER_EXEC popd >/dev/null
+
 
 # --- Error Trace Trap (for Sanitizer Output) ---
 # Set up a trap to output sanitizer logs if the build fails.
