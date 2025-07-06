@@ -580,10 +580,7 @@ public:
         {
             // Populate the initial historical entry from the initial baseline.
             UpdateHistoryEntry entry = UpdateHistoryEntry(0,
-                                                          TC_initial_bookmark,
-                                                          std::optional<uint8_t>(),
-                                                          std::optional<Fraction>(),
-                                                          std::optional<bool>());
+                                                          TC_initial_bookmark);
 
             m_update_history.push_back(entry);
         }
@@ -703,7 +700,7 @@ public:
             m_meets_greylisting_crit = (sb_from_baseline >= 7 && (zcd > 7 || was < Fraction(1, 10)));
 
             // Insert historical entry.
-            UpdateHistoryEntry entry(sb_from_baseline, total_credit, zcd, was, m_meets_greylisting_crit);
+            UpdateHistoryEntry entry(sb_from_baseline, total_credit);
             m_update_history.push_back(entry);
         }
 
@@ -717,27 +714,15 @@ public:
             //!
             //! \param sb_from_baseline_processed
             //! \param total_credit
-            //! \param zcd
-            //! \param was
-            //! \param meets_greylisting_crit
             //!
             UpdateHistoryEntry(uint8_t sb_from_baseline_processed,
-                               std::optional<uint64_t>total_credit,
-                               std::optional<uint8_t> zcd,
-                               std::optional<Fraction> was,
-                               std::optional<bool> meets_greylisting_crit)
+                               std::optional<uint64_t>total_credit)
                 : m_sb_from_baseline_processed(sb_from_baseline_processed)
                 , m_total_credit(total_credit)
-                , m_zcd(zcd)
-                , m_was(was)
-                , m_meets_greylisting_crit(meets_greylisting_crit)
             {}
 
             uint8_t m_sb_from_baseline_processed;
             std::optional<uint64_t> m_total_credit;
-            std::optional<uint8_t> m_zcd;
-            std::optional<Fraction> m_was;
-            std::optional<bool> m_meets_greylisting_crit;
         };
 
         //!

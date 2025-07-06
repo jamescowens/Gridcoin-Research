@@ -2824,24 +2824,6 @@ UniValue getautogreylist(const UniValue& params, bool fHelp)
                     historical_entry.pushKV("total_credit", "NA");
                 }
 
-                if (hist_entry.m_zcd) {
-                    historical_entry.pushKV("zcd", *hist_entry.m_zcd);
-                } else {
-                    historical_entry.pushKV("zcd", "NA");
-                }
-
-                if (hist_entry.m_was) {
-                    historical_entry.pushKV("was", hist_entry.m_was->ToDouble());
-                } else {
-                    historical_entry.pushKV("was", "NA");
-                }
-
-                if (hist_entry.m_meets_greylisting_crit) {
-                    historical_entry.pushKV("meets_greylisting_criteria", *hist_entry.m_meets_greylisting_crit);
-                } else {
-                    historical_entry.pushKV("meets_greylisting_criteria", "NA");
-                }
-
                 entry_history.push_back(historical_entry);
             }
 
