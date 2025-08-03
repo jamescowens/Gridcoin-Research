@@ -34,7 +34,7 @@ class ClientModel : public QObject
     // Q_PROPERTY(quint64 totalBytesRecv READ getTotalBytesRecv NOTIFY bytesChanged)
     // Q_PROPERTY(quint64 totalBytesSent READ getTotalBytesSent NOTIFY bytesChanged)
 
-    // Q_PROPERTY(bool isTestNet READ isTestNet CONSTANT)
+    Q_PROPERTY(bool isTestNet READ isTestNet CONSTANT)
     // Q_PROPERTY(bool inInitialBlockDownload READ inInitialBlockDownload CONSTANT)
 
     Q_PROPERTY(QString statusBarWarnings READ getStatusBarWarnings NOTIFY numBlocksChanged)

@@ -21,6 +21,31 @@ Rectangle {
         }
     }
 
+    Rectangle {
+        id: testNetRect
+        color: MMPTheme.cCarminePink
+        width: visible ? testNetText.implicitWidth + 10 : 0
+        height: testNetText.implicitHeight + 5
+        radius: 4
+        visible: _clientModel.isTestNet
+        anchors {
+            left: parent.left
+            verticalCenter: parent.verticalCenter
+            leftMargin: 5
+        }
+        Text {
+            id: testNetText
+            text: qsTr("TESTNET")
+            font.pixelSize: 10
+            font.weight: Font.Bold
+            anchors {
+                verticalCenter: parent.verticalCenter
+                left: parent.left
+                leftMargin: 5
+            }
+        }
+    }
+
     Text {
         id: clientMessage
         text: _clientModel.statusBarWarnings
@@ -28,7 +53,7 @@ Rectangle {
         font.pixelSize: 10
         clip: true
         anchors {
-            left: parent.left
+            left: testNetRect.right
             right: iconsRow.left
             verticalCenter: parent.verticalCenter
             leftMargin: 5
