@@ -315,7 +315,9 @@ endif()
 
 # Check symbols
 check_symbol_exists(fork "unistd.h" HAVE_DECL_FORK)
+list(APPEND CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
 check_symbol_exists(pipe2 "unistd.h" HAVE_DECL_PIPE2)
+list(REMOVE_ITEM CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
 check_symbol_exists(setsid "unistd.h" HAVE_DECL_SETSID)
 
 check_symbol_exists(le16toh "${ENDIAN_INCLUDES}" HAVE_DECL_LE16TOH)
