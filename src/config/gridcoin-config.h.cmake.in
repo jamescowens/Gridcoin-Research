@@ -34,6 +34,10 @@
 #cmakedefine HAVE_SYS_ENDIAN_H
 #cmakedefine HAVE_SYS_PRCTL_H
 
+#cmakedefine01 HAVE_DECL_FORK
+#cmakedefine01 HAVE_DECL_PIPE2
+#cmakedefine01 HAVE_DECL_SETSID
+
 #cmakedefine01 HAVE_DECL_LE16TOH
 #cmakedefine01 HAVE_DECL_LE32TOH
 #cmakedefine01 HAVE_DECL_LE64TOH
