@@ -1,11 +1,12 @@
 /*
-    Overview view for wallets in researcher mode.
+    Overview view. The front page of the wallet
 */
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Controls.Material 2.15
 import QtQuick.Layouts
 import MMPTheme 1.0
+
 Rectangle {
     id: main
     color: MMPTheme.backgroundColor
