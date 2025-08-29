@@ -633,6 +633,8 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
     
     InitializationModel initModel;
     initRef = &initModel;
+    // If -min option passed, start window minimized.
+    initModel.setStartMinimized(gArgs.GetBoolArg("-min"));
 
     // Subscribe to global signals from core
     uiInterface.ThreadSafeMessageBox_connect(ThreadSafeMessageBox);
@@ -670,7 +672,7 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
     engine.rootContext()->setContextProperty("_initModel", &initModel);
     
     engine.load(url);
-    
+
     if (gArgs.GetBoolArg("-splash", true) && !gArgs.GetBoolArg("-min"))
     {
         initModel.showSplashScreen();
@@ -723,16 +725,8 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
                 engine.rootContext()->setContextProperty("_researcherModel", &researcherModel);
                 engine.rootContext()->setContextProperty("_mrcModel", &mrcModel);
                 engine.rootContext()->setContextProperty("_votingModel", &votingModel);
-                
-                // If -min option passed, start window minimized.
-                if(gArgs.GetBoolArg("-min"))
-                {
-                    window.showMinimized();
-                }
-                else
-                {
-                    window.show();
-                }
+
+                initModel.setDoneLoading(true);
 
                 // Place this here as guiref has to be defined if we don't want to lose URIs
                 ipcInit(argc, argv);

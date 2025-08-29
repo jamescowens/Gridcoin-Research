@@ -9,9 +9,26 @@ import Qt.labs.platform 1.1
 Item {
     id: root
 
+    property MainWindow mainWindow: null
+
     Connections {
         target: _initModel
         function onShowSplashScreen() { showSplashScreen() }
+        function onDoneLoading() { 
+            if (_initModel.startMinimized) {
+                showMainWindowMinimized()
+            } else {
+                showMainWindow()
+            }
+        }
+    }
+    Connections {
+        target: Qt.application
+        function onStateChanged() {
+            if (state == Qt.ApplicationActive && _initModel.initializationDone) {
+                showMainWindow()
+            }
+        }
     }
 
     SystemTrayIcon {
@@ -60,15 +77,29 @@ Item {
     function showSplashScreen() {
         var component = Qt.createComponent("SplashScreen.qml")
         var windowObj = component.createObject(root)
-        windowObj.splashClosing.connect(showMainWindow)
         windowObj.show()
     }
 
    function showMainWindow() {
-       var component = Qt.createComponent("MainWindow.qml")
-       var windowObj = component.createObject(root, {opacity: 0})
-       windowObj.show()
-       windowObj.opacity = 1
+        createMainWindow()
+        mainWindow.show()
+        mainWindow.raise()
+        mainWindow.requestActivate()
+   }
+
+   function showMainWindowMinimized() {
+        createMainWindow()
+        mainWindow.visibility = Window.Minimized
+   }
+
+   function createMainWindow() {
+        if (!mainWindow) {
+            var component = Qt.createComponent("MainWindow.qml")
+            mainWindow = component.createObject(root)
+            mainWindow.onClosing.connect(function() {
+                mainWindow = null
+            })
+        }
    }
 
    function showOnboardingWindow() {

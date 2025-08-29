@@ -14,11 +14,9 @@ Window {
     visible: true
     color: "transparent"
 
-    signal splashClosing
-
     Connections {
         target: _initModel
-        function onHideSplashScreen() { fadeOut.start() }
+        function onDoneLoading() { splashScreen.close() }
     }
 
     Rectangle {
@@ -33,20 +31,6 @@ Window {
         }
     }
 
-    function closeSplashScreen() {
-        splashClosing()
-        splashScreen.close()
-    }
-    NumberAnimation {
-        id: fadeOut
-        target: splashScreen
-        properties: "opacity"
-        duration: 1000
-        from: 1
-        to: 0
-        running: false
-        onFinished: closeSplashScreen()
-    }
     Basic.ProgressBar {
         id: blockProgressBar
         value: _initModel.total === 0 ? 0 : _initModel.loaded / _initModel.total

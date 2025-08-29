@@ -18,3 +18,12 @@ void InitializationModel::setMessage(const QString &message)
     m_message = message;
     emit messageChanged();
 }
+
+void InitializationModel::setStartMinimized(bool minimized) {
+    m_startMinimized = minimized;
+}
+
+void InitializationModel::setDoneLoading(bool bDone) {
+    m_doneLoading = bDone;
+    emit doneLoading();
+}
