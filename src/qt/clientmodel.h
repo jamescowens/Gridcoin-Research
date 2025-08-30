@@ -28,6 +28,8 @@ class ClientModel : public QObject
     Q_PROPERTY(double difficulty READ getDifficulty NOTIFY difficultyChanged)
     Q_PROPERTY(double networkWeight READ getNetWeight NOTIFY numBlocksChanged)
     Q_PROPERTY(double coinWeight READ getCoinWeight NOTIFY minerStatusChanged)
+
+    Q_PROPERTY(bool inSync READ inSync NOTIFY numBlocksChanged)
     
     // Q_PROPERTY(QDateTime bestBlockTime READ getLastBlockDate NOTIFY numBlocksChanged)
     // Q_PROPERTY(int numConnections READ getNumConnections NOTIFY numConnectionsChanged)
@@ -75,6 +77,8 @@ public:
     QString getStatusBarWarnings() const;
     //! Get miner and staking status warnings
     QString getMinerWarnings() const;
+    //! Is client in sync
+    bool inSync() const;
 
     QString formatFullVersion() const;
     QString clientName() const;
