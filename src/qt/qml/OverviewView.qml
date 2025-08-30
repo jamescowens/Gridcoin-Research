@@ -558,7 +558,7 @@ Rectangle {
                 Text {
                     id: statusValue
                     text: _researcherModel.status
-                    color: text != qsTr("Waiting for sync...") ? MMPTheme.highlightColor : MMPTheme.cCarminePink
+                    color: _clientModel.inSync ? MMPTheme.highlightColor : MMPTheme.cCarminePink
                     horizontalAlignment: Text.AlignRight
                     anchors.right: parent.right
                 }

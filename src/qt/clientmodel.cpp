@@ -236,6 +236,10 @@ QString ClientModel::getMinerWarnings() const
     return QString::fromStdString(g_miner_status.FormatErrors());
 }
 
+bool ClientModel::inSync() const {
+    return !OutOfSyncByAge();
+}
+
 OptionsModel *ClientModel::getOptionsModel()
 {
     return optionsModel;
