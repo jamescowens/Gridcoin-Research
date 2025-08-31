@@ -653,25 +653,25 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
     font.setPixelSize(12);
     app.setFont(font);
 
-    QQmlApplicationEngine engine;
+    auto engine = std::make_unique<QQmlApplicationEngine>();    // Heap allocated so we can destroy early
 
     const QUrl url(QStringLiteral("qrc:/qml/WindowManager.qml"));
-    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
+    QObject::connect(engine.get(), &QQmlApplicationEngine::objectCreated,
                     &app, [url](QObject *obj, const QUrl &objUrl){
         if (!obj && url == objUrl)
             QCoreApplication::exit(-1);
     }, Qt::QueuedConnection);
 
-    QObject::connect(&engine, &QQmlEngine::warnings, [](const QList<QQmlError> &warnings) {
+    QObject::connect(engine.get(), &QQmlEngine::warnings, [](const QList<QQmlError> &warnings) {
         qWarning() << "QML Warnings:";
         for (const QQmlError &error : warnings) {
             qWarning() << error.toString();
         }
     });
 
-    engine.rootContext()->setContextProperty("_initModel", &initModel);
+    engine->rootContext()->setContextProperty("_initModel", &initModel);
     
-    engine.load(url);
+    engine->load(url);
 
     if (gArgs.GetBoolArg("-splash", true) && !gArgs.GetBoolArg("-min"))
     {
@@ -720,11 +720,11 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
                 VotingModel votingModel(clientModel, optionsModel, walletModel);
 
 
-                engine.rootContext()->setContextProperty("_clientModel", &clientModel);
-                engine.rootContext()->setContextProperty("_walletModel", &walletModel);
-                engine.rootContext()->setContextProperty("_researcherModel", &researcherModel);
-                engine.rootContext()->setContextProperty("_mrcModel", &mrcModel);
-                engine.rootContext()->setContextProperty("_votingModel", &votingModel);
+                engine->rootContext()->setContextProperty("_clientModel", &clientModel);
+                engine->rootContext()->setContextProperty("_walletModel", &walletModel);
+                engine->rootContext()->setContextProperty("_researcherModel", &researcherModel);
+                engine->rootContext()->setContextProperty("_mrcModel", &mrcModel);
+                engine->rootContext()->setContextProperty("_votingModel", &votingModel);
 
                 initModel.setDoneLoading(true);
 
@@ -742,10 +742,8 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
 
                 app.exec();
 
-                window.hide();
-                window.setClientModel(nullptr);
-                window.setWalletModel(nullptr);
-                window.setResearcherModel(nullptr);
+                // Cleanup
+                engine.reset();
                 guiref = nullptr;
             }
             // Shutdown the core and its threads, but don't exit Bitcoin-Qt here
