@@ -55,7 +55,7 @@ Window {
         Text {
             id: versionText
             color: MMPTheme.themeSelect(MMPTheme.cLightSlateGray, MMPTheme.cWhite)
-            text: "v5.3.2.0-unk"
+            text: _clientModel.fullVersion
             font.weight: Font.DemiBold
             font.family: "Montserrat"
             anchors {

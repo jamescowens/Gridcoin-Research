@@ -42,7 +42,7 @@ class ClientModel : public QObject
     Q_PROPERTY(QString statusBarWarnings READ getStatusBarWarnings NOTIFY numBlocksChanged)
     Q_PROPERTY(QString minerWarnings READ getMinerWarnings NOTIFY minerStatusChanged)
 
-    // Q_PROPERTY(QString fullVersion READ formatFullVersion CONSTANT)
+    Q_PROPERTY(QString fullVersion READ formatFullVersion CONSTANT)
     // Q_PROPERTY(QString clientName READ clientName CONSTANT)
     // Q_PROPERTY(QString startupTime READ formatClientStartupTime CONSTANT)
     // Q_PROPERTY(QString boostVersion READ formatBoostVersion CONSTANT)
