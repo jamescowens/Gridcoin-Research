@@ -1,12 +1,12 @@
 /*
     A setup window presented to new users guiding them with the new user experience.
 */
-import QtQuick 2.15
-import QtQuick.Window 2.15
-import QtQuick.Layouts 1.15
-import QtQuick.Controls 2.15
+import QtQuick
+import QtQuick.Window
+import QtQuick.Layouts
+import QtQuick.Controls
 import MMPTheme 1.0
-import QtQml 2.15
+import QtQml
 
 Window {
     id: window

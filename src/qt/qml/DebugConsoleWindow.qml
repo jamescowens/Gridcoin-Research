@@ -1,10 +1,10 @@
 /*
     Window providing debug information. May need to be converted to a widget to embed widgets such as network traffic
 */
-import QtQuick 2.15
-import QtQuick.Window 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Window
+import QtQuick.Controls
+import QtQuick.Layouts
 import MMPTheme 1.0
 
 Window {

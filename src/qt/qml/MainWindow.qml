@@ -1,10 +1,10 @@
 /*
     The primary window of the wallet containg the various views and a menu to select from them
 */
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
-import QtQuick.Window 2.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Window
 import MMPTheme 1.0
 ApplicationWindow {
     id: window

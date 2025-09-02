@@ -2,9 +2,9 @@
     A sylized popup showing text.
     Often used in conjuction with the HelpHover class
 */
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Shapes 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Shapes
 import QtQuick.Effects
 import MMPTheme 1.0
 ToolTip {
