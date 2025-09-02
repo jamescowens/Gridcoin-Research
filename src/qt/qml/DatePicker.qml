@@ -1,7 +1,7 @@
 /*
     A popup displaying a calendar allowing for the user selection of a date range
 */
-import QtQuick 2.15
+import QtQuick
 import QtQuick.Controls 1.4 as QC1
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Controls 2.15

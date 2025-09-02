@@ -2,10 +2,10 @@
 A root qml item that allows for the managment of windows, menu bar/tray icon managment
 Acts as the parent item for windows. This is to prevent unwanted garbage collection
 */
-import QtQuick 2.15
-import QtQuick.Window 2.15
-import QtQml 2.15
-import Qt.labs.platform 1.1
+import QtQuick
+import QtQuick.Window
+import QtQml
+import Qt.labs.platform
 Item {
     id: root
 

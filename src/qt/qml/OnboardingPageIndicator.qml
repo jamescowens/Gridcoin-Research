@@ -1,7 +1,7 @@
 /*
     Stylized current page indicator used in the onboarding
 */
-import QtQuick 2.15
+import QtQuick
 import MMPTheme 1.0
 Item {
     id: pageIndicator

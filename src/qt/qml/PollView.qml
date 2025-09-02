@@ -2,8 +2,8 @@
     View showing current and completed polls
     Provides access to poll creation and poll details
 */
-import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick
+import QtQuick.Controls
 import MMPTheme 1.0
 import CurrentTime 1.0
 

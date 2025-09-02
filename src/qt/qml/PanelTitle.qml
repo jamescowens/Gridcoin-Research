@@ -1,7 +1,7 @@
 /*
     A text header with an underline, typically used for a 'panel' of information
 */
-import QtQuick 2.15
+import QtQuick
 import MMPTheme 1.0
 Item {
     id: titleRow

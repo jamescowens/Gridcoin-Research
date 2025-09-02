@@ -1,9 +1,9 @@
 /*
     Splash Screem shown on startup allowing for the wallet to load
 */
-import QtQuick 2.15
-import QtQuick.Window 2.15
-import QtQuick.Controls.Basic 2.15 as Basic
+import QtQuick
+import QtQuick.Window
+import QtQuick.Controls.Basic as Basic
 import MMPTheme 1.0
 
 Window {

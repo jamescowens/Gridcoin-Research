@@ -1,7 +1,7 @@
 /*
     Gradiented rectangle sometimes used at the bottom of a table
 */
-import QtQuick 2.15
+import QtQuick
 import MMPTheme 1.0
 
 Rectangle {
