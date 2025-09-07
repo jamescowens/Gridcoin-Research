@@ -45,6 +45,7 @@
 #include <QLibraryInfo>
 #include <QProcess>
 #include <QDir>
+#include <QFontDatabase>
 
 // This eliminates the linter false positive on double include of QtPlugin
 #if (defined(BITCOIN_NEED_QT_PLUGINS) && !defined(_BITCOIN_QT_PLUGINS_INCLUDED)) || defined(QT_STATICPLUGIN)
@@ -251,6 +252,22 @@ static void handleRunawayException(std::exception *e)
     PrintExceptionContinue(e, "Runaway exception");
     QMessageBox::critical(nullptr, "Runaway exception", BitcoinGUI::tr("A fatal error occurred. Gridcoin can no longer continue safely and will quit.") + QString("\n") + QString::fromStdString(strMiscWarning));
     exit(1);
+}
+
+static void loadFonts(QApplication &app) {
+    QDir dir{":/fonts/"};
+    for (auto file : dir.entryList(QDir::Files))
+    {
+        int id = QFontDatabase::addApplicationFont(dir.absoluteFilePath(file));
+        if (id == -1) {
+            qWarning() << "Failed to load font:" << file;
+            continue;
+        }
+    }
+
+    QFont font = QFont("SF Pro Text");
+    font.setPixelSize(12);
+    app.setFont(font);
 }
 
 #ifndef BITCOIN_QT_TEST
@@ -649,9 +666,7 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
 
     uiInterface.UpdateMessageBox_connect(UpdateMessageBox);
 
-    QFont font = QFont("SF Pro Text");
-    font.setPixelSize(12);
-    app.setFont(font);
+    loadFonts(app);
 
     auto engine = std::make_unique<QQmlApplicationEngine>();    // Heap allocated so we can destroy early
 
@@ -665,6 +680,7 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
     QObject::connect(engine.get(), &QQmlEngine::warnings, [](const QList<QQmlError> &warnings) {
         qWarning() << "QML Warnings:";
         for (const QQmlError &error : warnings) {
+            // Outputs to log
             qWarning() << error.toString();
         }
     });
