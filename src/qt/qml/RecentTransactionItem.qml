@@ -44,7 +44,7 @@ Item {
 
             Text {
                 id: amountLabel
-                text: (amount < 0 ? Qt.locale().negativeSign : Qt.locale().positiveSign) + amount.toLocaleString(Qt.locale(), 'g', 8)
+                text: (amount >= 0 ? Qt.locale().positiveSign : "") + amount.toLocaleString(Qt.locale(), 'g', 8)
                 clip: true
                 color: amount >= 0 ? MMPTheme.cDullLime : MMPTheme.cCarminePink
                 anchors {
