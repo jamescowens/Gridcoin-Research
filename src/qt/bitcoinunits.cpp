@@ -224,6 +224,11 @@ bool BitcoinUnits::parse(int unit, const QString &value, qint64 *val_out)
     return ok;
 }
 
+double BitcoinUnits::halfordsToGrc(CAmount halfords) {
+    return static_cast<double>(halfords) / COIN;
+}
+
+
 int BitcoinUnits::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);

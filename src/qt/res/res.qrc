@@ -251,5 +251,13 @@
         <file>fonts/SF-Pro-Text-Semibold.otf</file>
         <file>fonts/SF-Pro-Text-SemiboldItalic.otf</file>
         <file>icons/generic/ic_no_result.svg</file>
+        <file>icons/events/superblock.svg</file>
+        <file>icons/events/ic_event_purple_red.svg</file>
+        <file>icons/events/ic_event_yellow_red.svg</file>
+        <file>icons/events/ic_event_purple_green.svg</file>
+        <file>icons/events/ic_event_yellow_green.svg</file>
+        <file>icons/events/ic_event_voting.svg</file>
+        <file>icons/events/ic_event_beacon.svg</file>
+        <file>icons/events/ic_event_message.svg</file>
     </qresource>
 </RCC>

@@ -439,8 +439,8 @@ Rectangle {
                 Text {
                     id: blockValue
                     text: {
-                        if  (_clientModel.numBlocks != _clientModel.numBlocksPeers) {
-                            var percent = Math.round((_clientModel.numBlocks / _clientModel.numBlocksPeers) * 100)
+                        if  (_clientModel.numBlocks < _clientModel.numBlocksPeers) {
+                            var percent = Math.floor((_clientModel.numBlocks / _clientModel.numBlocksPeers) * 100)
                             return qsTr("%1 of %2 (%3%)").arg(_clientModel.numBlocks).arg(_clientModel.numBlocksPeers).arg(percent)
                         } else {
                             return _clientModel.numBlocks
@@ -656,10 +656,10 @@ Rectangle {
 
             model: _walletModel.transactionTableModel
             delegate: RecentTransactionItem {
-                amount: model.AmountRole
-                state: model.TypeRoll
-                account: model.AddressRole
-                transactionDate: model.DateRole
+                amount: model.amount
+                icon: model.iconSource
+                account: model.address
+                transactionDate: model.date
             }
             // ScrollIndicator.vertical: ScrollIndicator {
             //     parent: recentTransactionList.parent
