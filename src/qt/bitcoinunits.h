@@ -1,8 +1,9 @@
 #ifndef BITCOIN_QT_BITCOINUNITS_H
 #define BITCOIN_QT_BITCOINUNITS_H
 
-#include <QString>
+#include "amount.h"
 #include <QAbstractListModel>
+#include <QString>
 
 /** Bitcoin unit definitions. Encapsulates parsing and formatting
    and serves as list model for drop-down selection boxes.
@@ -55,6 +56,7 @@ public:
     //! Thin space (U+2009) used as thousands separator in formatted amounts
     static const QChar THIN_SPACE;
     ///@}
+    static double halfordsToGrc(CAmount halfords);
 
     //! @name AbstractListModel implementation
     //! List model for unit drop-down selection box.

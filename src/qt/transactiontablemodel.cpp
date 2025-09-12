@@ -18,6 +18,8 @@
 #include <QDateTime>
 #include <QtAlgorithms>
 
+namespace {
+
 // Amount column is right-aligned it contains numbers
 static int column_alignments[] = {
         Qt::AlignLeft|Qt::AlignVCenter,
@@ -43,6 +45,59 @@ struct TxLessThan
         return a < b.hash;
     }
 };
+
+QString GetIconForTransaction(const TransactionRecord *wtx) {
+    switch(wtx->type)
+    {
+    case TransactionRecord::Generated:
+    {
+        switch (wtx->status.generated_type)
+        {
+        case GRC::MinedType::POS:
+            return "qrc:/icons/events/ic_event_yellow.svg";
+        case GRC::MinedType::POR:
+            return "qrc:/icons/events/ic_event_purple.svg";
+        case GRC::MinedType::ORPHANED:
+            return "qrc:/icons/generic/ic_alert.svg";
+        case GRC::MinedType::POS_SIDE_STAKE_RCV:
+            return "qrc:/icons/events/ic_event_yellow_green.svg";
+        case GRC::MinedType::POR_SIDE_STAKE_RCV:
+            return "qrc:/icons/events/ic_event_purple_green.svg";
+        case GRC::MinedType::POS_SIDE_STAKE_SEND:
+            return "qrc:/icons/events/ic_event_yellow_red.svg";
+        case GRC::MinedType::POR_SIDE_STAKE_SEND:
+            return "qrc:/icons/events/ic_event_purple_red.svg";
+        case GRC::MinedType::MRC_RCV:
+            return "qrc:/icons/events/ic_event_purple_green.svg";
+        case GRC::MinedType::MRC_SEND:
+            return "qrc:/icons/events/ic_event_purple_red.svg";
+        case GRC::MinedType::SUPERBLOCK:
+            return "qrc:/icons/events/superblock.svg";
+        default:
+            return "qrc:/icons/generic/help.svg";
+        }
+    }
+    case TransactionRecord::RecvWithAddress:
+    case TransactionRecord::RecvFromOther:
+        return "qrc:/icons/events/ic_event_green.svg";
+    case TransactionRecord::SendToAddress:
+    case TransactionRecord::SendToOther:
+        return "qrc:/icons/events/ic_event_red.svg";
+    case TransactionRecord::BeaconAdvertisement:
+        return "qrc:/icons/events/ic_event_beacon.svg";
+    case TransactionRecord::Poll:
+    case TransactionRecord::Vote:
+        return "qrc:/icons/events/ic_event_voting.svg";
+    case TransactionRecord::MRC:
+        return "qrc:/icons/events/ic_event_mrc.svg";
+    case TransactionRecord::Message:
+        return "qrc:/icons/events/ic_event_message.svg";
+    default:
+        return "qrc:/icons/events/ic_event_green_red.svg";
+    }
+}
+
+} // namespace
 
 // Private implementation
 class TransactionTablePriv
@@ -733,11 +788,11 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
     case LongDescriptionRole:
         return priv->describe(rec);
     case AddressRole:
-        return QString::fromStdString(rec->address);
+        return formatTxToAddress(rec, false);
     case LabelRole:
         return walletModel->getAddressTableModel()->labelForAddress(QString::fromStdString(rec->address));
     case AmountRole:
-        return rec->credit + rec->debit;
+        return BitcoinUnits::halfordsToGrc(rec->credit + rec->debit);
     case TxIDRole:
         return QString::fromStdString(rec->getTxID());
     case ConfirmedRole:
@@ -746,6 +801,8 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
         return formatTxAmount(rec, false);
     case StatusRole:
         return rec->status.status;
+    case IconSourceRole:
+        return GetIconForTransaction(rec);
     }
     return QVariant();
 }
@@ -794,6 +851,24 @@ QModelIndex TransactionTableModel::index(int row, int column, const QModelIndex 
         return QModelIndex();
     }
 }
+
+QHash<int, QByteArray> TransactionTableModel::roleNames() const
+{
+    QHash<int, QByteArray> roles;
+    roles[TypeRole] = "type";
+    roles[DateRole] = "date";
+    roles[LongDescriptionRole] = "longDescription";
+    roles[AddressRole] = "address";
+    roles[LabelRole] = "label";
+    roles[AmountRole] = "amount";
+    roles[TxIDRole] = "txid";
+    roles[ConfirmedRole] = "confirmed";
+    roles[FormattedAmountRole] = "formattedAmount";
+    roles[StatusRole] = "status";
+    roles[IconSourceRole] = "iconSource";
+    return roles;
+}
+
 
 void TransactionTableModel::updateDisplayUnit()
 {
