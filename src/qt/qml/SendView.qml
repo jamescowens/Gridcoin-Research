@@ -42,7 +42,6 @@ Rectangle {
         }
         Column {
             id: balColumn
-            property real balValue: 54069.27
             anchors {
                 verticalCenter: parent.verticalCenter
                 right: parent.right
@@ -51,7 +50,7 @@ Rectangle {
             }
             Text {
                 id: balanceValue
-                text: balColumn.balValue.toLocaleString(Qt.locale(), 'f', 2)
+                text: _walletModel.balance.toLocaleString(Qt.locale(), 'f', 2)
                 color: MMPTheme.highlightColor
                 font.pixelSize: 18
                 font.weight: Font.Medium
@@ -60,7 +59,7 @@ Rectangle {
             }
             Text {
                 id: balanceLabel
-                text: qsTr("Your Balance")
+                text: qsTr("Available")
                 color: MMPTheme.textColor
                 horizontalAlignment: Text.AllignHCenter
                 font.pixelSize: 10
@@ -87,7 +86,8 @@ Rectangle {
             top: header.bottom
             left: parent.left
             right: parent.right
-            bottom: parent.bottom
+            bottom: bottomControls.top
+            bottomMargin: 10
             topMargin: 10
         }
         Column {
@@ -279,7 +279,7 @@ Rectangle {
                     }
 
                     Item {
-                        id: bottomControls
+                        // id: delegatebottomControls
                         anchors {
                             bottom: parent.bottom
                             right: parent.right
@@ -321,17 +321,6 @@ Rectangle {
                                 leftMargin: 20
                             }
                         }
-                        Button {
-                            id: sendButton
-                            icon.source: MMPTheme.themeSelect("qrc:/icons/buttons/ic_btn_send_light.svg","qrc:/icons/buttons/ic_btn_send_dark.svg")
-                            text: qsTr("Send")
-                            //onPressed: sendTransaction(recipient, message, label, amount)
-                            anchors {
-                                verticalCenter: parent.verticalCenter
-                                right: parent.right
-                                rightMargin: 20
-                            }
-                        }
                     }
                 }
             }
@@ -345,4 +334,51 @@ Rectangle {
             }
         }
     }
+
+    Rectangle {
+        id: bottomControls
+        color: MMPTheme.themeSelect(MMPTheme.cFrostWhite, "#161b24")
+        height: 50
+        radius: 4
+        anchors {
+            bottom: parent.bottom
+            right: parent.right
+            left: parent.left
+            margins: 10
+        }
+        Button {
+            id: removeAllButton
+            icon.source: MMPTheme.themeSelect("qrc:/icons/buttons/ic_btn_remove_light.svg","qrc:/icons/buttons/ic_btn_remove_dark.svg")
+            text: qsTr("Remove All")
+            // onPressed: outputModel.remove(index)
+            anchors {
+                verticalCenter: parent.verticalCenter
+                left: parent.left
+                leftMargin: 20
+            }
+        }
+        Button {
+            id: advancedCoinControlButton
+            icon.source: MMPTheme.themeSelect("qrc:/icons/buttons/ic_btn_sign_light.svg","qrc:/icons/buttons/ic_btn_sign_dark.svg")
+            text: qsTr("Advance Coin Control")
+            anchors {
+                verticalCenter: parent.verticalCenter
+                left: removeAllButton.right
+                leftMargin: 20
+            }
+        }
+
+        Button {
+            id: sendButton
+            icon.source: MMPTheme.themeSelect("qrc:/icons/buttons/ic_btn_send_light.svg","qrc:/icons/buttons/ic_btn_send_dark.svg")
+            text: qsTr("Send")
+            //onPressed: sendTransaction(recipient, message, label, amount)
+            anchors {
+                verticalCenter: parent.verticalCenter
+                right: parent.right
+                rightMargin: 20
+            }
+        }
+    }
+
 }
