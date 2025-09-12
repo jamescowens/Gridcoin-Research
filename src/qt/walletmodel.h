@@ -36,10 +36,10 @@ public:
 class WalletModel : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(qint64 balance READ getBalance NOTIFY balanceChanged)
-    Q_PROPERTY(qint64 stake READ getStake NOTIFY balanceChanged)
-    Q_PROPERTY(qint64 unconfirmedBalance READ getUnconfirmedBalance NOTIFY balanceChanged)
-    Q_PROPERTY(qint64 immatureBalance READ getImmatureBalance NOTIFY balanceChanged)
+    Q_PROPERTY(double balance READ getBalance NOTIFY balanceChanged)
+    Q_PROPERTY(double stake READ getStake NOTIFY balanceChanged)
+    Q_PROPERTY(double unconfirmedBalance READ getUnconfirmedBalance NOTIFY balanceChanged)
+    Q_PROPERTY(double immatureBalance READ getImmatureBalance NOTIFY balanceChanged)
     Q_PROPERTY(int numTransactions READ getNumTransactions NOTIFY numTransactionsChanged)
     Q_PROPERTY(EncryptionStatus encryptionStatus READ getEncryptionStatus NOTIFY encryptionStatusChanged);
 
@@ -74,10 +74,10 @@ public:
     AddressTableModel *getAddressTableModel();
     TransactionTableModel *getTransactionTableModel();
 
-    qint64 getBalance() const;
-    qint64 getStake() const;
-    qint64 getUnconfirmedBalance() const;
-    qint64 getImmatureBalance() const;
+    double getBalance() const;
+    double getStake() const;
+    double getUnconfirmedBalance() const;
+    double getImmatureBalance() const;
     int getNumTransactions() const;
     EncryptionStatus getEncryptionStatus() const;
 
