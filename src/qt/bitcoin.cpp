@@ -254,7 +254,7 @@ static void handleRunawayException(std::exception *e)
     exit(1);
 }
 
-static void loadFonts(QApplication &app) {
+static void loadFonts() {
     QDir dir{":/fonts/"};
     for (auto file : dir.entryList(QDir::Files))
     {
@@ -264,10 +264,6 @@ static void loadFonts(QApplication &app) {
             continue;
         }
     }
-
-    QFont font = QFont("SF Pro Text");
-    font.setPixelSize(12);
-    app.setFont(font);
 }
 
 #ifndef BITCOIN_QT_TEST
@@ -666,7 +662,10 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
 
     uiInterface.UpdateMessageBox_connect(UpdateMessageBox);
 
-    loadFonts(app);
+    loadFonts();
+    QFont font = QFont("SF Pro Text");
+    font.setPixelSize(12);
+    app.setFont(font);
 
     auto engine = std::make_unique<QQmlApplicationEngine>();    // Heap allocated so we can destroy early
 
