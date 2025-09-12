@@ -3,6 +3,7 @@
 #include "optionsmodel.h"
 #include "addresstablemodel.h"
 #include "transactiontablemodel.h"
+#include "bitcoinunits.h"
 
 #include "node/ui_interface.h"
 #include "wallet/wallet.h"
@@ -45,24 +46,24 @@ WalletModel::~WalletModel()
     unsubscribeFromCoreSignals();
 }
 
-qint64 WalletModel::getBalance() const
+double WalletModel::getBalance() const
 {
-    return wallet->GetBalance();
+    return BitcoinUnits::halfordsToGrc(wallet->GetBalance());
 }
 
-qint64 WalletModel::getUnconfirmedBalance() const
+double WalletModel::getUnconfirmedBalance() const
 {
-    return wallet->GetUnconfirmedBalance();
+    return BitcoinUnits::halfordsToGrc(wallet->GetUnconfirmedBalance());
 }
 
-qint64 WalletModel::getStake() const
+double WalletModel::getStake() const
 {
-    return wallet->GetStake();
+    return BitcoinUnits::halfordsToGrc(wallet->GetStake());
 }
 
-qint64 WalletModel::getImmatureBalance() const
+double WalletModel::getImmatureBalance() const
 {
-    return wallet->GetImmatureBalance();
+    return BitcoinUnits::halfordsToGrc(wallet->GetImmatureBalance());
 }
 
 int WalletModel::getNumTransactions() const
