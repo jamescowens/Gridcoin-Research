@@ -228,6 +228,12 @@ double BitcoinUnits::halfordsToGrc(CAmount halfords) {
     return static_cast<double>(halfords) / COIN;
 }
 
+CAmount BitcoinUnits::GrcToHalfords(const QString &grc) {
+    CAmount out;
+    parse(BTC, grc, &out);
+    return out;
+}
+
 
 int BitcoinUnits::rowCount(const QModelIndex &parent) const
 {

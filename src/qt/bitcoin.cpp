@@ -32,6 +32,7 @@
 #include "validation.h"
 #include "decoration.h"
 #include "initializationmodel.h"
+#include "sendcoinscontroller.h"
 
 #include <stdexcept>
 
@@ -733,13 +734,14 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
                 ResearcherModel researcherModel;
                 MRCModel mrcModel(&walletModel, &clientModel, &researcherModel);
                 VotingModel votingModel(clientModel, optionsModel, walletModel);
-
+                SendCoinsController sendCoinsController(walletModel);
 
                 engine->rootContext()->setContextProperty("_clientModel", &clientModel);
                 engine->rootContext()->setContextProperty("_walletModel", &walletModel);
                 engine->rootContext()->setContextProperty("_researcherModel", &researcherModel);
                 engine->rootContext()->setContextProperty("_mrcModel", &mrcModel);
                 engine->rootContext()->setContextProperty("_votingModel", &votingModel);
+                engine->rootContext()->setContextProperty("_sendCoinsController", &sendCoinsController);
 
                 initModel.setDoneLoading(true);
 
