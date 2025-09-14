@@ -57,6 +57,7 @@ public:
     static const QChar THIN_SPACE;
     ///@}
     static double halfordsToGrc(CAmount halfords);
+    static CAmount GrcToHalfords(const QString &grc);
 
     //! @name AbstractListModel implementation
     //! List model for unit drop-down selection box.

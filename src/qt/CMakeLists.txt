@@ -112,7 +112,8 @@ add_library(gridcoinqt STATIC
     voting/votingpage.cpp
     walletmodel.cpp
     winshutdownmonitor.cpp
-    initializationmodel.h initializationmodel.cpp
+    initializationmodel.cpp
+    sendcoinscontroller.cpp
 
     bitcoin.qrc
     bitcoin_locale.qrc

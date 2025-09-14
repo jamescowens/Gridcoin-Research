@@ -3,11 +3,13 @@
 */
 import QtQuick
 import QtQuick.Controls
+import Qt.labs.platform // For MessageDialog. Can be removed Qt 6.3+
 import MMPTheme 1.0
 
 Rectangle {
     id: main
     color: MMPTheme.backgroundColor
+
     Rectangle {
         id: header
         color: MMPTheme.themeSelect(MMPTheme.cWhite, MMPTheme.cSpaceBlack)
@@ -68,15 +70,6 @@ Rectangle {
             }
         }
     }
-    ListModel {
-        id: outputModel
-        ListElement {
-            recipient: ""
-            message: ""
-            label: ""
-            amount: 0
-        }
-    }
     ScrollView {
         //id: scrollView
         clip: true
@@ -103,7 +96,7 @@ Rectangle {
                 id: outputList
                 spacing: 10
                 interactive: false
-                model: outputModel
+                model: _sendCoinsController.recipients
                 height: 170*count+(count-1)*spacing
                 width: parent.width
                 delegate: Rectangle {
@@ -156,9 +149,9 @@ Rectangle {
                     TextField {
                         id: recipientField
                         height: fieldHeight
-                        text: recipient
-                        placeholderText: "Gridcoin Address (eg. SBPvphumk9BmzdLqCBy4b7U62tj39iynLo)"
-                        onTextChanged: outputModel.setProperty(index, "recipient", text)
+                        text: modelData.recipient
+                        placeholderText: "Gridcoin Address (eg. bc3NA8e8E3EoTL1qhRmeprbjWcmuoZ26A2)"
+                        onEditingFinished: _sendCoinsController.updateRecipient(index, {"recipient": text})
                         anchors {
                             verticalCenter: recipientLabel.verticalCenter
                             left: recipientLabel.right
@@ -191,7 +184,8 @@ Rectangle {
                     TextField {
                         id: messageTextField
                         height: fieldHeight
-                        onTextChanged: outputModel.setProperty(index, "message", text)
+                        text: modelData.message
+                        onEditingFinished: _sendCoinsController.updateRecipient(index, {"message": text})
                         anchors {
                             verticalCenter: messageLabel.verticalCenter
                             left: messageLabel.right
@@ -216,7 +210,8 @@ Rectangle {
                         id:labelTextField
                         height: fieldHeight
                         placeholderText: qsTr("Add a label to save it to Favourites")
-                        onTextChanged: outputModel.setProperty(index, "label", text)
+                        text: modelData.label
+                        onEditingFinished: _sendCoinsController.updateRecipient(index, {"label": text})
                         anchors {
                             left: labelLabel.right
                             leftMargin: 10
@@ -237,33 +232,22 @@ Rectangle {
                             rightMargin: 20
                         }
                     }
-                    SpinBox {
-                        id: transactionAmountSpinBox
-                        property real balance: 3.2
-                        property int decimals: 8
-                        property real factor: Math.pow(10, decimals)
+                    TextField {
+                        id: transactionAmountEdit
+                        text: modelData.amount
                         width: 160
-                        focusPolicy: Qt.StrongFocus
-                        editable: true
-                        from: 0
-                        to: balance * factor
-                        stepSize: factor
-                        onValueChanged: outputModel.setProperty(index, "amount", value)
+                        onEditingFinished: _sendCoinsController.updateRecipient(index, {"amount": text})
                         anchors {
                             verticalCenter: labelLabel.verticalCenter
                             right: grcText.left
                             rightMargin: 5
                         }
                         validator: DoubleValidator {
-                            bottom: Math.min(transactionAmountSpinBox.from, transactionAmountSpinBox.to)
-                            top:  Math.max(transactionAmountSpinBox.from, transactionAmountSpinBox.to)
+                            bottom: 0
+                            top:  _walletModel.balance  // Note we aren't using this for anything
                             decimals: 8
-                        }
-                        textFromValue: function(value, locale) {
-                            return Number(value / factor).toLocaleString(locale, 'f', transactionAmountSpinBox.decimals)
-                        }
-                        valueFromText: function(text, locale) {
-                            return Number.fromLocaleString(locale, text) * factor
+                            notation: DoubleValidator.StandardNotation
+                            locale: "en_US" // Force dot as decimal separator
                         }
                     }
                     Text {
@@ -272,7 +256,7 @@ Rectangle {
                         color: MMPTheme.textColor
                         font.pixelSize: 13
                         anchors {
-                            right: transactionAmountSpinBox.left
+                            right: transactionAmountEdit.left
                             rightMargin: 5
                             verticalCenter: labelLabel.verticalCenter
                         }
@@ -314,7 +298,7 @@ Rectangle {
                             id: removeButton
                             icon.source: MMPTheme.themeSelect("qrc:/icons/buttons/ic_btn_remove_light.svg","qrc:/icons/buttons/ic_btn_remove_dark.svg")
                             text: qsTr("Remove")
-                            onPressed: outputModel.remove(index)
+                            onPressed: _sendCoinsController.removeRecipient(index)
                             anchors {
                                 verticalCenter: parent.verticalCenter
                                 left: parent.left
@@ -330,8 +314,21 @@ Rectangle {
                 icon.source: MMPTheme.themeSelect("qrc:/icons/buttons/ic_btn_add_light.svg", "qrc:/icons/buttons/ic_btn_add_dark.svg")
                 text: qsTr("New Recipient")
                 anchors.horizontalCenter: parent.horizontalCenter
-                onPressed: outputModel.append({"recipient":"","message":"","label":""})
+                onClicked: _sendCoinsController.addRecipient()
             }
+        }
+    }
+    
+
+    MessageDialog { 
+        id: messageDialog
+        title: "Are you sure?"
+        text: "Are you sure you want to send this transaction?"
+        // informativeText: _sendCoinsController.doubleCheckList
+
+        buttons: MessageDialog.Ok | MessageDialog.Cancel
+        onOkClicked: {
+            let result = _sendCoinsController.sendCoins()
         }
     }
 
@@ -350,7 +347,7 @@ Rectangle {
             id: removeAllButton
             icon.source: MMPTheme.themeSelect("qrc:/icons/buttons/ic_btn_remove_light.svg","qrc:/icons/buttons/ic_btn_remove_dark.svg")
             text: qsTr("Remove All")
-            // onPressed: outputModel.remove(index)
+            onClicked: _sendCoinsController.clearRecipients()
             anchors {
                 verticalCenter: parent.verticalCenter
                 left: parent.left
@@ -360,7 +357,7 @@ Rectangle {
         Button {
             id: advancedCoinControlButton
             icon.source: MMPTheme.themeSelect("qrc:/icons/buttons/ic_btn_sign_light.svg","qrc:/icons/buttons/ic_btn_sign_dark.svg")
-            text: qsTr("Advance Coin Control")
+            text: qsTr("Advanced Coin Control")
             anchors {
                 verticalCenter: parent.verticalCenter
                 left: removeAllButton.right
@@ -372,7 +369,7 @@ Rectangle {
             id: sendButton
             icon.source: MMPTheme.themeSelect("qrc:/icons/buttons/ic_btn_send_light.svg","qrc:/icons/buttons/ic_btn_send_dark.svg")
             text: qsTr("Send")
-            //onPressed: sendTransaction(recipient, message, label, amount)
+            onClicked: messageDialog.open()
             anchors {
                 verticalCenter: parent.verticalCenter
                 right: parent.right
