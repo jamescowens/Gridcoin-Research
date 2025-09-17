@@ -493,7 +493,7 @@ GRC::ResearcherMode ResearcherModel::getResearcherMode() const {
     } else if (hasPoolProjects()) {
         return GRC::ResearcherMode::POOL;
     } else {
-        return GRC::ResearcherMode::INVESTOR;
+        return GRC::ResearcherMode::NONCRUNCHER;
     }
 }
 

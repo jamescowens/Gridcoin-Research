@@ -151,7 +151,7 @@ set(MINIUPNPC_USE_STATIC_LIBS ${STATIC_LIBS})
 
 set(QT5_MINIMUM_VERSION 5.9.5)
 set(QT6_MINIMUM_VERSION 6.2.0)
-set(QT_COMPONENTS Core Concurrent Gui LinguistTools Network Widgets Svg)
+set(QT_COMPONENTS Core Concurrent Gui LinguistTools Network Widgets Svg Qml QuickControls2)
 set(QT_HUNTER_COMPONENTS qtbase qttools)
 if(USE_QT6)
     list(APPEND QT_COMPONENTS Core5Compat)

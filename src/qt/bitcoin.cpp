@@ -46,6 +46,9 @@
 #include <QLibraryInfo>
 #include <QProcess>
 #include <QDir>
+#include <QQmlApplicationEngine>
+#include <QQuickStyle>
+#include <QQmlContext>
 #include <QFontDatabase>
 
 // This eliminates the linter false positive on double include of QtPlugin

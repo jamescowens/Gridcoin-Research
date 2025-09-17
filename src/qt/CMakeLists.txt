@@ -205,6 +205,8 @@ target_link_libraries(gridcoinqt PUBLIC
     ${QT}::Network
     ${QT}::Widgets
     ${QT}::Svg
+    ${QT}::Qml
+    ${QT}::QuickControls2
     gridcoin_util
 )
 
@@ -319,6 +321,10 @@ endif()
 
 set_target_properties(gridcoinresearch PROPERTIES
     WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE_GUI_IDENTIFIER gridcoin.us
+    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    MACOSX_BUNDLE_BUNDLE_NAME "Gridcoin Wallet"
     MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/share/qt/Info.plist.cmake.in"
     RESOURCE ${MACOSX_BUNDLE_RESOURCE_FILES}
