@@ -702,8 +702,8 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
 
     try
     {
-        BitcoinGUI window;
-        guiref = &window;
+        // BitcoinGUI window;
+        // guiref = &window;
 
         LogPrintf("Starting Gridcoin");
 
