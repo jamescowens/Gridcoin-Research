@@ -52,7 +52,6 @@
 #endif
 
 #include <QApplication>
-#include <QGuiApplication>
 #include <QFontDatabase>
 #include <QMainWindow>
 #include <QMenuBar>
