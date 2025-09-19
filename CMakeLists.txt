@@ -127,7 +127,6 @@ option(ENABLE_QRENCODE  "Enable generation of QR Codes for receiving payments" O
 option(ENABLE_UPNP      "Enable UPnP port mapping support" OFF)
 option(DEFAULT_UPNP     "Turn UPnP on startup" OFF)
 option(USE_DBUS         "Enable DBus support" OFF)
-option(USE_QT6          "Use Qt 6 instead of Qt 5" OFF)
 
 # Bundled packages
 option(SYSTEM_BDB       "Find system installation of Berkeley DB CXX 5.3" OFF)
