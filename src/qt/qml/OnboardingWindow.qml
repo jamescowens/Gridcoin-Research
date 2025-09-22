@@ -283,7 +283,7 @@ Etiam convallis lectus magna, quis scelerisque augue dapibus sit amet. Lorem ips
                                 id: stakerImage
                                 anchors.centerIn: parent
                                 sourceSize: Qt.size(80, 80)
-                                source: stakerRadioButton.checked ? "qrc:/icons/onboarding/ic_investor_active.svg" : "qrc:/icons/onboarding/ic_investor_inactive.svg"
+                                source: stakerRadioButton.checked ? "qrc:/icons/onboarding/ic_non_cruncher_active.svg" : "qrc:/icons/onboarding/ic_non_cruncher_inactive.svg"
                             }
                         }
                     }
@@ -699,7 +699,7 @@ Etiam convallis lectus magna, quis scelerisque augue dapibus sit amet. Lorem ips
         Item {
             Image {
                 id: plotImage
-                source: "qrc:/icons/onboarding/img_onboarding_investor.svg"
+                source: "qrc:/icons/onboarding/img_onboarding_non_cruncher.svg"
                 sourceSize: Qt.size(160, 160)
                 anchors {
                     top: parent.top
@@ -1107,7 +1107,7 @@ Etiam convallis lectus magna, quis scelerisque augue dapibus sit amet. Lorem ips
                 Image {
                     id: spaceshipImage
                     z: 10
-                    source: "qrc:/icons/onboarding/img_onboarding_congrats_investor.svg"
+                    source: "qrc:/icons/onboarding/img_onboarding_congrats_non_cruncher.svg"
                     sourceSize: Qt.size(120, 156)   // (120, 156) is base aspect ratio
                     anchors {
                         horizontalCenter: parent.horizontalCenter
@@ -1117,7 +1117,7 @@ Etiam convallis lectus magna, quis scelerisque augue dapibus sit amet. Lorem ips
                 }
                 Image {
                     id: trailImage1
-                    source: "qrc:/icons/onboarding/img_onboarding_congrats_investor_ln1.svg"
+                    source: "qrc:/icons/onboarding/img_onboarding_congrats_non_cruncher_ln1.svg"
                     sourceSize: Qt.size(parent.width, parent.height-y)
                     anchors {
                         horizontalCenter: parent.horizontalCenter
@@ -1127,7 +1127,7 @@ Etiam convallis lectus magna, quis scelerisque augue dapibus sit amet. Lorem ips
                 }
                 Image {
                     id: trailImage2
-                    source: "qrc:/icons/onboarding/img_onboarding_congrats_investor_ln2.svg"
+                    source: "qrc:/icons/onboarding/img_onboarding_congrats_non_cruncher_ln2.svg"
                     sourceSize: Qt.size(parent.width, parent.height-y)
                     anchors {
                         horizontalCenter: parent.horizontalCenter
@@ -1137,7 +1137,7 @@ Etiam convallis lectus magna, quis scelerisque augue dapibus sit amet. Lorem ips
                 }
                 Image {
                     id: trailImage3
-                    source: "qrc:/icons/onboarding/img_onboarding_congrats_investor_ln3.svg"
+                    source: "qrc:/icons/onboarding/img_onboarding_congrats_non_cruncher_ln3.svg"
                     sourceSize: Qt.size(parent.width, parent.height-y)
                     anchors {
                         horizontalCenter: parent.horizontalCenter
@@ -1147,7 +1147,7 @@ Etiam convallis lectus magna, quis scelerisque augue dapibus sit amet. Lorem ips
                 }
                 Image {
                     id: cloudImage1
-                    source: "qrc:/icons/onboarding/img_onboarding_congrats_investor_shp1.svg"
+                    source: "qrc:/icons/onboarding/img_onboarding_congrats_non_cruncher_shp1.svg"
                     sourceSize: Qt.size(132, 57)   // (132, 57) is base aspect ratio
                     anchors {
                         right: spaceshipImage.left
@@ -1157,7 +1157,7 @@ Etiam convallis lectus magna, quis scelerisque augue dapibus sit amet. Lorem ips
                 }
                 Image {
                     id: cloudImage2
-                    source: "qrc:/icons/onboarding/img_onboarding_congrats_investor_shp2.svg"
+                    source: "qrc:/icons/onboarding/img_onboarding_congrats_non_cruncher_shp2.svg"
                     sourceSize: Qt.size(132, 57)   // (132, 57) is base aspect ratio
                     anchors {
                         bottom: spaceshipImage.top

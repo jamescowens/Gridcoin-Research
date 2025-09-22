@@ -126,8 +126,8 @@
         <file>icons/menu/ic_menu_unlock_blue.svg</file>
         <file>icons/menu/ic_menu_unlock_white.svg</file>
         <file>icons/onboarding/bg_onboarding_stars.svg</file>
-        <file>icons/onboarding/ic_investor_active.svg</file>
-        <file>icons/onboarding/ic_investor_inactive.svg</file>
+        <file>icons/onboarding/ic_non_cruncher_active.svg</file>
+        <file>icons/onboarding/ic_non_cruncher_inactive.svg</file>
         <file>icons/onboarding/ic_onboarding_back.svg</file>
         <file>icons/onboarding/ic_onboarding_btn_more.svg</file>
         <file>icons/onboarding/ic_onboarding_help.svg</file>
@@ -135,17 +135,17 @@
         <file>icons/onboarding/ic_onboarding_table_yes.svg</file>
         <file>icons/onboarding/ic_onboarding_time.svg</file>
         <file>icons/onboarding/img_onboarding_boinc.svg</file>
-        <file>icons/onboarding/img_onboarding_congrats_investor_ln1.svg</file>
-        <file>icons/onboarding/img_onboarding_congrats_investor_ln2.svg</file>
-        <file>icons/onboarding/img_onboarding_congrats_investor_ln3.svg</file>
-        <file>icons/onboarding/img_onboarding_congrats_investor_shp1.svg</file>
-        <file>icons/onboarding/img_onboarding_congrats_investor_shp2.svg</file>
-        <file>icons/onboarding/img_onboarding_congrats_investor.svg</file>
+        <file>icons/onboarding/img_onboarding_congrats_non_cruncher_ln1.svg</file>
+        <file>icons/onboarding/img_onboarding_congrats_non_cruncher_ln2.svg</file>
+        <file>icons/onboarding/img_onboarding_congrats_non_cruncher_ln3.svg</file>
+        <file>icons/onboarding/img_onboarding_congrats_non_cruncher_shp1.svg</file>
+        <file>icons/onboarding/img_onboarding_congrats_non_cruncher_shp2.svg</file>
+        <file>icons/onboarding/img_onboarding_congrats_non_cruncher.svg</file>
         <file>icons/onboarding/img_onboarding_congrats_pool.svg</file>
         <file>icons/onboarding/img_onboarding_congrats_solo.svg</file>
-        <file>icons/onboarding/img_onboarding_investor.svg</file>
+        <file>icons/onboarding/img_onboarding_non_cruncher.svg</file>
         <file>icons/onboarding/img_onboarding_noboinc.svg</file>
-        <file>icons/onboarding/ic_investor_inactive.svg</file>
+        <file>icons/onboarding/ic_non_cruncher_inactive.svg</file>
         <file>icons/onboarding/ic_pool_active.svg</file>
         <file>icons/onboarding/ic_pool_inactive.svg</file>
         <file>icons/onboarding/ic_solo_active.svg</file>
