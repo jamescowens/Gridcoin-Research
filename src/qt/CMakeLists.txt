@@ -211,7 +211,7 @@ target_link_libraries(gridcoinqt PUBLIC
 )
 
 if(USE_DBUS)
-    target_link_libraries(gridcoinqt PUBLIC ${QT}::DBus)
+    target_link_libraries(gridcoinqt PUBLIC Qt6::DBus)
 endif()
 
 if(APPLE)
