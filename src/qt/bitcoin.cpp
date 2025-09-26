@@ -82,7 +82,6 @@ extern bool bGridcoinCoreInitComplete;
 
 // Need a global reference for the notifications to find the GUI
 static BitcoinGUI *guiref;
-static QSplashScreen *splashref;
 static InitializationModel *initRef;
 
 static void RegisterMetaTypes()
