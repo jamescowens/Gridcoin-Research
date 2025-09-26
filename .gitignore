@@ -28,6 +28,7 @@ src/qt/*.moc
 src/qt/voting/*.moc
 src/qt/test/moc*.cpp
 src/qt/test/test_gridcoin-qt
+src/qt/.qmlls.ini
 
 contrib/deprecated
 contrib/deprecated/bin
