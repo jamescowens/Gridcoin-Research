@@ -1,3 +1,5 @@
+set(QT_QML_GENERATE_QMLLS_INI ON)
+
 # Translations
 # ============
 add_subdirectory(locale)
