@@ -119,7 +119,8 @@ void SignVerifyMessageDialog::on_signMessageButton_SM_clicked()
         return;
     }
 
-    WalletModel::UnlockContext ctx(model->requestUnlock());
+    QFuture<WalletModel::UnlockContext> unlockFuture = model->requestUnlock();
+    WalletModel::UnlockContext ctx = unlockFuture.result();
     if (!ctx.isValid())
     {
         ui->statusLabel_SM->setStyleSheet("QLabel { color: red; }");

@@ -2,6 +2,8 @@
 #define BITCOIN_QT_WALLETMODEL_H
 
 #include <QObject>
+#include <QFuture>
+#include <QPromise>
 #include <vector>
 #include <map>
 
@@ -97,7 +99,7 @@ public:
     };
 
     // Send coins to a list of recipients
-    SendCoinsReturn sendCoins(const QList<SendCoinsRecipient>& recipients, const CCoinControl* coinControl = nullptr);
+    QFuture<SendCoinsReturn> sendCoins(const QList<SendCoinsRecipient>& recipients, const CCoinControl* coinControl = nullptr);
 
     // Wallet encryption
     bool setWalletEncrypted(const SecureString& passphrase);
@@ -128,7 +130,8 @@ public:
         void CopyFrom(const UnlockContext& rhs);
     };
 
-    UnlockContext requestUnlock();
+    QFuture<UnlockContext> requestUnlock();
+    QFuture<bool> askFee(int64_t nFeeRequired);
 
     bool getPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
     bool getKeyFromPool(CPubKey& out_public_key, const std::string& label);
@@ -162,6 +165,9 @@ private:
 
     QTimer *pollTimer;
 
+    QPromise<UnlockContext> m_unlockPromise;
+    QPromise<bool> m_askFeePromise;
+
     void subscribeToCoreSignals();
     void unsubscribeFromCoreSignals();
     void checkBalanceChanged();
@@ -176,6 +182,10 @@ public slots:
     void updateAddressBook(const QString &address, const QString &label, bool isMine, int status);
     /* Current, immature or unconfirmed balance might have changed - emit 'balanceChanged' if so */
     void pollBalanceChanged();
+
+    void unlockWallet(const QString &password);
+    void cancelUnlock();
+    void askFeeResult(bool result);
 
 signals:
     // Transaction updated. This is necessary because on a resync from zero with an existing wallet.
@@ -199,6 +209,8 @@ signals:
 
     // Asynchronous error notification
     void error(const QString &title, const QString &message, bool modal);
+
+    void askFeeDialog(int64_t feeRequired);
 };
 
 #endif // BITCOIN_QT_WALLETMODEL_H

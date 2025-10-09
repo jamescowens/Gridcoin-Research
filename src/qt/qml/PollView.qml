@@ -12,7 +12,7 @@ Rectangle {
     color: MMPTheme.backgroundColor
     Rectangle {
         id: header
-        color: MMPTheme.themeSelect(MMPTheme.cWhite, MMPTheme.cSpaceBlack)
+        color: MMPTheme.headerColor
         height: 70
         anchors {
             left: parent.left

@@ -425,7 +425,7 @@ CAmount VotingModel::estimatePollFee() const
     return 50 * COIN;
 }
 
-VotingResult VotingModel::sendPoll(
+QFuture<VotingResult> VotingModel::sendPoll(
         const PollType& type,
         const QString& title,
         const int duration_days,
@@ -480,24 +480,28 @@ VotingResult VotingModel::sendPoll(
             builder = builder.AddChoice(choice.toStdString());
         }
     } catch (const VotingError& e) {
-        return VotingResult(QString::fromStdString(e.what()));
+        QPromise<VotingResult> promise;
+        promise.addResult(VotingResult(QString::fromStdString(e.what())));
+        return promise.future();
     }
 
-    const WalletModel::UnlockContext unlock_context(m_wallet_model.requestUnlock());
+    return m_wallet_model.requestUnlock().then([this, builder = std::move(builder)](QFuture<WalletModel::UnlockContext> future) mutable {
+        WalletModel::UnlockContext unlock_context = future.result();
 
-    if (!unlock_context.isValid()) {
-        return VotingResult(tr("Please unlock the wallet."));
-    }
+        if (!unlock_context.isValid()) {
+            return VotingResult(tr("Please unlock the wallet."));
+        }
 
-    uint256 txid;
+        uint256 txid;
 
-    try {
-        txid = SendPollContract(std::move(builder));
-    } catch (const VotingError& e) {
-        return VotingResult(QString::fromStdString(e.what()));
-    }
+        try {
+            txid = SendPollContract(std::move(builder));
+        } catch (const VotingError& e) {
+            return VotingResult(QString::fromStdString(e.what()));
+        }
 
-    return VotingResult(txid);
+        return VotingResult(txid);
+    });
 }
 
 VotingResult VotingModel::sendVote(
@@ -523,7 +527,8 @@ VotingResult VotingModel::sendVote(
         VoteBuilder builder = VoteBuilder::ForPoll(*poll, ref->Txid());
         builder = builder.AddResponses(choice_offsets);
 
-        const WalletModel::UnlockContext unlock_context(m_wallet_model.requestUnlock());
+        QFuture<WalletModel::UnlockContext> unlockFuture = m_wallet_model.requestUnlock();
+        WalletModel::UnlockContext unlock_context = unlockFuture.result();
 
         if (!unlock_context.isValid()) {
             return VotingResult(tr("Please unlock the wallet."));

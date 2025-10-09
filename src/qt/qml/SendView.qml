@@ -10,9 +10,22 @@ Rectangle {
     id: main
     color: MMPTheme.backgroundColor
 
+    Connections {
+        target: _sendCoinsController
+        function onCoinsSentOrFailed(message) {
+            coinsResultDialog.text = message
+            coinsResultDialog.open()
+        }
+    }
+
+    MessageDialog { 
+        id: coinsResultDialog
+        buttons: MessageDialog.Ok
+    }
+
     Rectangle {
         id: header
-        color: MMPTheme.themeSelect(MMPTheme.cWhite, MMPTheme.cSpaceBlack)
+        color: MMPTheme.headerColor
         height: 70
         anchors {
             left: parent.left
@@ -274,7 +287,7 @@ Rectangle {
                         //Two rects needed to round the corner on bottom but not top
                         Rectangle {
                             id: controlTopRect
-                            color: MMPTheme.themeSelect(MMPTheme.cFrostWhite, "#161b24")
+                            color: MMPTheme.ternaryBodyColor
                             height: parent.height-controlBottomRect.radius
                             anchors {
                                 top: parent.top
@@ -284,7 +297,7 @@ Rectangle {
                         }
                         Rectangle {
                             id: controlBottomRect
-                            color: MMPTheme.themeSelect(MMPTheme.cFrostWhite, "#161b24")
+                            color: MMPTheme.ternaryBodyColor
                             radius: delegateRect.radius
                             height: 2*radius
                             anchors {
@@ -322,19 +335,15 @@ Rectangle {
 
     MessageDialog { 
         id: messageDialog
-        title: "Are you sure?"
-        text: "Are you sure you want to send this transaction?"
-        // informativeText: _sendCoinsController.doubleCheckList
-
+        title: qsTr("Are you sure?")
+        text: qsTr("Are you sure you want to send this transaction?")
         buttons: MessageDialog.Ok | MessageDialog.Cancel
-        onOkClicked: {
-            let result = _sendCoinsController.sendCoins()
-        }
+        onOkClicked: _sendCoinsController.sendCoins()
     }
 
     Rectangle {
         id: bottomControls
-        color: MMPTheme.themeSelect(MMPTheme.cFrostWhite, "#161b24")
+        color: MMPTheme.ternaryBodyColor
         height: 50
         radius: 4
         anchors {

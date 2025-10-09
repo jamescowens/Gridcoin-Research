@@ -76,7 +76,8 @@ void ResearcherWizardPoolPage::openLink(int row, int column) const
 
 void ResearcherWizardPoolPage::getNewAddress()
 {
-    const WalletModel::UnlockContext unlock_context(m_wallet_model->requestUnlock());
+    QFuture<WalletModel::UnlockContext> unlockFuture = m_wallet_model->requestUnlock();
+    WalletModel::UnlockContext unlock_context = unlockFuture.result();
 
     if (!unlock_context.isValid()) {
         // Unlock wallet was cancelled

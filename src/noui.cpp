@@ -35,6 +35,5 @@ void noui_connect()
 {
     // Connect bitcoind signal handlers
     uiInterface.ThreadSafeMessageBox_connect(noui_ThreadSafeMessageBox);
-    uiInterface.ThreadSafeAskFee_connect(noui_ThreadSafeAskFee);
     uiInterface.UpdateMessageBox_connect(noui_UpdateMessageBox);
 }

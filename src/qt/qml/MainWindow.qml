@@ -19,7 +19,17 @@ ApplicationWindow {
         NumberAnimation { duration: 1000 }
     }
 
+    UnlockDialog {
+        id: unlockDialog
+    }
 
+    Connections {
+        target: _walletModel
+        function onRequireUnlock() {
+            console.debug("MainWindow Require unlock")
+            unlockDialog.open()
+        }
+    }
 
     TabMenu{
         id: menu

@@ -67,50 +67,65 @@ void SendCoinsController::clearRecipients() {
     emit recipientsChanged();
 }
 
-QString SendCoinsController::sendCoins()
+void SendCoinsController::sendCoins()
 {
     if (m_recipients.isEmpty()) {
-        return tr("No recipients.");
+        emit coinsSentOrFailed(tr("No recipients."));
+        return;
     }
 
     for (const auto& rcp : m_recipients) {
         if (!m_wallet_model.validateAddress(rcp.address)) {
-            return tr("Invalid address: ") + rcp.address;
+            emit coinsSentOrFailed(tr("Invalid address: ") + rcp.address);
+            return;
         }
     }
 
-    WalletModel::UnlockContext ctx(m_wallet_model.requestUnlock());
-    if (!ctx.isValid()) {
-        return tr("Wallet unlock was cancelled.");
-    }
-
-    WalletModel::SendCoinsReturn sendstatus = m_wallet_model.sendCoins(m_recipients);
-
-    switch(sendstatus.status)
-    {
-    case WalletModel::InvalidAddress:
-        return tr("The recipient address is not valid, please recheck.");
-    case WalletModel::InvalidAmount:
-        return tr("The amount to pay must be larger than 0.");
-    case WalletModel::AmountExceedsBalance:
-        return tr("The amount exceeds your balance.");
-    case WalletModel::AmountWithFeeExceedsBalance:
-        return tr("The total exceeds your balance when the %1 transaction fee is included.")
-            .arg(BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, sendstatus.fee));
-    case WalletModel::DuplicateAddress:
-        return tr("Duplicate address found, can only send to each address once per send operation.");
-    case WalletModel::TransactionCreationFailed:
-        return tr("Error: Transaction creation failed.");
-    case WalletModel::TransactionCommitFailed:
-        return tr("Error: The transaction was rejected. This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.");
-    case WalletModel::Aborted: // User aborted, nothing to do
-        return tr("Send aborted.");
-    case WalletModel::OK:
-        // Clear recipients after successful send
-        m_recipients.clear();
-        addRecipient(); // Add a fresh one
-        emit recipientsChanged();
-        return tr("Transaction sent successfully!");
-    }
-    return tr("Unknown error.");
+    QFuture<WalletModel::UnlockContext> unlockFuture = m_wallet_model.requestUnlock();
+    unlockFuture.then([this](QFuture<WalletModel::UnlockContext> future) -> void {
+        WalletModel::UnlockContext ctx = future.result();
+        if (!ctx.isValid()) {
+            emit coinsSentOrFailed(tr("Wallet unlock was cancelled."));
+            return;
+        }
+        
+        QFuture<WalletModel::SendCoinsReturn> sendFuture = m_wallet_model.sendCoins(m_recipients);
+        sendFuture.then([this](WalletModel::SendCoinsReturn sendstatus) {
+            switch (sendstatus.status) {
+            case WalletModel::InvalidAddress:
+                emit coinsSentOrFailed(tr("The recipient address is not valid, please recheck."));
+                return;
+            case WalletModel::InvalidAmount:
+                emit coinsSentOrFailed(tr("The amount to pay must be larger than 0."));
+                return;
+            case WalletModel::AmountExceedsBalance:
+                emit coinsSentOrFailed(tr("The amount exceeds your balance."));
+                return;
+            case WalletModel::AmountWithFeeExceedsBalance:
+                emit coinsSentOrFailed(tr("The total exceeds your balance when the %1 transaction fee is included.")
+                                .arg(BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, sendstatus.fee)));
+                return;
+            case WalletModel::DuplicateAddress:
+                emit coinsSentOrFailed(tr("Duplicate address found, can only send to each address once per send operation."));
+                return;
+            case WalletModel::TransactionCreationFailed:
+                emit coinsSentOrFailed(tr("Error: Transaction creation failed."));
+                return;
+            case WalletModel::TransactionCommitFailed:
+                emit coinsSentOrFailed(tr("Error: The transaction was rejected. This might happen if some of the coins in your wallet were already) spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here."));
+                return;
+            case WalletModel::Aborted: // User aborted, nothing to do
+                emit coinsSentOrFailed(tr("Send aborted."));
+                return;
+            case WalletModel::OK:
+                // Clear recipients after successful send
+                m_recipients.clear();
+                addRecipient(); // Add a fresh one
+                emit recipientsChanged();
+                emit coinsSentOrFailed(tr("Transaction sent successfully!"));
+                return;
+            }
+            emit coinsSentOrFailed(tr("Unknown error."));
+        });
+    });
 }

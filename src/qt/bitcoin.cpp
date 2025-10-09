@@ -137,34 +137,6 @@ static void ThreadSafeMessageBox(const std::string& message, const std::string& 
     }
 }
 
-static bool ThreadSafeAskFee(int64_t nFeeRequired, const std::string& strCaption)
-{
-    if(!guiref)
-        return false;
-
-    int64_t nMinFee;
-
-    {
-        LOCK(cs_main);
-
-        CTransaction txDummy;
-
-        // Min Fee
-        nMinFee = GetBaseFee(txDummy, GMF_SEND);
-    }
-
-    if (nFeeRequired < nMinFee || nFeeRequired <= nTransactionFee)
-        return true;
-    bool payFee = false;
-
-    QMetaObject::invokeMethod(guiref, "askFee", GUIUtil::blockingGUIThreadConnection(),
-                               Q_ARG(qint64, nFeeRequired),
-                               Q_ARG(bool*, &payFee));
-
-    return payFee;
-}
-
-
 static bool ThreadSafeAskQuestion(std::string strCaption, std::string Body)
 {
     if(!guiref) return false;
@@ -653,7 +625,6 @@ int StartGridcoinQt(int argc, char *argv[], QApplication& app, OptionsModel& opt
 
     // Subscribe to global signals from core
     uiInterface.ThreadSafeMessageBox_connect(ThreadSafeMessageBox);
-    uiInterface.ThreadSafeAskFee_connect(ThreadSafeAskFee);
     uiInterface.ThreadSafeAskQuestion_connect(ThreadSafeAskQuestion);
 
     uiInterface.ThreadSafeHandleURI_connect(ThreadSafeHandleURI);
