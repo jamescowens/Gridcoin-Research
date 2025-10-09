@@ -163,6 +163,7 @@ Rectangle {
                 } else {
                     MMPTheme.theme = MMPTheme.lightTheme
                 }
+                _walletModel.requireUnlock()
             }
         }
     }

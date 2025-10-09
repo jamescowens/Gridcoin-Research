@@ -12,7 +12,7 @@ Rectangle{
     property bool settingsChanged: true
     Rectangle {
         id: settingsTabMenuRect
-        color: MMPTheme.themeSelect(MMPTheme.cWhite, MMPTheme.cSpaceBlack)
+        color: MMPTheme.headerColor
         height: 70
         anchors {
             left: parent.left

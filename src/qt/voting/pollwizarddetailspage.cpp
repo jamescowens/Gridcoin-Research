@@ -358,27 +358,27 @@ bool PollWizardDetailsPage::validatePage()
         additional_field_entries.push_back(*m_additional_fields_model->rowItem(i));
     }
 
-    const VotingResult result = m_voting_model->sendPoll(
-        core_poll_type,
-        field("title").toString(),
-        field("durationDays").toInt(),
-        field("question").toString(),
-        field("url").toString(),
-        // The dropdown list only contains non-deprecated weight type options
-        // which start from offset 2:
-        field("weightType").toInt() + 2,
-        field("responseType").toInt() + 1,
-        m_choices_model->stringList(),
-        additional_field_entries);
+    // const VotingResult result = m_voting_model->sendPoll(
+    //     core_poll_type,
+    //     field("title").toString(),
+    //     field("durationDays").toInt(),
+    //     field("question").toString(),
+    //     field("url").toString(),
+    //     // The dropdown list only contains non-deprecated weight type options
+    //     // which start from offset 2:
+    //     field("weightType").toInt() + 2,
+    //     field("responseType").toInt() + 1,
+    //     m_choices_model->stringList(),
+    //     additional_field_entries);
 
-    if (!result.ok()) {
-        ui->errorLabel->setText(result.error());
-        ui->errorLabel->show();
+    // if (!result.ok()) {
+    //     ui->errorLabel->setText(result.error());
+    //     ui->errorLabel->show();
 
-        return false;
-    }
+    //     return false;
+    // }
 
-    setField("txid", result.txid());
+    // setField("txid", result.txid());
 
     return true;
 }

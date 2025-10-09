@@ -34,5 +34,6 @@
         <file>TableFooter.qml</file>
         <file>TableHeader.qml</file>
         <file>TabMenu.qml</file>
+        <file>UnlockDialog.qml</file>
     </qresource>
 </RCC>

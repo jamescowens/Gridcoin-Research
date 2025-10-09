@@ -14,7 +14,6 @@ class SendCoinsController : public QObject
 public:
     explicit SendCoinsController(WalletModel &wallet_model, QObject *parent = nullptr);
 
-    Q_INVOKABLE QString sendCoins();
     Q_INVOKABLE void addRecipient();
     Q_INVOKABLE void removeRecipient(int index);
     Q_INVOKABLE void updateRecipient(int index, const QVariantMap &data);
@@ -24,6 +23,10 @@ public:
 
 signals:
     void recipientsChanged();
+    void coinsSentOrFailed(const QString &result_message);
+
+public slots:
+    void sendCoins();
 
 private:
     WalletModel &m_wallet_model;

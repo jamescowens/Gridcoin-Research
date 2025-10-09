@@ -16,6 +16,7 @@
 #include <vector>
 #include <QVariant>
 #include <QStringList>
+#include <QFuture>
 
 namespace GRC {
 class PollRegistry;
@@ -155,7 +156,7 @@ public:
 
     CAmount estimatePollFee() const;
 
-    VotingResult sendPoll(
+    QFuture<VotingResult> sendPoll(
             const GRC::PollType& type,
             const QString& title,
             const int duration_days,
