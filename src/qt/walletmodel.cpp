@@ -267,7 +267,7 @@ QFuture<WalletModel::SendCoinsReturn> WalletModel::sendCoins(const QList<SendCoi
 
     if(!fAnySubtractFeeFromAmount && (total + nTransactionFee) > nBalance)
     {
-        promise.addResult({AmountWithFeeExceedsBalance, nTransactionFee});
+        promise.addResult(SendCoinsReturn(AmountWithFeeExceedsBalance, nTransactionFee));
         promise.finish();
         return promise.future();
     }
@@ -370,7 +370,7 @@ QFuture<WalletModel::SendCoinsReturn> WalletModel::sendCoins(const QList<SendCoi
         {
             if(!fAnySubtractFeeFromAmount && (total + nFeeRequired) > nBalance)
             {
-                promise.addResult({AmountWithFeeExceedsBalance, nFeeRequired});
+                promise.addResult(SendCoinsReturn(AmountWithFeeExceedsBalance, nFeeRequired));
                 promise.finish();
                 return promise.future();
             }
