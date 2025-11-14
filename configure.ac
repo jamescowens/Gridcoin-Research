@@ -1072,10 +1072,17 @@ if test "$use_boost" = "yes"; then
 
 dnl Minimum required Boost version
 define(MINIMUM_REQUIRED_BOOST, 1.60.0)
+define(MINIMUM_BOOST_SYSTEM_HEADER, 1.89.0)
 
 dnl Check for Boost libs
+dnl For Boost >= 1.89.0, Boost::System is header nly, so we only link to it if we're using a version that doesn't match Boost >= 1.89
 AX_BOOST_BASE([MINIMUM_REQUIRED_BOOST])
-AX_BOOST_SYSTEM
+AX_BOOST_BASE([MINIMUM_BOOST_SYSTEM_HEADER], [
+    BOOST_SYSTEM_IS_HEADER="1"
+], [
+    BOOST_SYSTEM_IS_HEADER="0"
+    AX_BOOST_SYSTEM
+])
 AX_BOOST_FILESYSTEM
 AX_BOOST_ZLIB
 AX_BOOST_IOSTREAMS
@@ -1096,7 +1103,12 @@ dnl counter implementations. In 1.63 and later the std::atomic approach is defau
 m4_pattern_allow(DBOOST_AC_USE_STD_ATOMIC) dnl otherwise it's treated like a macro
 BOOST_CPPFLAGS="-DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC $BOOST_CPPFLAGS"
 
-BOOST_LIBS="$BOOST_LDFLAGS $BOOST_SYSTEM_LIB $BOOST_FILESYSTEM_LIB $BOOST_IOSTREAMS_LIB $BOOST_THREAD_LIB $BOOST_ZLIB_LIB"
+dnl If we're using Boost >= 1.89.0 then we wont have defined BOOST_SYSTEM_LIBS, so we shouldn't use it here
+if [ test "$BOOST_SYSTEM_IS_HEADER" -eq "1"]; then
+    BOOST_LIBS="$BOOST_LDFLAGS $BOOST_FILESYSTEM_LIB $BOOST_IOSTREAMS_LIB $BOOST_THREAD_LIB $BOOST_ZLIB_LIB"
+else
+    BOOST_LIBS="$BOOST_LDFLAGS $BOOST_SYSTEM_LIB $BOOST_FILESYSTEM_LIB $BOOST_IOSTREAMS_LIB $BOOST_THREAD_LIB $BOOST_ZLIB_LIB"
+fi
 fi
 
 if test "$use_reduce_exports" = "yes"; then
