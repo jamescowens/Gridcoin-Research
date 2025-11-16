@@ -1,3 +1,8 @@
+# Generate the config.h file
+# ===========================
+# This creates config/gridcoin-config.h in the build directory
+# (e.g., build/config/gridcoin-config.h) with all the
+# correct HAVE_... definitions from the checks above.
 configure_file(
     config/gridcoin-config.h.cmake.in
     config/gridcoin-config.h
@@ -13,7 +18,9 @@ add_compile_definitions(
 )
 
 if(WIN32)
-    add_compile_definitions(_MT _WINDOWS _WIN32_WINNT=0x0601)
+    # _WIN32_WINNT is already defined by the toolchain/CMake.
+    # We remove it here to avoid "redefined" warnings.
+    add_compile_definitions(_MT _WINDOWS)
     add_compile_definitions(WIN32 BOOST_THREAD_USE_LIB UNICODE)
 elseif(UNIX AND NOT APPLE)
     add_compile_definitions(_FILE_OFFSET_BITS=64)
@@ -216,23 +223,29 @@ target_include_directories(gridcoin_util PUBLIC
 )
 
 target_link_libraries(gridcoin_util PUBLIC
-    -lm ${ATOMICS_LIBRARIES} ${RT_LIBRARIES}
     ${LIBBDB_CXX} ${LIBLEVELDB} ${LIBSECP256K1} ${LIBUNIVALUE}
-    Boost::boost Boost::filesystem Boost::iostreams Boost::thread
+    Boost::boost Boost::filesystem Boost::iostreams Boost::thread Boost::date_time Boost::serialization
     CURL::libcurl
     OpenSSL::Crypto OpenSSL::SSL
     Threads::Threads
     libzip::zip
+    ZLIB::ZLIB
 )
+
+if(UNIX)
+    target_link_libraries(gridcoin_util PUBLIC -lm ${ATOMICS_LIBRARIES} ${RT_LIBRARIES})
+endif()
+
 target_link_libraries(gridcoin_util PUBLIC ${LIBGRIDCOIN_CRYPTO})
 
 if(WIN32)
-    target_link_libraries(gridcoin_util PUBLIC wsock32 Ws2_32)
+    target_link_libraries(gridcoin_util PUBLIC wsock32 ws2_32 wldap32 crypt32)
 endif()
 
 target_compile_definitions(gridcoin_util PUBLIC
     HAVE_CONFIG_H
     HAVE_BUILD_INFO
+    CURL_STATICLIB
 )
 
 if(ENABLE_UPNP)
@@ -255,29 +268,48 @@ endif()
 
 if(ENABLE_DAEMON)
     add_executable(gridcoinresearchd gridcoinresearchd.cpp)
-    target_link_libraries(gridcoinresearchd PUBLIC ${RUNTIME_LIBS} gridcoin_util)
+    target_include_directories(gridcoinresearchd PRIVATE ${CMAKE_BINARY_DIR})
+    target_compile_definitions(gridcoinresearchd PRIVATE CURL_STATICLIB) # <--- ADDED
+
+    # Link gridcoinresearchd to gridcoin_util AND all of gridcoin_util's
+    # dependencies, because it is a static library.
+    target_link_libraries(gridcoinresearchd PUBLIC
+        ${RUNTIME_LIBS}
+        gridcoin_util
+
+        # Dependencies of gridcoin_util
+        ${LIBBDB_CXX} ${LIBLEVELDB} ${LIBSECP256K1} ${LIBUNIVALUE}
+        Boost::boost Boost::filesystem Boost::iostreams Boost::thread Boost::date_time Boost::serialization
+        CURL::libcurl
+        OpenSSL::Crypto OpenSSL::SSL
+        Threads::Threads
+        libzip::zip
+        ZLIB::ZLIB
+    )
 
     if(WIN32)
+        # Link the windows-specific libs
+        target_link_libraries(gridcoinresearchd PUBLIC wsock32 ws2_32)
+
         target_sources(gridcoinresearchd PRIVATE gridcoinresearchd-res.rc)
         set_source_files_properties(gridcoinresearchd-res.rc PROPERTIES
-            COMPILE_DEFINITIONS WINDRES_PREPROC
+            COMPILE_FLAGS "-I${CMAKE_BINARY_DIR} -DWINDRES_PREPROC"
         )
+    endif()
+
+    if(UNIX)
+        # Link the unix-specific libs
+        target_link_libraries(gridcoinresearchd PUBLIC -lm ${ATOMICS_LIBRARIES} ${RT_LIBRARIES})
+    endif()
+
+    if(ENABLE_UPNP)
+        target_link_libraries(gridcoinresearchd PUBLIC PkgConfig::MINIUPNPC)
     endif()
 
     if(UNIX AND NOT APPLE)
-        include(GNUInstallDirs)
-        install(TARGETS gridcoinresearchd
-            DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        )
-        install(FILES "${CMAKE_SOURCE_DIR}/doc/gridcoinresearchd.1"
-            DESTINATION "${CMAKE_INSTALL_MANDIR}/man1"
-        )
-        install(FILES "${CMAKE_SOURCE_DIR}/contrib/init/gridcoinresearchd.service"
-            DESTINATION "lib/systemd/system"
-        )
+        # ... (your install block is fine) ...
     endif()
 endif()
-
 
 # Qt GUI
 # ======

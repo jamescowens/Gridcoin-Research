@@ -193,6 +193,7 @@ endif()
 target_link_libraries(gridcoinresearch PRIVATE
     ${RUNTIME_LIBS}
     ${QT}::Widgets
+    CURL::libcurl
     gridcoin_util
     gridcoinqt
 )
@@ -220,6 +221,17 @@ if(UNIX AND NOT APPLE)
     )
 endif()
 
+if(WIN32)
+    target_link_libraries(gridcoinresearch PRIVATE
+        ws2_32
+        wsock32
+        wldap32
+        crypt32
+        bcrypt  # <--- This is the one you are missing
+        shlwapi
+        iphlpapi # Often needed by boost/qt networking
+    )
+endif()
 
 # Tests
 # =====
