@@ -10,7 +10,8 @@ SDK_PATH ?= $(BASEDIR)/SDKs
 NO_QT ?=
 NO_WALLET ?=
 NO_UPNP ?=
-FALLBACK_DOWNLOAD_PATH ?= https://bitcoincore.org/depends-sources
+FALLBACK_DOWNLOAD_PATHS ?= https://bitcoincore.org/depends-sources https://gridcoin-depends-backup-sources.s3.us-east-1.amazonaws.com
+
 
 C_STANDARD ?= gnu11
 CXX_STANDARD ?= c++17

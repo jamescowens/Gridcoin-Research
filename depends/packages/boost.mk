@@ -1,9 +1,9 @@
 package=boost
 GCCFLAGS?=
-$(package)_version=1.81.0
+$(package)_version=1.89.0
 $(package)_download_path=https://archives.boost.io/release/$($(package)_version)/source/
 $(package)_file_name=boost_$(subst .,_,$($(package)_version)).tar.gz
-$(package)_sha256_hash=205666dea9f6a7cfed87c7a6dfbeb52a2c1b9de55712c9c1a87735d7181452b6
+$(package)_sha256_hash=9de758db755e8330a01d995b0a24d09798048400ac25c03fc5ea9be364b13c93
 $(package)_dependencies=zlib
 
 define $(package)_set_vars

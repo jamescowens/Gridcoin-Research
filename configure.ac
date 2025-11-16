@@ -1075,14 +1075,11 @@ define(MINIMUM_REQUIRED_BOOST, 1.60.0)
 define(MINIMUM_BOOST_SYSTEM_HEADER, 1.89.0)
 
 dnl Check for Boost libs
-dnl For Boost >= 1.89.0, Boost::System is header nly, so we only link to it if we're using a version that doesn't match Boost >= 1.89
+dnl For Boost >= 1.89.0, Boost::System is header only, so we only link to it if we're using a version that doesn't match Boost >= 1.89
 AX_BOOST_BASE([MINIMUM_REQUIRED_BOOST])
-AX_BOOST_BASE([MINIMUM_BOOST_SYSTEM_HEADER], [
-    BOOST_SYSTEM_IS_HEADER="1"
-], [
-    BOOST_SYSTEM_IS_HEADER="0"
-    AX_BOOST_SYSTEM
-])
+
+dnl Check whether Boost >= MINIMUM_BOOST_SYSTEM_HEADER so we know if Boost.System is header-only AC_MSG_CHECKING([for boostlib >= $MINIMUM_BOOST_SYSTEM_HEADER]) AX_BOOST_BASE([MINIMUM_BOOST_SYSTEM_HEADER], [BOOST_SYSTEM_IS_HEADER="1"], [BOOST_SYSTEM_IS_HEADER="0"]) AC_MSG_RESULT([$BOOST_SYSTEM_IS_HEADER])
+
 AX_BOOST_FILESYSTEM
 AX_BOOST_ZLIB
 AX_BOOST_IOSTREAMS
