@@ -26,6 +26,10 @@ elseif(UNIX AND NOT APPLE)
     add_compile_definitions(_FILE_OFFSET_BITS=64)
 endif()
 
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/config/gridcoin-config.h")
+    message(STATUS "Detected stale Autotools configuration file. Removing: ${CMAKE_CURRENT_SOURCE_DIR}/config/gridcoin-config.h")
+    file(REMOVE "${CMAKE_CURRENT_SOURCE_DIR}/config/gridcoin-config.h")
+endif()
 
 # Dependencies
 # ============

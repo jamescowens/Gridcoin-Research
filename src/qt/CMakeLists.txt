@@ -227,9 +227,9 @@ if(WIN32)
         wsock32
         wldap32
         crypt32
-        bcrypt  # <--- This is the one you are missing
+        bcrypt
         shlwapi
-        iphlpapi # Often needed by boost/qt networking
+        iphlpapi
     )
 endif()
 
