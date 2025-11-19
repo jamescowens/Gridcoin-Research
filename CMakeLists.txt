@@ -132,7 +132,7 @@ option(BUNDLED_QT5      "Use the bundled version of Qt 5" ${HUNTER_ENABLED})
 
 set(QT5_MINIMUM_VERSION 5.9.5)
 set(QT6_MINIMUM_VERSION 6.2.0)
-set(QT_COMPONENTS Core Concurrent Gui LinguistTools Network Widgets)
+set(QT_COMPONENTS Core Concurrent Gui LinguistTools Network Widgets Svg)
 set(QT_HUNTER_COMPONENTS qtbase qttools)
 if(USE_QT6)
     list(APPEND QT_COMPONENTS Core5Compat)

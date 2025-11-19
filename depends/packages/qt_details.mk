@@ -14,6 +14,9 @@ qt_details_qttools_sha256_hash := f03bb7df619cd9ac9dba110e30b7bcab5dd88eb8bdc9cc
 qt_details_qt5compat_file_name := qt5compat-$(qt_details_suffix)
 qt_details_qt5compat_sha256_hash := 8b6a68a3dfaa7e9d10a0dafccee594c72e8de061bc573ae86b1c081b423a53f0
 
+qt_details_qtsvg_file_name := qtsvg-$(qt_details_suffix)
+qt_details_qtsvg_sha256_hash := 40142cb71fb1e07ad612bc361b67f5d54cd9367f9979ae6b86124a064deda06b
+
 qt_details_patches_path := $(PATCHES_PATH)/qt
 
 qt_details_top_download_path := https://code.qt.io/cgit/qt/qt5.git/plain

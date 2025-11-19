@@ -146,6 +146,7 @@ target_link_libraries(gridcoinqt PUBLIC
     ${QT}::Gui
     ${QT}::Network
     ${QT}::Widgets
+    ${QT}::Svg
     gridcoin_util
 )
 
