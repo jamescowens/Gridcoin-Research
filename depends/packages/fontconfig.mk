@@ -7,9 +7,11 @@ $(package)_dependencies=freetype expat
 $(package)_patches=gperf_header_regen.patch
 
 define $(package)_set_vars
-  $(package)_config_opts=--disable-docs --disable-static --disable-libxml2 --disable-iconv
+  $(package)_config_opts=--disable-docs --disable-shared --enable-static --disable-libxml2 --disable-iconv
   $(package)_config_opts += --disable-dependency-tracking --enable-option-checking
+  $(package)_cflags+=-fPIC
   $(package)_cflags += -Wno-implicit-function-declaration
+  $(package)_config_opts +=--libdir=$($($(package)_type)_prefix)/lib
 endef
 
 define $(package)_preprocess_cmds

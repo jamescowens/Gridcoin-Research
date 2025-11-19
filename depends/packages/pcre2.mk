@@ -1,20 +1,16 @@
-package=libxkbcommon
-$(package)_version=0.8.4
-$(package)_download_path=https://xkbcommon.org/download/
-$(package)_file_name=$(package)-$($(package)_version).tar.xz
-$(package)_sha256_hash=60ddcff932b7fd352752d51a5c4f04f3d0403230a584df9a2e0d5ed87c486c8b
-$(package)_dependencies=libxcb xkeyboard-config
+package=pcre2
+$(package)_version=10.45
+$(package)_download_path=https://github.com/PCRE2Project/pcre2/releases/download/$(package)-$($(package)_version)
+$(package)_file_name=$(package)-$($(package)_version).tar.bz2
+$(package)_sha256_hash=21547f3516120c75597e5b30a992e27a592a31950b5140e7b8bfde3f192033c4
+$(package)_dependencies=
 
 define $(package)_set_vars
 $(package)_config_opts = --enable-option-checking --disable-dependency-tracking
-$(package)_config_opts += --disable-shared --enable-static --disable-docs
+$(package)_config_opts += --disable-shared --enable-static --disable-docs --enable-pcre2-16
 $(package)_config_opts +=--libdir=$($($(package)_type)_prefix)/lib
 $(package)_cflags+=-fPIC
 $(package)_cflags += -Wno-error=array-bounds
-endef
-
-define $(package)_preprocess_cmds
-  cp -f $(BASEDIR)/config.guess $(BASEDIR)/config.sub build-aux
 endef
 
 define $(package)_config_cmds

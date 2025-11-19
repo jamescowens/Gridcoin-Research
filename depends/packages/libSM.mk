@@ -7,12 +7,13 @@ $(package)_sha256_hash=0baca8c9f5d934450a70896c4ad38d06475521255ca63b717a6510fdb
 $(package)_dependencies=xtrans xproto libICE
 
 define $(package)_set_vars
-  $(package)_config_opts=--without-libuuid  --without-xsltproc  --disable-docs --disable-static
+  $(package)_config_opts=--without-libuuid  --without-xsltproc  --disable-docs --disable-shared --enable-static
   $(package)_config_opts_linux=--with-pic
   $(package)_cxxflags_aarch64_linux = $(GCCFLAGS)
   $(package)_cflags_aarch64_linux = $(GCCFLAGS)
   $(package)_cxxflags_arm_linux = $(GCCFLAGS)
   $(package)_cflags_arm_linux = $(GCCFLAGS)
+  $(package)_config_opts +=--libdir=$($($(package)_type)_prefix)/lib
 endef
 
 define $(package)_config_cmds

@@ -1,9 +1,9 @@
-package=libxkbcommon
-$(package)_version=0.8.4
-$(package)_download_path=https://xkbcommon.org/download/
+package=libpng
+$(package)_version=1.6.48
+$(package)_download_path=https://download.sourceforge.net/libpng
 $(package)_file_name=$(package)-$($(package)_version).tar.xz
-$(package)_sha256_hash=60ddcff932b7fd352752d51a5c4f04f3d0403230a584df9a2e0d5ed87c486c8b
-$(package)_dependencies=libxcb xkeyboard-config
+$(package)_sha256_hash=46fd06ff37db1db64c0dc288d78a3f5efd23ad9ac41561193f983e20937ece03
+$(package)_dependencies=
 
 define $(package)_set_vars
 $(package)_config_opts = --enable-option-checking --disable-dependency-tracking
@@ -11,10 +11,6 @@ $(package)_config_opts += --disable-shared --enable-static --disable-docs
 $(package)_config_opts +=--libdir=$($($(package)_type)_prefix)/lib
 $(package)_cflags+=-fPIC
 $(package)_cflags += -Wno-error=array-bounds
-endef
-
-define $(package)_preprocess_cmds
-  cp -f $(BASEDIR)/config.guess $(BASEDIR)/config.sub build-aux
 endef
 
 define $(package)_config_cmds
