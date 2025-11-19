@@ -11,6 +11,7 @@ define $(package)_set_vars
   $(package)_config_opts+= --enable-static
   $(package)_config_opts+= --without-brotli
   $(package)_config_opts+= --libdir=$($($(package)_type)_prefix)/lib
+  $(package)_config_opts+= --without-nghttp2
   $(package)_config_opts_release+=--disable-debug-mode
   $(package)_config_opts_linux+=--with-pic -with-openssl
   # Disable OpenSSL for Windows and use native SSL stack (SSPI/Schannel):
