@@ -160,6 +160,7 @@ $(package)_config_opts_mingw32 += -no-pkg-config
 # CMake build options.
 $(package)_config_env := CC="$$($(package)_cc)"
 $(package)_config_env += CXX="$$($(package)_cxx)"
+$(package)_config_env += PKG_CONFIG_PATH="$($($(package)_type)_prefix)/lib/pkgconfig:$($($(package)_type)_prefix)/share/pkgconfig"
 $(package)_config_env_darwin := OBJC="$$($(package)_cc)"
 $(package)_config_env_darwin += OBJCXX="$$($(package)_cxx)"
 
