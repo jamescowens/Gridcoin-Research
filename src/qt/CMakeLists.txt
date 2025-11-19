@@ -2,6 +2,22 @@
 # ============
 add_subdirectory(locale)
 
+# Cleanup: Remove stale Qt MOC files
+# ==================================
+# Autotools (and older build methods) generate .moc and moc_*.cpp files
+# directly in the source tree. These conflict with CMake's AUTOMOC.
+file(GLOB_RECURSE STALE_MOC_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.moc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/moc_*.cpp"
+)
+
+if(STALE_MOC_FILES)
+    message(STATUS "Detected stale Qt MOC files in source tree. Cleaning up...")
+    foreach(STALE_FILE ${STALE_MOC_FILES})
+        message(STATUS "  Removing: ${STALE_FILE}")
+        file(REMOVE "${STALE_FILE}")
+    endforeach()
+endif()
 
 # libgridcoinqt
 # =============
