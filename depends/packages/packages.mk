@@ -1,4 +1,4 @@
-packages:=boost openssl curl zlib libzip
+packages:=boost openssl curl zlib libzip bzip2 xz
 native_packages := native_ccache
 
 qt_packages = qrencode

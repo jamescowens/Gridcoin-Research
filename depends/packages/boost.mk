@@ -5,7 +5,7 @@ $(package)_file_name = boost-$($(package)_version)-cmake.tar.gz
 $(package)_sha256_hash=954a01219bf818c7fb850fa610c2c8c71a4fa28fa32a1900056bcb6ff58cf908
 $(package)_patches = skip_compiled_targets.patch
 $(package)_build_subdir = build
-$(package)_dependencies := zlib
+$(package)_dependencies := zlib bzip2 xz
 
 define $(package)_set_vars
   $(package)_config_opts = -DBOOST_INCLUDE_LIBRARIES="multi_index;signals2;test;filesystem;system;thread;iostreams;asio;serialization;date_time;interprocess"
@@ -17,7 +17,6 @@ define $(package)_set_vars
   $(package)_config_opts += -DCMAKE_DISABLE_FIND_PACKAGE_ICU=ON
   $(package)_config_opts += -DZLIB_INCLUDE_DIR=$(host_prefix)/include
   $(package)_config_opts += -DZLIB_LIBRARY=$(host_prefix)/lib/libz.a
-  #$(package)_config_opts_mingw32 := -DBOOST_PLATFORM_CONFIG=boost/config/platform/win32.hpp
 endef
 
 define $(package)_preprocess_cmds
