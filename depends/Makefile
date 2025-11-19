@@ -45,7 +45,7 @@ NO_UPNP ?=
 FALLBACK_DOWNLOAD_PATHS ?= https://bitcoincore.org/depends-sources https://gridcoin-depends-backup-sources.s3.us-east-1.amazonaws.com
 
 
-C_STANDARD ?= c11
+C_STANDARD ?= gnu11
 CXX_STANDARD ?= c++17
 
 BUILD = $(shell ./config.guess)
