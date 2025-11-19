@@ -3,7 +3,7 @@ native_packages := native_ccache
 
 qt_packages = qrencode
 
-qt_linux_packages:=qt expat libxcb xcb_proto libXau xproto freetype fontconfig libxkbcommon libxcb_util libxcb_util_render libxcb_util_keysyms libxcb_util_image libxcb_util_wm
+qt_linux_packages:=qt expat libxcb xcb_proto libXau xproto freetype fontconfig libxkbcommon libxcb_util libxcb_util_cursor libxcb_util_render libxcb_util_keysyms libxcb_util_image libxcb_util_wm util-macros xkeyboard-config libevent libpng harfbuzz pcre2
 qt_darwin_packages=qt
 qt_mingw32_packages=qt
 ifneq ($(host),$(build))

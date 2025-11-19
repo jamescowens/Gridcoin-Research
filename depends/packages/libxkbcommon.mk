@@ -11,6 +11,7 @@ $(package)_config_opts += --disable-shared --enable-static --disable-docs
 $(package)_config_opts +=--libdir=$($($(package)_type)_prefix)/lib
 $(package)_cflags+=-fPIC
 $(package)_cflags += -Wno-error=array-bounds
+$(package)_config_env := PKG_CONFIG_PATH="$($($(package)_type)_prefix)/lib/pkgconfig:$($($(package)_type)_prefix)/share/pkgconfig"
 endef
 
 define $(package)_preprocess_cmds
