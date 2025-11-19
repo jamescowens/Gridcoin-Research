@@ -157,6 +157,8 @@ $(package)_config_opts_mingw32 := -no-dbus
 $(package)_config_opts_mingw32 += -no-freetype
 $(package)_config_opts_mingw32 += -no-pkg-config
 
+$(package)_config_opts += $($(package)_config_opts_$(host_os))
+
 # CMake build options.
 $(package)_config_env := CC="$$($(package)_cc)"
 $(package)_config_env += CXX="$$($(package)_cxx)"
@@ -186,9 +188,10 @@ $(package)_cmake_opts += -DCMAKE_OBJCXX_FLAGS="$$($(package)_cppflags) $$($$($(p
 $(package)_cmake_opts += -DCMAKE_OBJCXX_FLAGS_RELEASE="$$($$($(package)_type)_release_CXXFLAGS)"
 $(package)_cmake_opts += -DCMAKE_OBJCXX_FLAGS_DEBUG="$$($$($(package)_type)_debug_CXXFLAGS)"
 endif
-$(package)_cmake_opts += -DCMAKE_EXE_LINKER_FLAGS="$$($$($(package)_type)_LDFLAGS)"
+$(package)_cmake_opts += -DCMAKE_EXE_LINKER_FLAGS="$$($$($(package)_type)_LDFLAGS) -lexpat -lxcb-util -lXau -lfreetype -lbz2 -lpng -lz"
 $(package)_cmake_opts += -DCMAKE_EXE_LINKER_FLAGS_RELEASE="$$($$($(package)_type)_release_LDFLAGS)"
 $(package)_cmake_opts += -DCMAKE_EXE_LINKER_FLAGS_DEBUG="$$($$($(package)_type)_debug_LDFLAGS)"
+$(package)_cmake_opts += -DTEST_xcb_syslibs=ON
 
 ifneq ($(host),$(build))
 $(package)_cmake_opts += -DCMAKE_SYSTEM_NAME=$($(host_os)_cmake_system_name)
@@ -260,6 +263,18 @@ define $(package)_preprocess_cmds
 endef
 
 define $(package)_config_cmds
+  export PKG_CONFIG_PATH=$(host_prefix)/lib/pkgconfig:$(host_prefix)/share/pkgconfig && \
+  mkdir -p $(host_prefix)/lib/pkgconfig && \
+  echo "Name: X11" > $(host_prefix)/lib/pkgconfig/x11.pc && \
+  echo "Description: Dummy X11" >> $(host_prefix)/lib/pkgconfig/x11.pc && \
+  echo "Version: 1.0.0" >> $(host_prefix)/lib/pkgconfig/x11.pc && \
+  echo "Libs:" >> $(host_prefix)/lib/pkgconfig/x11.pc && \
+  echo "Cflags:" >> $(host_prefix)/lib/pkgconfig/x11.pc && \
+  echo "Name: Xext" > $(host_prefix)/lib/pkgconfig/xext.pc && \
+  echo "Description: Dummy Xext" >> $(host_prefix)/lib/pkgconfig/xext.pc && \
+  echo "Version: 1.0.0" >> $(host_prefix)/lib/pkgconfig/xext.pc && \
+  echo "Libs:" >> $(host_prefix)/lib/pkgconfig/xext.pc && \
+  echo "Cflags:" >> $(host_prefix)/lib/pkgconfig/xext.pc && \
   cd qtbase && \
   ./configure -top-level $($(package)_config_opts) -- $($(package)_cmake_opts)
 endef
