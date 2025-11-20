@@ -69,18 +69,18 @@ include(CheckIncludeFile)
 include(CheckPIESupported)
 include(CheckSymbolExists)
 
+# SIMD checks are compile-only, so they are safe for cross-compilation.
+# We run them unconditionally. The compiler flags will determine success/fail.
+include(CheckSSE41)
+include(CheckAVX2)
+include(CheckSHANI)
+include(CheckARMSHANI)
+
+# Runtime checks must still be skipped during cross-compilation
 if(NOT CMAKE_CROSSCOMPILING)
-    include(CheckSSE41)
-    include(CheckAVX2)
-    include(CheckSHANI)
-    include(CheckARMSHANI)
     include(CheckStrerrorR)
 else()
-    message(STATUS "Cross-compiling: skipping CheckSSE and CheckStrerrorR probes.")
-    set(HAS_SSE41 FALSE)
-    set(HAS_AVX2 FALSE)
-    set(HAS_X86_SHANI FALSE)
-    set(HAS_ARM_SHANI FALSE)
+    message(STATUS "Cross-compiling: skipping CheckStrerrorR probe.")
 endif()
 
 include(FindPkgConfig)
