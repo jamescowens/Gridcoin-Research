@@ -266,7 +266,6 @@ if(ENABLE_UPNP)
     target_link_libraries(gridcoin_util PUBLIC PkgConfig::MINIUPNPC)
 endif()
 
-
 # Daemon
 # ======
 
