@@ -214,7 +214,7 @@ target_link_libraries(gridcoinresearch PRIVATE
     gridcoin_util
     gridcoinqt
 )
-if(UNIX AND NOT APPLE AND CMAKE_CROSSCOMPILING)
+if(UNIX AND NOT APPLE AND DEFINED DEP_LIB)
     # 1. The "Imposter" Math Target (This solves the -lm linker error where the linker looks for the math lib in the wrong place.)
     add_library(m SHARED IMPORTED GLOBAL)
     set_target_properties(m PROPERTIES IMPORTED_LOCATION "/lib64/libm.so.6")
@@ -237,7 +237,7 @@ if(UNIX AND NOT APPLE AND CMAKE_CROSSCOMPILING)
     set(CMAKE_CXX_LINK_EXECUTABLE
         "<CMAKE_CXX_COMPILER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES> ${MANUAL_STATIC_FIX}"
     )
-    endif()
+endif()
 
 set_target_properties(gridcoinresearch PROPERTIES
     WIN32_EXECUTABLE TRUE
