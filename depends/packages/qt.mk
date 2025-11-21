@@ -195,9 +195,10 @@ $(package)_cmake_opts += -DCMAKE_CXX_STANDARD_LIBRARIES="-lexpat -lxcb-util -lXa
 $(package)_cmake_opts += -DTEST_xcb_syslibs=ON
 else
 $(package)_cmake_opts += -DCMAKE_EXE_LINKER_FLAGS="$$($$($(package)_type)_LDFLAGS)"
+endif
+
 $(package)_cmake_opts += -DCMAKE_EXE_LINKER_FLAGS_RELEASE="$$($$($(package)_type)_release_LDFLAGS)"
 $(package)_cmake_opts += -DCMAKE_EXE_LINKER_FLAGS_DEBUG="$$($$($(package)_type)_debug_LDFLAGS)"
-endif
 
 ifneq ($(host),$(build))
 $(package)_cmake_opts += -DCMAKE_SYSTEM_NAME=$($(host_os)_cmake_system_name)
