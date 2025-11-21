@@ -188,11 +188,16 @@ $(package)_cmake_opts += -DCMAKE_OBJCXX_FLAGS="$$($(package)_cppflags) $$($$($(p
 $(package)_cmake_opts += -DCMAKE_OBJCXX_FLAGS_RELEASE="$$($$($(package)_type)_release_CXXFLAGS)"
 $(package)_cmake_opts += -DCMAKE_OBJCXX_FLAGS_DEBUG="$$($$($(package)_type)_debug_CXXFLAGS)"
 endif
+
+ifneq ($(host),x86_64-w64-mingw32)
 $(package)_cmake_opts += -DCMAKE_EXE_LINKER_FLAGS="-L$(host_prefix)/lib $$($$($(package)_type)_LDFLAGS) -lexpat -lxcb-util -lXau -lfreetype -lbz2 -lpng -lz"
-$(package)_cmake_opts += -DCMAKE_EXE_LINKER_FLAGS_RELEASE="$$($$($(package)_type)_release_LDFLAGS)"
-$(package)_cmake_opts += -DCMAKE_EXE_LINKER_FLAGS_DEBUG="$$($$($(package)_type)_debug_LDFLAGS)"
 $(package)_cmake_opts += -DCMAKE_CXX_STANDARD_LIBRARIES="-lexpat -lxcb-util -lXau -lfreetype -lbz2 -lpng -lz"
 $(package)_cmake_opts += -DTEST_xcb_syslibs=ON
+else
+$(package)_cmake_opts += -DCMAKE_EXE_LINKER_FLAGS="$$($$($(package)_type)_LDFLAGS)"
+$(package)_cmake_opts += -DCMAKE_EXE_LINKER_FLAGS_RELEASE="$$($$($(package)_type)_release_LDFLAGS)"
+$(package)_cmake_opts += -DCMAKE_EXE_LINKER_FLAGS_DEBUG="$$($$($(package)_type)_debug_LDFLAGS)"
+endif
 
 ifneq ($(host),$(build))
 $(package)_cmake_opts += -DCMAKE_SYSTEM_NAME=$($(host_os)_cmake_system_name)

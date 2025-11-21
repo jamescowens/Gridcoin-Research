@@ -17,6 +17,11 @@ define $(package)_set_vars
   $(package)_config_opts += -DCMAKE_DISABLE_FIND_PACKAGE_ICU=ON
   $(package)_config_opts += -DZLIB_INCLUDE_DIR=$(host_prefix)/include
   $(package)_config_opts += -DZLIB_LIBRARY=$(host_prefix)/lib/libz.a
+  $(package)_config_opts += -DBZIP2_INCLUDE_DIR=$(host_prefix)/include
+  $(package)_config_opts += -DBZIP2_LIBRARIES=$(host_prefix)/lib/libbz2.a
+  $(package)_config_opts += -DLIBLZMA_INCLUDE_DIR=$(host_prefix)/include
+  $(package)_config_opts += -DLIBLZMA_LIBRARY=$(host_prefix)/lib/liblzma.a
+
 endef
 
 define $(package)_preprocess_cmds

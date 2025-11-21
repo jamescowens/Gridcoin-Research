@@ -44,8 +44,16 @@ NO_WALLET ?=
 NO_UPNP ?=
 FALLBACK_DOWNLOAD_PATHS ?= https://bitcoincore.org/depends-sources https://gridcoin-depends-backup-sources.s3.us-east-1.amazonaws.com
 
+# Default to gnu11 for Linux/Unix compatibility
+C_STANDARD_DEFAULT := gnu11
 
-C_STANDARD ?= gnu11
+# Use c11 for MinGW to avoid POSIX header conflicts (time_t, ssize_t, etc.)
+ifneq ($(filter %mingw32,$(HOST)),)
+    C_STANDARD_DEFAULT := c11
+endif
+
+C_STANDARD ?= $(C_STANDARD_DEFAULT)
+
 CXX_STANDARD ?= c++17
 
 BUILD = $(shell ./config.guess)
