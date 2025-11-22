@@ -9,7 +9,7 @@ $(package)_dependencies := zlib bzip2 xz
 
 define $(package)_set_vars
   $(package)_config_opts = -DBOOST_INCLUDE_LIBRARIES="multi_index;signals2;test;filesystem;system;thread;iostreams;asio;serialization;date_time;interprocess"
-  $(package)_config_opts += -DBOOST_TEST_HEADERS_ONLY=ON
+  $(package)_config_opts += -DBOOST_TEST_HEADERS_ONLY=OFF
   $(package)_config_opts += -DBOOST_ENABLE_MPI=OFF
   $(package)_config_opts += -DBOOST_ENABLE_PYTHON=OFF
   $(package)_config_opts += -DBOOST_INSTALL_LAYOUT=system
