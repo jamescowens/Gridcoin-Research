@@ -298,6 +298,15 @@ if(ENABLE_DAEMON)
         set_source_files_properties(gridcoinresearchd-res.rc PROPERTIES
             COMPILE_FLAGS "-I${CMAKE_BINARY_DIR} -DWINDRES_PREPROC"
         )
+
+        add_custom_command(TARGET gridcoinresearchd POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/release
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:gridcoinresearchd>
+                ${CMAKE_BINARY_DIR}/release/gridcoinresearchd.exe
+            COMMAND ${CMAKE_STRIP} ${CMAKE_BINARY_DIR}/release/gridcoinresearchd.exe
+            COMMENT "Copying and stripping gridcoinresearchd for NSIS installer"
+        )
     endif()
 
     if(UNIX)

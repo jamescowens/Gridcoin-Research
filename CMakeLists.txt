@@ -396,3 +396,60 @@ add_subdirectory(src)
 if(ENABLE_DOCS)
     add_subdirectory(doc)
 endif()
+
+# ---------------------------------------------------------------------------
+# Windows Packaging (NSIS) - "make deploy" replacement
+# ---------------------------------------------------------------------------
+
+if(WIN32 AND NOT SKIP_INSTALLER)
+    # 1. Define Variables used in setup.nsi.in
+    set(PACKAGE_NAME "Gridcoin")
+    set(PACKAGE_URL "https://gridcoin.us")
+    set(PACKAGE_TARNAME "gridcoin")
+
+    set(CLIENT_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+    set(CLIENT_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+    set(CLIENT_VERSION_REVISION ${PROJECT_VERSION_PATCH})
+    set(CLIENT_VERSION_BUILD ${PROJECT_VERSION_TWEAK})
+    if(NOT CLIENT_VERSION_BUILD)
+        set(CLIENT_VERSION_BUILD 0)
+    endif()
+
+    set(COPYRIGHT_YEAR "2025")
+    set(COPYRIGHT_HOLDERS_FINAL "The Gridcoin developers")
+
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(WINDOWS_BITS "64")
+    else()
+        set(WINDOWS_BITS "32")
+    endif()
+
+    # Variable names expected by setup.nsi.in
+    set(GRIDCOIN_GUI_NAME "gridcoinresearch")
+    set(GRIDCOIN_DAEMON_NAME "gridcoinresearchd")
+    set(EXEEXT ".exe")
+    set(abs_top_srcdir ${CMAKE_SOURCE_DIR})
+    set(abs_top_builddir ${CMAKE_BINARY_DIR})
+
+    # 2. Configure the NSIS script
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/share/setup.nsi.in
+        ${CMAKE_BINARY_DIR}/share/setup.nsi
+        @ONLY
+    )
+
+    # 3. Create the 'deploy' target
+    find_program(MAKENSIS_EXE makensis)
+
+    if(MAKENSIS_EXE)
+        add_custom_target(deploy
+            COMMAND ${MAKENSIS_EXE} ${CMAKE_BINARY_DIR}/share/setup.nsi
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Generating Windows Installer (NSIS)"
+            VERBATIM
+        )
+        message(STATUS "NSIS: Enabled. 'cmake --build build --target deploy' will generate the installer.")
+    else()
+        message(WARNING "NSIS: makensis not found. The 'deploy' target will not be available.")
+    endif()
+endif()

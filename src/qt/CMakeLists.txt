@@ -272,6 +272,15 @@ if(WIN32)
         shlwapi
         iphlpapi
     )
+
+    add_custom_command(TARGET gridcoinresearch POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/release
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:gridcoinresearch>
+            ${CMAKE_BINARY_DIR}/release/gridcoinresearch.exe
+        COMMAND ${CMAKE_STRIP} ${CMAKE_BINARY_DIR}/release/gridcoinresearch.exe
+        COMMENT "Copying and stripping gridcoinresearch for NSIS installer"
+    )
 endif()
 
 # Tests
