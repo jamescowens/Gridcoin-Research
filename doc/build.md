@@ -59,7 +59,7 @@ cmake -B build \
     -DENABLE_PIE=ON \
     -DENABLE_DOCS=ON \
     -DENABLE_TESTS=ON \
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    -DCMAKE_BUILD_TYPE=\<Normally Release - see table below\>
 ```
 
 ### Build & Test
@@ -107,11 +107,11 @@ cmake -B build_linux_depends \
     -DENABLE_GUI=ON \
     -DUSE_QT6=ON \
     -DSTATIC_LIBS=ON \
+    -DENABLE_TESTS=ON \
     -DDEP_LIB="${DEP_LIB}" \
     -DCMAKE_CXX_FLAGS="-fPIE" \
     -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++ -Wl,-Bdynamic" \
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DENABLE_TESTS=ON
+    -DCMAKE_BUILD_TYPE=\<Normally Release - see table below\>
 ```
 
 ### Step 3: Build
@@ -149,8 +149,13 @@ cmake -B build_win64 \
     --toolchain depends/x86_64-w64-mingw32/toolchain.cmake \
     -DENABLE_GUI=ON \
     -DUSE_QT6=ON \
+    -DENABLE_UPNP=ON \
+    -DDEFAULT_UPNP=ON \
     -DENABLE_TESTS=ON \
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    -DSYSTEM_XXD=ON \
+    -DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/wine
+    -DCMAKE_EXE_LINKER_FLAGS="-static" \
+    -DCMAKE_BUILD_TYPE=\<Normally Release - see table below\>
 ```
 
 ### Step 3: Build

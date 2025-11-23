@@ -243,7 +243,15 @@ endif()
 target_link_libraries(gridcoin_util PUBLIC ${LIBGRIDCOIN_CRYPTO})
 
 if(WIN32)
-    target_link_libraries(gridcoin_util PUBLIC wsock32 ws2_32 wldap32 crypt32)
+    target_link_libraries(gridcoin_util PUBLIC
+        wsock32
+        ws2_32
+        wldap32
+        crypt32
+        bcrypt
+        shlwapi
+        iphlpapi
+        )
 endif()
 
 target_compile_definitions(gridcoin_util PUBLIC

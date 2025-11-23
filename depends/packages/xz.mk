@@ -5,7 +5,8 @@ $(package)_file_name=$(package)-$($(package)_version).tar.gz
 $(package)_sha256_hash=f6f4910fd033078738bd82bfba4f49219d03b17eb0794eb91efbae419f4aba10
 
 define $(package)_set_vars
-$(package)_config_opts=--disable-shared --disable-doc --disable-xz --disable-xzdec --disable-lzmadec --disable-lzmainfo --disable-lzma-links --disable-scripts
+$(package)_config_opts=--disable-shared --enable-static --disable-doc --disable-xz --disable-xzdec --disable-lzmadec --disable-lzmainfo --disable-lzma-links --disable-scripts
+$(package)_config_opts += --libdir=$(host_prefix)/lib
 $(package)_config_opts_linux=--with-pic
 endef
 

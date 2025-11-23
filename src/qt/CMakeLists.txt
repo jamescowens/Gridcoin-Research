@@ -200,8 +200,22 @@ add_dependencies(gridcoinqt gridcoinqt_l10n)
 # Application
 # ===========
 
-add_executable(gridcoinresearch bitcoin.cpp)
+# Prepare resources (Icons) for Windows
+if(WIN32)
+    set(GRIDCOIN_RC res/gridcoinresearch.rc)
 
+    # Ensure windres can find the referenced icon files
+    set_source_files_properties(${GRIDCOIN_RC} PROPERTIES
+        COMPILE_DEFINITIONS WINDRES_PREPROC
+        COMPILE_FLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}/res"
+    )
+endif()
+
+# Define the executable
+# Note: We add ${GRIDCOIN_RC} to the sources so the icon is compiled into the binary
+add_executable(gridcoinresearch bitcoin.cpp ${GRIDCOIN_RC})
+
+# macOS Bundle Resources
 set(MACOSX_BUNDLE_RESOURCE_FILES res/icons/gridcoin.icns)
 if(APPLE)
     target_sources(gridcoinresearch PRIVATE ${MACOSX_BUNDLE_RESOURCE_FILES})
@@ -214,26 +228,23 @@ target_link_libraries(gridcoinresearch PRIVATE
     gridcoin_util
     gridcoinqt
 )
+
+# Linux Static Math Lib Workaround
 if(UNIX AND NOT APPLE AND DEFINED DEP_LIB)
-    # 1. The "Imposter" Math Target (This solves the -lm linker error where the linker looks for the math lib in the wrong place.)
+    # 1. The "Imposter" Math Target (This solves the -lm linker error)
     add_library(m SHARED IMPORTED GLOBAL)
     set_target_properties(m PROPERTIES IMPORTED_LOCATION "/lib64/libm.so.6")
 
     target_link_libraries(gridcoinresearch PRIVATE m)
 
     # 2. THE AUTOMATED MANUAL FIX
-    # Define the libraries as a simple list first
     set(MY_LIBS_LIST
         "${DEP_LIB}/libfreetype.a"
         "${DEP_LIB}/libfontconfig.a"
         "${DEP_LIB}/libexpat.a"
         "${DEP_LIB}/libxcb-util.a"
     )
-
-    # Flatten the list into a space-separated string explicitly
     string(REPLACE ";" " " MANUAL_STATIC_FIX "${MY_LIBS_LIST}")
-
-    # Override the linker rule
     set(CMAKE_CXX_LINK_EXECUTABLE
         "<CMAKE_CXX_COMPILER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES> ${MANUAL_STATIC_FIX}"
     )
@@ -246,6 +257,7 @@ set_target_properties(gridcoinresearch PROPERTIES
     RESOURCE ${MACOSX_BUNDLE_RESOURCE_FILES}
 )
 
+# Installation Rules (Linux)
 if(UNIX AND NOT APPLE)
     include(GNUInstallDirs)
     install(TARGETS gridcoinresearch
@@ -262,6 +274,7 @@ if(UNIX AND NOT APPLE)
     )
 endif()
 
+# Windows Specifics (Libraries, Icons, Deployment)
 if(WIN32)
     target_link_libraries(gridcoinresearch PRIVATE
         ws2_32
@@ -273,6 +286,7 @@ if(WIN32)
         iphlpapi
     )
 
+    # Ensure the binary is copied and stripped for the NSIS installer
     add_custom_command(TARGET gridcoinresearch POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/release
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
