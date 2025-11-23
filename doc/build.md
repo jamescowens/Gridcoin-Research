@@ -24,7 +24,8 @@ This document covers the three primary build targets:
 ## Prerequisites
 
   * **CMake:** 3.18 or later
-  * **Compiler:** GCC (C++17 support required) or Clang
+  * **Compiler:** GCC (C++17 support required) or Clang. If your system compiler is not compliant, you will need to install
+    a compiler that is C++17 compliant and use -DCMAKE_CXX_COMPILER=\<C++ compiler\> and -DCMAKE_C_COMPILER=\<C compiler\>
   * **Qt:** Version 5.15 or 6.x
   * **Boost:** Version 1.70 or later
 
@@ -44,9 +45,11 @@ This document covers the three primary build targets:
 
 This procedure uses your operating system's installed libraries (OpenSSL, Boost, Qt, etc.). It creates a dynamically linked executable.
 
-### Configuration
+### Step 1: Configuration
 
 Run the following from the repository root:
+
+Note that if your distribution has Qt6, you will need to add -DUSE_QT6. You can also leave out -DENABLE_QRENCODE, -DENABLE_UPNP, and -DDEFAULT_UPNP if you don't use that functionality.
 
 ```bash
 rm -rf build
@@ -59,10 +62,10 @@ cmake -B build \
     -DENABLE_PIE=ON \
     -DENABLE_DOCS=ON \
     -DENABLE_TESTS=ON \
-    -DCMAKE_BUILD_TYPE=\<Normally Release - see table below\>
+    -DCMAKE_BUILD_TYPE=\<Release \| RelWithDebInfo \| Debug - see table below\>
 ```
 
-### Build & Test
+### Step 2: Build & Test
 
 ```bash
 # Build using all available CPU cores
@@ -72,7 +75,7 @@ cmake --build build -j $(nproc)
 ctest --test-dir build
 ```
 
-### Install (Optional)
+### Step 3: Install (Optional)
 
 To install the binaries to your system (default: `/usr/local/bin`):
 
@@ -107,18 +110,24 @@ cmake -B build_linux_depends \
     -DENABLE_GUI=ON \
     -DUSE_QT6=ON \
     -DSTATIC_LIBS=ON \
+    -DENABLE_UPNP=ON \
+    -DDEFAULT_UPNP=ON \
     -DENABLE_TESTS=ON \
     -DDEP_LIB="${DEP_LIB}" \
     -DCMAKE_CXX_FLAGS="-fPIE" \
     -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++ -Wl,-Bdynamic" \
-    -DCMAKE_BUILD_TYPE=\<Normally Release - see table below\>
+    -DCMAKE_BUILD_TYPE=\<Release \| RelWithDebInfo \| Debug - see table below\>
 ```
 
-### Step 3: Build
+### Step 3: Build & Test
 
 ```bash
 cmake --build build_linux_depends -j $(nproc)
+
+ctest --test-dir build_linux_depends
 ```
+
+### Step 4: Install (Optional)
 
 To install the binaries to your system (default: `/usr/local/bin`):
 
@@ -131,6 +140,13 @@ sudo cmake --install build
 ## 3\. Windows Build (Cross-Compile)
 
 This procedure generates a Windows 64-bit executable (`.exe`) from a Linux host using the Mingw-w64 toolchain provided by the `depends` system.
+
+Note that some distributions have the win32 threading model set by default. Gridcoin needs the posix threading model. To change this use
+
+sudo update-alternatives --config x86_64-w64-mingw32-g++
+sudo update-alternatives --config x86_64-w64-mingw32-gcc
+
+and set the posix threading model for each before you get started. Note that the exact config will vary by distribution. The above is for Ubuntu.
 
 ### Step 1: Build Dependencies
 
@@ -153,15 +169,17 @@ cmake -B build_win64 \
     -DDEFAULT_UPNP=ON \
     -DENABLE_TESTS=ON \
     -DSYSTEM_XXD=ON \
-    -DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/wine
+    -DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/wine \
     -DCMAKE_EXE_LINKER_FLAGS="-static" \
-    -DCMAKE_BUILD_TYPE=\<Normally Release - see table below\>
+    -DCMAKE_BUILD_TYPE=\<Release \| RelWithDebInfo \| Debug - see table below\>
 ```
 
-### Step 3: Build
+### Step 3: Build & Test
 
 ```bash
 cmake --build build_win64 -j $(nproc)
+
+ctest --test-dir build_win64
 ```
 
 -----
@@ -185,7 +203,7 @@ If you are accustomed to the legacy `autogen.sh` and `./configure` workflow, use
 | **Static Libs** | (Implicit in depends) | `-DSTATIC_LIBS=ON` |
 
 Note that the autotools default does not strip the debug symbols, and uses -O2 optimization. This corresponds to
-cmake's `-DCMAKE_BUILD_TYPE=RelWithDebInfo`. The cmake `-DCMAKE_BUILD_TYPE=Release` will use -03 optimization
+cmake's `-DCMAKE_BUILD_TYPE=RelWithDebInfo`. The cmake `-DCMAKE_BUILD_TYPE=Release` will use -02 optimization
 and also strip the debug symbols from the executables.
 
 Using no -DCMAKE_BUILD_TYPE flag with cmake will result in no optimization and is effectively a debug build.
