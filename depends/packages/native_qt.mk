@@ -94,6 +94,8 @@ $(package)_cmake_opts := -DCMAKE_EXE_LINKER_FLAGS="$$(build_LDFLAGS)"
 ifneq ($(V),)
 $(package)_cmake_opts += --log-level=STATUS
 endif
+
+$(package)_cmake_opts += -DCMAKE_DISABLE_FIND_PACKAGE_WrapLibClang=ON
 endef
 
 define $(package)_fetch_cmds
