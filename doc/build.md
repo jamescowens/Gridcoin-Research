@@ -25,19 +25,22 @@ This document covers the three primary build targets:
 
   * **CMake:** 3.18 or later
   * **Compiler:** GCC (C++17 support required) or Clang. If your system compiler is not compliant, you will need to install
-    a compiler that is C++17 compliant and use -DCMAKE_CXX_COMPILER=\<C++ compiler\> and -DCMAKE_C_COMPILER=\<C compiler\>
+    a compiler that is C++17 compliant and use -DCMAKE_CXX_COMPILER=\< C++ compiler \> and -DCMAKE_C_COMPILER=\< C compiler \>
   * **Qt:** Version 5.15 or 6.x
-  * **Boost:** Version 1.70 or later
+  * **Boost:** Version 1.60 or later
+  * Please refer to [link](build-dependencies.md) (build-dependencies.md) for packages that must be installed before building.
 
 -----
 
 ## Quick Reference
 
-| Target | Primary Use Case | Key CMake Flags |
+| Target | Primary Use Case |
 | :--- | :--- | :--- |
-| **Linux Native** | Development, Package Maintainers | `cmake -B build` |
-| **Linux Static** | Portable Releases (Tarballs) | `-DSTATIC_LIBS=ON` (requires `depends`) |
-| **Windows** | Windows Installer/Executable | `-DCMAKE_TOOLCHAIN_FILE=...` (requires `depends`) |
+| **Linux Native** | Development, Package Maintainers |
+| **Linux Static** | Portable releases, especially useful for older distributions that can't meet native package dependencies |
+| **Windows Cross-Compile** | Windows installer/Executable |
+
+Please refer to [Link](cmake-builds.md) for a list of cmake configuration options.
 
 -----
 
@@ -62,7 +65,7 @@ cmake -B build \
     -DENABLE_PIE=ON \
     -DENABLE_DOCS=ON \
     -DENABLE_TESTS=ON \
-    -DCMAKE_BUILD_TYPE=\<Release \| RelWithDebInfo \| Debug - see table below\>
+    -DCMAKE_BUILD_TYPE=\< Release | RelWithDebInfo | Debug - see table below \>
 ```
 
 ### Step 2: Build & Test
@@ -116,7 +119,7 @@ cmake -B build_linux_depends \
     -DDEP_LIB="${DEP_LIB}" \
     -DCMAKE_CXX_FLAGS="-fPIE" \
     -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++ -Wl,-Bdynamic" \
-    -DCMAKE_BUILD_TYPE=\<Release \| RelWithDebInfo \| Debug - see table below\>
+    -DCMAKE_BUILD_TYPE=\< Release | RelWithDebInfo | Debug - see table below \>
 ```
 
 ### Step 3: Build & Test
@@ -137,7 +140,7 @@ sudo cmake --install build
 
 -----
 
-## 3\. Windows Build (Cross-Compile)
+## 3\. Windows Cross-Compile Build
 
 This procedure generates a Windows 64-bit executable (`.exe`) from a Linux host using the Mingw-w64 toolchain provided by the `depends` system.
 
@@ -171,7 +174,7 @@ cmake -B build_win64 \
     -DSYSTEM_XXD=ON \
     -DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/wine \
     -DCMAKE_EXE_LINKER_FLAGS="-static" \
-    -DCMAKE_BUILD_TYPE=\<Release \| RelWithDebInfo \| Debug - see table below\>
+    -DCMAKE_BUILD_TYPE=\< Release | RelWithDebInfo | Debug - see table below \>
 ```
 
 ### Step 3: Build & Test
