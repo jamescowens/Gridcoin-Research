@@ -15,13 +15,13 @@ define $(package)_set_vars
   $(package)_config_opts += -DBOOST_INSTALL_LAYOUT=system
   $(package)_config_opts += -DBUILD_TESTING=OFF
   $(package)_config_opts += -DCMAKE_DISABLE_FIND_PACKAGE_ICU=ON
+  $(package)_config_opts += -DCMAKE_DISABLE_FIND_PACKAGE_zstd=ON
   $(package)_config_opts += -DZLIB_INCLUDE_DIR=$(host_prefix)/include
   $(package)_config_opts += -DZLIB_LIBRARY=$(host_prefix)/lib/libz.a
   $(package)_config_opts += -DBZIP2_INCLUDE_DIR=$(host_prefix)/include
   $(package)_config_opts += -DBZIP2_LIBRARIES=$(host_prefix)/lib/libbz2.a
   $(package)_config_opts += -DLIBLZMA_INCLUDE_DIR=$(host_prefix)/include
   $(package)_config_opts += -DLIBLZMA_LIBRARY=$(host_prefix)/lib/liblzma.a
-
 endef
 
 define $(package)_preprocess_cmds
@@ -29,7 +29,7 @@ define $(package)_preprocess_cmds
 endef
 
 define $(package)_config_cmds
-  $($(package)_cmake) -S .. -B .
+  $($(package)_cmake) -S .. -B . $($(package)_config_opts)
 endef
 
 define $(package)_stage_cmds
