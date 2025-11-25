@@ -31,6 +31,10 @@ sudo dnf install \
 ### openSUSE
 
 ```bash
+sudo zypper addrepo -f https://download.opensuse.org/repositories/windows:/mingw:/win32/... (select based on distro)
+
+sudo zypper addrepo -f https://download.opensuse.org/repositories/windows:/mingw:/win64/... (select based on distro)
+
 sudo zypper install \
     -t pattern devel_basis \
     libtool automake autoconf pkg-config python3 \

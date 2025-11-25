@@ -27,7 +27,7 @@ This document covers the three primary build targets:
   * **Compiler:** GCC (C++17 support required) or Clang. If your system compiler is not compliant, you will need to install
     a compiler that is C++17 compliant and use -DCMAKE_CXX_COMPILER=\< C++ compiler \> and -DCMAKE_C_COMPILER=\< C compiler \>
   * **Qt:** Version 5.15 or 6.x
-  * **Boost:** Version 1.60 or later
+  * **Boost:** Version 1.63 or later
   * Please refer to [link](build-dependencies.md) (build-dependencies.md) for packages that must be installed before building.
 
 -----
@@ -41,6 +41,10 @@ This document covers the three primary build targets:
 | **Windows Cross-Compile** | Windows installer/Executable |
 
 Please refer to [Link](cmake-builds.md) for a list of cmake configuration options.
+
+Developers may want to use -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache to have ccache cache
+the compilation at the ccache level. In many instances it is required to do an rm -rf of the build directory, and this will speed up
+repeated compilations.
 
 -----
 
