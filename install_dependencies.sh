@@ -30,13 +30,14 @@ install_deps() {
     # --- Define Packages per OS ---
     case $OS in
         debian|ubuntu|linuxmint)
-            # Base Build Tools (Needed for Native & Depends)
+            # Base Build Tools
             append_base build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 cmake git curl ccache doxygen graphviz
-            # Libraries for Native Build
-            # Added libcurl4-openssl-dev just to be safe, though often pulled in.
-            append_base libssl-dev libevent-dev libboost-all-dev libminiupnpc-dev libqrencode-dev libzip-dev libcurl4-openssl-dev
 
-            # Qt6 Packages (Only if requested)
+            # Libraries for Native Build
+            # FIX: Added zipcmp zipmerge ziptool (Required by libzip CMake config)
+            append_base libssl-dev libevent-dev libboost-all-dev libminiupnpc-dev libqrencode-dev libzip-dev libcurl4-openssl-dev zipcmp zipmerge ziptool
+
+            # Qt6 Packages
             append_qt qt6-base-dev qt6-tools-dev qt6-l10n-tools libqt6charts6-dev
 
             # Windows Cross-Compile Tools
@@ -44,9 +45,8 @@ install_deps() {
             ;;
 
         fedora|rhel)
-            # Added libcurl-devel
             append_base gcc-c++ libtool automake autoconf pkgconf-pkg-config python3 cmake git curl ccache doxygen graphviz
-            append_base openssl-devel libevent-devel boost-devel miniupnpc-devel qrencode-devel libzip-devel libcurl-devel
+            append_base openssl-devel libevent-devel boost-devel miniupnpc-devel qrencode-devel libzip-devel libcurl-devel libzip-tools
 
             append_qt qt6-qtbase-devel qt6-qttools-devel qt6-qtcharts-devel
 
@@ -95,15 +95,13 @@ install_deps() {
                 sudo zypper --gpg-auto-import-keys refresh
             fi
 
-            # Pattern Install (Base dev tools)
+            # Pattern Install
             echo "Installing devel_basis pattern..."
             sudo zypper install -y -t pattern devel_basis
 
             # Individual Packages
-            # Added libcurl-devel
             append_base libtool automake autoconf pkg-config python3 cmake git curl ccache doxygen graphviz libzstd-devel
-            append_base libopenssl-devel libevent-devel boost-devel qrencode-devel libzip-devel libcurl-devel
-            # miniupnpc handling (hardcoded as requested)
+            append_base libopenssl-devel libevent-devel boost-devel qrencode-devel libzip-devel libcurl-devel libzip-tools
             append_base miniupnpc libminiupnpc-devel
 
             append_qt qt6-base-devel qt6-tools-devel qt6-charts-devel
@@ -112,13 +110,11 @@ install_deps() {
             ;;
 
         arch|manjaro)
-            # Arch includes headers in 'curl' package, so no extra devel package needed.
             append_base base-devel python cmake git ccache doxygen graphviz
             append_base boost libevent miniupnpc libzip qrencode curl
 
             append_qt qt6-base qt6-tools qt6-charts
 
-            # Note: mingw-w64-gcc is often AUR, might fail if not enabled/helper used
             append_mingw mingw-w64-gcc nsis
             ;;
 
@@ -131,22 +127,16 @@ install_deps() {
     # --- Determine Final Package List to Install ---
     PKGS_TO_INSTALL=""
 
-    # 1. Base/Native Deps: Needed for 'all' and 'native'.
-    #    Also partially needed for 'depends' (build tools like cmake/make/python),
-    #    but keeping it simple by installing full base set is usually safer/easier.
     if [[ "$TARGET" == "all" || "$TARGET" == "native" || "$TARGET" == "depends" ]]; then
         PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_BASE"
     fi
 
-    # 2. Qt6 Deps: Only if TARGET involves native build AND Qt6 is enabled.
-    #    Depends/Win64 builds build their own Qt, so they don't need host Qt6 devel packages.
     if [[ "$USE_QT6" == "true" ]]; then
         if [[ "$TARGET" == "all" || "$TARGET" == "native" ]]; then
             PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_QT"
         fi
     fi
 
-    # 3. MinGW Deps: Only if TARGET is 'all' or 'win64'.
     if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]]; then
         PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_MINGW"
     fi
