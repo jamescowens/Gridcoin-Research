@@ -34,11 +34,13 @@ install_deps() {
             append_base build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 cmake git curl ccache doxygen graphviz
 
             # Libraries for Native Build
-            # FIX: Added zipcmp zipmerge ziptool (Required by libzip CMake config)
+            # Includes zipcmp/zipmerge/ziptool for libzip CMake config
             append_base libssl-dev libevent-dev libboost-all-dev libminiupnpc-dev libqrencode-dev libzip-dev libcurl4-openssl-dev zipcmp zipmerge ziptool
 
-            # Qt6 Packages
-            append_qt qt6-base-dev qt6-tools-dev qt6-l10n-tools libqt6charts6-dev
+            # Qt6 Packages (Only if requested)
+            # Added: libqt6svg6-dev (Fixes "Failed to find required Qt component Svg")
+            # Added: libqt6core5compat6-dev (Required by CMakeLists.txt for USE_QT6)
+            append_qt qt6-base-dev qt6-tools-dev qt6-l10n-tools libqt6charts6-dev libqt6svg6-dev libqt6core5compat6-dev
 
             # Windows Cross-Compile Tools
             append_mingw g++-mingw-w64-x86-64 nsis
@@ -48,7 +50,8 @@ install_deps() {
             append_base gcc-c++ libtool automake autoconf pkgconf-pkg-config python3 cmake git curl ccache doxygen graphviz
             append_base openssl-devel libevent-devel boost-devel miniupnpc-devel qrencode-devel libzip-devel libcurl-devel libzip-tools
 
-            append_qt qt6-qtbase-devel qt6-qttools-devel qt6-qtcharts-devel
+            # Fedora usually packages these differently, but ensuring basics:
+            append_qt qt6-qtbase-devel qt6-qttools-devel qt6-qtcharts-devel qt6-qtsvg-devel qt6-qt5compat-devel
 
             append_mingw mingw64-gcc-c++ mingw64-nsis
             ;;
@@ -104,7 +107,8 @@ install_deps() {
             append_base libopenssl-devel libevent-devel boost-devel qrencode-devel libzip-devel libcurl-devel libzip-tools
             append_base miniupnpc libminiupnpc-devel
 
-            append_qt qt6-base-devel qt6-tools-devel qt6-charts-devel
+            # OpenSUSE Qt6 naming
+            append_qt qt6-base-devel qt6-tools-devel qt6-charts-devel qt6-svg-devel qt6-core5compat-devel
 
             append_mingw mingw64-cross-gcc-c++ nsis
             ;;
@@ -113,7 +117,8 @@ install_deps() {
             append_base base-devel python cmake git ccache doxygen graphviz
             append_base boost libevent miniupnpc libzip qrencode curl
 
-            append_qt qt6-base qt6-tools qt6-charts
+            # Arch groups these well, usually base includes svg/5compat
+            append_qt qt6-base qt6-tools qt6-charts qt6-svg qt6-5compat
 
             append_mingw mingw-w64-gcc nsis
             ;;
