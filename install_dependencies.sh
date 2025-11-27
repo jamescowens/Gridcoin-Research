@@ -47,7 +47,7 @@ install_deps() {
             ;;
 
         fedora|rhel)
-            append_base gcc-c++ libtool automake autoconf pkgconf-pkg-config python3 cmake git curl patch ccache doxygen graphviz
+            append_base gcc-c++ libtool automake autoconf pkgconf-pkg-config python3 cmake git curl patch perl-FindBin ccache doxygen graphviz
             append_base openssl-devel libevent-devel boost-devel miniupnpc-devel qrencode-devel libzip-devel libcurl-devel libzip-tools
 
             # Fedora usually packages these differently, but ensuring basics:
