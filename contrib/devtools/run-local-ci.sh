@@ -68,6 +68,12 @@ for ARG in "$@"; do
         job=*)
             JOB="${ARG#*=}"
             ;;
+        matrix=*)
+            # Extracts "key:value" (e.g., host:x86_64-pc-linux-gnu)
+            MATRIX_VAL="${ARG#*=}"
+            # Appends it to the ACT options
+            ACT_OPTS="$ACT_OPTS --matrix $MATRIX_VAL"
+            ;;
         help|--help|-h)
             show_help
             exit 0
