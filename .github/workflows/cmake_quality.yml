@@ -48,6 +48,7 @@ jobs:
             -DENABLE_GUI=OFF \
             -DENABLE_TESTS=ON \
             -DUSE_QT6=ON \
+            -DUSE_ASM=OFF \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
             -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" \
@@ -60,8 +61,10 @@ jobs:
       - name: Test (With Sanitizers)
         env:
           # ASAN options to prevent false positives or known minor issues from failing the build
+          LSAN_OPTIONS: suppressions=${{ github.workspace }}/test/sanitizer_suppressions/lsan
+          TSAN_OPTIONS: suppressions=${{ github.workspace }}/test/sanitizer_suppressions/tsan
+          UBSAN_OPTIONS: suppressions=${{ github.workspace }}/test/sanitizer_suppressions/ubsan:print_stacktrace=1:halt_on_error=1
           ASAN_OPTIONS: malloc_context_size=0:check_initialization_order=1
-          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
         run: |
           # We exclude the Qt tests here if they trigger false positives in GUI libs
           ctest --test-dir build_asan --output-on-failure
