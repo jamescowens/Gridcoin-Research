@@ -22,7 +22,7 @@ sudo apt-get install \
 ```bash
 sudo dnf install \
     gcc-c++ libtool automake autoconf pkgconf-pkg-config python3 \
-    cmake git curl \
+    cmake git curl patch \
     openssl-devel libevent-devel boost-devel \
     miniupnpc-devel qrencode-devel libzip-devel \
     qt6-qtbase-devel qt6-qttools-devel qt6-qtcharts-devel
