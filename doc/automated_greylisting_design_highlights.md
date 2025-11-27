@@ -6,7 +6,7 @@ This document provides the highlights for the functionality included in Gridcoin
 
 When projects temporarily do not meet the requirements for whitelisting, the main two rules of which are a Work Availability Score (WAS) of less than 0.1, and/or a Zero Credit Days (ZCD) count of greater than 7, the project is "greylisted". Traditionally, from a network operations perspective, this has meant temporarily removing the project from the whitelist using the administrative protocol update procedures, and then re-adding the project when the two rules return to normal. This is a manual and labor intensive process that does not scale well as the number of whitelisted projects increase, and it depends on the administrator to take action in a timely manner.
 
-To address the scalability and administrative stablility, it was recognized several years ago that a form of automatic greylisting would be important functionality to implement. This PR addresses that functionality need.
+To address the scalability and administrative stability, it was recognized several years ago that a form of automatic greylisting would be important functionality to implement. This PR addresses that functionality need.
 
 This PR implements *manual greylisting* via a new project entry status *MAN_GREYLISTED*. This is set by administrative contract just like whitelisting. The purpose of the manual listing is twofold: 1) Not all possible issues that could result in a need to greylist are covered by the WAS and ZCD rules, and 2) a long term low level availability of a project at a fairly consistent level for more than 40 days will cause the WAS to pass, because both the numerator and denominator forming WAS will see similar results. This project status is stored in the project registry.
 
@@ -36,9 +36,9 @@ The scraper was modified to collect total credit across the entire project for e
 
 ## Changes to the registry_db.h template
 
-The registry db template provides generic programming common code underlying the registry implementations for each of the contract types that require historized, revertable state maintenance of their corresponding objects. This implements versioned state storage of registered contract type objects via the defined key in leveldb. The AutoGreylist class needs to know when the first entry actually occurred for a project to properly apply the rules for projects whitelisted within the 40 superblock lookback scope. As a result, the registry db template had to be extended to include a generic type and code to accomodate this.
+The registry db template provides generic programming common code underlying the registry implementations for each of the contract types that require historized, revertable state maintenance of their corresponding objects. This implements versioned state storage of registered contract type objects via the defined key in leveldb. The AutoGreylist class needs to know when the first entry actually occurred for a project to properly apply the rules for projects whitelisted within the 40 superblock lookback scope. As a result, the registry db template had to be extended to include a generic type and code to accommodate this.
 
-Each of the corresponding contract type classes had to be modified to accomodate changes in the registry template, even if they did not actually use the first occurance functionality, i.e. trivial modifications to all other contract types besides project.
+Each of the corresponding contract type classes had to be modified to accommodate changes in the registry template, even if they did not actually use the first occurrence functionality, i.e. trivial modifications to all other contract types besides project.
 
 ## Changes to the superblock
 
@@ -112,7 +112,7 @@ A ProjectFilterFlag was implemented to accomplish easy filtering of the whitelis
     };
 
 ```
-Note that the ACTIVE enum value is actually a combination of the original ACTIVE (now labled REG_ACTIVE, which is short for registry active) and AUTO_GREYLIST_OVERRIDE, since a project status of AUTO_GREYLIST_OVERRIDE means that the project is not only active, but overrides any determination by the automatic greylisting.
+Note that the ACTIVE enum value is actually a combination of the original ACTIVE (now labeled REG_ACTIVE, which is short for registry active) and AUTO_GREYLIST_OVERRIDE, since a project status of AUTO_GREYLIST_OVERRIDE means that the project is not only active, but overrides any determination by the automatic greylisting.
 
 ### ProjectEntry class modifications
 
@@ -140,7 +140,7 @@ This method is used by the RefreshWithSuperblock method to update each GreylistC
 
 ##### struct UpdateHistoryEntry
 
-This is the struct that stores the greylist state at the given update for the greylist candidate. *Note that this is the history viewed BACKWARDS as a lookback from the current state, not forwards looking, so this can be misleading if you do not understand that*. Each time the AutoGreylist class is updated due to the current superblock hash changing, the historical entries will be rebuilt from the current superblock backwards. This struct contains most of its member variables as std::optionals to accomodate the lack of information at a particular update.
+This is the struct that stores the greylist state at the given update for the greylist candidate. *Note that this is the history viewed BACKWARDS as a lookback from the current state, not forwards looking, so this can be misleading if you do not understand that*. Each time the AutoGreylist class is updated due to the current superblock hash changing, the historical entries will be rebuilt from the current superblock backwards. This struct contains most of its member variables as std::optionals to accommodate the lack of information at a particular update.
 
 ##### const std::vector<UpdateHistoryEntry> GetUpdateHistory() const
 
@@ -222,7 +222,7 @@ The autogreylist_lock is an internal critical section to ensure thread safety, s
 
 #### Change to WhitelistSnapshot Snapshot method
 
-This method has been extended to take the Project Filter as an argument, defaulting to ACTIVE, and also the refresh_greylist boolean defautling to true, and the include_override boolean defaulting to true. This method implements the AUTO_GREYLISTED override of project status when the corresponding AutoGreylist greylist candidate entry meets greylisting criteria according to the rules.
+This method has been extended to take the Project Filter as an argument, defaulting to ACTIVE, and also the refresh_greylist boolean defaulting to true, and the include_override boolean defaulting to true. This method implements the AUTO_GREYLISTED override of project status when the corresponding AutoGreylist greylist candidate entry meets greylisting criteria according to the rules.
 
 #### const ProjectEntryMap GetProjectsFirstActive() const
 

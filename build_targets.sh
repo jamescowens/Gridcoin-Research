@@ -239,7 +239,8 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "depends" ]; then
         rm -rf build_linux_depends
 
         # Set DEP_LIB variable required by the recipe
-        export DEP_LIB=$(pwd)/depends/x86_64-pc-linux-gnu/lib
+        DEP_LIB=$(pwd)/depends/x86_64-pc-linux-gnu/lib
+        export DEP_LIB
 
         # Configuration from build.md "2. Linux Static Build"
         cmake -B build_linux_depends \

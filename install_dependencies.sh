@@ -7,6 +7,8 @@ install_deps() {
     local USE_QT6="$2"
 
     if [ -f /etc/os-release ]; then
+        # The next line prevents the linter from looking into os-release and complaining about unused variables.
+        # shellcheck source=/dev/null
         . /etc/os-release
         OS=$ID
     else

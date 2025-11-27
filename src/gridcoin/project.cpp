@@ -451,7 +451,7 @@ void AutoGreylist::RefreshWithSuperblock(SuperblockPtr superblock_ptr_in,
 
     unsigned int superblock_count = 0;
 
-    // Notice the superblock_ptr_in m_projects_all_cpid_total_credits MUST ALEADY BE POPULATED to record the TC state into
+    // Notice the superblock_ptr_in m_projects_all_cpid_total_credits MUST ALREADY BE POPULATED to record the TC state into
     // the auto greylist.
     for (const auto& iter : whitelist) {
         auto project = superblock_ptr_in->m_projects_all_cpids_total_credits.m_projects_all_cpid_total_credits.find(iter.m_name);
