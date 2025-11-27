@@ -203,7 +203,7 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "native" ]; then
         cmake --build build -j $CORES
 
         # Test
-        ctest --test-dir build
+        ctest --test-dir build -j $CORES
 
         echo ">>> Linux Native Build Successful."
     fi
@@ -260,7 +260,7 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "depends" ]; then
         cmake --build build_linux_depends -j $CORES
 
         # Test
-        ctest --test-dir build_linux_depends
+        ctest --test-dir build_linux_depends -j $CORES
 
         echo ">>> Linux Static Build Successful."
     fi
@@ -312,7 +312,7 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "win64" ]; then
         cmake --build build_win64 -j $CORES
 
         # Test
-        ctest --test-dir build_win64
+        ctest --test-dir build_win64 -j $CORES
 
         echo ">>> Windows Build Successful."
     fi

@@ -67,7 +67,7 @@ jobs:
           ASAN_OPTIONS: malloc_context_size=0:check_initialization_order=1
         run: |
           # We exclude the Qt tests here if they trigger false positives in GUI libs
-          ctest --test-dir build_asan --output-on-failure
+          ctest --test-dir build_asan --output-on-failure -j $(nproc)
 
   # ----------------------------------------------------------------------
   # JOB 2: Linter

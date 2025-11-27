@@ -40,7 +40,7 @@ jobs:
         run: cmake --build build --parallel $(nproc)
 
       - name: Test
-        run: ctest --test-dir build --output-on-failure
+        run: ctest --test-dir build --output-on-failure -j $(nproc)
 
   # -------------------------------------------------------------------------
   # JOB 2: Linux ARM64 (System Qt6 via QEMU)
@@ -60,10 +60,15 @@ jobs:
         run: |
           sudo dpkg --add-architecture arm64
 
-          # 1. Restrict default sources to amd64 only (Ubuntu 24.04 DEB822 format)
+          # 1. Ensure Native AMD64 sources have 'universe' and 'multiverse' enabled
+          # The base image might have a minimal sources.list
+          sudo add-apt-repository -y universe
+          sudo add-apt-repository -y multiverse
+
+          # 2. Restrict default sources to amd64 only (Ubuntu 24.04 DEB822 format)
           sudo sed -i 's/^Types: deb$/Types: deb\nArchitectures: amd64/' /etc/apt/sources.list.d/ubuntu.sources
 
-          # 2. Add ARM64 ports mirror (ALL suites: release, updates, security)
+          # 3. Add ARM64 ports mirror (ALL suites: release, updates, security)
           # We need all of them so libc6:arm64 version matches libc6:amd64 exactly.
           cat <<EOF | sudo tee /etc/apt/sources.list.d/arm64.list
           deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble main universe multiverse restricted
@@ -75,6 +80,11 @@ jobs:
 
       - name: Install ARM64 Toolchain & Qt6
         run: |
+          # 1. Clean up conflicts
+          sudo apt-get remove -y libcurl4-openssl-dev libcurl4-gnutls-dev libcups2 libcups2t64 || true
+          sudo apt-get autoremove -y
+
+          # 2. Install dependencies
           sudo apt-get install -y \
             build-essential \
             cmake \
@@ -82,10 +92,15 @@ jobs:
             zipcmp \
             zipmerge \
             ziptool \
+            qemu-user-static \
             g++-aarch64-linux-gnu \
             qt6-base-dev:arm64 \
-            libqt6charts6-dev:arm64 \
-            libqt6svg6-dev:arm64 \
+            qt6-charts-dev:arm64 \
+            qt6-svg-dev:arm64 \
+            qt6-l10n-tools:arm64 \
+            qt6-tools-dev:arm64 \
+            qt6-tools-dev-tools:arm64 \
+            libqt6core5compat6-dev:arm64 \
             libssl-dev:arm64 \
             libzip-dev:arm64 \
             libcurl4-openssl-dev:arm64 \
@@ -96,8 +111,10 @@ jobs:
             libboost-program-options-dev:arm64 \
             libboost-serialization-dev:arm64 \
             libboost-chrono-dev:arm64 \
+            libboost-test-dev:arm64 \
             libminiupnpc-dev:arm64 \
-            libqrencode-dev:arm64
+            libqrencode-dev:arm64 \
+            libxkbcommon-dev:arm64
 
       - name: Configure CMake (Cross)
         run: |
@@ -108,7 +125,22 @@ jobs:
             -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
             -DCMAKE_FIND_ROOT_PATH="/usr/lib/aarch64-linux-gnu;/usr/include/aarch64-linux-gnu" \
             -DCMAKE_SYSROOT=/ \
-            -DQt6_DIR=/usr/lib/aarch64-linux-gnu/cmake/Qt6
+            -DENABLE_GUI=ON \
+            -DUSE_QT6=ON \
+            -DQt6_DIR=/usr/lib/aarch64-linux-gnu/cmake/Qt6 \
+            -DENABLE_TESTS=ON \
+            -DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/qemu-aarch64-static
 
       - name: Build
-        run: cmake --build build --parallel 2
+        run: cmake --build build --parallel $(nproc)
+
+      - name: Test (QEMU Emulation)
+        env:
+          # Force Qt to run in "Headless" mode so it doesn't look for a screen
+          QT_QPA_PLATFORM: offscreen
+          # Optional: Make QEMU explicit about library paths if it gets confused
+          # (Ubuntu Multiarch usually handles this automatically, but keeping this in mind)
+          # QEMU_LD_PREFIX: /usr/aarch64-linux-gnu
+        run: |
+          # Run tests with verbose output on failure
+          ctest --test-dir build --output-on-failure -j $(nproc)
