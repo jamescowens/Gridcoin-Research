@@ -7,7 +7,7 @@ on:
     branches: [ "depends_qt6" ]
 
 env:
-  # Global settings
+  # Global settings for all jobs
   BUILD_TYPE: Release
   USE_CCACHE: true
 
@@ -183,11 +183,26 @@ jobs:
           export CC_LAUNCHER='-DCMAKE_C_COMPILER_LAUNCHER=ccache'
           export CXX_LAUNCHER='-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
 
-          # macOS often needs an explicit hint for OpenSSL if installed via Homebrew (keg-only)
+          # Locate Homebrew Keg-Only packages
+          QT6_PATH=$(brew --prefix qt)
           OPENSSL_ROOT=$(brew --prefix openssl)
 
           cmake -B build \
+            -DCMAKE_PREFIX_PATH="$QT6_PATH" \
             -DENABLE_GUI=ON \
             -DENABLE_QRENCODE=ON \
             -DENABLE_UPNP=ON \
-            -DDEFAULT_UPNP=
+            -DDEFAULT_UPNP=ON \
+            -DENABLE_TESTS=ON \
+            -DENABLE_DOCS=OFF \
+            -DUSE_QT6=ON \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT" \
+            $CC_LAUNCHER \
+            $CXX_LAUNCHER
+
+      - name: Build
+        run: cmake --build build --parallel $(sysctl -n hw.logicalcpu)
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
