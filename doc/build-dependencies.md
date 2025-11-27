@@ -21,7 +21,7 @@ sudo apt-get install \
 
 ```bash
 sudo dnf install \
-    gcc-c++ libtool automake autoconf pkgconf-pkg-config python3 \
+    libstdc++-static gcc-c++ libtool automake autoconf pkgconf-pkg-config python3 \
     cmake git curl patch perl-FindBin bison flex \
     openssl-devel libevent-devel boost-devel \
     miniupnpc-devel qrencode-devel libzip-devel \
