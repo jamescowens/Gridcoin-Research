@@ -161,6 +161,19 @@ install_deps() {
         debian|ubuntu|linuxmint)
             sudo apt-get update
             sudo apt-get install -y $PKGS_TO_INSTALL
+
+            # --- CRITICAL FIX: Set MinGW threading to POSIX ---
+            # This fixes the "hang at end of test" issue by enabling std::thread support.
+            if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]]; then
+                echo "Configuring MinGW-w64 threading model to POSIX..."
+                if [ -f /usr/bin/x86_64-w64-mingw32-g++-posix ]; then
+                    sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
+                    sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
+                    echo "MinGW-w64 threading model set to POSIX."
+                else
+                    echo "Warning: MinGW POSIX alternative not found. Skipping threading configuration."
+                fi
+            fi
             ;;
         fedora|rhel)
             sudo dnf install -y $PKGS_TO_INSTALL
