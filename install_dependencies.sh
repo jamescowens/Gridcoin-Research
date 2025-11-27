@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export LC_ALL=C
+
 install_deps() {
     local TARGET="$1"
     local USE_QT6="$2"

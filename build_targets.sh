@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export LC_ALL=C
+
 set -e # Exit immediately if a command exits with a non-zero status.
 
 # Error handling trap
