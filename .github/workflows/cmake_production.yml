@@ -35,7 +35,7 @@ jobs:
             -DENABLE_DOCS=OFF \
             -DENABLE_TESTS=ON \
             -DUSE_QT6=ON \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo
+            -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         run: cmake --build build --parallel $(nproc)
@@ -48,7 +48,7 @@ jobs:
   # ----------------------------------------------------------------------
   depends-builds:
     name: ${{ matrix.name }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -122,7 +122,7 @@ jobs:
             -DENABLE_UPNP=ON \
             -DDEFAULT_UPNP=ON \
             -DENABLE_TESTS=ON \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_BUILD_TYPE=Release \
             ${{ matrix.cmake_args }}
 
       # 5. Build

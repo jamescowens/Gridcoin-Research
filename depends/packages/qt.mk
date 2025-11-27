@@ -156,7 +156,6 @@ $(package)_config_opts_freebsd := $$($(package)_config_opts_linux)
 $(package)_config_opts_mingw32 := -no-dbus
 $(package)_config_opts_mingw32 += -no-freetype
 $(package)_config_opts_mingw32 += -no-pkg-config
-$(package)_config_opts_mingw32 += -no-feature-d3d12
 
 $(package)_config_opts += $($(package)_config_opts_$(host_os))
 
@@ -198,6 +197,7 @@ $(package)_cmake_opts += -DCMAKE_CXX_STANDARD_LIBRARIES="-lexpat -lxcb-util -lXa
 $(package)_cmake_opts += -DTEST_xcb_syslibs=ON
 else
 $(package)_cmake_opts += -DCMAKE_EXE_LINKER_FLAGS="$$($$($(package)_type)_LDFLAGS)"
+$(package)_cmake_opts += -DQT_FEATURE_d3d12=OFF
 endif
 
 $(package)_cmake_opts += -DCMAKE_EXE_LINKER_FLAGS_RELEASE="$$($$($(package)_type)_release_LDFLAGS)"
