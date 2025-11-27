@@ -2,9 +2,17 @@ name: CMake Production Builds (Depends)
 
 on:
   push:
-    branches: [ "depends_qt6" ]
+    # Run on push to ANY branch (includes forks if actions are enabled)
+    branches:
+      - '**'
+    # AND run on release tags (triggers the deploy job)
+    tags:
+      - "v*"
+      - "5.*"
   pull_request:
-    branches: [ "depends_qt6" ]
+    # Run on any PR targeting any branch
+    branches:
+      - '**'
 
 env:
   # Global settings for all jobs
@@ -23,7 +31,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Target #2: Linux Static
           - name: Linux Static (Depends)
             host: x86_64-pc-linux-gnu
             build_dir: build_linux_depends
@@ -33,7 +40,6 @@ jobs:
               -DCMAKE_CXX_FLAGS="-fPIE"
               -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++ -Wl,-Bdynamic"
 
-          # Target #3: Windows Cross-Compile
           - name: Windows Cross-Compile
             host: x86_64-w64-mingw32
             build_dir: build_win64
@@ -107,20 +113,29 @@ jobs:
       - name: Run Tests
         run: ctest --test-dir ${{ matrix.build_dir }} --output-on-failure -j $(nproc)
 
-      # 7. Package (Windows Only - NSIS)
+      # 7. Package (Linux Tarball)
+      - name: Create Linux Package (TGZ)
+        if: contains(matrix.host, 'linux')
+        run: |
+          # Use CPack to generate .tar.gz (configured in CMakeLists.txt)
+          # -B defines the output directory for artifacts
+          cpack -G TGZ --config ${{ matrix.build_dir }}/CPackConfig.cmake -B release_packages
+
+      # 8. Package (Windows Only - NSIS)
       - name: Create Windows Installer
         if: contains(matrix.host, 'mingw')
         run: |
           cmake --build ${{ matrix.build_dir }} --target deploy
 
-      # 8. Upload Artifacts
+      # 9. Upload Artifacts
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: gridcoin-${{ matrix.host }}
           path: |
-            ${{ matrix.build_dir }}/src/gridcoinresearchd*
+            release_packages/*.tar.gz
             ${{ matrix.build_dir }}/*.exe
+          retention-days: 5
 
   # ----------------------------------------------------------------------
   # JOB 2: macOS Native (Matches CD Release logic except no packaging)
@@ -170,4 +185,48 @@ jobs:
         run: cmake --build build --parallel $(sysctl -n hw.logicalcpu)
 
       - name: Test
-        run: ctest --test-dir build --output-on-failure -j $(nproc)
+        run: ctest --test-dir build --output-on-failure -j $(sysctl -n hw.logicalcpu)
+
+      - name: Package (DMG)
+        run: |
+          # Generate Disk Image
+          cpack -G DragNDrop --config build/CPackConfig.cmake -B release_packages
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridcoin-macos-dmg
+          path: release_packages/*.dmg
+          retention-days: 5
+
+  # ----------------------------------------------------------------------
+  # JOB 3: Deploy (GitHub Release) - NEW SECTION
+  # ----------------------------------------------------------------------
+  deploy:
+    name: Create Release
+    needs: [depends-builds, macos-native]
+    runs-on: ubuntu-latest
+    # STRICT GUARD: Only runs if the event is a Tag push
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: gridcoin-*
+          merge-multiple: true
+          path: release_assets
+
+      - name: Generate Checksums
+        working-directory: release_assets
+        run: |
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release_assets/*
+          draft: true
+          generate_release_notes: true

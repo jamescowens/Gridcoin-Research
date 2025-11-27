@@ -493,3 +493,71 @@ if(WIN32 AND NOT SKIP_INSTALLER)
         message(WARNING "NSIS: makensis not found. The 'deploy' target will not be available.")
     endif()
 endif()
+
+# ==============================================================================
+# CPACK PACKAGING CONFIGURATION (Linux & macOS)
+# ==============================================================================
+# Only configure CPack if we aren't cross-compiling OR if explicitly enabled
+# (We exclude Windows here because a custom 'deploy' target for NSIS using the
+# pre-existing setup.nsis.in is used.)
+if((UNIX OR APPLE) AND NOT MINGW)
+
+    # 1. Common Metadata
+    set(CPACK_PACKAGE_NAME "gridcoinresearch")
+    set(CPACK_PACKAGE_VENDOR "The Gridcoin Community")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Gridcoin Research Wallet")
+    set(CPACK_PACKAGE_HOMEPAGE_URL "https://gridcoin.us")
+    set(CPACK_PACKAGE_CONTACT "Gridcoin Developers <dev@gridcoin.us>")
+
+    set(CPACK_PACKAGE_VERSION_MAJOR ${CLIENT_VERSION_MAJOR})
+    set(CPACK_PACKAGE_VERSION_MINOR ${CLIENT_VERSION_MINOR})
+    set(CPACK_PACKAGE_VERSION_PATCH ${CLIENT_VERSION_BUILD})
+
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+
+    # Define what files go into the package
+    if(ENABLE_GUI)
+        install(TARGETS gridcoinresearchd DESTINATION bin COMPONENT daemon)
+        install(TARGETS gridcoinresearch DESTINATION bin COMPONENT gui)
+
+        # Install Assets (Icons/Desktop files) - Useful even in a tarball
+        if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/contrib/debian/gridcoinresearch.desktop")
+            install(FILES "contrib/debian/gridcoinresearch.desktop" DESTINATION share/applications COMPONENT gui)
+        endif()
+        if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/qt/res/icons/gridcoin.png")
+            install(FILES "src/qt/res/icons/gridcoin.png" DESTINATION share/pixmaps RENAME gridcoinresearch.png COMPONENT gui)
+        endif()
+
+        # Optional: Include a simple install script if you have one in contrib/
+        # install(FILES "contrib/linux-install.sh" DESTINATION . PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ)
+    else()
+        install(TARGETS gridcoinresearchd DESTINATION bin COMPONENT daemon)
+    endif()
+
+    # --------------------------------------------------------------------------
+    # 2. Linux Packaging (Tarball)
+    # --------------------------------------------------------------------------
+    if(UNIX AND NOT APPLE)
+        set(CPACK_GENERATOR "TGZ")
+
+        # Naming convention: gridcoinresearch-5.x.x-x86_64-linux-gnu.tar.gz
+        set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_PROCESSOR}-linux-gnu")
+
+        # We strip the binaries to make the tarball smaller
+        set(CPACK_STRIP_FILES ON)
+    endif()
+
+    # --------------------------------------------------------------------------
+    # 3. macOS Packaging (DragNDrop)
+    # --------------------------------------------------------------------------
+    if(APPLE)
+        set(CPACK_GENERATOR "DragNDrop")
+        set(CPACK_DMG_VOLUME_NAME "Gridcoin")
+        set(CPACK_SYSTEM_NAME "macOS")
+
+        # TODO: More fancy config for background image.
+        install(TARGETS gridcoinresearchd gridcoinresearch BUNDLE DESTINATION .)
+    endif()
+
+    include(CPack)
+endif()

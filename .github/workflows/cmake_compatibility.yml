@@ -2,8 +2,22 @@ name: CMake Compatibility Builds
 
 on:
   push:
-    branches: [ master, development, depends_qt6 ]
+    # Run on push to ANY branch (includes forks if actions are enabled)
+    branches:
+      - '**'
+    # AND run on release tags
+    tags:
+      - "v*"
+      - "5.*"
   pull_request:
+    # Run on any PR targeting any branch
+    branches:
+      - '**'
+
+env:
+  # Global settings for all jobs
+  BUILD_TYPE: RelWithDebInfo
+  USE_CCACHE: true
 
 jobs:
   # ----------------------------------------------------------------------

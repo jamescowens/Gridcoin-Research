@@ -2,9 +2,17 @@ name: CMake Quality Gate
 
 on:
   push:
-    branches: [ "depends_qt6" ]
+    # Run on push to ANY branch (includes forks if actions are enabled)
+    branches:
+      - '**'
+    # AND run on release tags
+    tags:
+      - "v*"
+      - "5.*"
   pull_request:
-    branches: [ "depends_qt6" ]
+    # Run on any PR targeting any branch
+    branches:
+      - '**'
 
 env:
   # Use Clang for better sanitizer support
