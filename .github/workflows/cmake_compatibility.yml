@@ -1,0 +1,114 @@
+name: CMake Compatibility Builds
+
+on:
+  push:
+    branches: [ master, development, depends_qt6 ]
+  pull_request:
+
+jobs:
+  # ----------------------------------------------------------------------
+  # JOB 1: Linux Native (build_targets.sh target 1)
+  # ----------------------------------------------------------------------
+  linux-native:
+    name: 1. Linux Native (System Qt6)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          # Source the script to load the 'install_deps' function
+          source ./install_dependencies.sh
+          # Call the function explicitly
+          install_deps native true
+
+      - name: Configure CMake
+        run: |
+          cmake -B build \
+            -DENABLE_GUI=ON \
+            -DENABLE_QRENCODE=ON \
+            -DUSE_DBUS=ON \
+            -DENABLE_UPNP=ON \
+            -DDEFAULT_UPNP=ON \
+            -DENABLE_PIE=ON \
+            -DENABLE_DOCS=OFF \
+            -DENABLE_TESTS=ON \
+            -DUSE_QT6=ON \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+
+      - name: Build
+        run: cmake --build build --parallel $(nproc)
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  # -------------------------------------------------------------------------
+  # JOB 2: Linux ARM64 (System Qt6 via QEMU)
+  # -------------------------------------------------------------------------
+  linux-arm64-system:
+    name: Linux ARM64 (System Qt6)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Add ARM64 Architecture
+        run: |
+          sudo dpkg --add-architecture arm64
+
+          # 1. Restrict default sources to amd64 only (Ubuntu 24.04 DEB822 format)
+          sudo sed -i 's/^Types: deb$/Types: deb\nArchitectures: amd64/' /etc/apt/sources.list.d/ubuntu.sources
+
+          # 2. Add ARM64 ports mirror (ALL suites: release, updates, security)
+          # We need all of them so libc6:arm64 version matches libc6:amd64 exactly.
+          cat <<EOF | sudo tee /etc/apt/sources.list.d/arm64.list
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble main universe multiverse restricted
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-updates main universe multiverse restricted
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-security main universe multiverse restricted
+          EOF
+
+          sudo apt-get update
+
+      - name: Install ARM64 Toolchain & Qt6
+        run: |
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            ninja-build \
+            zipcmp \
+            zipmerge \
+            ziptool \
+            g++-aarch64-linux-gnu \
+            qt6-base-dev:arm64 \
+            libqt6charts6-dev:arm64 \
+            libqt6svg6-dev:arm64 \
+            libssl-dev:arm64 \
+            libzip-dev:arm64 \
+            libcurl4-openssl-dev:arm64 \
+            libboost-system-dev:arm64 \
+            libboost-filesystem-dev:arm64 \
+            libboost-thread-dev:arm64 \
+            libboost-iostreams-dev:arm64 \
+            libboost-program-options-dev:arm64 \
+            libboost-serialization-dev:arm64 \
+            libboost-chrono-dev:arm64 \
+            libminiupnpc-dev:arm64 \
+            libqrencode-dev:arm64
+
+      - name: Configure CMake (Cross)
+        run: |
+          cmake -B build -GNinja \
+            -DCMAKE_SYSTEM_NAME=Linux \
+            -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+            -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
+            -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
+            -DCMAKE_FIND_ROOT_PATH="/usr/lib/aarch64-linux-gnu;/usr/include/aarch64-linux-gnu" \
+            -DCMAKE_SYSROOT=/ \
+            -DQt6_DIR=/usr/lib/aarch64-linux-gnu/cmake/Qt6
+
+      - name: Build
+        run: cmake --build build --parallel 2

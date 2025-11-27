@@ -13,43 +13,8 @@ env:
 
 jobs:
   # ----------------------------------------------------------------------
-  # JOB 1: Linux Native (Matches build_targets.sh Target #1)
-  # ----------------------------------------------------------------------
-  linux-native:
-    name: 1. Linux Native (System Qt6)
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Dependencies
-        run: |
-          # Source the script to load the 'install_deps' function
-          source ./install_dependencies.sh
-          # Call the function explicitly
-          install_deps native true
-
-      - name: Configure CMake
-        run: |
-          cmake -B build \
-            -DENABLE_GUI=ON \
-            -DENABLE_QRENCODE=ON \
-            -DUSE_DBUS=ON \
-            -DENABLE_UPNP=ON \
-            -DDEFAULT_UPNP=ON \
-            -DENABLE_PIE=ON \
-            -DENABLE_DOCS=OFF \
-            -DENABLE_TESTS=ON \
-            -DUSE_QT6=ON \
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
-
-      - name: Build
-        run: cmake --build build --parallel $(nproc)
-
-      - name: Test
-        run: ctest --test-dir build --output-on-failure
-
-  # ----------------------------------------------------------------------
-  # JOB 2: Depends Builds (Linux Static & Windows Cross)
+  # JOB 1: Depends Builds (Linux Static & Windows Cross - build_targets.sh
+  #        targets 2 and 3)
   # ----------------------------------------------------------------------
   depends-builds:
     name: ${{ matrix.name }}
@@ -158,7 +123,7 @@ jobs:
             ${{ matrix.build_dir }}/*.exe
 
   # ----------------------------------------------------------------------
-  # JOB 3: macOS Native (Matches CD Release logic)
+  # JOB 2: macOS Native (Matches CD Release logic except no packaging)
   # ----------------------------------------------------------------------
   macos-native:
     name: 4. macOS Native (Homebrew Qt6)
