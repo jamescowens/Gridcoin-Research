@@ -144,3 +144,102 @@ jobs:
         run: |
           # Run tests with verbose output on failure
           ctest --test-dir build --output-on-failure -j $(nproc)
+
+  # -------------------------------------------------------------------------
+  # JOB 3: Linux ARMhf (32-bit ARMv7 / Odroid)
+  # -------------------------------------------------------------------------
+  linux-armhf-system:
+    name: Linux ARMhf (System Qt6)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/arm/v7
+
+      - name: Add ARMhf Architecture
+        run: |
+          sudo dpkg --add-architecture armhf
+
+          # 1. Enable Native AMD64 universe/multiverse (Critical for dependency resolution)
+          sudo add-apt-repository -y universe
+          sudo add-apt-repository -y multiverse
+
+          # 2. Restrict default sources to amd64
+          sudo sed -i 's/^Types: deb$/Types: deb\nArchitectures: amd64/' /etc/apt/sources.list.d/ubuntu.sources
+
+          # 3. Add ARMhf ports mirror
+          # Note: ports.ubuntu.com hosts both arm64 and armhf
+          cat <<EOF | sudo tee /etc/apt/sources.list.d/armhf.list
+          deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble main universe multiverse restricted
+          deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-updates main universe multiverse restricted
+          deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-security main universe multiverse restricted
+          EOF
+
+          sudo apt-get update
+
+      - name: Install ARMhf Toolchain & Qt6
+        run: |
+          # 1. Clean up conflicts (The "Pure Foreign" Strategy)
+          # We purposefully remove native libs that conflict with multiarch
+          sudo dpkg --remove --force-all libcurl4-openssl-dev libcurl4-gnutls-dev libcups2 libcups2t64 || true
+          sudo apt-get update
+          sudo apt-get -f install -y
+
+          # 2. Install dependencies (Pure ARMhf for Qt/Boost)
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            ninja-build \
+            zipcmp \
+            zipmerge \
+            ziptool \
+            qemu-user-static \
+            g++-arm-linux-gnueabihf \
+            qt6-base-dev:armhf \
+            qt6-charts-dev:armhf \
+            qt6-svg-dev:armhf \
+            qt6-l10n-tools:armhf \
+            qt6-tools-dev:armhf \
+            qt6-tools-dev-tools:armhf \
+            libqt6core5compat6-dev:armhf \
+            libssl-dev:armhf \
+            libzip-dev:armhf \
+            libcurl4-openssl-dev:armhf \
+            libboost-system-dev:armhf \
+            libboost-filesystem-dev:armhf \
+            libboost-thread-dev:armhf \
+            libboost-iostreams-dev:armhf \
+            libboost-program-options-dev:armhf \
+            libboost-serialization-dev:armhf \
+            libboost-chrono-dev:armhf \
+            libboost-test-dev:armhf \
+            libminiupnpc-dev:armhf \
+            libqrencode-dev:armhf \
+            libxkbcommon-dev:armhf
+
+      - name: Configure CMake (Cross)
+        run: |
+          cmake -B build -GNinja \
+            -DCMAKE_SYSTEM_NAME=Linux \
+            -DCMAKE_SYSTEM_PROCESSOR=arm \
+            -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
+            -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
+            -DCMAKE_FIND_ROOT_PATH="/usr/lib/arm-linux-gnueabihf;/usr/include/arm-linux-gnueabihf" \
+            -DCMAKE_SYSROOT=/ \
+            -DQt6_DIR=/usr/lib/arm-linux-gnueabihf/cmake/Qt6 \
+            -DENABLE_TESTS=ON \
+            -DENABLE_GUI=ON \
+            -DUSE_QT6=ON \
+            -DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/qemu-arm-static
+
+      - name: Build
+        run: cmake --build build --parallel $(nproc)
+
+      - name: Test (QEMU Emulation)
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          ctest --test-dir build --output-on-failure -j $(nproc)
