@@ -69,7 +69,7 @@ sudo apt-get install g++-mingw-w64-x86-64 nsis
 ### Fedora
 
 ```bash
-sudo dnf install mingw64-gcc-c++ mingw64-nsis
+sudo dnf install mingw64-gcc-c++ mingw64-nsis xxd
 ```
 
 ### openSUSE

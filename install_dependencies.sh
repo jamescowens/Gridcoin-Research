@@ -53,7 +53,7 @@ install_deps() {
             # Fedora usually packages these differently, but ensuring basics:
             append_qt qt6-qtbase-devel qt6-qttools-devel qt6-qtcharts-devel qt6-qtsvg-devel qt6-qt5compat-devel
 
-            append_mingw mingw64-gcc-c++ mingw64-nsis
+            append_mingw mingw64-gcc-c++ mingw64-nsis xxd
             ;;
 
         opensuse*|sles)
