@@ -7,7 +7,6 @@ install_deps() {
     if [ -f /etc/os-release ]; then
         . /etc/os-release
         OS=$ID
-        VERSION_ID=$VERSION_ID
     else
         echo "Error: Cannot detect OS distribution."
         return 1
