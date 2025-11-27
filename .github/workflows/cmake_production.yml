@@ -24,7 +24,7 @@ jobs:
       matrix:
         include:
           # Target #2: Linux Static
-          - name: 2. Linux Static (Depends)
+          - name: Linux Static (Depends)
             host: x86_64-pc-linux-gnu
             build_dir: build_linux_depends
             # Pass specific flags for static linux build
@@ -34,7 +34,7 @@ jobs:
               -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++ -Wl,-Bdynamic"
 
           # Target #3: Windows Cross-Compile
-          - name: 3. Windows Cross-Compile
+          - name: Windows Cross-Compile
             host: x86_64-w64-mingw32
             build_dir: build_win64
             # Pass specific flags for Windows cross build
@@ -105,7 +105,7 @@ jobs:
 
       # 6. Test (Unit Tests via CTest)
       - name: Run Tests
-        run: ctest --test-dir ${{ matrix.build_dir }} --output-on-failure
+        run: ctest --test-dir ${{ matrix.build_dir }} --output-on-failure -j $(nproc)
 
       # 7. Package (Windows Only - NSIS)
       - name: Create Windows Installer
@@ -126,7 +126,7 @@ jobs:
   # JOB 2: macOS Native (Matches CD Release logic except no packaging)
   # ----------------------------------------------------------------------
   macos-native:
-    name: 4. macOS Native (Homebrew Qt6)
+    name: macOS Native (Homebrew Qt6)
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
@@ -170,4 +170,4 @@ jobs:
         run: cmake --build build --parallel $(sysctl -n hw.logicalcpu)
 
       - name: Test
-        run: ctest --test-dir build --output-on-failure
+        run: ctest --test-dir build --output-on-failure -j $(nproc)

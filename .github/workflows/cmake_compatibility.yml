@@ -10,7 +10,7 @@ jobs:
   # JOB 1: Linux Native (build_targets.sh target 1)
   # ----------------------------------------------------------------------
   linux-native:
-    name: 1. Linux Native (System Qt6)
+    name: Linux Native (System Qt6)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
