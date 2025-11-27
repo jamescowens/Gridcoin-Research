@@ -28,6 +28,7 @@ define $(package)_set_vars
   $(package)_cflags_aarch64_linux = $(GCCFLAGS)
   $(package)_cxxflags_arm_linux = $(GCCFLAGS)
   $(package)_cflags_arm_linux = $(GCCFLAGS)
+  $(package)_cppflags_mingw32 += -DHAVE_IOCTLSOCKET -DHAVE_IOCTLSOCKET_FIONBIO
 endef
 
 define $(package)_config_cmds
