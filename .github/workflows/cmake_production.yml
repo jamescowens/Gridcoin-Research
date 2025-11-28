@@ -62,7 +62,9 @@ jobs:
 
           # Ensure wine is installed for Windows testing
           if [[ "${{ matrix.host }}" == *"mingw"* ]]; then
-             sudo apt-get install -y wine-stable
+             sudo dpkg --add-architecture i386
+             sudo apt-get update
+             sudo apt-get install -y wine-stable wine64 wine32
           fi
 
       # 2. Cache Depends
@@ -94,6 +96,21 @@ jobs:
           # Define DEP_LIB explicitly so the CMake "Manual Fix" logic triggers for Linux Static
           DEP_LIB_PATH=$(pwd)/depends/${{ matrix.host }}/lib
 
+          # Handle Qt6 Cross-Compilation (Windows)
+          # We must use the 'native' tools built by depends, because we strictly
+          # avoided installing System Qt6 in the CI environment (install_deps all false).
+          HOST_TOOLS_DIR="depends/${{ matrix.host }}/native"
+
+          if [ -d "$HOST_TOOLS_DIR" ]; then
+             QT_HOST_PATH="$(pwd)/$HOST_TOOLS_DIR"
+             QT_HOST_PATH_CMAKE_DIR="${QT_HOST_PATH}/lib/cmake"
+
+             echo "Cross-compiling detected. Setting QT_HOST_PATH=$QT_HOST_PATH"
+             EXTRA_CMAKE_ARGS="-DQT_HOST_PATH=$QT_HOST_PATH -DQT_HOST_PATH_CMAKE_DIR=$QT_HOST_PATH_CMAKE_DIR"
+          else
+             EXTRA_CMAKE_ARGS=""
+          fi
+
           cmake -B ${{ matrix.build_dir }} \
             --toolchain "$TOOLCHAIN_PATH" \
             -DENABLE_GUI=ON \
@@ -103,15 +120,33 @@ jobs:
             -DENABLE_TESTS=ON \
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
             -DDEP_LIB="${DEP_LIB_PATH}" \
+            $EXTRA_CMAKE_ARGS \
             ${{ matrix.cmake_args }}
 
       # 5. Build
       - name: Build
         run: cmake --build ${{ matrix.build_dir }} --parallel $(nproc)
 
-      # 6. Test (Unit Tests via CTest)
-      - name: Run Tests
+      # 6a. Test (Linux)
+      - name: Run Tests (Linux)
+        if: contains(matrix.host, 'linux')
+        env:
+          QT_QPA_PLATFORM: offscreen
         run: ctest --test-dir ${{ matrix.build_dir }} --output-on-failure -j $(nproc)
+
+      # 6b. Test (Windows)
+      - name: Run Tests (Windows)
+        if: contains(matrix.host, 'mingw')
+        env:
+          QT_QPA_PLATFORM: offscreen
+          WINEDLLOVERRIDES: "mscoree,mshtml="
+          # FORCE a 64-bit Wine Prefix.
+          # Without this, mixed environments may default to 32-bit, causing "Bad EXE format".
+          WINEARCH: win64
+        run: |
+          # Initialize Wine to prevent timeout/race conditions during tests
+          wineboot --init || true
+          ctest --test-dir ${{ matrix.build_dir }} --output-on-failure -j $(nproc)
 
       # 7. Package (Linux Tarball)
       - name: Create Linux Package (TGZ)
@@ -129,6 +164,7 @@ jobs:
 
       # 9. Upload Artifacts
       - name: Upload Artifacts
+        if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v4
         with:
           name: gridcoin-${{ matrix.host }}
@@ -193,6 +229,7 @@ jobs:
           cpack -G DragNDrop --config build/CPackConfig.cmake -B release_packages
 
       - name: Upload Artifacts
+        if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v4
         with:
           name: gridcoin-macos-dmg
