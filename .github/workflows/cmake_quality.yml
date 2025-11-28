@@ -48,6 +48,16 @@ jobs:
           key: ccache-quality-${{ github.sha }}
           restore-keys: ccache-quality-
 
+      - name: Setup Concurrency
+        run: |
+          if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
+            echo "CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "CTEST_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "Concurrency: Auto-detected $(nproc) cores."
+          else
+            echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
+          fi
+
       - name: Configure (Sanitizers)
         run: |
           # -fsanitize=address includes LSan (LeakSanitizer)
@@ -64,7 +74,8 @@ jobs:
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
       - name: Build
-        run: cmake --build build_asan --parallel $(nproc)
+        # Removed explicit --parallel flag; CMake reads the env var automatically
+        run: cmake --build build_asan
 
       - name: Test (With Sanitizers)
         env:
@@ -75,7 +86,7 @@ jobs:
           ASAN_OPTIONS: malloc_context_size=0:check_initialization_order=1
         run: |
           # We exclude the Qt tests here if they trigger false positives in GUI libs
-          ctest --test-dir build_asan --output-on-failure -j $(nproc)
+          ctest --test-dir build_asan --output-on-failure
 
   # ----------------------------------------------------------------------
   # JOB 2: Linter

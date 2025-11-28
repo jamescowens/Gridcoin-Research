@@ -36,6 +36,18 @@ jobs:
           # Call the function explicitly
           install_deps native true
 
+      - name: Setup Concurrency
+        run: |
+          # If the variable is NOT set (GitHub or act without --env), default to nproc (all cores)
+          # If it IS set (your run-local-ci.sh), this block is skipped, preserving the limit
+          if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
+            echo "CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "CTEST_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "Concurrency: Auto-detected $(nproc) cores."
+          else
+            echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
+          fi
+
       - name: Configure CMake
         run: |
           cmake -B build \
@@ -51,10 +63,12 @@ jobs:
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
       - name: Build
-        run: cmake --build build --parallel $(nproc)
+        # Removed explicit --parallel flag; CMake reads the env var automatically
+        run: cmake --build build
 
       - name: Test
-        run: ctest --test-dir build --output-on-failure -j $(nproc)
+        # CTest also reads CTEST_PARALLEL_LEVEL automatically
+        run: ctest --test-dir build --output-on-failure
 
   # -------------------------------------------------------------------------
   # JOB 2: Linux ARM64 (System Qt6 via QEMU)
@@ -75,7 +89,6 @@ jobs:
           sudo dpkg --add-architecture arm64
 
           # 1. Ensure Native AMD64 sources have 'universe' and 'multiverse' enabled
-          # The base image might have a minimal sources.list
           sudo add-apt-repository -y universe
           sudo add-apt-repository -y multiverse
 
@@ -83,7 +96,6 @@ jobs:
           sudo sed -i 's/^Types: deb$/Types: deb\nArchitectures: amd64/' /etc/apt/sources.list.d/ubuntu.sources
 
           # 3. Add ARM64 ports mirror (ALL suites: release, updates, security)
-          # We need all of them so libc6:arm64 version matches libc6:amd64 exactly.
           cat <<EOF | sudo tee /etc/apt/sources.list.d/arm64.list
           deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble main universe multiverse restricted
           deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-updates main universe multiverse restricted
@@ -130,6 +142,16 @@ jobs:
             libqrencode-dev:arm64 \
             libxkbcommon-dev:arm64
 
+      - name: Setup Concurrency
+        run: |
+          if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
+            echo "CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "CTEST_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "Concurrency: Auto-detected $(nproc) cores."
+          else
+            echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
+          fi
+
       - name: Configure CMake (Cross)
         run: |
           cmake -B build -GNinja \
@@ -146,18 +168,15 @@ jobs:
             -DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/qemu-aarch64-static
 
       - name: Build
-        run: cmake --build build --parallel $(nproc)
+        run: cmake --build build
 
       - name: Test (QEMU Emulation)
         env:
           # Force Qt to run in "Headless" mode so it doesn't look for a screen
           QT_QPA_PLATFORM: offscreen
-          # Optional: Make QEMU explicit about library paths if it gets confused
-          # (Ubuntu Multiarch usually handles this automatically, but keeping this in mind)
-          # QEMU_LD_PREFIX: /usr/aarch64-linux-gnu
         run: |
           # Run tests with verbose output on failure
-          ctest --test-dir build --output-on-failure -j $(nproc)
+          ctest --test-dir build --output-on-failure
 
   # -------------------------------------------------------------------------
   # JOB 3: Linux ARMhf (32-bit ARMv7 / Odroid)
@@ -185,7 +204,6 @@ jobs:
           sudo sed -i 's/^Types: deb$/Types: deb\nArchitectures: amd64/' /etc/apt/sources.list.d/ubuntu.sources
 
           # 3. Add ARMhf ports mirror
-          # Note: ports.ubuntu.com hosts both arm64 and armhf
           cat <<EOF | sudo tee /etc/apt/sources.list.d/armhf.list
           deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble main universe multiverse restricted
           deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-updates main universe multiverse restricted
@@ -197,7 +215,6 @@ jobs:
       - name: Install ARMhf Toolchain & Qt6
         run: |
           # 1. Clean up conflicts (The "Pure Foreign" Strategy)
-          # We purposefully remove native libs that conflict with multiarch
           sudo dpkg --remove --force-all libcurl4-openssl-dev libcurl4-gnutls-dev libcups2 libcups2t64 || true
           sudo apt-get update
           sudo apt-get -f install -y
@@ -234,6 +251,16 @@ jobs:
             libqrencode-dev:armhf \
             libxkbcommon-dev:armhf
 
+      - name: Setup Concurrency
+        run: |
+          if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
+            echo "CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "CTEST_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "Concurrency: Auto-detected $(nproc) cores."
+          else
+            echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
+          fi
+
       - name: Configure CMake (Cross)
         run: |
           cmake -B build -GNinja \
@@ -250,10 +277,10 @@ jobs:
             -DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/qemu-arm-static
 
       - name: Build
-        run: cmake --build build --parallel $(nproc)
+        run: cmake --build build
 
       - name: Test (QEMU Emulation)
         env:
           QT_QPA_PLATFORM: offscreen
         run: |
-          ctest --test-dir build --output-on-failure -j $(nproc)
+          ctest --test-dir build --output-on-failure

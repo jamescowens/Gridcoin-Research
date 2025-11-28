@@ -5,60 +5,35 @@ export LC_ALL=C
 # -----------------------------------------------------------------------------
 # Gridcoin Local CI Wrapper
 # -----------------------------------------------------------------------------
-# This script wraps 'act' to run GitHub Actions workflows locally using Docker.
-# It pre-configures the necessary QEMU and privileged flags required for
-# cross-compilation jobs.
-#
-# Requirements:
-#   1. Docker
-#      NOTE: It is highly recommended to add your local user to the 'docker' group
-#      to avoid running this script with root privileges.
-#        $ sudo usermod -aG docker $USER
-#        $ newgrp docker
-#
-#   2. act (https://github.com/nektos/act)
-#      Installation (Linux):
-#        $ curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
-#      Installation (macOS):
-#        $ brew install act
-# -----------------------------------------------------------------------------
-
-# Default Configuration
-DEFAULT_JOB="all"
 
 # Act Configuration constants
 ACT_PLATFORM="-P ubuntu-24.04=catthehacker/ubuntu:act-latest"
 ACT_ARCH="--container-architecture linux/amd64"
+# We will append --env flags to this variable
 ACT_OPTS="--container-options \"--privileged\""
 
 # Variables to hold final values
 WORKFLOW=""
-JOB="$DEFAULT_JOB"
+JOB="all"
+MATRIX_FILTER=""
+PARALLEL_LIMIT=""
 
 # -----------------------------------------------------------------------------
 # Function: Help
 # -----------------------------------------------------------------------------
 show_help() {
-    echo "Usage: ./run-local-ci.sh workflow=PATH [job=NAME]"
-    echo ""
-    echo "Wrapper for 'act' to run GitHub Actions workflows locally with QEMU support."
+    echo "Usage: ./run-local-ci.sh workflow=PATH [job=NAME] [matrix=key:val] [parallel=N]"
     echo ""
     echo "Arguments:"
     echo "  workflow=PATH   (Required) Path to the YAML workflow file."
-    echo "  job=NAME        Specific job ID to run (e.g., 'linux-arm64-system')."
-    echo "                  Set to 'all' to run every job in the workflow."
-    echo "                  Default: $DEFAULT_JOB"
-    echo ""
-    echo "  help            Show this message."
-    echo ""
-    echo "Examples:"
-    echo "  ./contrib/run-local-ci.sh workflow=.github/workflows/cmake_compatibility.yml"
-    echo "  ./contrib/run-local-ci.sh workflow=.github/workflows/cmake_compatibility.yml job=linux-arm64-system"
+    echo "  job=NAME        Specific job ID to run. Default: all"
+    echo "  matrix=k:v      Filter matrix jobs (e.g., matrix=host:x86_64-w64-mingw32)."
+    echo "  parallel=N      Max build threads per job. Default: Auto-calculated."
     echo ""
 }
 
 # -----------------------------------------------------------------------------
-# Argument Parsing (name=value)
+# Argument Parsing
 # -----------------------------------------------------------------------------
 for ARG in "$@"; do
     case "$ARG" in
@@ -69,10 +44,12 @@ for ARG in "$@"; do
             JOB="${ARG#*=}"
             ;;
         matrix=*)
-            # Extracts "key:value" (e.g., host:x86_64-pc-linux-gnu)
             MATRIX_VAL="${ARG#*=}"
-            # Appends it to the ACT options
             ACT_OPTS="$ACT_OPTS --matrix $MATRIX_VAL"
+            MATRIX_FILTER="true"
+            ;;
+        parallel=*)
+            PARALLEL_LIMIT="${ARG#*=}"
             ;;
         help|--help|-h)
             show_help
@@ -86,46 +63,65 @@ for ARG in "$@"; do
     esac
 done
 
-# -----------------------------------------------------------------------------
 # Validation
-# -----------------------------------------------------------------------------
-
-# 1. Check if workflow argument was provided
-if [ -z "$WORKFLOW" ]; then
-    echo "Error: You must specify a workflow file using 'workflow=path/to/file.yml'."
-    echo ""
-    show_help
+if [ -z "$WORKFLOW" ] || [ ! -f "$WORKFLOW" ]; then
+    echo "Error: Workflow file not found."
     exit 1
 fi
 
-# 2. Check if the file actually exists on disk
-if [ ! -f "$WORKFLOW" ]; then
-    echo "Error: Workflow file not found at: $WORKFLOW"
-    exit 1
-fi
-
-# -----------------------------------------------------------------------------
-# Logic & Execution
-# -----------------------------------------------------------------------------
-
-# Construct the job flag
-# If job is "all", we simply omit the -j flag, and act runs everything.
+# Prepare Job Flag for Act
 JOB_FLAG=""
 if [ "$JOB" != "all" ]; then
     JOB_FLAG="-j $JOB"
 fi
 
+# -----------------------------------------------------------------------------
+# Concurrency Logic
+# -----------------------------------------------------------------------------
+HOST_CORES=$(nproc)
+
+# If user didn't specify a manual limit, calculate it dynamically
+if [ -z "$PARALLEL_LIMIT" ]; then
+    echo "Analyzing workflow to determine job count..."
+
+    # Run act in list mode to see what WOULD run.
+    # 'tail -n +2' skips the header line. 'grep -v "^$"' skips empty lines.
+    # Note: We don't need platform/arch flags just to list jobs.
+    ACT_PLAN=$(act -W "$WORKFLOW" $JOB_FLAG --list | tail -n +2 | grep -v "^$")
+
+    # Count the lines (each line is a job container)
+    JOB_COUNT=$(echo "$ACT_PLAN" | wc -l)
+
+    # Sanity check
+    if [ "$JOB_COUNT" -lt 1 ]; then JOB_COUNT=1; fi
+
+    echo "Detected $JOB_COUNT jobs scheduled to run."
+
+    # Calculate Limit: Host Cores / Job Count
+    # We use integer division (bash default)
+    PARALLEL_LIMIT=$((HOST_CORES / JOB_COUNT))
+
+    # Ensure at least 1 thread per job
+    if [ "$PARALLEL_LIMIT" -lt 1 ]; then PARALLEL_LIMIT=1; fi
+
+    echo "Auto-Scaling: $HOST_CORES Host Cores / $JOB_COUNT Jobs = Limit $PARALLEL_LIMIT threads per job."
+else
+    echo "Manual Limit: Using $PARALLEL_LIMIT threads per job."
+fi
+
+# Inject the limit as environment variables for CMake and CTest
+ACT_OPTS="$ACT_OPTS --env CMAKE_BUILD_PARALLEL_LEVEL=$PARALLEL_LIMIT"
+ACT_OPTS="$ACT_OPTS --env CTEST_PARALLEL_LEVEL=$PARALLEL_LIMIT"
+
 echo "--------------------------------------------------------"
 echo "Running Local CI via act"
 echo "Workflow: $WORKFLOW"
 echo "Job:      $JOB"
+echo "Threads:  $PARALLEL_LIMIT (Per Container)"
 echo "--------------------------------------------------------"
 
-# Execute act
-# Note: We use eval to handle the quoted --container-options correctly
 CMD="act -W \"$WORKFLOW\" $JOB_FLAG $ACT_PLATFORM $ACT_ARCH $ACT_OPTS"
 
 echo "Executing: $CMD"
 echo ""
-
 eval "$CMD"
