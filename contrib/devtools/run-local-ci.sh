@@ -15,7 +15,7 @@ ACT_OPTS="--container-options \"--privileged\""
 # Variables to hold final values
 WORKFLOW=""
 JOB="all"
-MATRIX_FILTER=""
+MATRIX_FLAGS="" # Used to store matrix filters for accurate job counting
 PARALLEL_LIMIT=""
 
 # -----------------------------------------------------------------------------
@@ -45,8 +45,10 @@ for ARG in "$@"; do
             ;;
         matrix=*)
             MATRIX_VAL="${ARG#*=}"
-            ACT_OPTS="$ACT_OPTS --matrix $MATRIX_VAL"
-            MATRIX_FILTER="true"
+            # Store flag separately so we can use it in the counting step safely
+            MATRIX_FLAGS="--matrix $MATRIX_VAL"
+            # Append to the main execution options
+            ACT_OPTS="$ACT_OPTS $MATRIX_FLAGS"
             ;;
         parallel=*)
             PARALLEL_LIMIT="${ARG#*=}"
@@ -85,9 +87,8 @@ if [ -z "$PARALLEL_LIMIT" ]; then
     echo "Analyzing workflow to determine job count..."
 
     # Run act in list mode to see what WOULD run.
-    # 'tail -n +2' skips the header line. 'grep -v "^$"' skips empty lines.
-    # Note: We don't need platform/arch flags just to list jobs.
-    ACT_PLAN=$(act -W "$WORKFLOW" $JOB_FLAG --list | tail -n +2 | grep -v "^$")
+    # FIX: We now include $MATRIX_FLAGS so the count respects user filters.
+    ACT_PLAN=$(act -W "$WORKFLOW" $JOB_FLAG $MATRIX_FLAGS --list | tail -n +2 | grep -v "^$")
 
     # Count the lines (each line is a job container)
     JOB_COUNT=$(echo "$ACT_PLAN" | wc -l)
