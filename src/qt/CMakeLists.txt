@@ -216,7 +216,7 @@ endif()
 add_executable(gridcoinresearch bitcoin.cpp ${GRIDCOIN_RC})
 
 # macOS Bundle Resources
-set(MACOSX_BUNDLE_RESOURCE_FILES res/icons/gridcoin.icns)
+set(MACOSX_BUNDLE_RESOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/res/icons/gridcoin.icns")
 if(APPLE)
     target_sources(gridcoinresearch PRIVATE ${MACOSX_BUNDLE_RESOURCE_FILES})
 endif()
@@ -277,7 +277,7 @@ if(UNIX AND NOT APPLE)
     install(TARGETS gridcoinresearch
         DESTINATION "${CMAKE_INSTALL_BINDIR}"
     )
-    install(DIRECTORY "${CMAKE_SOURCE_DIR}/share/icons"
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/src/qt/res/icons"
         DESTINATION "${CMAKE_INSTALL_DATADIR}"
     )
     install(FILES "${CMAKE_SOURCE_DIR}/contrib/gridcoinresearch.desktop"
