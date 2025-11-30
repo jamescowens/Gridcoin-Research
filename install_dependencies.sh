@@ -65,8 +65,11 @@ install_deps() {
                 echo "Error: SLES not supported automatically."
                 return 1
             fi
+
+            IS_TUMBLEWEED="false"
             if [[ "$PRETTY_NAME" == *"Tumbleweed"* ]]; then
                 DISTRO_PATH="openSUSE_Tumbleweed"
+                IS_TUMBLEWEED="true"
             elif [[ "$PRETTY_NAME" == *"Leap"* ]]; then
                 DISTRO_PATH="15.6"
             else
@@ -106,19 +109,36 @@ install_deps() {
             sudo zypper install -y -t pattern devel_basis
 
             # Individual Packages
+            # Base common packages
             append_base libtool automake autoconf pkg-config python3 cmake git curl ccache doxygen graphviz libzstd-devel
-            append_base libopenssl-devel libevent-devel boost-devel qrencode-devel libzip-devel libcurl-devel libzip-tools
+            append_base libopenssl-devel libevent-devel qrencode-devel libzip-devel libcurl-devel libzip-tools
             append_base miniupnpc libminiupnpc-devel
 
+            # Boost Packages (Common)
+            append_base libboost_headers-devel libboost_filesystem-devel libboost_thread-devel libboost_date_time-devel libboost_iostreams-devel libboost_serialization-devel libboost_test-devel libboost_atomic-devel libboost_regex-devel
+
+            # Boost System Logic:
+            # Leap (Boost < 1.8x) requires libboost_system-devel.
+            # Tumbleweed (Boost >= 1.8x) treats system as header-only, so the package is gone.
+            if [[ "$IS_TUMBLEWEED" == "false" ]]; then
+                append_base libboost_system-devel
+                # Leap also needs GCC 13 for C++17 support
+                append_base gcc13 gcc13-c++
+            fi
+
             # OpenSUSE Qt6 naming
-            append_qt qt6-base-devel qt6-tools-devel qt6-charts-devel qt6-svg-devel qt6-core5compat-devel
+            append_qt qt6-base-devel qt6-tools-devel qt6-charts-devel qt6-svg-devel qt6-qt5compat-devel qt6-linguist-devel
 
             append_mingw mingw64-cross-gcc-c++ nsis
             ;;
 
         arch|manjaro)
+            # Use -Syu to upgrade ALL packages to match the new libraries we are installing.
+            # Arch does not support partial upgrades; mixing old libs with new Boost is fatal.
+            sudo pacman -Syu --noconfirm
+
             append_base base-devel python cmake git ccache doxygen graphviz
-            append_base boost libevent miniupnpc libzip qrencode curl
+            append_base boost libevent miniupnpc libzip qrencode curl icu
 
             # Arch groups these well, usually base includes svg/5compat
             append_qt qt6-base qt6-tools qt6-charts qt6-svg qt6-5compat

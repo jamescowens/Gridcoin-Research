@@ -1,0 +1,83 @@
+name: Validate build_targets.sh user build script for major distributions, including required dependencies
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'install_dependencies.sh'
+      - 'build_targets.sh'
+      - '.github/workflows/cmake_distros.yml' # Updated filename
+  pull_request:
+    paths:
+      - 'install_dependencies.sh'
+      - 'build_targets.sh'
+      - '.github/workflows/cmake_distros.yml' # Updated filename
+
+jobs:
+  validate-distro:
+    name: ${{ matrix.distro }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # --- Fedora Family ---
+          - distro: Fedora Latest
+            image: fedora:latest
+            prep_cmd: "dnf install -y which sudo git"
+            # Fedora has modern GCC by default; no extra args needed
+            build_args: ""
+
+          # --- OpenSUSE Family ---
+          - distro: OpenSUSE Leap 15.6
+            image: opensuse/leap:15.6
+            prep_cmd: "zypper refresh && zypper install -y sudo which git"
+            # FIX: Force usage of GCC 13 (installed by script) because system GCC 7 is too old
+            build_args: "CC=gcc-13 CXX=g++-13"
+
+          - distro: OpenSUSE Tumbleweed
+            image: opensuse/tumbleweed
+            prep_cmd: "zypper refresh && zypper install -y sudo which git"
+            # Tumbleweed is rolling (GCC 14+), so default is fine
+            build_args: ""
+
+          # --- Arch Family ---
+          - distro: Arch Linux
+            image: archlinux:latest
+            prep_cmd: "pacman -Sy --noconfirm sudo which git base-devel"
+            build_args: ""
+
+          # --- Debian Family ---
+          - distro: Debian Unstable (Sid)
+            image: debian:sid
+            prep_cmd: "apt-get update && apt-get install -y sudo git"
+            build_args: ""
+
+          # --- Mint Family ---
+          - distro: Linux Mint 22 (Wilma)
+            image: linuxmintd/mint22-amd64
+            prep_cmd: "apt-get update && apt-get install -y sudo git"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test Full Build on Distro
+        run: |
+          echo "Running full build (install_dependencies.sh + build_targets.sh) on ${{ matrix.image }}..."
+
+          docker run --rm \
+            -v ${{ github.workspace }}:/work \
+            -w /work \
+            ${{ matrix.image }} \
+            /bin/bash -c " \
+              # 1. Run distro-specific prep FIRST (installs sudo/git)
+              ${{ matrix.prep_cmd }} && \
+              \
+              # 2. Trust the mounted directory (git is now installed)
+              git config --global --add safe.directory /work && \
+              \
+              # 3. Make scripts executable
+              chmod +x install_dependencies.sh build_targets.sh && \
+              \
+              # 4. Execute the build
+              ./build_targets.sh TARGET=native BUILD_TYPE=RelWithDebInfo SKIP_DEPS=false USE_CCACHE=true CLEAN_BUILD=true ${{ matrix.build_args }}"
