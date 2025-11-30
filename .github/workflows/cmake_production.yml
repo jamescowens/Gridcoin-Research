@@ -132,7 +132,56 @@ jobs:
         # Removed explicit --parallel flag; CMake reads the env var automatically
         run: cmake --build ${{ matrix.build_dir }}
 
-      # 7a. Test (Linux)
+      # 7. Hermeticity Check
+      - name: Verify Hermeticity (Linux)
+        if: contains(matrix.host, 'linux')
+        run: |
+          echo "Checking binaries for unexpected shared library dependencies..."
+
+          # 1. Define the Allowlist (Regex)
+          # We expect ONLY:
+          # - linux-vdso.so.1 (Kernel interface)
+          # - libm.so.6 (Math)
+          # - libc.so.6 (C Runtime)
+          # - ld-linux-x86-64.so.2 (Dynamic Loader)
+          ALLOWED='linux-vdso\.so|libm\.so|libc\.so|ld-linux-x86-64'
+
+          # 2. Identify binaries to check (Corrected Paths)
+          # We check both the GUI (src/qt/) and Daemon (src/)
+          BINARIES="${{ matrix.build_dir }}/src/qt/gridcoinresearch ${{ matrix.build_dir }}/src/gridcoinresearchd"
+
+          fail_count=0
+
+          for bin in $BINARIES; do
+            if [ -f "$bin" ]; then
+              echo "------------------------------------------------"
+              echo "Scanning: $bin"
+
+              # Run ldd, strip whitespace
+              # grep -vE removes the allowed lines.
+              # Any output remaining represents a LEAK (a dynamic dependency).
+              LEAKS=$(ldd "$bin" | grep -vE "$ALLOWED" | sed 's/^[ \t]*//' || true)
+
+              if [ -n "$LEAKS" ]; then
+                echo "::error::NON-HERMETIC DEPENDENCY DETECTED!"
+                echo "The following system libraries are dynamically linked (unexpected):"
+                echo "$LEAKS"
+                fail_count=$((fail_count+1))
+              else
+                echo "✅ Verified hermetic."
+              fi
+            else
+              # Warn but don't fail immediately if a binary is missing (e.g. GUI disabled)
+              echo "::warning::Binary not found at expected path: $bin"
+            fi
+          done
+
+          if [ "$fail_count" -gt 0 ]; then
+            echo "::error::Hermeticity check failed for $fail_count binary(ies)."
+            exit 1
+          fi
+
+      # 8a. Test (Linux)
       - name: Run Tests (Linux)
         if: contains(matrix.host, 'linux')
         env:
@@ -140,7 +189,7 @@ jobs:
         # Removed -j flag; CTest reads env var
         run: ctest --test-dir ${{ matrix.build_dir }} --output-on-failure
 
-      # 7b. Test (Windows)
+      # 8b. Test (Windows)
       - name: Run Tests (Windows)
         if: contains(matrix.host, 'mingw')
         env:
@@ -152,19 +201,19 @@ jobs:
           # Removed -j flag; CTest reads env var
           ctest --test-dir ${{ matrix.build_dir }} --output-on-failure
 
-      # 8. Package (Linux Tarball)
+      # 9. Package (Linux Tarball)
       - name: Create Linux Package (TGZ)
         if: contains(matrix.host, 'linux')
         run: |
           cpack -G TGZ --config ${{ matrix.build_dir }}/CPackConfig.cmake -B release_packages
 
-      # 9. Package (Windows Only - NSIS)
+      # 10. Package (Windows Only - NSIS)
       - name: Create Windows Installer
         if: contains(matrix.host, 'mingw')
         run: |
           cmake --build ${{ matrix.build_dir }} --target deploy
 
-      # 10. Prepare Flat Artifacts
+      # 11. Prepare Flat Artifacts
       - name: Prepare Artifacts
         run: |
           mkdir -p dist
@@ -206,7 +255,7 @@ jobs:
              fi
           fi
 
-      # 11. Upload Artifacts
+      # 12. Upload Artifacts
       - name: Upload Artifacts
         if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v4
