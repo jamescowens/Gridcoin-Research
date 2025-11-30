@@ -87,11 +87,28 @@ if [ -z "$PARALLEL_LIMIT" ]; then
     echo "Analyzing workflow to determine job count..."
 
     # Run act in list mode to see what WOULD run.
-    # FIX: We now include $MATRIX_FLAGS so the count respects user filters.
     ACT_PLAN=$(act -W "$WORKFLOW" $JOB_FLAG $MATRIX_FLAGS --list | tail -n +2 | grep -v "^$")
 
-    # Count the lines (each line is a job container)
+    # Count the lines (each line is a job definition)
     JOB_COUNT=$(echo "$ACT_PLAN" | wc -l)
+
+    # --- Matrix Expansion Heuristic ---
+    # Act --list typically collapses matrix jobs into a single line.
+    # If we didn't filter by matrix, and the file contains a matrix, we must estimate.
+    if [ -z "$MATRIX_FLAGS" ] && grep -q "matrix:" "$WORKFLOW"; then
+        echo "Matrix strategy detected. Checking for hidden job expansion..."
+
+        # Search for 'distro' (with hyphen) or 'host' (usually without hyphen in your yaml).
+        # We EXCLUDE 'name' because it counts Steps, causing over-estimation.
+        MATRIX_ENTRIES=$(grep -Ec "^\s+(-\s+)?(distro|host):" "$WORKFLOW")
+
+        # If we found multiple matrix entries, use that as the job count
+        # (This avoids the 1-job / 32-threads disaster)
+        if [ "$MATRIX_ENTRIES" -gt "$JOB_COUNT" ]; then
+             echo "  -> Found $MATRIX_ENTRIES matrix entries (heuristic). Using this as job count."
+             JOB_COUNT=$MATRIX_ENTRIES
+        fi
+    fi
 
     # Sanity check
     if [ "$JOB_COUNT" -lt 1 ]; then JOB_COUNT=1; fi
@@ -109,7 +126,6 @@ if [ -z "$PARALLEL_LIMIT" ]; then
 else
     echo "Manual Limit: Using $PARALLEL_LIMIT threads per job."
 fi
-
 # Inject the limit as environment variables for CMake and CTest
 ACT_OPTS="$ACT_OPTS --env CMAKE_BUILD_PARALLEL_LEVEL=$PARALLEL_LIMIT"
 ACT_OPTS="$ACT_OPTS --env CTEST_PARALLEL_LEVEL=$PARALLEL_LIMIT"

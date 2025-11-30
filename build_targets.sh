@@ -82,6 +82,10 @@ for arg in "$@"; do
             USE_QT6="${arg#*=}"
             shift
             ;;
+        PARALLEL=*)
+            PARALLEL="${arg#*=}"
+            shift
+            ;;
         CC=*)
             CC_OVERRIDE="${arg#*=}"
             shift
@@ -131,7 +135,13 @@ else
     NATIVE_QT_FLAG="-DUSE_QT6=OFF"
 fi
 
-CORES=$(nproc)
+# Determine Concurrency
+if [ -n "$PARALLEL" ]; then
+    CORES="$PARALLEL"
+else
+    CORES=$(nproc)
+fi
+
 echo "================================================================"
 echo "CONFIGURATION"
 echo "================================================================"
