@@ -311,7 +311,12 @@ jobs:
       - name: Generate Checksums
         working-directory: release_assets
         run: |
-          sha256sum * > SHA256SUMS.txt
+          # Use find to locate files recursively (handling both flat and nested structures)
+          # -type f: Only files
+          # -exec sha256sum {} +: Pass the found files to sha256sum
+          find . -type f -not -path '*/.*' -exec sha256sum {} + > SHA256SUMS.txt
+
+          # Print the result for the log
           cat SHA256SUMS.txt
 
       - name: Publish Release
