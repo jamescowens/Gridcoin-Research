@@ -308,15 +308,17 @@ jobs:
           merge-multiple: true
           path: release_assets
 
-      - name: Generate Checksums
+      - name: Flatten and Checksum
         working-directory: release_assets
         run: |
-          # Use find to locate files recursively (handling both flat and nested structures)
-          # -type f: Only files
-          # -exec sha256sum {} +: Pass the found files to sha256sum
-          find . -type f -not -path '*/.*' -exec sha256sum {} + > SHA256SUMS.txt
+          # Move any nested files to the current directory
+          find . -mindepth 2 -type f -exec mv {} . \; || true
 
-          # Print the result for the log
+          # Clean up empty directories
+          find . -type d -empty -delete || true
+
+          # Generate checksums for the now-flattened files
+          sha256sum * > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
       - name: Publish Release
