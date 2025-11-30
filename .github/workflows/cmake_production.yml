@@ -164,7 +164,49 @@ jobs:
         run: |
           cmake --build ${{ matrix.build_dir }} --target deploy
 
-      # 10. Upload Artifacts
+      # 10. Prepare Flat Artifacts
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p dist
+
+          # Linux: Flatten Tarball
+          if [[ "${{ matrix.host }}" == *"linux"* ]]; then
+             cp release_packages/*.tar.gz dist/
+          fi
+
+          # Windows: Flatten Installer, Daemon, AND GUI (with version rename)
+          if [[ "${{ matrix.host }}" == *"mingw"* ]]; then
+             # 1. Copy Installer
+             INSTALLER=$(find ${{ matrix.build_dir }} -maxdepth 1 -name "gridcoin-*-setup.exe" | head -n 1)
+             if [ -f "$INSTALLER" ]; then
+               cp "$INSTALLER" dist/
+
+               # 2. Extract Version from Installer name (e.g. gridcoin-5.4.9.6-win64-setup.exe)
+               BASENAME=$(basename "$INSTALLER")
+               VERSION=$(echo "$BASENAME" | sed -E 's/gridcoin-(.*)-win64-setup.exe/\1/')
+
+               # 3. Copy and Rename Daemon (Stripped binary in release/)
+               DAEMON_SRC="${{ matrix.build_dir }}/release/gridcoinresearchd.exe"
+               if [ -f "$DAEMON_SRC" ]; then
+                  cp "$DAEMON_SRC" "dist/gridcoinresearchd-${VERSION}-win64.exe"
+               else
+                  echo "::warning::Daemon binary not found at $DAEMON_SRC"
+               fi
+
+               # 4. Copy and Rename GUI (Stripped binary in release/)
+               GUI_SRC="${{ matrix.build_dir }}/release/gridcoinresearch.exe"
+               if [ -f "$GUI_SRC" ]; then
+                  cp "$GUI_SRC" "dist/gridcoinresearch-${VERSION}-win64.exe"
+               else
+                  echo "::warning::GUI binary not found at $GUI_SRC"
+               fi
+             else
+               # Fallback just in case naming changes
+               cp ${{ matrix.build_dir }}/*.exe dist/ || true
+             fi
+          fi
+
+      # 11. Upload Artifacts
       - name: Upload Artifacts
         if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v4
