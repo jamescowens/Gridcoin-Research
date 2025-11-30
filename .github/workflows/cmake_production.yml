@@ -1,4 +1,4 @@
-name: CMake Production Builds (Depends)
+name: CMake Production Builds
 
 on:
   push:
