@@ -7,11 +7,11 @@ for various build targets:
 
 | Platform | Build System | Status | Documentation |
 | :--- | :--- | :--- | :--- |
-| **Linux (Native)** | CMake | **Stable** | [Link](#1-linux-native-build) |
-| **Linux (Static)** | CMake (depends) | **Stable** | [Link](#2-linux-static-build-depends-system) |
-| **Windows (Cross)**| CMake (depends) | **Stable** | [Link](#3-windows-build-cross-compile) |
-| **macOS** | CMake | *Experimental* | [Link](build-macos.md) |
-| **MSYS2** | CMake | *Deprecated* | [Link](build-msys2.md) |
+| **Linux (Native)** | CMake | **Stable** | This file |
+| **Linux (Static)** | CMake (depends) | **Stable** | This file |
+| **Windows (Cross)**| CMake (depends) | **Stable** | This file |
+| **macOS** | CMake | **Stable** | [Link](build-macos.md) |
+| **MSYS2** | CMake | *Deprecated* | NA |
 | **FreeBSD** | CMake | *Experimental* | [Link](build-freebsd.md) |
 | **OpenBSD** | CMake | *Experimental* | [Link](build-openbsd.md) |
 
@@ -40,7 +40,52 @@ This document covers the three primary build targets:
 | **Linux Static** | Portable releases, especially useful for older distributions that can't meet native package dependencies |
 | **Windows Cross-Compile** | Windows installer/Executable |
 
-Please refer to [Link](cmake-builds.md) for a list of cmake configuration options.
+We have created a fairly comprehensive and easy to use build script for these three major targets, ***build_targets.sh***, and its helper script, ***install_dependencies.sh***.
+
+## Automatic Build Script
+
+```
+./build_targets.sh -h
+Usage: ./build_targets.sh [OPTIONS]
+
+Options:
+  TARGET=<target>     Select build target. Options: native, depends, win64, all.
+                      Default: all
+  BUILD_TYPE=<type>   Set the CMake build type. Options: Release, Debug, RelWithDebInfo.
+                      Default: RelWithDebInfo
+  CLEAN_BUILD=<bool>  Force a clean build even if executables exist. Options: true, false.
+                      Default: false
+  SKIP_DEPS=<bool>    Skip installing system dependencies (step 1). Options: true, false.
+                      Default: false
+  USE_CCACHE=<bool>   Enable ccache compiler launcher. Options: true, false.
+                      Default: false
+  USE_QT6=<bool>      Use Qt6 for Linux Native build. Options: true, false.
+                      Default: true (Set to false for Qt5)
+  PARALLEL=<int>      Specify number of build threads to use (i.e. -j X).
+                      Default: number of cpu threads reported by OS
+  CC=<path>           Override C compiler for Native Linux build.
+                      (e.g., CC=/usr/bin/gcc-13).
+  CXX=<path>          Override C++ compiler for Native Linux build.
+                      (e.g., CXX=/usr/bin/g++-13).
+  --help, -h          Show this help message.
+```
+
+This script works for all three major targets. The "native" target (Linux Native) has been confirmed to work across all six major distributions, including the automatic installation of all the necessary dependencies, and this is now checked in continuous integration testing in Github. The "depends" target (Linux Static) and the "win64" target (Windows Cross-Compile) works with Ubuntu latest, Fedora, and OpenSUSE, and probably the others as well.
+
+A typical example of the use of this script by someone desiring a local build dynamically linked to the system libraries would be:
+
+```
+./build_targets.sh TARGET=native BUILD_TYPE=Release CLEAN_BUILD=true
+```
+
+After you build with this script with the appropriate target
+
+* For installation, skip to the Install step in the target you selected below and follow that step for installation.
+* For a more custom build, use the cmake detailed instructions below.
+
+# Detailed Build Instructions
+
+Please refer to [Link](cmake-options.md) (cmake-options.md) for a list of cmake configuration options.
 
 Developers may want to use -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache to have ccache cache
 the compilation at the ccache level. In many instances it is required to do an rm -rf of the build directory, and this will speed up
@@ -150,8 +195,10 @@ This procedure generates a Windows 64-bit executable (`.exe`) from a Linux host 
 
 Note that some distributions have the win32 threading model set by default. Gridcoin needs the posix threading model. To change this use
 
+```
 sudo update-alternatives --config x86_64-w64-mingw32-g++
 sudo update-alternatives --config x86_64-w64-mingw32-gcc
+```
 
 and set the posix threading model for each before you get started. Note that the exact config will vary by distribution. The above is for Ubuntu.
 
@@ -189,6 +236,14 @@ cmake --build build_win64 -j $(nproc)
 ctest --test-dir build_win64
 ```
 
+### Step 4: Install (Create Installer Package for Windows)
+
+```
+cmake --build build_win64 --target deploy
+```
+
+This installer file will be output to build_win64/gridcoin-<release\>-win64.exe.
+
 -----
 
 ## Autotools to CMake Migration Guide
@@ -213,7 +268,7 @@ Note that the autotools default does not strip the debug symbols, and uses -O2 o
 cmake's `-DCMAKE_BUILD_TYPE=RelWithDebInfo`. The cmake `-DCMAKE_BUILD_TYPE=Release` will use -02 optimization
 and also strip the debug symbols from the executables.
 
-Using no -DCMAKE_BUILD_TYPE flag with cmake will result in no optimization and is effectively a debug build.
+Using no -DCMAKE_BUILD_TYPE flag with cmake will result in no optimization and is effectively a debug build. This is not recommended except for developers or where instructed by a developer for troubleshooting.
 
 ### Running Tests
 
@@ -227,4 +282,4 @@ Using no -DCMAKE_BUILD_TYPE flag with cmake will result in no optimization and i
 
 ### Notes on Static Linking
 
-When using `-DSTATIC_LIBS=ON` (target \#2), the build system automatically adjusts link linkage for Boost Test to ensure the main entry point is generated correctly without conflicting with dynamic loading macros. This is handled internally by `src/test/CMakeLists.txt`.
+When using `-DSTATIC_LIBS=ON` (target \#2), the build system automatically adjusts the linkage for Boost Test to ensure the main entry point is generated correctly without conflicting with dynamic loading macros. This is handled internally by `src/test/CMakeLists.txt`.
