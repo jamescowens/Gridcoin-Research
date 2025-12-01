@@ -183,7 +183,7 @@ install_deps() {
     case $OS in
         debian|ubuntu|linuxmint)
             sudo apt-get update
-            sudo apt-get install -y $PKGS_TO_INSTALL
+            sudo apt-get install -y --no-install-recommends $PKGS_TO_INSTALL
 
             # --- CRITICAL FIX: Set MinGW threading to POSIX ---
             # This fixes the "hang at end of test" issue by enabling std::thread support.

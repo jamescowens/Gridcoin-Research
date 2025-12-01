@@ -103,9 +103,10 @@ jobs:
 
       - name: Install ARM64 Toolchain & Qt6
         run: |
-          sudo apt-get remove -y libcurl4-openssl-dev libcurl4-gnutls-dev libcups2 libcups2t64 || true
-          sudo apt-get autoremove -y
-          sudo apt-get install -y \
+          sudo dpkg --remove --force-all libcurl4-openssl-dev libcurl4-gnutls-dev libcups2 libcups2t64 || true
+          sudo apt-get update
+          sudo apt-get -f install -y
+          sudo apt-get install -y --no-install-recommends \
             build-essential cmake ninja-build zipcmp zipmerge ziptool qemu-user-static \
             g++-aarch64-linux-gnu qt6-base-dev:arm64 qt6-charts-dev:arm64 qt6-svg-dev:arm64 \
             qt6-l10n-tools:arm64 qt6-tools-dev:arm64 qt6-tools-dev-tools:arm64 \
@@ -190,7 +191,7 @@ jobs:
           sudo dpkg --remove --force-all libcurl4-openssl-dev libcurl4-gnutls-dev libcups2 libcups2t64 || true
           sudo apt-get update
           sudo apt-get -f install -y
-          sudo apt-get install -y \
+          sudo apt-get install -y --no-install-recommends \
             build-essential cmake ninja-build zipcmp zipmerge ziptool qemu-user-static \
             g++-arm-linux-gnueabihf qt6-base-dev:armhf qt6-charts-dev:armhf qt6-svg-dev:armhf \
             qt6-l10n-tools:armhf qt6-tools-dev:armhf qt6-tools-dev-tools:armhf \
