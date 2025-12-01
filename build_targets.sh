@@ -242,7 +242,15 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "depends" ]; then
             rm -rf work/build/x86_64-pc-linux-gnu
             rm -rf work/staging/x86_64-pc-linux-gnu
         fi
-        make HOST=x86_64-pc-linux-gnu -j $CORES
+
+        # Configure Ccache for Depends
+        DEPENDS_ARGS=""
+        if [ "$USE_CCACHE" = "true" ]; then
+             # This tells the depends Makefile to wrap compilers with ccache
+             DEPENDS_ARGS="CC_CACHE=ccache"
+        fi
+
+        make HOST=x86_64-pc-linux-gnu $DEPENDS_ARGS -j $CORES
         cd ..
 
         # Clean previous build
@@ -299,7 +307,15 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "win64" ]; then
             rm -rf work/build/x86_64-w64-mingw32
             rm -rf work/staging/x86_64-w64-mingw32
         fi
-        make HOST=x86_64-w64-mingw32 -j $CORES
+
+        # Configure Ccache for Depends
+        DEPENDS_ARGS=""
+        if [ "$USE_CCACHE" = "true" ]; then
+             # This tells the depends Makefile to wrap compilers with ccache
+             DEPENDS_ARGS="CC_CACHE=ccache"
+        fi
+
+        make HOST=x86_64-w64-mingw32 $DEPENDS_ARGS -j $CORES
         cd ..
 
         # Clean previous build

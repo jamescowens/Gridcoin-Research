@@ -34,7 +34,7 @@ install_deps() {
     case $OS in
         debian|ubuntu|linuxmint)
             # Base Build Tools
-            append_base build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 cmake git curl ccache doxygen graphviz bison
+            append_base build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 cmake git curl ccache doxygen graphviz bison xxd
 
             # Libraries for Native Build
             # Includes zipcmp/zipmerge/ziptool for libzip CMake config

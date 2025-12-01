@@ -1,18 +1,18 @@
 name: CMake Compatibility Builds
 
 on:
+  # Trigger on any push/PR to any branch (matches production/compatibility workflows)
   push:
-    # Run on push to ANY branch (includes forks if actions are enabled)
     branches:
       - '**'
-    # AND run on release tags
     tags:
       - "v*"
       - "5.*"
   pull_request:
-    # Run on any PR targeting any branch
     branches:
       - '**'
+  # Manual trigger for debugging
+  workflow_dispatch:
 
 env:
   # Global settings for all jobs
@@ -21,7 +21,7 @@ env:
 
 jobs:
   # ----------------------------------------------------------------------
-  # JOB 1: Linux Native (build_targets.sh target 1)
+  # JOB 1: Linux Native
   # ----------------------------------------------------------------------
   linux-native:
     name: Linux Native (System Qt6)
@@ -31,15 +31,11 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          # Source the script to load the 'install_deps' function
           source ./install_dependencies.sh
-          # Call the function explicitly
           install_deps native true
 
       - name: Setup Concurrency
         run: |
-          # If the variable is NOT set (GitHub or act without --env), default to nproc (all cores)
-          # If it IS set (your run-local-ci.sh), this block is skipped, preserving the limit
           if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
             echo "CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
             echo "CTEST_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
@@ -48,9 +44,17 @@ jobs:
             echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
           fi
 
+      # Configure Ccache (Enables caching on GitHub & uses mapped volume on Local)
+      - name: Configure Ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-compat-native-${{ github.sha }}
+          restore-keys: ccache-compat-native-
+
       - name: Configure CMake
         run: |
-          cmake -B build \
+          cmake -B build_native \
             -DENABLE_GUI=ON \
             -DENABLE_QRENCODE=ON \
             -DUSE_DBUS=ON \
@@ -60,18 +64,18 @@ jobs:
             -DENABLE_DOCS=OFF \
             -DENABLE_TESTS=ON \
             -DUSE_QT6=ON \
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
       - name: Build
-        # Removed explicit --parallel flag; CMake reads the env var automatically
-        run: cmake --build build
+        run: cmake --build build_native
 
       - name: Test
-        # CTest also reads CTEST_PARALLEL_LEVEL automatically
-        run: ctest --test-dir build --output-on-failure
+        run: ctest --test-dir build_native --output-on-failure
 
   # -------------------------------------------------------------------------
-  # JOB 2: Linux ARM64 (System Qt6 via QEMU)
+  # JOB 2: Linux ARM64
   # -------------------------------------------------------------------------
   linux-arm64-system:
     name: Linux ARM64 (System Qt6)
@@ -87,60 +91,30 @@ jobs:
       - name: Add ARM64 Architecture
         run: |
           sudo dpkg --add-architecture arm64
-
-          # 1. Ensure Native AMD64 sources have 'universe' and 'multiverse' enabled
           sudo add-apt-repository -y universe
           sudo add-apt-repository -y multiverse
-
-          # 2. Restrict default sources to amd64 only (Ubuntu 24.04 DEB822 format)
           sudo sed -i 's/^Types: deb$/Types: deb\nArchitectures: amd64/' /etc/apt/sources.list.d/ubuntu.sources
-
-          # 3. Add ARM64 ports mirror (ALL suites: release, updates, security)
           cat <<EOF | sudo tee /etc/apt/sources.list.d/arm64.list
           deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble main universe multiverse restricted
           deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-updates main universe multiverse restricted
           deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-security main universe multiverse restricted
           EOF
-
           sudo apt-get update
 
       - name: Install ARM64 Toolchain & Qt6
         run: |
-          # 1. Clean up conflicts
           sudo apt-get remove -y libcurl4-openssl-dev libcurl4-gnutls-dev libcups2 libcups2t64 || true
           sudo apt-get autoremove -y
-
-          # 2. Install dependencies
           sudo apt-get install -y \
-            build-essential \
-            cmake \
-            ninja-build \
-            zipcmp \
-            zipmerge \
-            ziptool \
-            qemu-user-static \
-            g++-aarch64-linux-gnu \
-            qt6-base-dev:arm64 \
-            qt6-charts-dev:arm64 \
-            qt6-svg-dev:arm64 \
-            qt6-l10n-tools:arm64 \
-            qt6-tools-dev:arm64 \
-            qt6-tools-dev-tools:arm64 \
-            libqt6core5compat6-dev:arm64 \
-            libssl-dev:arm64 \
-            libzip-dev:arm64 \
-            libcurl4-openssl-dev:arm64 \
-            libboost-system-dev:arm64 \
-            libboost-filesystem-dev:arm64 \
-            libboost-thread-dev:arm64 \
-            libboost-iostreams-dev:arm64 \
-            libboost-program-options-dev:arm64 \
-            libboost-serialization-dev:arm64 \
-            libboost-chrono-dev:arm64 \
-            libboost-test-dev:arm64 \
-            libminiupnpc-dev:arm64 \
-            libqrencode-dev:arm64 \
-            libxkbcommon-dev:arm64
+            build-essential cmake ninja-build zipcmp zipmerge ziptool qemu-user-static \
+            g++-aarch64-linux-gnu qt6-base-dev:arm64 qt6-charts-dev:arm64 qt6-svg-dev:arm64 \
+            qt6-l10n-tools:arm64 qt6-tools-dev:arm64 qt6-tools-dev-tools:arm64 \
+            libqt6core5compat6-dev:arm64 libssl-dev:arm64 libzip-dev:arm64 \
+            libcurl4-openssl-dev:arm64 libboost-system-dev:arm64 libboost-filesystem-dev:arm64 \
+            libboost-thread-dev:arm64 libboost-iostreams-dev:arm64 libboost-program-options-dev:arm64 \
+            libboost-serialization-dev:arm64 libboost-chrono-dev:arm64 libboost-test-dev:arm64 \
+            libminiupnpc-dev:arm64 libqrencode-dev:arm64 libxkbcommon-dev:arm64 \
+            ccache
 
       - name: Setup Concurrency
         run: |
@@ -152,9 +126,16 @@ jobs:
             echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
           fi
 
+      - name: Configure Ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-compat-arm64-${{ github.sha }}
+          restore-keys: ccache-compat-arm64-
+
       - name: Configure CMake (Cross)
         run: |
-          cmake -B build -GNinja \
+          cmake -B build_arm64 -GNinja \
             -DCMAKE_SYSTEM_NAME=Linux \
             -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
             -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
@@ -165,21 +146,20 @@ jobs:
             -DUSE_QT6=ON \
             -DQt6_DIR=/usr/lib/aarch64-linux-gnu/cmake/Qt6 \
             -DENABLE_TESTS=ON \
-            -DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/qemu-aarch64-static
+            -DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/qemu-aarch64-static \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
       - name: Build
-        run: cmake --build build
+        run: cmake --build build_arm64
 
       - name: Test (QEMU Emulation)
         env:
-          # Force Qt to run in "Headless" mode so it doesn't look for a screen
           QT_QPA_PLATFORM: offscreen
-        run: |
-          # Run tests with verbose output on failure
-          ctest --test-dir build --output-on-failure
+        run: ctest --test-dir build_arm64 --output-on-failure
 
   # -------------------------------------------------------------------------
-  # JOB 3: Linux ARMhf (32-bit ARMv7 / Odroid)
+  # JOB 3: Linux ARMhf
   # -------------------------------------------------------------------------
   linux-armhf-system:
     name: Linux ARMhf (System Qt6)
@@ -195,61 +175,31 @@ jobs:
       - name: Add ARMhf Architecture
         run: |
           sudo dpkg --add-architecture armhf
-
-          # 1. Enable Native AMD64 universe/multiverse (Critical for dependency resolution)
           sudo add-apt-repository -y universe
           sudo add-apt-repository -y multiverse
-
-          # 2. Restrict default sources to amd64
           sudo sed -i 's/^Types: deb$/Types: deb\nArchitectures: amd64/' /etc/apt/sources.list.d/ubuntu.sources
-
-          # 3. Add ARMhf ports mirror
           cat <<EOF | sudo tee /etc/apt/sources.list.d/armhf.list
           deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble main universe multiverse restricted
           deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-updates main universe multiverse restricted
           deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports noble-security main universe multiverse restricted
           EOF
-
           sudo apt-get update
 
       - name: Install ARMhf Toolchain & Qt6
         run: |
-          # 1. Clean up conflicts (The "Pure Foreign" Strategy)
           sudo dpkg --remove --force-all libcurl4-openssl-dev libcurl4-gnutls-dev libcups2 libcups2t64 || true
           sudo apt-get update
           sudo apt-get -f install -y
-
-          # 2. Install dependencies (Pure ARMhf for Qt/Boost)
           sudo apt-get install -y \
-            build-essential \
-            cmake \
-            ninja-build \
-            zipcmp \
-            zipmerge \
-            ziptool \
-            qemu-user-static \
-            g++-arm-linux-gnueabihf \
-            qt6-base-dev:armhf \
-            qt6-charts-dev:armhf \
-            qt6-svg-dev:armhf \
-            qt6-l10n-tools:armhf \
-            qt6-tools-dev:armhf \
-            qt6-tools-dev-tools:armhf \
-            libqt6core5compat6-dev:armhf \
-            libssl-dev:armhf \
-            libzip-dev:armhf \
-            libcurl4-openssl-dev:armhf \
-            libboost-system-dev:armhf \
-            libboost-filesystem-dev:armhf \
-            libboost-thread-dev:armhf \
-            libboost-iostreams-dev:armhf \
-            libboost-program-options-dev:armhf \
-            libboost-serialization-dev:armhf \
-            libboost-chrono-dev:armhf \
-            libboost-test-dev:armhf \
-            libminiupnpc-dev:armhf \
-            libqrencode-dev:armhf \
-            libxkbcommon-dev:armhf
+            build-essential cmake ninja-build zipcmp zipmerge ziptool qemu-user-static \
+            g++-arm-linux-gnueabihf qt6-base-dev:armhf qt6-charts-dev:armhf qt6-svg-dev:armhf \
+            qt6-l10n-tools:armhf qt6-tools-dev:armhf qt6-tools-dev-tools:armhf \
+            libqt6core5compat6-dev:armhf libssl-dev:armhf libzip-dev:armhf \
+            libcurl4-openssl-dev:armhf libboost-system-dev:armhf libboost-filesystem-dev:armhf \
+            libboost-thread-dev:armhf libboost-iostreams-dev:armhf libboost-program-options-dev:armhf \
+            libboost-serialization-dev:armhf libboost-chrono-dev:armhf libboost-test-dev:armhf \
+            libminiupnpc-dev:armhf libqrencode-dev:armhf libxkbcommon-dev:armhf \
+            ccache
 
       - name: Setup Concurrency
         run: |
@@ -261,9 +211,16 @@ jobs:
             echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
           fi
 
+      - name: Configure Ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-compat-armhf-${{ github.sha }}
+          restore-keys: ccache-compat-armhf-
+
       - name: Configure CMake (Cross)
         run: |
-          cmake -B build -GNinja \
+          cmake -B build_armhf -GNinja \
             -DCMAKE_SYSTEM_NAME=Linux \
             -DCMAKE_SYSTEM_PROCESSOR=arm \
             -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
@@ -274,13 +231,14 @@ jobs:
             -DENABLE_TESTS=ON \
             -DENABLE_GUI=ON \
             -DUSE_QT6=ON \
-            -DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/qemu-arm-static
+            -DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/qemu-arm-static \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
       - name: Build
-        run: cmake --build build
+        run: cmake --build build_armhf
 
       - name: Test (QEMU Emulation)
         env:
           QT_QPA_PLATFORM: offscreen
-        run: |
-          ctest --test-dir build --output-on-failure
+        run: ctest --test-dir build_armhf --output-on-failure
