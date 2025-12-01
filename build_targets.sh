@@ -27,6 +27,8 @@ print_help() {
     echo "                      Default: false"
     echo "  USE_QT6=<bool>      Use Qt6 for Linux Native build. Options: true, false."
     echo "                      Default: true (Set to false for Qt5)"
+    echo "  PARALLEL=<int>      Specify number of build threads to use (i.e. -j X)."
+    echo "                      Default: number of cpu threads reported by OS"
     echo "  CC=<path>           Override C compiler for Native Linux build."
     echo "                      (e.g., CC=/usr/bin/gcc-13)."
     echo "  CXX=<path>          Override C++ compiler for Native Linux build."
