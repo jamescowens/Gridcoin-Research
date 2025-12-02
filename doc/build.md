@@ -10,10 +10,11 @@ for various build targets:
 | **Linux (Native)** | CMake | **Stable** | This file |
 | **Linux (Static)** | CMake (depends) | **Stable** | This file |
 | **Windows (Cross)**| CMake (depends) | **Stable** | This file |
-| **macOS** | CMake | **Stable** | [Link](build-macos.md) |
+| **Windows via WSL**| CMake (depends) | **Stable** | [build-windows-wsl.md](build-windows-wsl.md) |
+| **macOS** | CMake | **Stable** | [build-macos.md](build-macos.md) |
 | **MSYS2** | CMake | *Deprecated* | NA |
-| **FreeBSD** | CMake | *Experimental* | [Link](build-freebsd.md) |
-| **OpenBSD** | CMake | *Experimental* | [Link](build-openbsd.md) |
+| **FreeBSD** | CMake | *Experimental* | [build-freebsd.md](build-freebsd.md) |
+| **OpenBSD** | CMake | *Experimental* | [build-openbsd.md](build-openbsd.md) |
 
 This document covers the three primary build targets:
 
