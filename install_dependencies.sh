@@ -2,6 +2,17 @@
 
 export LC_ALL=C
 
+# ==============================================================================
+# HELPER: DETECT WSL
+# ==============================================================================
+check_is_wsl() {
+    if grep -qE "(Microsoft|WSL)" /proc/version &> /dev/null; then
+        return 0 # True (Is WSL)
+    else
+        return 1 # False (Is Native Linux)
+    fi
+}
+
 install_deps() {
     local TARGET="$1"
     local USE_QT6="$2"
@@ -16,19 +27,36 @@ install_deps() {
         return 1
     fi
 
+    # Detect WSL Status
+    if check_is_wsl; then
+        IS_WSL="true"
+        echo "Detected Environment: WSL (Windows Subsystem for Linux)"
+    else
+        IS_WSL="false"
+        echo "Detected Environment: Native Linux"
+    fi
+
     echo "Detected OS: $OS"
     echo "Installing dependencies for Target: $TARGET, Qt6: $USE_QT6"
 
     # --- Package Groups Definition ---
-    # Initialize empty string variables for package lists
     PKGS_BASE=""
     PKGS_QT=""
     PKGS_MINGW=""
+    PKGS_WINE=""
 
-    # Helper to append to lists
     append_base() { PKGS_BASE="$PKGS_BASE $*"; }
     append_qt() { PKGS_QT="$PKGS_QT $*"; }
     append_mingw() { PKGS_MINGW="$PKGS_MINGW $*"; }
+
+    # Conditional Wine Append
+    # We only install Wine if the target is win64 AND we are NOT on WSL.
+    # On WSL, we can run Windows binaries natively.
+    append_wine() {
+        if [[ "$IS_WSL" == "false" ]]; then
+            PKGS_WINE="$PKGS_WINE $*"
+        fi
+    }
 
     # --- Define Packages per OS ---
     case $OS in
@@ -37,26 +65,29 @@ install_deps() {
             append_base build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 cmake git curl ccache doxygen graphviz bison xxd
 
             # Libraries for Native Build
-            # Includes zipcmp/zipmerge/ziptool for libzip CMake config
             append_base libssl-dev libevent-dev libboost-all-dev libminiupnpc-dev libqrencode-dev libzip-dev libcurl4-openssl-dev zipcmp zipmerge ziptool
 
-            # Qt6 Packages (Only if requested)
-            # Added: libqt6svg6-dev (Fixes "Failed to find required Qt component Svg")
-            # Added: libqt6core5compat6-dev (Required by CMakeLists.txt for USE_QT6)
+            # Qt6 Packages
             append_qt qt6-base-dev qt6-tools-dev qt6-l10n-tools libqt6charts6-dev libqt6svg6-dev libqt6core5compat6-dev
 
             # Windows Cross-Compile Tools
             append_mingw g++-mingw-w64-x86-64 nsis
+
+            # Wine (Emulator for Native Linux only)
+            # We specifically use wine64 to avoid needing 32-bit architecture enabled
+            append_wine wine64
             ;;
 
         fedora|rhel)
             append_base libstdc++-static gcc-c++ libtool automake autoconf pkgconf-pkg-config python3 cmake git curl patch perl-FindBin bison flex ccache doxygen graphviz
             append_base openssl-devel libevent-devel boost-devel miniupnpc-devel qrencode-devel libzip-devel libcurl-devel libzip-tools
 
-            # Fedora usually packages these differently, but ensuring basics:
             append_qt qt6-qtbase-devel qt6-qttools-devel qt6-qtcharts-devel qt6-qtsvg-devel qt6-qt5compat-devel
 
             append_mingw mingw64-gcc-c++ mingw64-nsis xxd
+
+            # Fedora Wine
+            append_wine wine
             ;;
 
         opensuse*|sles)
@@ -77,7 +108,7 @@ install_deps() {
                  return 1
             fi
 
-            # Repo Logic for openSUSE (Only needed if installing MinGW)
+            # Repo Logic for openSUSE
             if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]]; then
                 REPO_64_URL="https://download.opensuse.org/repositories/windows:/mingw:/win64/$DISTRO_PATH/"
                 REPO_64_NAME="windows_mingw_win64"
@@ -108,42 +139,39 @@ install_deps() {
             echo "Installing devel_basis pattern..."
             sudo zypper install -y -t pattern devel_basis
 
-            # Individual Packages
             # Base common packages
             append_base libtool automake autoconf pkg-config python3 cmake git curl ccache doxygen graphviz libzstd-devel
             append_base libopenssl-devel libevent-devel qrencode-devel libzip-devel libcurl-devel libzip-tools
             append_base miniupnpc libminiupnpc-devel
 
-            # Boost Packages (Common)
+            # Boost Packages
             append_base libboost_headers-devel libboost_filesystem-devel libboost_thread-devel libboost_date_time-devel libboost_iostreams-devel libboost_serialization-devel libboost_test-devel libboost_atomic-devel libboost_regex-devel
 
-            # Boost System Logic:
-            # Leap (Boost < 1.8x) requires libboost_system-devel.
-            # Tumbleweed (Boost >= 1.8x) treats system as header-only, so the package is gone.
             if [[ "$IS_TUMBLEWEED" == "false" ]]; then
                 append_base libboost_system-devel
-                # Leap also needs GCC 13 for C++17 support
                 append_base gcc13 gcc13-c++
             fi
 
-            # OpenSUSE Qt6 naming
             append_qt qt6-base-devel qt6-tools-devel qt6-charts-devel qt6-svg-devel qt6-qt5compat-devel qt6-linguist-devel
 
             append_mingw mingw64-cross-gcc-c++ nsis
+
+            # OpenSUSE Wine
+            append_wine wine
             ;;
 
         arch|manjaro)
-            # Use -Syu to upgrade ALL packages to match the new libraries we are installing.
-            # Arch does not support partial upgrades; mixing old libs with new Boost is fatal.
             sudo pacman -Syu --noconfirm
 
             append_base base-devel python cmake git ccache doxygen graphviz
             append_base boost libevent miniupnpc libzip qrencode curl icu
 
-            # Arch groups these well, usually base includes svg/5compat
             append_qt qt6-base qt6-tools qt6-charts qt6-svg qt6-5compat
 
             append_mingw mingw-w64-gcc nsis
+
+            # Arch Wine
+            append_wine wine
             ;;
 
         *)
@@ -155,9 +183,8 @@ install_deps() {
     # --- Determine Final Package List to Install ---
     PKGS_TO_INSTALL=""
 
-    if [[ "$TARGET" == "all" || "$TARGET" == "native" || "$TARGET" == "depends" ]]; then
-        PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_BASE"
-    fi
+    # Base packages (make, git, cmake, build-essential) are required for ALL targets.
+    PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_BASE"
 
     if [[ "$USE_QT6" == "true" ]]; then
         if [[ "$TARGET" == "all" || "$TARGET" == "native" ]]; then
@@ -167,6 +194,8 @@ install_deps() {
 
     if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]]; then
         PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_MINGW"
+        # Only adds wine if !WSL
+        PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_WINE"
     fi
 
     # Clean up leading whitespace
@@ -185,8 +214,7 @@ install_deps() {
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends $PKGS_TO_INSTALL
 
-            # --- CRITICAL FIX: Set MinGW threading to POSIX ---
-            # This fixes the "hang at end of test" issue by enabling std::thread support.
+            # MinGW Threading Fix (Existing logic)
             if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]]; then
                 echo "Configuring MinGW-w64 threading model to POSIX..."
                 if [ -f /usr/bin/x86_64-w64-mingw32-g++-posix ]; then

@@ -323,6 +323,15 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "win64" ]; then
         # Clean previous build
         rm -rf build_win64
 
+        # WSL Detection for Emulator Flag
+        # On WSL, we can run .exe files directly. On native Linux, we need Wine.
+        if grep -qE "(Microsoft|WSL)" /proc/version &> /dev/null; then
+            echo ">>> WSL Environment detected: Using native execution for Windows binaries (No Wine)."
+            CROSS_EMULATOR_FLAG=""
+        else
+            CROSS_EMULATOR_FLAG="-DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/wine"
+        fi
+
         # Configuration from build.md "3. Windows Cross-Compile Build"
         cmake -B build_win64 \
             --toolchain depends/x86_64-w64-mingw32/toolchain.cmake \
@@ -332,7 +341,7 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "win64" ]; then
             -DDEFAULT_UPNP=ON \
             -DENABLE_TESTS=ON \
             -DSYSTEM_XXD=ON \
-            -DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/wine \
+            $CROSS_EMULATOR_FLAG \
             -DCMAKE_EXE_LINKER_FLAGS="-static" \
             -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
