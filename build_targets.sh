@@ -15,7 +15,7 @@ print_help() {
     echo "Usage: ./build_targets.sh [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  TARGET=<target>     Select build target. Options: native, depends, win64, all."
+    echo "  TARGET=<target>     Select build target. Options: native, depends, win64, macos, all."
     echo "                      Default: all"
     echo "  BUILD_TYPE=<type>   Set the CMake build type. Options: Release, Debug, RelWithDebInfo."
     echo "                      Default: RelWithDebInfo"
@@ -25,22 +25,16 @@ print_help() {
     echo "                      Default: false"
     echo "  USE_CCACHE=<bool>   Enable ccache compiler launcher. Options: true, false."
     echo "                      Default: false"
-    echo "  USE_QT6=<bool>      Use Qt6 for Linux Native build. Options: true, false."
+    echo "  USE_QT6=<bool>      Use Qt6 for Native/macOS build. Options: true, false."
     echo "                      Default: true (Set to false for Qt5)"
     echo "  PARALLEL=<int>      Specify number of build threads to use (i.e. -j X)."
     echo "                      Default: number of cpu threads reported by OS"
-    echo "  CC=<path>           Override C compiler for Native Linux build."
-    echo "                      (e.g., CC=/usr/bin/gcc-13)."
-    echo "  CXX=<path>          Override C++ compiler for Native Linux build."
-    echo "                      (e.g., CXX=/usr/bin/g++-13)."
+    echo "  QT_PATH=<path>      Override path to Qt root (e.g. /usr/local/Qt/6.6.0/macos)."
+    echo "                      Bypasses Homebrew detection if set."
+    echo "  EXTRA_CMAKE_ARGS    Pass additional arguments to CMake (e.g. '-DBoost_USE_STATIC_LIBS=ON')"
+    echo "  CC=<path>           Override C compiler."
+    echo "  CXX=<path>          Override C++ compiler."
     echo "  --help, -h          Show this help message."
-    echo ""
-    echo "Examples:"
-    echo "  ./build_targets.sh"
-    echo "  ./build_targets.sh TARGET=native"
-    echo "  ./build_targets.sh TARGET=win64 CLEAN_BUILD=true"
-    echo "  ./build_targets.sh USE_CCACHE=true"
-    echo "  ./build_targets.sh CC=clang CXX=clang++ BUILD_TYPE=Debug"
     echo ""
 }
 
@@ -57,6 +51,8 @@ USE_CCACHE="false"
 USE_QT6="true"
 CC_OVERRIDE=""
 CXX_OVERRIDE=""
+MANUAL_QT_PATH=""
+EXTRA_ARGS=""
 
 for arg in "$@"; do
     case $arg in
@@ -88,6 +84,14 @@ for arg in "$@"; do
             PARALLEL="${arg#*=}"
             shift
             ;;
+        QT_PATH=*)
+            MANUAL_QT_PATH="${arg#*=}"
+            shift
+            ;;
+        EXTRA_CMAKE_ARGS=*)
+            EXTRA_ARGS="${arg#*=}"
+            shift
+            ;;
         CC=*)
             CC_OVERRIDE="${arg#*=}"
             shift
@@ -109,13 +113,12 @@ for arg in "$@"; do
 done
 
 # Validate Target
-if [[ ! "$TARGET" =~ ^(native|depends|win64|all)$ ]]; then
-    echo "Error: Invalid TARGET '$TARGET'. Must be one of: native, depends, win64, all."
+if [[ ! "$TARGET" =~ ^(native|depends|win64|macos|all)$ ]]; then
+    echo "Error: Invalid TARGET '$TARGET'. Must be one of: native, depends, win64, macos, all."
     exit 1
 fi
 
-# Prepare specific CMake arguments for the Native Build (Target 1)
-# We do NOT export these globally to prevent breaking the depends/cross-compile steps.
+# Prepare specific CMake arguments for Native/macOS
 NATIVE_CMAKE_ARGS=""
 
 if [ -n "$CC_OVERRIDE" ]; then
@@ -130,7 +133,7 @@ if [ "$USE_CCACHE" = "true" ]; then
     NATIVE_CMAKE_ARGS="$NATIVE_CMAKE_ARGS -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
 fi
 
-# Qt6 Logic for Native Build
+# Qt6 Logic
 if [ "$USE_QT6" = "true" ]; then
     NATIVE_QT_FLAG="-DUSE_QT6=ON"
 else
@@ -141,7 +144,14 @@ fi
 if [ -n "$PARALLEL" ]; then
     CORES="$PARALLEL"
 else
-    CORES=$(nproc)
+    # Cross-platform nproc detection
+    if command -v nproc >/dev/null 2>&1; then
+        CORES=$(nproc)
+    elif command -v sysctl >/dev/null 2>&1; then
+        CORES=$(sysctl -n hw.logicalcpu)
+    else
+        CORES=2 # Safe fallback
+    fi
 fi
 
 echo "================================================================"
@@ -153,9 +163,11 @@ echo "Build Type:   $BUILD_TYPE"
 echo "Clean Build:  $CLEAN_BUILD"
 echo "Skip Deps:    $SKIP_DEPS"
 echo "Use Ccache:   $USE_CCACHE"
-echo "Native Qt6:   $USE_QT6"
-if [ -n "$CC_OVERRIDE" ]; then echo "C Compiler:   $CC_OVERRIDE"; fi
-if [ -n "$CXX_OVERRIDE" ]; then echo "CXX Compiler: $CXX_OVERRIDE"; fi
+echo "Qt6:          $USE_QT6"
+if [ -n "$MANUAL_QT_PATH" ]; then echo "Manual Qt:    $MANUAL_QT_PATH"; fi
+if [ -n "$EXTRA_ARGS" ]; then     echo "Extra Args:   $EXTRA_ARGS"; fi
+if [ -n "$CC_OVERRIDE" ]; then    echo "C Compiler:   $CC_OVERRIDE"; fi
+if [ -n "$CXX_OVERRIDE" ]; then   echo "CXX Compiler: $CXX_OVERRIDE"; fi
 echo "================================================================"
 
 # ==============================================================================
@@ -167,13 +179,13 @@ if [ "$SKIP_DEPS" = "true" ]; then
     echo "----------------------------------------------------------------"
 else
     echo "----------------------------------------------------------------"
-    echo "[Step 1] Installing System Dependencies (Requires Sudo)..."
+    echo "[Step 1] Installing System Dependencies..."
     echo "----------------------------------------------------------------"
 
     # Check if the dependency script exists
     if [ -f "./install_dependencies.sh" ]; then
         source ./install_dependencies.sh
-        # Pass TARGET and USE_QT6 to install_deps so it can selectively install packages
+        # Pass TARGET and USE_QT6 to install_deps
         install_deps "$TARGET" "$USE_QT6"
     else
         echo "Error: install_dependencies.sh not found. Cannot install dependencies."
@@ -186,7 +198,8 @@ fi
 # ==============================================================================
 TARGET1_EXE="build/src/gridcoinresearchd"
 
-if [ "$TARGET" = "all" ] || [ "$TARGET" = "native" ]; then
+# Only run if target matches AND we are on Linux
+if [[ "$TARGET" == "all" || "$TARGET" == "native" ]] && [[ "$(uname -s)" == "Linux" ]]; then
     echo "----------------------------------------------------------------"
     echo "[Step 2] Building Target 1: Linux Native..."
     echo "----------------------------------------------------------------"
@@ -209,7 +222,8 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "native" ]; then
             -DENABLE_TESTS=ON \
             $NATIVE_QT_FLAG \
             -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-            $NATIVE_CMAKE_ARGS
+            $NATIVE_CMAKE_ARGS \
+            $EXTRA_ARGS
 
         # Build
         cmake --build build -j $CORES
@@ -226,7 +240,7 @@ fi
 # ==============================================================================
 TARGET2_EXE="build_linux_depends/src/gridcoinresearchd"
 
-if [ "$TARGET" = "all" ] || [ "$TARGET" = "depends" ]; then
+if [[ "$TARGET" == "all" || "$TARGET" == "depends" ]] && [[ "$(uname -s)" == "Linux" ]]; then
     echo "----------------------------------------------------------------"
     echo "[Step 3] Building Target 2: Linux Static (Depends System)..."
     echo "----------------------------------------------------------------"
@@ -240,7 +254,6 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "depends" ]; then
             echo "CLEAN_BUILD=true: Cleaning depends work/build/stamps/targets for x86_64-pc-linux-gnu..."
             rm -rf x86_64-pc-linux-gnu
             rm -rf built/x86_64-pc-linux-gnu
-            # CRITICAL: Remove the work/build dir to clear CMake caches for all packages
             rm -rf work/build/x86_64-pc-linux-gnu
             rm -rf work/staging/x86_64-pc-linux-gnu
         fi
@@ -248,7 +261,6 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "depends" ]; then
         # Configure Ccache for Depends
         DEPENDS_ARGS=""
         if [ "$USE_CCACHE" = "true" ]; then
-             # This tells the depends Makefile to wrap compilers with ccache
              DEPENDS_ARGS="CC_CACHE=ccache"
         fi
 
@@ -274,7 +286,8 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "depends" ]; then
             -DDEP_LIB="${DEP_LIB}" \
             -DCMAKE_CXX_FLAGS="-fPIE" \
             -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++ -Wl,-Bdynamic" \
-            -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+            -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+            $EXTRA_ARGS
 
         # Build
         cmake --build build_linux_depends -j $CORES
@@ -291,7 +304,7 @@ fi
 # ==============================================================================
 TARGET3_EXE="build_win64/src/gridcoinresearchd.exe"
 
-if [ "$TARGET" = "all" ] || [ "$TARGET" = "win64" ]; then
+if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]] && [[ "$(uname -s)" == "Linux" ]]; then
     echo "----------------------------------------------------------------"
     echo "[Step 4] Building Target 3: Windows Cross-Compile..."
     echo "----------------------------------------------------------------"
@@ -305,7 +318,6 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "win64" ]; then
             echo "CLEAN_BUILD=true: Cleaning depends work/build/stamps/targets for x86_64-w64-mingw32..."
             rm -rf x86_64-w64-mingw32
             rm -rf built/x86_64-w64-mingw32
-            # CRITICAL: Remove the work/build dir to clear CMake caches
             rm -rf work/build/x86_64-w64-mingw32
             rm -rf work/staging/x86_64-w64-mingw32
         fi
@@ -313,7 +325,6 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "win64" ]; then
         # Configure Ccache for Depends
         DEPENDS_ARGS=""
         if [ "$USE_CCACHE" = "true" ]; then
-             # This tells the depends Makefile to wrap compilers with ccache
              DEPENDS_ARGS="CC_CACHE=ccache"
         fi
 
@@ -324,7 +335,6 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "win64" ]; then
         rm -rf build_win64
 
         # WSL Detection for Emulator Flag
-        # On WSL, we can run .exe files directly. On native Linux, we need Wine.
         if grep -qE "(Microsoft|WSL)" /proc/version &> /dev/null; then
             echo ">>> WSL Environment detected: Using native execution for Windows binaries (No Wine)."
             CROSS_EMULATOR_FLAG=""
@@ -343,7 +353,8 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "win64" ]; then
             -DSYSTEM_XXD=ON \
             $CROSS_EMULATOR_FLAG \
             -DCMAKE_EXE_LINKER_FLAGS="-static" \
-            -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+            -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+            $EXTRA_ARGS
 
         # Build
         cmake --build build_win64 -j $CORES
@@ -355,9 +366,81 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "win64" ]; then
     fi
 fi
 
+# ==============================================================================
+# STEP 5: BUILD macOS NATIVE (Target #4)
+# ==============================================================================
+TARGET4_EXE="build_macos/src/qt/gridcoinresearch.app/Contents/MacOS/gridcoinresearch"
+
+if [[ "$TARGET" == "all" || "$TARGET" == "macos" ]] && [[ "$(uname -s)" == "Darwin" ]]; then
+    echo "----------------------------------------------------------------"
+    echo "[Step 5] Building Target 4: macOS Native..."
+    echo "----------------------------------------------------------------"
+
+    if [ "$CLEAN_BUILD" = "false" ] && [ -f "$TARGET4_EXE" ]; then
+        echo ">>> Executable found at $TARGET4_EXE. Skipping build."
+    else
+        # Clean previous build
+        rm -rf build_macos
+
+        OPENSSL_ROOT=$(brew --prefix openssl)
+
+        # QT PATH SELECTION LOGIC
+        if [ -n "$MANUAL_QT_PATH" ]; then
+            echo "Using Manual Qt Path: $MANUAL_QT_PATH"
+            QT_PREFIX_PATH="$MANUAL_QT_PATH"
+        else
+            # Default Homebrew Logic
+            if [ "$USE_QT6" = "true" ]; then
+                 QT_FORMULA="qt"
+            else
+                 QT_FORMULA="qt@5"
+            fi
+
+            echo "Checking for Homebrew Qt ($QT_FORMULA)..."
+
+            if ! QT_PREFIX_PATH=$(brew --prefix "$QT_FORMULA" 2>/dev/null); then
+                 echo "Error: brew --prefix $QT_FORMULA failed. Installation broken."
+                 exit 1
+            fi
+        fi
+
+        echo "Final Qt Path: $QT_PREFIX_PATH"
+        echo "Detected OpenSSL Path: $OPENSSL_ROOT"
+
+        # Configuration from build.md / cmake_production.yml
+        # Added -DBoost_USE_STATIC_LIBS=ON to fix runtime linking issues
+        cmake -B build_macos \
+            -DCMAKE_PREFIX_PATH="$QT_PREFIX_PATH" \
+            -DENABLE_GUI=ON \
+            -DENABLE_QRENCODE=ON \
+            -DENABLE_UPNP=ON \
+            -DDEFAULT_UPNP=ON \
+            -DENABLE_TESTS=ON \
+            -DENABLE_DOCS=OFF \
+            $NATIVE_QT_FLAG \
+            -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+            -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT" \
+            $NATIVE_CMAKE_ARGS \
+            $EXTRA_ARGS
+
+        # Build
+        cmake --build build_macos -j $CORES
+
+        # Test
+        ctest --test-dir build_macos -j $CORES
+
+        echo ">>> macOS Build Successful."
+    fi
+fi
+
 echo "----------------------------------------------------------------"
 echo "ALL BUILDS COMPLETE"
 echo "----------------------------------------------------------------"
-if [ "$TARGET" = "all" ] || [ "$TARGET" = "native" ]; then echo "1. Linux Native: $TARGET1_EXE"; fi
-if [ "$TARGET" = "all" ] || [ "$TARGET" = "depends" ]; then echo "2. Linux Static: $TARGET2_EXE"; fi
-if [ "$TARGET" = "all" ] || [ "$TARGET" = "win64" ]; then echo "3. Windows:      $TARGET3_EXE"; fi
+if [[ "$(uname -s)" == "Linux" ]]; then
+    if [[ "$TARGET" == "all" || "$TARGET" == "native" ]]; then echo "1. Linux Native: $TARGET1_EXE"; fi
+    if [[ "$TARGET" == "all" || "$TARGET" == "depends" ]]; then echo "2. Linux Static: $TARGET2_EXE"; fi
+    if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]]; then echo "3. Windows:      $TARGET3_EXE"; fi
+fi
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    if [[ "$TARGET" == "all" || "$TARGET" == "macos" ]]; then echo "4. macOS Native: $TARGET4_EXE"; fi
+fi

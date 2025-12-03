@@ -17,7 +17,13 @@ install_deps() {
     local TARGET="$1"
     local USE_QT6="$2"
 
-    if [ -f /etc/os-release ]; then
+    # Detect OS Type first
+    OS_TYPE=$(uname -s)
+
+    if [[ "$OS_TYPE" == "Darwin" ]]; then
+        OS="macos"
+        echo "Detected OS: macOS (Darwin)"
+    elif [ -f /etc/os-release ]; then
         # The next line prevents the linter from looking into os-release and complaining about unused variables.
         # shellcheck source=/dev/null
         . /etc/os-release
@@ -27,16 +33,17 @@ install_deps() {
         return 1
     fi
 
-    # Detect WSL Status
-    if check_is_wsl; then
-        IS_WSL="true"
-        echo "Detected Environment: WSL (Windows Subsystem for Linux)"
-    else
-        IS_WSL="false"
-        echo "Detected Environment: Native Linux"
+    # Detect WSL Status (Only relevant for Linux)
+    IS_WSL="false"
+    if [[ "$OS" != "macos" ]]; then
+        if check_is_wsl; then
+            IS_WSL="true"
+            echo "Detected Environment: WSL (Windows Subsystem for Linux)"
+        else
+            echo "Detected Environment: Native Linux"
+        fi
     fi
 
-    echo "Detected OS: $OS"
     echo "Installing dependencies for Target: $TARGET, Qt6: $USE_QT6"
 
     # --- Package Groups Definition ---
@@ -60,6 +67,27 @@ install_deps() {
 
     # --- Define Packages per OS ---
     case $OS in
+        macos)
+            # Homebrew Logic
+            if ! command -v brew &> /dev/null; then
+                echo "Error: Homebrew not found. Please install it from https://brew.sh"
+                return 1
+            fi
+
+            # Base Tools
+            append_base cmake ccache libtool automake autoconf pkg-config
+            # Libraries
+            append_base boost openssl libevent miniupnpc qrencode libzip
+
+            # Qt Logic for macOS Homebrew
+            if [[ "$USE_QT6" == "true" ]]; then
+                append_qt qt
+            else
+                # Install Qt5 specific formula
+                append_qt qt@5
+            fi
+            ;;
+
         debian|ubuntu|linuxmint)
             # Base Build Tools
             append_base build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 cmake git curl ccache doxygen graphviz bison xxd
@@ -74,7 +102,6 @@ install_deps() {
             append_mingw g++-mingw-w64-x86-64 nsis
 
             # Wine (Emulator for Native Linux only)
-            # We specifically use wine64 to avoid needing 32-bit architecture enabled
             append_wine wine64
             ;;
 
@@ -183,11 +210,17 @@ install_deps() {
     # --- Determine Final Package List to Install ---
     PKGS_TO_INSTALL=""
 
-    # Base packages (make, git, cmake, build-essential) are required for ALL targets.
+    # FIX: Base packages are always required.
     PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_BASE"
 
     if [[ "$USE_QT6" == "true" ]]; then
-        if [[ "$TARGET" == "all" || "$TARGET" == "native" ]]; then
+        if [[ "$TARGET" == "all" || "$TARGET" == "native" || "$TARGET" == "macos" ]]; then
+            PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_QT"
+        fi
+    else
+        # If Qt5, we still need to install the package, just a different name (qt@5)
+        # The switch above handled the name, now we just append the variable
+        if [[ "$TARGET" == "all" || "$TARGET" == "native" || "$TARGET" == "macos" ]]; then
             PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_QT"
         fi
     fi
@@ -210,11 +243,15 @@ install_deps() {
     echo "Installing Packages: $PKGS_TO_INSTALL"
 
     case $OS in
+        macos)
+            # macOS uses Homebrew, usually doesn't need sudo if user owns prefix
+            brew install $PKGS_TO_INSTALL
+            ;;
         debian|ubuntu|linuxmint)
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends $PKGS_TO_INSTALL
 
-            # MinGW Threading Fix (Existing logic)
+            # MinGW Threading Fix (Linux Only)
             if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]]; then
                 echo "Configuring MinGW-w64 threading model to POSIX..."
                 if [ -f /usr/bin/x86_64-w64-mingw32-g++-posix ]; then
