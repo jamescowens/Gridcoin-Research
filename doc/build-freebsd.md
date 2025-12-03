@@ -1,5 +1,10 @@
-Building on FreeBSD
---------------------
+# FreeBSD Build Guide
+
+The guide below was for autotools and is outdated and deprecated. Folks using FreeBSD may be able to use this and adapt the cmake build procedure in the main build doc, [build.md](build.md) for the Linux Native build target. The Gridcoin Team encourages anyone getting a modern FreeBSD (15.0, for example) to work with Gridcoin to submit an issue on Github documenting what you did to get it to work, or if you are familiar with pull request creation, a PR with changes to this file with the correct procedure that works.
+
+===================
+
+## Deprecated Guide
 
 **Updated for FreeBSD [12.2](https://www.freebsd.org/releases/12.2R/announce.html)**
 

@@ -12,11 +12,11 @@ for various build targets:
 | **Windows (Cross)**| CMake (depends) | **Stable** | This file |
 | **Windows via WSL**| CMake (depends) | **Stable** | [build-windows-wsl.md](build-windows-wsl.md) |
 | **macOS** | CMake | **Stable** | [build-macos.md](build-macos.md) |
-| **MSYS2** | CMake | *Deprecated* | NA |
+| **MSYS2** | CMake | *Deprecated* | [build-msys2.md](build-msys2.md) |
 | **FreeBSD** | CMake | *Experimental* | [build-freebsd.md](build-freebsd.md) |
 | **OpenBSD** | CMake | *Experimental* | [build-openbsd.md](build-openbsd.md) |
 
-This document covers the three primary build targets:
+This document covers these build targets:
 
 1.  **Linux Native:** Dynamic linking against system libraries (best for development & Linux distributions).
 2.  **Linux Static:** Static linking against the `depends` system (best for portable release binaries).
@@ -37,11 +37,13 @@ This document covers the three primary build targets:
 
 | Target | Primary Use Case |
 | :--- | :--- | :--- |
-| **Linux Native** | Development, Package Maintainers |
+| **Linux Native** | Development, Package Maintainers, Enthusiasts that like to roll their own builds |
 | **Linux Static** | Portable releases, especially useful for older distributions that can't meet native package dependencies |
-| **Windows Cross-Compile** | Windows installer/Executable |
+| **Windows Cross-Compile** | Windows installer/Executable compiling from Linux host |
+| **Windows via WSL** | Windows installer/Executable compiling from WSL running in Windows 10/11 |
+| **macOS** | Development, Package Maintainers, Enthusiasts that like to roll their own builds |
 
-We have created a fairly comprehensive and easy to use build script for these three major targets, ***build_targets.sh***, and its helper script, ***install_dependencies.sh***.
+We have created a fairly comprehensive and easy to use build script for these five major targets, ***build_targets.sh***, and its helper script, ***install_dependencies.sh***.
 
 ## Automatic Build Script
 
@@ -71,7 +73,7 @@ Options:
   --help, -h          Show this help message.
 ```
 
-This script works for all three major targets. The "native" target (Linux Native) has been confirmed to work across all six major distributions, including the automatic installation of all the necessary dependencies, and this is now checked in continuous integration testing in Github. The "depends" target (Linux Static) and the "win64" target (Windows Cross-Compile) works with Ubuntu latest, Fedora, and OpenSUSE, and probably the others as well.
+This script works for all five major targets. The "native" target (Linux Native) should work across all seven major distributions that we check in continuous integration testing on Github, including the automatic installation of all the necessary dependencies. The "depends" target (Linux Static) and the "win64" target (Windows Cross-Compile) works with Ubuntu latest, Fedora, and OpenSUSE, and probably the others as well. The macOS target should work with macOS 12 "Monterey" or newer.
 
 A typical example of the use of this script by someone desiring a local build dynamically linked to the system libraries would be:
 
@@ -84,7 +86,7 @@ After you build with this script with the appropriate target
 * For installation, skip to the Install step in the target you selected below and follow that step for installation.
 * For a more custom build, use the cmake detailed instructions below.
 
-# Detailed Build Instructions
+# Detailed Build Instructions for **Linux Native**, **Linux Static**, and **Windows Cross-Compile**
 
 Please refer to [Link](cmake-options.md) (cmake-options.md) for a list of cmake configuration options.
 

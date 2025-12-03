@@ -1,5 +1,11 @@
-OpenBSD build guide
+# OpenBSD build guide
+
+The guide below was for autotools and is outdated and deprecated. Folks using OpenBSD may be able to use this and adapt the cmake build procedure in the main build doc, [build.md](build.md) for the Linux Native build target. The Gridcoin Team encourages anyone getting a modern OpenBSD (7.8, for example) to work with Gridcoin to submit an issue on Github documenting what you did to get it to work, or if you are familiar with pull request creation, a PR with changes to this file with the correct procedure that works.
+
 ===================
+
+## Deprecated Guide
+
 (updated for OpenBSD 7.0)
 
 This guide describes how to build gridcoinresearchd, command-line utilities, and GUI on OpenBSD.
