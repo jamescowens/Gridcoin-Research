@@ -10,7 +10,6 @@
 #include "util.h"
 #include "util/threadnames.h"
 #include "net.h"
-#include "txdb.h"
 #include "wallet/walletdb.h"
 #include "banman.h"
 #include "random.h"

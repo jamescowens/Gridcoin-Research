@@ -290,10 +290,12 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    // Generate high-dpi pixmaps
+    // Generate high-dpi pixmaps. This is now wrapped by a macro conditional because these are always
+    // on for Qt 6.0+ and are deprecated.
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-
+#endif
     // Initiate the app here to support choosing the data directory.
     Q_INIT_RESOURCE(bitcoin);
     Q_INIT_RESOURCE(bitcoin_locale);
@@ -390,12 +392,19 @@ int main(int argc, char *argv[])
     // - First load the translator for the base language, without territory
     // - Then load the more specific locale translator
 
+// Near line 394
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QString transPath = QLibraryInfo::path(QLibraryInfo::TranslationsPath);
+#else
+    QString transPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+#endif
+
     // Load e.g. qt_de.qm
-    if (qtTranslatorBase.load("qt_" + lang, QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
+    if (qtTranslatorBase.load("qt_" + lang, transPath))
         app.installTranslator(&qtTranslatorBase);
 
     // Load e.g. qt_de_DE.qm
-    if (qtTranslator.load("qt_" + lang_territory, QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
+    if (qtTranslator.load("qt_" + lang_territory, transPath))
         app.installTranslator(&qtTranslator);
 
     // Load e.g. bitcoin_de.qm (shortcut "de" needs to be defined in bitcoin.qrc)

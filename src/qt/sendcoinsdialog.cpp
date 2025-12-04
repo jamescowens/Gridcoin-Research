@@ -48,7 +48,11 @@ SendCoinsDialog::SendCoinsDialog(QWidget* parent)
     connect(ui->coinControlPushButton, &QPushButton::clicked, this, &SendCoinsDialog::coinControlButtonClicked);
     connect(ui->coinControlConsolidateWizardPushButton, &QPushButton::clicked, this, &SendCoinsDialog::coinControlConsolidateWizardButtonClicked);
     connect(ui->coinControlResetPushButton, &QPushButton::clicked, this, &SendCoinsDialog::coinControlResetButtonClicked);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0) // strictly it's 6.7+ for checkStateChanged
+    connect(ui->coinControlChangeCheckBox, &QCheckBox::checkStateChanged, this, &SendCoinsDialog::coinControlChangeChecked);
+#else
     connect(ui->coinControlChangeCheckBox, &QCheckBox::stateChanged, this, &SendCoinsDialog::coinControlChangeChecked);
+#endif
     connect(ui->coinControlChangeEdit, &QLineEdit::textEdited, this, &SendCoinsDialog::coinControlChangeEdited);
 
     // Coin Control: clipboard actions

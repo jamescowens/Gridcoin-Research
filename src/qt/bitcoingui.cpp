@@ -313,32 +313,32 @@ void BitcoinGUI::createActions()
     overviewAction = new QAction(tr("&Overview"), tabGroup);
     overviewAction->setToolTip(tr("Show general overview of wallet"));
     overviewAction->setCheckable(true);
-    overviewAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_1));
+    overviewAction->setShortcut(QKeySequence(Qt::ALT | Qt::Key_1));
 
     sendCoinsAction = new QAction(tr("&Send"), tabGroup);
     sendCoinsAction->setToolTip(tr("Send coins to a Gridcoin address"));
     sendCoinsAction->setCheckable(true);
-    sendCoinsAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_2));
+    sendCoinsAction->setShortcut(QKeySequence(Qt::ALT | Qt::Key_2));
 
     receiveCoinsAction = new QAction(tr("&Receive"), tabGroup);
     receiveCoinsAction->setToolTip(tr("Show the list of addresses for receiving payments"));
     receiveCoinsAction->setCheckable(true);
-    receiveCoinsAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_3));
+    receiveCoinsAction->setShortcut(QKeySequence(Qt::ALT | Qt::Key_3));
 
     historyAction = new QAction(tr("&History"), tabGroup);
     historyAction->setToolTip(tr("Browse transaction history"));
     historyAction->setCheckable(true);
-    historyAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_4));
+    historyAction->setShortcut(QKeySequence(Qt::ALT | Qt::Key_4));
 
     addressBookAction = new QAction(tr("&Favorites"), tabGroup);
     addressBookAction->setToolTip(tr("Edit the list of stored addresses and labels"));
     addressBookAction->setCheckable(true);
-    addressBookAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
+    addressBookAction->setShortcut(QKeySequence(Qt::ALT | Qt::Key_5));
 
     votingAction = new QAction(tr("&Voting"), tabGroup);
     votingAction->setToolTip(tr("Voting"));
     votingAction->setCheckable(true);
-    votingAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
+    votingAction->setShortcut(QKeySequence(Qt::ALT | Qt::Key_6));
 
     bxAction = new QAction(tr("&Block Explorer"), this);
     bxAction->setStatusTip(tr("Block Explorer"));
@@ -381,7 +381,7 @@ void BitcoinGUI::createActions()
 
     quitAction = new QAction(tr("E&xit"), this);
     quitAction->setToolTip(tr("Quit application"));
-    quitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
+    quitAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
     quitAction->setMenuRole(QAction::QuitRole);
 
     aboutAction = new QAction(tr("&About Gridcoin"), this);
@@ -433,7 +433,7 @@ void BitcoinGUI::createActions()
     resetblockchainAction->setToolTip(tr("Remove blockchain data and start chain from zero"));
 
     m_mask_values_action = new QAction(tr("&Mask values"), this);
-    m_mask_values_action->setShortcut(QKeySequence((Qt::CTRL | Qt::SHIFT) + Qt::Key_M));
+    m_mask_values_action->setShortcut(QKeySequence((Qt::CTRL | Qt::SHIFT) | Qt::Key_M));
     m_mask_values_action->setStatusTip(tr("Mask the values in the Overview screen"));
     m_mask_values_action->setCheckable(true);
 
@@ -1583,7 +1583,7 @@ void BitcoinGUI::setEncryptionStatus(int status)
         unlockWalletAction->setVisible(false);
         unlockWalletAction->setShortcut(QKeySequence());
         lockWalletAction->setVisible(true);
-        lockWalletAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_7));
+        lockWalletAction->setShortcut(QKeySequence(Qt::ALT | Qt::Key_7));
         encryptWalletAction->setEnabled(false);
         break;
     case WalletModel::Locked:
@@ -1592,7 +1592,7 @@ void BitcoinGUI::setEncryptionStatus(int status)
         encryptWalletAction->setChecked(true);
         changePassphraseAction->setEnabled(true);
         unlockWalletAction->setVisible(true);
-        unlockWalletAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_7));
+        unlockWalletAction->setShortcut(QKeySequence(Qt::ALT | Qt::Key_7));
         lockWalletAction->setVisible(false);
         lockWalletAction->setShortcut(QKeySequence());
         encryptWalletAction->setEnabled(false);
