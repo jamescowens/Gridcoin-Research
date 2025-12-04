@@ -32,7 +32,7 @@ jobs:
       - name: Install Dependencies
         run: |
           source ./install_dependencies.sh
-          install_deps native true
+          install_deps native true true
 
       - name: Setup Concurrency
         run: |
@@ -115,6 +115,7 @@ jobs:
             libboost-thread-dev:arm64 libboost-iostreams-dev:arm64 libboost-program-options-dev:arm64 \
             libboost-serialization-dev:arm64 libboost-chrono-dev:arm64 libboost-test-dev:arm64 \
             libminiupnpc-dev:arm64 libqrencode-dev:arm64 libxkbcommon-dev:arm64 \
+            libcups2t64:arm64 \
             ccache
 
       - name: Setup Concurrency
@@ -200,6 +201,7 @@ jobs:
             libboost-thread-dev:armhf libboost-iostreams-dev:armhf libboost-program-options-dev:armhf \
             libboost-serialization-dev:armhf libboost-chrono-dev:armhf libboost-test-dev:armhf \
             libminiupnpc-dev:armhf libqrencode-dev:armhf libxkbcommon-dev:armhf \
+            libcups2t64:armhf \
             ccache
 
       - name: Setup Concurrency

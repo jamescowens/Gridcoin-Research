@@ -25,6 +25,8 @@ print_help() {
     echo "                      Default: false"
     echo "  USE_CCACHE=<bool>   Enable ccache compiler launcher. Options: true, false."
     echo "                      Default: false"
+    echo "  WITH_GUI=<bool>     Build the GUI wallet. Options: true, false."
+    echo "                      Default: true"
     echo "  USE_QT6=<bool>      Use Qt6 for Native/macOS build. Options: true, false."
     echo "                      Default: true (Set to false for Qt5)"
     echo "  PARALLEL=<int>      Specify number of build threads to use (i.e. -j X)."
@@ -48,6 +50,7 @@ BUILD_TYPE="RelWithDebInfo"
 CLEAN_BUILD="false"
 SKIP_DEPS="false"
 USE_CCACHE="false"
+WITH_GUI="true"
 USE_QT6="true"
 CC_OVERRIDE=""
 CXX_OVERRIDE=""
@@ -74,6 +77,10 @@ for arg in "$@"; do
             ;;
         USE_CCACHE=*)
             USE_CCACHE="${arg#*=}"
+            shift
+            ;;
+        WITH_GUI=*)
+            WITH_GUI="${arg#*=}"
             shift
             ;;
         USE_QT6=*)
@@ -140,6 +147,13 @@ else
     NATIVE_QT_FLAG="-DUSE_QT6=OFF"
 fi
 
+# GUI Logic
+if [ "$WITH_GUI" = "true" ]; then
+    GUI_CMAKE_FLAG="-DENABLE_GUI=ON"
+else
+    GUI_CMAKE_FLAG="-DENABLE_GUI=OFF"
+fi
+
 # Determine Concurrency
 if [ -n "$PARALLEL" ]; then
     CORES="$PARALLEL"
@@ -163,6 +177,7 @@ echo "Build Type:   $BUILD_TYPE"
 echo "Clean Build:  $CLEAN_BUILD"
 echo "Skip Deps:    $SKIP_DEPS"
 echo "Use Ccache:   $USE_CCACHE"
+echo "With GUI:     $WITH_GUI"
 echo "Qt6:          $USE_QT6"
 if [ -n "$MANUAL_QT_PATH" ]; then echo "Manual Qt:    $MANUAL_QT_PATH"; fi
 if [ -n "$EXTRA_ARGS" ]; then     echo "Extra Args:   $EXTRA_ARGS"; fi
@@ -185,8 +200,8 @@ else
     # Check if the dependency script exists
     if [ -f "./install_dependencies.sh" ]; then
         source ./install_dependencies.sh
-        # Pass TARGET and USE_QT6 to install_deps
-        install_deps "$TARGET" "$USE_QT6"
+        # Pass TARGET, USE_QT6, and WITH_GUI to install_deps
+        install_deps "$TARGET" "$USE_QT6" "$WITH_GUI"
     else
         echo "Error: install_dependencies.sh not found. Cannot install dependencies."
         exit 1
@@ -212,7 +227,7 @@ if [[ "$TARGET" == "all" || "$TARGET" == "native" ]] && [[ "$(uname -s)" == "Lin
 
         # Configuration from build.md "1. Linux Native Build"
         cmake -B build \
-            -DENABLE_GUI=ON \
+            $GUI_CMAKE_FLAG \
             -DENABLE_QRENCODE=ON \
             -DUSE_DBUS=ON \
             -DENABLE_UPNP=ON \
@@ -277,7 +292,7 @@ if [[ "$TARGET" == "all" || "$TARGET" == "depends" ]] && [[ "$(uname -s)" == "Li
         # Configuration from build.md "2. Linux Static Build"
         cmake -B build_linux_depends \
             --toolchain depends/x86_64-pc-linux-gnu/toolchain.cmake \
-            -DENABLE_GUI=ON \
+            $GUI_CMAKE_FLAG \
             -DUSE_QT6=ON \
             -DSTATIC_LIBS=ON \
             -DENABLE_UPNP=ON \
@@ -345,7 +360,7 @@ if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]] && [[ "$(uname -s)" == "Linu
         # Configuration from build.md "3. Windows Cross-Compile Build"
         cmake -B build_win64 \
             --toolchain depends/x86_64-w64-mingw32/toolchain.cmake \
-            -DENABLE_GUI=ON \
+            $GUI_CMAKE_FLAG \
             -DUSE_QT6=ON \
             -DENABLE_UPNP=ON \
             -DDEFAULT_UPNP=ON \
@@ -369,7 +384,11 @@ fi
 # ==============================================================================
 # STEP 5: BUILD macOS NATIVE (Target #4)
 # ==============================================================================
-TARGET4_EXE="build_macos/src/qt/gridcoinresearch.app/Contents/MacOS/gridcoinresearch"
+if [[ "$WITH_GUI" == "true" ]]; then
+    TARGET4_EXE="build_macos/src/qt/gridcoinresearch.app/Contents/MacOS/gridcoinresearch"
+else
+    TARGET4_EXE="build_macos/src/gridcoinresearchd"
+fi
 
 if [[ "$TARGET" == "all" || "$TARGET" == "macos" ]] && [[ "$(uname -s)" == "Darwin" ]]; then
     echo "----------------------------------------------------------------"
@@ -383,35 +402,52 @@ if [[ "$TARGET" == "all" || "$TARGET" == "macos" ]] && [[ "$(uname -s)" == "Darw
         rm -rf build_macos
 
         OPENSSL_ROOT=$(brew --prefix openssl)
+        # Fix for missing icudata on macOS (ICU is keg-only)
+        ICU_PREFIX=$(brew --prefix icu4c)
 
         # QT PATH SELECTION LOGIC
-        if [ -n "$MANUAL_QT_PATH" ]; then
-            echo "Using Manual Qt Path: $MANUAL_QT_PATH"
-            QT_PREFIX_PATH="$MANUAL_QT_PATH"
-        else
-            # Default Homebrew Logic
-            if [ "$USE_QT6" = "true" ]; then
-                 QT_FORMULA="qt"
+        # We only need to check for Qt if we are actually building the GUI
+        if [[ "$WITH_GUI" == "true" ]]; then
+            if [ -n "$MANUAL_QT_PATH" ]; then
+                echo "Using Manual Qt Path: $MANUAL_QT_PATH"
+                QT_PREFIX_PATH="$MANUAL_QT_PATH"
             else
-                 QT_FORMULA="qt@5"
-            fi
+                # Default Homebrew Logic
+                if [ "$USE_QT6" = "true" ]; then
+                     QT_FORMULA="qt"
+                else
+                     QT_FORMULA="qt@5"
+                fi
 
-            echo "Checking for Homebrew Qt ($QT_FORMULA)..."
+                echo "Checking for Homebrew Qt ($QT_FORMULA)..."
 
-            if ! QT_PREFIX_PATH=$(brew --prefix "$QT_FORMULA" 2>/dev/null); then
-                 echo "Error: brew --prefix $QT_FORMULA failed. Installation broken."
-                 exit 1
+                if ! QT_PREFIX_PATH=$(brew --prefix "$QT_FORMULA" 2>/dev/null); then
+                     echo "Error: brew --prefix $QT_FORMULA failed. Installation broken or missing."
+                     echo "Check your Homebrew install or use WITH_GUI=false if you only want the daemon."
+                     exit 1
+                fi
             fi
+            echo "Final Qt Path: $QT_PREFIX_PATH"
+        else
+            echo "GUI disabled: Skipping Qt detection."
+            # Set to empty or don't set CMAKE_PREFIX_PATH for Qt
+            QT_PREFIX_PATH=""
         fi
 
-        echo "Final Qt Path: $QT_PREFIX_PATH"
         echo "Detected OpenSSL Path: $OPENSSL_ROOT"
+        echo "Detected ICU Path: $ICU_PREFIX"
 
         # Configuration from build.md / cmake_production.yml
-        # Added -DBoost_USE_STATIC_LIBS=ON to fix runtime linking issues
+        # Note: We pass QT_PREFIX_PATH only if it was set
+        if [ -n "$QT_PREFIX_PATH" ]; then
+             PREFIX_PATHS="$QT_PREFIX_PATH;$ICU_PREFIX"
+        else
+             PREFIX_PATHS="$ICU_PREFIX"
+        fi
+
         cmake -B build_macos \
-            -DCMAKE_PREFIX_PATH="$QT_PREFIX_PATH" \
-            -DENABLE_GUI=ON \
+            -DCMAKE_PREFIX_PATH="$PREFIX_PATHS" \
+            $GUI_CMAKE_FLAG \
             -DENABLE_QRENCODE=ON \
             -DENABLE_UPNP=ON \
             -DDEFAULT_UPNP=ON \

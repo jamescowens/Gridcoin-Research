@@ -58,7 +58,7 @@ jobs:
       - name: Install System Dependencies
         run: |
           source ./install_dependencies.sh
-          install_deps all false
+          install_deps all false false
 
           # Ensure wine is installed for Windows testing
           if [[ "${{ matrix.host }}" == *"mingw"* ]]; then

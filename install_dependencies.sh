@@ -16,6 +16,7 @@ check_is_wsl() {
 install_deps() {
     local TARGET="$1"
     local USE_QT6="$2"
+    local WITH_GUI="$3"
 
     # Detect OS Type first
     OS_TYPE=$(uname -s)
@@ -44,7 +45,7 @@ install_deps() {
         fi
     fi
 
-    echo "Installing dependencies for Target: $TARGET, Qt6: $USE_QT6"
+    echo "Installing dependencies for Target: $TARGET, Qt6: $USE_QT6, GUI: $WITH_GUI"
 
     # --- Package Groups Definition ---
     PKGS_BASE=""
@@ -79,12 +80,14 @@ install_deps() {
             # Libraries
             append_base boost openssl libevent miniupnpc qrencode libzip
 
-            # Qt Logic for macOS Homebrew
-            if [[ "$USE_QT6" == "true" ]]; then
-                append_qt qt
-            else
-                # Install Qt5 specific formula
-                append_qt qt@5
+            # Qt Logic for macOS Homebrew (Only if GUI is requested)
+            if [[ "$WITH_GUI" == "true" ]]; then
+                if [[ "$USE_QT6" == "true" ]]; then
+                    append_qt qt
+                else
+                    # Install Qt5 specific formula for legacy support
+                    append_qt qt@5
+                fi
             fi
             ;;
 
@@ -95,7 +98,7 @@ install_deps() {
             # Libraries for Native Build
             append_base libssl-dev libevent-dev libboost-all-dev libminiupnpc-dev libqrencode-dev libzip-dev libcurl4-openssl-dev zipcmp zipmerge ziptool
 
-            # Qt6 Packages
+            # Qt6 Packages (Qt5 names are not defined here as most are EOL)
             append_qt qt6-base-dev qt6-tools-dev qt6-l10n-tools libqt6charts6-dev libqt6svg6-dev libqt6core5compat6-dev
 
             # Windows Cross-Compile Tools
@@ -174,9 +177,35 @@ install_deps() {
             # Boost Packages
             append_base libboost_headers-devel libboost_filesystem-devel libboost_thread-devel libboost_date_time-devel libboost_iostreams-devel libboost_serialization-devel libboost_test-devel libboost_atomic-devel libboost_regex-devel
 
+            # Boost System Logic:
+            # Use 'zypper info' to check which version of headers is (or will be) installed.
+            # This handles both Clean Install and Upgrade scenarios correctly.
+
+            INSTALL_BOOST_SYSTEM="true"
+
+            # Get the version string from the repository metadata
+            # Output format example: "Version      : 1.89.0-..."
+            BOOST_VER_STRING=$(zypper info libboost_headers-devel | grep -i "Version" | head -n 1 | awk '{print $3}')
+
+            if [ -n "$BOOST_VER_STRING" ]; then
+                # Extract Major.Minor
+                IFS='.' read -r -a VER_PARTS <<< "$BOOST_VER_STRING"
+                MAJOR=${VER_PARTS[0]}
+                MINOR=${VER_PARTS[1]}
+
+                # Check if >= 1.69 (Boost System became header-only)
+                if [[ "$MAJOR" -ge 1 ]] && [[ "$MINOR" -ge 69 ]]; then
+                     INSTALL_BOOST_SYSTEM="false"
+                     echo "Detected Boost >= 1.69 ($BOOST_VER_STRING) in repo. Skipping libboost_system-devel."
+                fi
+            fi
+
             if [[ "$IS_TUMBLEWEED" == "false" ]]; then
-                append_base libboost_system-devel
                 append_base gcc13 gcc13-c++
+            fi
+
+            if [[ "$INSTALL_BOOST_SYSTEM" == "true" ]]; then
+                append_base libboost_system-devel
             fi
 
             append_qt qt6-base-devel qt6-tools-devel qt6-charts-devel qt6-svg-devel qt6-qt5compat-devel qt6-linguist-devel
@@ -213,15 +242,27 @@ install_deps() {
     # FIX: Base packages are always required.
     PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_BASE"
 
-    if [[ "$USE_QT6" == "true" ]]; then
-        if [[ "$TARGET" == "all" || "$TARGET" == "native" || "$TARGET" == "macos" ]]; then
+    # --- Qt Package Logic ---
+    if [[ "$WITH_GUI" == "true" ]]; then
+        if [[ "$OS" == "macos" ]]; then
+            # macOS: PKGS_QT was already populated conditionally inside the case statement
             PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_QT"
-        fi
-    else
-        # If Qt5, we still need to install the package, just a different name (qt@5)
-        # The switch above handled the name, now we just append the variable
-        if [[ "$TARGET" == "all" || "$TARGET" == "native" || "$TARGET" == "macos" ]]; then
-            PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_QT"
+        else
+            # Linux: PKGS_QT is populated unconditionally in the distro blocks with Qt6 packages.
+            # We must handle the logic here to ensure we don't install Qt6 when Qt5 is requested.
+            if [[ "$USE_QT6" == "true" ]]; then
+                if [[ "$TARGET" == "all" || "$TARGET" == "native" ]]; then
+                    PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_QT"
+                fi
+            else
+                # Case: Linux + Qt5.
+                # We do not list Qt5 packages for Linux as distro support is spotty/EOL.
+                echo "----------------------------------------------------------------"
+                echo "WARNING: Qt5 requested on Linux (WITH_GUI=true, USE_QT6=false)."
+                echo "         This script only defines Qt6 packages for Linux."
+                echo "         You must install the appropriate Qt5 packages manually."
+                echo "----------------------------------------------------------------"
+            fi
         fi
     fi
 
