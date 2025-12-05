@@ -14,7 +14,7 @@ for various build targets:
 | **macOS** | CMake | **Stable** | [build-macos.md](build-macos.md) |
 | **MSYS2** | CMake | *Deprecated* | [build-msys2.md](build-msys2.md) |
 | **FreeBSD** | CMake | *Experimental* | [build-freebsd.md](build-freebsd.md) |
-| **OpenBSD** | CMake | *Experimental* | [build-openbsd.md](build-openbsd.md) |
+| **OpenBSD** | CMake | **Stable but not checked in CI/CD** | [build-openbsd.md](build-openbsd.md) |
 
 This document covers these build targets:
 
