@@ -7,7 +7,7 @@ export LC_ALL=C
 # -----------------------------------------------------------------------------
 
 # Act Configuration constants
-ACT_PLATFORM="-P ubuntu-24.04=catthehacker/ubuntu:act-latest"
+ACT_PLATFORM="-P ubuntu-24.04=catthehacker/ubuntu:act-latest -P ubuntu-22.04=catthehacker/ubuntu:act-22.04"
 ACT_ARCH="--container-architecture linux/amd64"
 ACT_OPTS="--container-options \"--privileged\""
 
