@@ -271,7 +271,7 @@ if(ENABLE_UPNP)
         target_compile_definitions(gridcoin_util PRIVATE MINIUPNP_STATICLIB)
     endif()
 
-    target_link_libraries(gridcoin_util PUBLIC PkgConfig::MINIUPNPC)
+    target_link_libraries(gridcoin_util PUBLIC ${LIBMINIUPNPC})
 endif()
 
 # Daemon
@@ -320,10 +320,6 @@ if(ENABLE_DAEMON)
     if(UNIX)
         # Link the unix-specific libs
         target_link_libraries(gridcoinresearchd PUBLIC -lm ${ATOMICS_LIBRARIES} ${RT_LIBRARIES})
-    endif()
-
-    if(ENABLE_UPNP)
-        target_link_libraries(gridcoinresearchd PUBLIC PkgConfig::MINIUPNPC)
     endif()
 
     if(UNIX AND NOT APPLE)

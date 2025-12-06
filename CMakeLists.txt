@@ -133,6 +133,8 @@ option(BUNDLED_QT5      "Use the bundled version of Qt 5" ${HUNTER_ENABLED})
 # Handle dependencies
 # ===================
 
+set(MINIUPNPC_USE_STATIC_LIBS ${STATIC_LIBS})
+
 set(QT5_MINIMUM_VERSION 5.9.5)
 set(QT6_MINIMUM_VERSION 6.2.0)
 set(QT_COMPONENTS Core Concurrent Gui LinguistTools Network Widgets Svg)
@@ -258,39 +260,12 @@ if(ENABLE_GUI)
 endif()
 
 if(ENABLE_UPNP)
-    # If we are building statically (Depends system), look for the library files directly.
-    # This avoids pkg-config issues in cross-compile or custom prefix environments.
-    if(STATIC_LIBS OR CMAKE_CROSSCOMPILING)
-        find_path(MINIUPNPC_INCLUDE_DIR miniupnpc/miniupnpc.h
-            HINTS "${CMAKE_FIND_ROOT_PATH}/include"
-            NO_DEFAULT_PATH
-        )
-        find_library(MINIUPNPC_LIBRARY NAMES miniupnpc
-            HINTS "${CMAKE_FIND_ROOT_PATH}/lib"
-            NO_DEFAULT_PATH
-        )
-
-        if(MINIUPNPC_INCLUDE_DIR AND MINIUPNPC_LIBRARY)
-            add_library(PkgConfig::MINIUPNPC UNKNOWN IMPORTED)
-            set_target_properties(PkgConfig::MINIUPNPC PROPERTIES
-                IMPORTED_LOCATION "${MINIUPNPC_LIBRARY}"
-                INTERFACE_INCLUDE_DIRECTORIES "${MINIUPNPC_INCLUDE_DIR}"
-            )
-
-            # Windows needs explicit deps attached to the static lib
-            if(WIN32)
-                set_property(TARGET PkgConfig::MINIUPNPC APPEND PROPERTY
-                    INTERFACE_LINK_LIBRARIES ws2_32 iphlpapi
-                )
-            endif()
-
-            message(STATUS "Found MiniUPnPc (Static/Manual): ${MINIUPNPC_LIBRARY}")
-        else()
-             message(FATAL_ERROR "MiniUPnPc not found in toolchain path: ${CMAKE_FIND_ROOT_PATH}")
-        endif()
+    pkg_check_modules(MINIUPNPC IMPORTED_TARGET miniupnpc>=1.9)
+    if(MINIUPNPC_FOUND)
+        set(LIBMINIUPNPC PkgConfig::MINIUPNPC)
     else()
-        # Native dynamic build: Use standard pkg-config
-        pkg_check_modules(MINIUPNPC REQUIRED IMPORTED_TARGET miniupnpc>=1.9)
+        find_package(miniupnpc CONFIG REQUIRED)
+        set(LIBMINIUPNPC miniupnpc::miniupnpc)
     endif()
 endif()
 
