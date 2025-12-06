@@ -304,7 +304,8 @@ if(ENABLE_DAEMON)
 
         target_sources(gridcoinresearchd PRIVATE gridcoinresearchd-res.rc)
         set_source_files_properties(gridcoinresearchd-res.rc PROPERTIES
-            COMPILE_FLAGS "-I${CMAKE_BINARY_DIR} -DWINDRES_PREPROC"
+            COMPILE_FLAGS "-I${CMAKE_BINARY_DIR}"
+            COMPILE_DEFINITIONS WINDRES_PREPROC
         )
 
         add_custom_command(TARGET gridcoinresearchd POST_BUILD
@@ -319,11 +320,22 @@ if(ENABLE_DAEMON)
 
     if(UNIX)
         # Link the unix-specific libs
-        target_link_libraries(gridcoinresearchd PUBLIC -lm ${ATOMICS_LIBRARIES} ${RT_LIBRARIES})
-    endif()
+        target_link_libraries(gridcoinresearchd PUBLIC
+            -lm ${ATOMICS_LIBRARIES} ${RT_LIBRARIES}
+        )
 
-    if(UNIX AND NOT APPLE)
-        # ... (your install block is fine) ...
+        if(NOT APPLE)
+            include(GNUInstallDirs)
+            install(TARGETS gridcoinresearchd
+                DESTINATION "${CMAKE_INSTALL_BINDIR}"
+            )
+            install(FILES "${CMAKE_SOURCE_DIR}/doc/gridcoinresearchd.1"
+                DESTINATION "${CMAKE_INSTALL_MANDIR}/man1"
+            )
+            install(FILES "${CMAKE_SOURCE_DIR}/contrib/init/gridcoinresearchd.service"
+                DESTINATION "lib/systemd/system"
+            )
+        endif()
     endif()
 endif()
 
