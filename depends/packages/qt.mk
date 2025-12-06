@@ -270,7 +270,11 @@ define $(package)_preprocess_cmds
   patch -p1 -i $($(package)_patch_dir)/qtbase_platformsupport.patch && \
   patch -p1 -i $($(package)_patch_dir)/qtbase_plugins_cocoa.patch && \
   patch -p1 -i $($(package)_patch_dir)/qtbase_skip_tools.patch && \
-  patch -p1 -i $($(package)_patch_dir)/rcc_hardcode_timestamp.patch
+  patch -p1 -i $($(package)_patch_dir)/rcc_hardcode_timestamp.patch && \
+  echo "// Disabled D3D12" > qtbase/src/gui/rhi/qrhid3d12_p.h && \
+  echo "// Disabled D3D12" > qtbase/src/gui/rhi/qrhid3d12.cpp && \
+  echo "// Disabled D3D12" > qtbase/src/3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.cpp && \
+  sed -i '1i #ifndef NLM_INTERNET_CONNECTIVITY_WEBHIJACK\n#define NLM_INTERNET_CONNECTIVITY_WEBHIJACK 0x80\n#endif' qtbase/src/plugins/networkinformation/networklistmanager/qnetworklistmanagerevents.cpp
 endef
 
 define $(package)_config_cmds
