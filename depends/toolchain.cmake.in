@@ -19,14 +19,19 @@ if(@depends_crosscompiling@)
   set(CMAKE_OBJCXX_COMPILER_TARGET @host@)
 endif()
 
+# The DEPENDS_COMPILE_DEFINITIONS* variables are to be treated as lists.
+set(DEPENDS_COMPILE_DEFINITIONS @CPPFLAGS@)
+set(DEPENDS_COMPILE_DEFINITIONS_RELWITHDEBINFO @CPPFLAGS_RELEASE@)
+set(DEPENDS_COMPILE_DEFINITIONS_DEBUG @CPPFLAGS_DEBUG@)
+
 if(NOT DEFINED CMAKE_C_FLAGS_INIT)
-  set(CMAKE_C_FLAGS_INIT "@CFLAGS@")
+  set(CMAKE_C_FLAGS_INIT "@CFLAGS@ ${DEPENDS_COMPILE_DEFINITIONS}")
 endif()
 if(NOT DEFINED CMAKE_C_FLAGS_RELWITHDEBINFO_INIT)
-  set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT "@CFLAGS_RELEASE@")
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT "@CFLAGS_RELEASE@ ${DEPENDS_COMPILE_DEFINITIONS_RELWITHDEBINFO}")
 endif()
 if(NOT DEFINED CMAKE_C_FLAGS_DEBUG_INIT)
-  set(CMAKE_C_FLAGS_DEBUG_INIT "@CFLAGS_DEBUG@")
+  set(CMAKE_C_FLAGS_DEBUG_INIT "@CFLAGS_DEBUG@ ${DEPENDS_COMPILE_DEFINITIONS_DEBUG}")
 endif()
 
 if(NOT DEFINED CMAKE_C_COMPILER)
@@ -34,16 +39,16 @@ if(NOT DEFINED CMAKE_C_COMPILER)
 endif()
 
 if(NOT DEFINED CMAKE_CXX_FLAGS_INIT)
-  set(CMAKE_CXX_FLAGS_INIT "@CXXFLAGS@")
-  set(CMAKE_OBJCXX_FLAGS_INIT "@CXXFLAGS@")
+  set(CMAKE_CXX_FLAGS_INIT "@CXXFLAGS@ ${DEPENDS_COMPILE_DEFINITIONS}")
+  set(CMAKE_OBJCXX_FLAGS_INIT "@CXXFLAGS@ ${DEPENDS_COMPILE_DEFINITIONS}")
 endif()
 if(NOT DEFINED CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT)
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "@CXXFLAGS_RELEASE@")
-  set(CMAKE_OBJCXX_FLAGS_RELWITHDEBINFO_INIT "@CXXFLAGS_RELEASE@")
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "@CXXFLAGS_RELEASE@ ${DEPENDS_COMPILE_DEFINITIONS_RELWITHDEBINFO}")
+  set(CMAKE_OBJCXX_FLAGS_RELWITHDEBINFO_INIT "@CXXFLAGS_RELEASE@ ${DEPENDS_COMPILE_DEFINITIONS_RELWITHDEBINFO}")
 endif()
 if(NOT DEFINED CMAKE_CXX_FLAGS_DEBUG_INIT)
-  set(CMAKE_CXX_FLAGS_DEBUG_INIT "@CXXFLAGS_DEBUG@")
-  set(CMAKE_OBJCXX_FLAGS_DEBUG_INIT "@CXXFLAGS_DEBUG@")
+  set(CMAKE_CXX_FLAGS_DEBUG_INIT "@CXXFLAGS_DEBUG@ ${DEPENDS_COMPILE_DEFINITIONS_DEBUG}")
+  set(CMAKE_OBJCXX_FLAGS_DEBUG_INIT "@CXXFLAGS_DEBUG@ ${DEPENDS_COMPILE_DEFINITIONS_DEBUG}")
 endif()
 
 if(NOT DEFINED CMAKE_CXX_COMPILER)
@@ -51,16 +56,13 @@ if(NOT DEFINED CMAKE_CXX_COMPILER)
   set(CMAKE_OBJCXX_COMPILER ${CMAKE_CXX_COMPILER})
 endif()
 
-# The DEPENDS_COMPILE_DEFINITIONS* variables are to be treated as lists.
-set(DEPENDS_COMPILE_DEFINITIONS @CPPFLAGS@)
-set(DEPENDS_COMPILE_DEFINITIONS_RELWITHDEBINFO @CPPFLAGS_RELEASE@)
-set(DEPENDS_COMPILE_DEFINITIONS_DEBUG @CPPFLAGS_DEBUG@)
-
+# Replace with CMAKE_<LANG>_STANDARD_LINK_DIRECTORIES
+# once CMake 3.31 is above the minimum supported version.
 if(NOT DEFINED CMAKE_EXE_LINKER_FLAGS_INIT)
-  set(CMAKE_EXE_LINKER_FLAGS_INIT "@LDFLAGS@")
+  set(CMAKE_EXE_LINKER_FLAGS_INIT "-L${CMAKE_CURRENT_LIST_DIR}/lib @LDFLAGS@")
 endif()
 if(NOT DEFINED CMAKE_SHARED_LINKER_FLAGS_INIT)
-  set(CMAKE_SHARED_LINKER_FLAGS_INIT "@LDFLAGS@")
+  set(CMAKE_SHARED_LINKER_FLAGS_INIT "-L${CMAKE_CURRENT_LIST_DIR}/lib @LDFLAGS@")
 endif()
 if(NOT DEFINED CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT)
   set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT "@LDFLAGS_RELEASE@")
@@ -116,61 +118,15 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND NOT CMAKE_HOST_APPLE)
   set(CMAKE_FRAMEWORK_PATH "@OSX_SDK@/System/Library/Frameworks")
 endif()
 
-
-if(CMAKE_SYSTEM_NAME MATCHES "^(Linux|FreeBSD)$")
-  # Customize pkg-config behavior for finding dependencies
-  # of the xcb QPA platform plugin:
-  # 1. Restrict search paths to the depends.
-  # 2. Make output suitable for static linking.
-  cmake_path(APPEND CMAKE_CURRENT_LIST_DIR "lib" "pkgconfig" OUTPUT_VARIABLE pkg_config_path)
-  set(ENV{PKG_CONFIG_PATH} ${pkg_config_path})
-  set(ENV{PKG_CONFIG_LIBDIR} ${pkg_config_path})
-  unset(pkg_config_path)
-  set(PKG_CONFIG_ARGN --static)
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  set(CMAKE_RC_COMPILER "@WINDRES@")
 endif()
 
-
-# Set configuration options for the main build system.
-# The depends/Makefile can generate values with "not-set"
-# semantics as empty strings or strings containing only spaces.
-# Therefore, MATCHES must be used rather than STREQUAL.
-if("@qt_packages@" MATCHES "^[ ]*$")
-  set(BUILD_GUI OFF CACHE BOOL "")
-else()
-  set(BUILD_GUI ON CACHE BOOL "")
-  set(Qt6_ROOT "${CMAKE_CURRENT_LIST_DIR}" CACHE PATH "")
-endif()
-
-if("@qrencode_packages@" MATCHES "^[ ]*$")
-  set(WITH_QRENCODE OFF CACHE BOOL "")
-else()
-  set(WITH_QRENCODE ON CACHE BOOL "")
-endif()
-
-if("@zmq_packages@" MATCHES "^[ ]*$")
-  set(WITH_ZMQ OFF CACHE BOOL "")
-else()
-  set(WITH_ZMQ ON CACHE BOOL "")
-endif()
-
-if("@wallet_packages@" MATCHES "^[ ]*$")
-  set(ENABLE_WALLET OFF CACHE BOOL "")
-else()
-  set(ENABLE_WALLET ON CACHE BOOL "")
-endif()
-
-if("@usdt_packages@" MATCHES "^[ ]*$")
-  set(WITH_USDT OFF CACHE BOOL "")
-else()
-  set(WITH_USDT ON CACHE BOOL "")
-endif()
-
-set(ipc_packages @ipc_packages@)
-if("${ipc_packages}" STREQUAL "")
-  set(ENABLE_IPC OFF CACHE BOOL "")
-else()
-  set(ENABLE_IPC ON CACHE BOOL "")
-  set(MPGEN_EXECUTABLE "${CMAKE_CURRENT_LIST_DIR}/native/bin/mpgen" CACHE FILEPATH "")
-  set(CAPNP_EXECUTABLE "${CMAKE_CURRENT_LIST_DIR}/native/bin/capnp" CACHE FILEPATH "")
-  set(CAPNPC_CXX_EXECUTABLE "${CMAKE_CURRENT_LIST_DIR}/native/bin/capnpc-c++" CACHE FILEPATH "")
-endif()
+# Customize pkg-config behavior for finding dependencies:
+# 1. Restrict search paths to the depends.
+# 2. Make output suitable for static linking.
+set(pkg_config_path "${CMAKE_CURRENT_LIST_DIR}/lib/pkgconfig")
+set(ENV{PKG_CONFIG_PATH} ${pkg_config_path})
+set(ENV{PKG_CONFIG_LIBDIR} ${pkg_config_path})
+unset(pkg_config_path)
+set(PKG_CONFIG_ARGN --static)
