@@ -1,0 +1,213 @@
+Name "@CPACK_NSIS_PACKAGE_NAME@ (@CPACK_WINDOWS_BITS@-bit)"
+
+RequestExecutionLevel highest
+SetCompressor /SOLID @CPACK_NSIS_COMPRESSOR@
+Unicode true
+
+# General Symbol Definitions
+!define REGKEY "SOFTWARE\$(^Name)"
+!define VERSION @CPACK_PACKAGE_VERSION_MAJOR@.@CPACK_PACKAGE_VERSION_MINOR@.@CPACK_PACKAGE_VERSION_PATCH@.@CPACK_PACKAGE_VERSION_TWEAK@
+!define COMPANY "@CPACK_NSIS_PACKAGE_NAME@ project"
+!define URL "@CPACK_PACKAGE_HOMEPAGE_URL@"
+!define ICONDIR "@CPACK_ICONDIR@"
+!define GRIDCOIN_GUI_NAME gridcoinresearch.exe
+!define GRIDCOIN_DAEMON_NAME gridcoinresearchd.exe
+
+# MUI Symbol Definitions
+!define MUI_ICON "${ICONDIR}\gridcoin.ico"
+!define MUI_UNICON "${ICONDIR}\gridcoin.ico"
+!define MUI_WELCOMEFINISHPAGE_UNICON "${ICONDIR}\gridcoin.ico"
+!define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_RIGHT
+!define MUI_HEADERIMAGE_BITMAP "${ICONDIR}\nsis-header.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "${ICONDIR}\nsis-wizard.bmp"
+!define MUI_FINISHPAGE_NOAUTOCLOSE
+!define MUI_STARTMENUPAGE_REGISTRY_ROOT HKLM
+!define MUI_STARTMENUPAGE_REGISTRY_KEY ${REGKEY}
+!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME StartMenuGroup
+!define MUI_STARTMENUPAGE_DEFAULTFOLDER "@CPACK_NSIS_PACKAGE_NAME@"
+!define MUI_FINISHPAGE_RUN $INSTDIR\${GRIDCOIN_GUI_NAME}
+!define MUI_UNWELCOMEFINISHPAGE_UNICON "${ICONDIR}\gridcoin.ico"
+!define MUI_UNFINISHPAGE_NOAUTOCLOSE
+
+# Included files
+!include Sections.nsh
+!include MUI2.nsh
+!if "@CPACK_WINDOWS_BITS@" == "64"
+!include x64.nsh
+!endif
+
+# Variables
+Var StartMenuGroup
+
+# Installer pages
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_STARTMENU Application $StartMenuGroup
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+
+# Installer languages
+!insertmacro MUI_LANGUAGE English
+
+# Installer attributes
+OutFile "@CPACK_TOPLEVEL_DIRECTORY@\@CPACK_OUTPUT_FILE_NAME@"
+!if "@CPACK_WINDOWS_BITS@" == "64"
+InstallDir $PROGRAMFILES64\@CPACK_PACKAGE_INSTALL_DIRECTORY@
+!else
+InstallDir $PROGRAMFILES\@CPACK_PACKAGE_INSTALL_DIRECTORY@
+!endif
+CRCCheck force
+XPStyle on
+BrandingText " "
+ShowInstDetails show
+VIProductVersion "${VERSION}"
+VIAddVersionKey ProductName "@CPACK_NSIS_PACKAGE_NAME@"
+VIAddVersionKey ProductVersion "${VERSION}"
+VIAddVersionKey CompanyName "${COMPANY}"
+VIAddVersionKey CompanyWebsite "${URL}"
+VIAddVersionKey FileVersion "${VERSION}"
+VIAddVersionKey FileDescription "Installer for @CPACK_NSIS_PACKAGE_NAME@"
+VIAddVersionKey LegalCopyright "@CPACK_COPYRIGHT_STRING@"
+InstallDirRegKey HKLM "${REGKEY}" Path
+ShowUninstDetails show
+
+# Installer sections
+Section -Main SEC0000
+    SetOutPath $INSTDIR
+    SetOverwrite on
+    File @CMAKE_BINARY_DIR@\bin\${GRIDCOIN_GUI_NAME}
+    SetOutPath $INSTDIR\daemon
+    File @CMAKE_BINARY_DIR@\bin\${GRIDCOIN_DAEMON_NAME}
+    SetOutPath $INSTDIR\doc
+    File /oname=COPYING.txt @CPACK_RESOURCE_FILE_LICENSE@
+    File /oname=CHANGELOG.md @CPACK_RESOURCE_FILE_CHANGELOG@
+    SetOutPath $INSTDIR
+    WriteRegStr HKLM "${REGKEY}\Components" Main 1
+SectionEnd
+
+Section -post SEC0001
+    WriteRegStr HKLM "${REGKEY}" Path $INSTDIR
+    SetOutPath $INSTDIR
+    WriteUninstaller $INSTDIR\uninstall.exe
+    !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+    CreateDirectory $SMPROGRAMS\$StartMenuGroup
+    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\$(^Name).lnk" $INSTDIR\${GRIDCOIN_GUI_NAME}
+    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\@CPACK_NSIS_PACKAGE_NAME@ (testnet, @CPACK_WINDOWS_BITS@-bit).lnk" "$INSTDIR\${GRIDCOIN_GUI_NAME}" "-testnet" "$INSTDIR\${GRIDCOIN_GUI_NAME}" 1
+    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\Uninstall $(^Name).lnk" $INSTDIR\uninstall.exe
+    !insertmacro MUI_STARTMENU_WRITE_END
+    WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" DisplayName "$(^Name)"
+    WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" DisplayVersion "${VERSION}"
+    WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" Publisher "${COMPANY}"
+    WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" URLInfoAbout "${URL}"
+    WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" DisplayIcon $INSTDIR\uninstall.exe
+    WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" UninstallString $INSTDIR\uninstall.exe
+    WriteRegDWORD HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" NoModify 1
+    WriteRegDWORD HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" NoRepair 1
+    WriteRegStr HKCR "gridcoin" "URL Protocol" ""
+    WriteRegStr HKCR "gridcoin" "" "URL:Gridcoin"
+    WriteRegStr HKCR "gridcoin\DefaultIcon" "" $INSTDIR\${GRIDCOIN_GUI_NAME}
+    WriteRegStr HKCR "gridcoin\shell\open\command" "" '"$INSTDIR\${GRIDCOIN_GUI_NAME}" "%1"'
+SectionEnd
+
+# Macro for selecting uninstaller sections
+!macro SELECT_UNSECTION SECTION_NAME UNSECTION_ID
+    Push $R0
+    ReadRegStr $R0 HKLM "${REGKEY}\Components" "${SECTION_NAME}"
+    StrCmp $R0 1 0 next${UNSECTION_ID}
+    !insertmacro SelectSection "${UNSECTION_ID}"
+    GoTo done${UNSECTION_ID}
+next${UNSECTION_ID}:
+    !insertmacro UnselectSection "${UNSECTION_ID}"
+done${UNSECTION_ID}:
+    Pop $R0
+!macroend
+
+# Uninstaller sections
+Section /o -un.Main UNSEC0000
+    Delete /REBOOTOK $INSTDIR\${GRIDCOIN_GUI_NAME}
+    RMDir /r /REBOOTOK $INSTDIR\daemon
+    RMDir /r /REBOOTOK $INSTDIR\doc
+    DeleteRegValue HKLM "${REGKEY}\Components" Main
+SectionEnd
+
+Section -un.post UNSEC0001
+    DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)"
+    Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\Uninstall $(^Name).lnk"
+    Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\$(^Name).lnk"
+    Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\@CPACK_NSIS_PACKAGE_NAME@ (testnet, @CPACK_WINDOWS_BITS@-bit).lnk"
+    Delete /REBOOTOK "$SMSTARTUP\Gridcoin.lnk"
+    Delete /REBOOTOK "$SMSTARTUP\Gridcoin-mainnet.lnk"
+    Delete /REBOOTOK "$SMSTARTUP\Gridcoin-testnet.lnk"
+    Delete /REBOOTOK $INSTDIR\uninstall.exe
+    Delete /REBOOTOK $INSTDIR\debug.log
+    Delete /REBOOTOK $INSTDIR\db.log
+    DeleteRegValue HKLM "${REGKEY}" StartMenuGroup
+    DeleteRegValue HKLM "${REGKEY}" Path
+    DeleteRegKey /IfEmpty HKLM "${REGKEY}\Components"
+    DeleteRegKey /IfEmpty HKLM "${REGKEY}"
+    DeleteRegKey HKCR "gridcoin"
+    RmDir /REBOOTOK $SMPROGRAMS\$StartMenuGroup
+    RmDir /REBOOTOK $INSTDIR
+    Push $R0
+    StrCpy $R0 $StartMenuGroup 1
+    StrCmp $R0 ">" no_smgroup
+no_smgroup:
+    Pop $R0
+SectionEnd
+
+# Installer functions
+Function .onInit
+    InitPluginsDir
+    SetShellVarContext all
+!if "@CPACK_WINDOWS_BITS@" == "64"
+    ${If} ${RunningX64}
+      SetRegView 64 ; disable registry redirection (enable access to 64-bit portion of registry)
+    ${Else}
+      MessageBox MB_OK|MB_ICONSTOP "Cannot install 64-bit version on a 32-bit system." /SD IDOK
+      Abort
+    ${EndIf}
+!endif
+    loop:
+    ExpandEnvStrings $1 "%COMSPEC%"
+    ExecWait '$1 /C "$\"$SYSDIR\tasklist.exe$\" /NH /FI $\"IMAGENAME eq ${GRIDCOIN_GUI_NAME}$\" | $\"$SYSDIR\find.exe$\" /I $\"${GRIDCOIN_GUI_NAME}$\""' $0
+    StrCmp $0 0 0 notRunning_gui
+    MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION 'The Gridcoin wallet (${GRIDCOIN_GUI_NAME}) is running. Please close before continuing.' IDOK loop IDCANCEL end
+    notRunning_gui:
+    ExecWait '$1 /C "$\"$SYSDIR\tasklist.exe$\" /NH /FI $\"IMAGENAME eq ${GRIDCOIN_DAEMON_NAME}$\" | $\"$SYSDIR\find.exe$\" /I $\"${GRIDCOIN_DAEMON_NAME}$\""' $0
+    StrCmp $0 0 0 notRunning_daemon
+    MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION 'The Gridcoin wallet daemon (${GRIDCOIN_DAEMON_NAME}) is running. Please close before continuing.' IDOK loop IDCANCEL end
+    notRunning_daemon:
+    ; Check for HKCU Path registry and prompt for uninstallation if found
+    ReadRegStr $0 HKCU "${REGKEY}" "Path"
+    ${IfThen} $0 == "" ${|} Return ${|}
+    ${IfNot} ${Cmd} \
+        'MessageBox MB_YESNO|MB_ICONEXCLAMATION \
+          "An old version is found on your system and will be uninstalled first to migrate registry entries and shortcuts. \
+          Your wallet data will not be affected. Continue?" \
+          /SD IDYES IDYES'
+      Abort
+    ${EndIf}
+    ReadRegStr $1 HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" "UninstallString"
+    ${If} ${Silent}
+      StrCpy $1 "$1 /S"
+    ${EndIf}
+    ExecWait "$1 _?=$0" $0
+    ${IfThen} $0 != 0 ${|} Abort ${|}
+    end:
+    Abort
+FunctionEnd
+
+# Uninstaller functions
+Function un.onInit
+    SetShellVarContext all
+!if "@CPACK_WINDOWS_BITS@" == "64"
+    ${If} ${RunningX64}
+      SetRegView 64 ; disable registry redirection (enable access to 64-bit portion of registry)
+    ${EndIf}
+!endif
+    !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuGroup
+    !insertmacro SELECT_UNSECTION Main ${UNSEC0000}
+FunctionEnd

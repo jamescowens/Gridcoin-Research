@@ -307,15 +307,6 @@ if(ENABLE_DAEMON)
             COMPILE_FLAGS "-I${CMAKE_BINARY_DIR}"
             COMPILE_DEFINITIONS WINDRES_PREPROC
         )
-
-        add_custom_command(TARGET gridcoinresearchd POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/release
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                $<TARGET_FILE:gridcoinresearchd>
-                ${CMAKE_BINARY_DIR}/release/gridcoinresearchd.exe
-            COMMAND ${CMAKE_STRIP} ${CMAKE_BINARY_DIR}/release/gridcoinresearchd.exe
-            COMMENT "Copying and stripping gridcoinresearchd for NSIS installer"
-        )
     endif()
 
     if(UNIX)
@@ -323,19 +314,29 @@ if(ENABLE_DAEMON)
         target_link_libraries(gridcoinresearchd PUBLIC
             -lm ${ATOMICS_LIBRARIES} ${RT_LIBRARIES}
         )
+    endif()
 
-        if(NOT APPLE)
-            include(GNUInstallDirs)
-            install(TARGETS gridcoinresearchd
-                DESTINATION "${CMAKE_INSTALL_BINDIR}"
-            )
-            install(FILES "${CMAKE_SOURCE_DIR}/doc/gridcoinresearchd.1"
-                DESTINATION "${CMAKE_INSTALL_MANDIR}/man1"
-            )
-            install(FILES "${CMAKE_SOURCE_DIR}/contrib/init/gridcoinresearchd.service"
-                DESTINATION "lib/systemd/system"
-            )
-        endif()
+    set_target_properties(gridcoinresearchd PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    )
+
+    # Installation
+    if(UNIX AND NOT APPLE)
+        include(GNUInstallDirs)
+        install(TARGETS gridcoinresearchd COMPONENT daemon
+            DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        )
+        install(FILES "${CMAKE_SOURCE_DIR}/doc/gridcoinresearchd.1" COMPONENT daemon
+            DESTINATION "${CMAKE_INSTALL_MANDIR}/man1"
+        )
+        install(FILES "${CMAKE_SOURCE_DIR}/contrib/init/gridcoinresearchd.service" COMPONENT daemon
+            DESTINATION "lib/systemd/system"
+        )
+    else()
+        install(TARGETS gridcoinresearchd COMPONENT daemon
+            RUNTIME DESTINATION bin
+            BUNDLE  DESTINATION "."
+        )
     endif()
 endif()
 

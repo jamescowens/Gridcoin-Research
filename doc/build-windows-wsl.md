@@ -84,18 +84,17 @@ Because you are on WSL, you can run this directly from the Linux terminal to ver
 
 ## 4\. Create the Installer
 
-If you wish to create the installable package, run the deployment target manually after the build completes.
+If you wish to create the installable package, use CPack (part of CMake) after the build completes.
 
 **⚠️ WARNING: Debug Builds**
 Do not attempt to build the installer if you used `BUILD_TYPE=Debug`. The resulting executables may be too large for the NSIS compressor to handle, and the process will fail. Use `RelWithDebInfo` or `Release`.
 
 ```bash
-cmake --build build_win64 --target deploy
+cpack -G NSIS64 --config build_win64/CPackConfig.cmake
 ```
 
 The resulting installer will be generated in the `build_win64` directory with the format:
-`gridcoin-<release>-win64-setup.exe`
-*(e.g., `gridcoin-x.y.z.w-win64-setup.exe`)*
+`gridcoin-<release>-win64-setup.exe` *(e.g., `gridcoin-x.y.z.w-win64-setup.exe`)*
 
 ## 5\. Accessing Files from Windows
 

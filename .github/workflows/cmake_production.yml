@@ -40,6 +40,7 @@ jobs:
               -DSTATIC_LIBS=ON
               -DCMAKE_CXX_FLAGS="-fPIE"
               -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++ -Wl,-Bdynamic"
+            cpack_generator: TGZ
 
           # Windows Cross-Compile
           - name: Windows Cross-Compile
@@ -50,6 +51,7 @@ jobs:
               -DSYSTEM_XXD=ON
               -DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/wine
               -DCMAKE_EXE_LINKER_FLAGS="-static"
+            cpack_generator: NSIS64
 
     steps:
       - uses: actions/checkout@v4
@@ -206,19 +208,12 @@ jobs:
           # Removed -j flag; CTest reads env var
           ctest --test-dir ${{ matrix.build_dir }} --output-on-failure
 
-      # 9. Package (Linux Tarball)
-      - name: Create Linux Package (TGZ)
-        if: contains(matrix.host, 'linux')
+      # 9. Package
+      - name: Create Package
         run: |
-          cpack -G TGZ --config ${{ matrix.build_dir }}/CPackConfig.cmake -B release_packages
+          cpack -G ${{ matrix.cpack_generator }} --config ${{ matrix.build_dir }}/CPackConfig.cmake -B release_packages
 
-      # 10. Package (Windows Only - NSIS)
-      - name: Create Windows Installer
-        if: contains(matrix.host, 'mingw')
-        run: |
-          cmake --build ${{ matrix.build_dir }} --target deploy
-
-      # 11. Prepare Flat Artifacts
+      # 10. Prepare Flat Artifacts
       - name: Prepare Artifacts
         run: |
           mkdir -p dist
@@ -231,24 +226,24 @@ jobs:
           # Windows: Flatten Installer, Daemon, AND GUI (with version rename)
           if [[ "${{ matrix.host }}" == *"mingw"* ]]; then
              # 1. Copy Installer
-             INSTALLER=$(find ${{ matrix.build_dir }} -maxdepth 1 -name "gridcoin-*-setup.exe" | head -n 1)
+             INSTALLER=$(find release_packages -maxdepth 1 -name "gridcoin-*-setup.exe" | head -n 1)
              if [ -f "$INSTALLER" ]; then
                cp "$INSTALLER" dist/
 
                # 2. Extract Version from Installer name (e.g. gridcoin-5.4.9.6-win64-setup.exe)
                BASENAME=$(basename "$INSTALLER")
-               VERSION=$(echo "$BASENAME" | sed -E 's/gridcoin-(.*)-win64-setup.exe/\1/')
+               VERSION=$(awk -F '-' '{ print $2 }' <<< "$BASENAME")
 
-               # 3. Copy and Rename Daemon (Stripped binary in release/)
-               DAEMON_SRC="${{ matrix.build_dir }}/release/gridcoinresearchd.exe"
+               # 3. Copy and Rename Daemon (Stripped binary in bin/)
+               DAEMON_SRC="${{ matrix.build_dir }}/bin/gridcoinresearchd.exe"
                if [ -f "$DAEMON_SRC" ]; then
                   cp "$DAEMON_SRC" "dist/gridcoinresearchd-${VERSION}-win64.exe"
                else
                   echo "::warning::Daemon binary not found at $DAEMON_SRC"
                fi
 
-               # 4. Copy and Rename GUI (Stripped binary in release/)
-               GUI_SRC="${{ matrix.build_dir }}/release/gridcoinresearch.exe"
+               # 4. Copy and Rename GUI (Stripped binary in bin/)
+               GUI_SRC="${{ matrix.build_dir }}/bin/gridcoinresearch.exe"
                if [ -f "$GUI_SRC" ]; then
                   cp "$GUI_SRC" "dist/gridcoinresearch-${VERSION}-win64.exe"
                else
@@ -256,11 +251,11 @@ jobs:
                fi
              else
                # Fallback just in case naming changes
-               cp ${{ matrix.build_dir }}/*.exe dist/ || true
+               cp release_packages/*.exe dist/ || true
              fi
           fi
 
-      # 12. Upload Artifacts
+      # 11. Upload Artifacts
       - name: Upload Artifacts
         if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v4
@@ -268,7 +263,7 @@ jobs:
           name: gridcoin-${{ matrix.host }}
           path: |
             release_packages/*.tar.gz
-            ${{ matrix.build_dir }}/*.exe
+            release_packages/*.exe
           retention-days: 5
 
   # ----------------------------------------------------------------------

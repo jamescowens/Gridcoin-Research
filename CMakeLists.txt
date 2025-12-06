@@ -8,6 +8,7 @@
 
 cmake_minimum_required(VERSION 3.18)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/build-aux/cmake")
+set(CPACK_MODULE_PATH "${CPACK_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/build-aux/cpack")
 
 
 # Hunter Package Manager
@@ -412,127 +413,49 @@ if(ENABLE_DOCS)
     add_subdirectory(doc)
 endif()
 
-# ---------------------------------------------------------------------------
-# Windows Packaging (NSIS) - "make deploy" replacement
-# ---------------------------------------------------------------------------
+# CPack packaging
+# ===============
 
-if(WIN32 AND NOT SKIP_INSTALLER)
-    # 1. Define Variables used in setup.nsi.in
-    set(PACKAGE_NAME "Gridcoin")
-    set(PACKAGE_URL "https://gridcoin.us")
-    set(PACKAGE_TARNAME "gridcoin")
+# Common metadata
+set(CPACK_PACKAGE_VERSION_TWEAK ${PROJECT_VERSION_TWEAK})
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "GridcoinResearch")
+set(CPACK_PACKAGE_VENDOR "The Gridcoin Community")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Gridcoin Research Wallet")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://gridcoin.us")
+set(CPACK_PACKAGE_CONTACT "Gridcoin Developers <dev@gridcoin.us>")
+set(CPACK_PACKAGE_CHECKSUM SHA256)
+set(CPACK_COPYRIGHT_STRING "Copyright (C) 2014-@COPYRIGHT_YEAR@ @COPYRIGHT_HOLDERS_FINAL@")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
+set(CPACK_RESOURCE_FILE_CHANGELOG "${CMAKE_SOURCE_DIR}/CHANGELOG.md")
+set(CPACK_ICONDIR "${CMAKE_SOURCE_DIR}/share/pixmaps")
 
-    set(CLIENT_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
-    set(CLIENT_VERSION_MINOR ${PROJECT_VERSION_MINOR})
-    set(CLIENT_VERSION_REVISION ${PROJECT_VERSION_PATCH})
-    set(CLIENT_VERSION_BUILD ${PROJECT_VERSION_TWEAK})
-    if(NOT CLIENT_VERSION_BUILD)
-        set(CLIENT_VERSION_BUILD 0)
-    endif()
-
-    set(COPYRIGHT_YEAR "2025")
-    set(COPYRIGHT_HOLDERS_FINAL "The Gridcoin developers")
-
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        set(WINDOWS_BITS "64")
-    else()
-        set(WINDOWS_BITS "32")
-    endif()
-
-    # Variable names expected by setup.nsi.in
-    set(GRIDCOIN_GUI_NAME "gridcoinresearch")
-    set(GRIDCOIN_DAEMON_NAME "gridcoinresearchd")
-    set(EXEEXT ".exe")
-    set(abs_top_srcdir ${CMAKE_SOURCE_DIR})
-    set(abs_top_builddir ${CMAKE_BINARY_DIR})
-
-    # 2. Configure the NSIS script
-    configure_file(
-        ${CMAKE_SOURCE_DIR}/share/setup.nsi.in
-        ${CMAKE_BINARY_DIR}/share/setup.nsi
-        @ONLY
-    )
-
-    # 3. Create the 'deploy' target
-    find_program(MAKENSIS_EXE makensis)
-
-    if(MAKENSIS_EXE)
-        add_custom_target(deploy
-            COMMAND ${MAKENSIS_EXE} ${CMAKE_BINARY_DIR}/share/setup.nsi
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMENT "Generating Windows Installer (NSIS)"
-            VERBATIM
-        )
-        message(STATUS "NSIS: Enabled. 'cmake --build build --target deploy' will generate the installer.")
-    else()
-        message(WARNING "NSIS: makensis not found. The 'deploy' target will not be available.")
-    endif()
+if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set(CPACK_WINDOWS_BITS 32)
+else()
+    set(CPACK_WINDOWS_BITS 64)
 endif()
 
-# ==============================================================================
-# CPACK PACKAGING CONFIGURATION (Linux & macOS)
-# ==============================================================================
-# Only configure CPack if we aren't cross-compiling OR if explicitly enabled
-# (We exclude Windows here because a custom 'deploy' target for NSIS using the
-# pre-existing setup.nsis.in is used.)
-if((UNIX OR APPLE) AND NOT MINGW)
-
-    # 1. Common Metadata
-    set(CPACK_PACKAGE_NAME "gridcoinresearch")
-    set(CPACK_PACKAGE_VENDOR "The Gridcoin Community")
-    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Gridcoin Research Wallet")
-    set(CPACK_PACKAGE_HOMEPAGE_URL "https://gridcoin.us")
-    set(CPACK_PACKAGE_CONTACT "Gridcoin Developers <dev@gridcoin.us>")
-
-    set(CPACK_PACKAGE_VERSION_MAJOR ${CLIENT_VERSION_MAJOR})
-    set(CPACK_PACKAGE_VERSION_MINOR ${CLIENT_VERSION_MINOR})
-    set(CPACK_PACKAGE_VERSION_PATCH ${CLIENT_VERSION_BUILD})
-
-    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-
-    # Define what files go into the package
-    if(ENABLE_GUI)
-        install(TARGETS gridcoinresearchd DESTINATION bin COMPONENT daemon)
-        install(TARGETS gridcoinresearch DESTINATION bin COMPONENT gui)
-
-        # Install Assets (Icons/Desktop files) - Useful even in a tarball
-        if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/contrib/debian/gridcoinresearch.desktop")
-            install(FILES "contrib/debian/gridcoinresearch.desktop" DESTINATION share/applications COMPONENT gui)
-        endif()
-        if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/qt/res/icons/gridcoin.png")
-            install(FILES "src/qt/res/icons/gridcoin.png" DESTINATION share/pixmaps RENAME gridcoinresearch.png COMPONENT gui)
-        endif()
-
-        # Optional: Include a simple install script if you have one in contrib/
-        # install(FILES "contrib/linux-install.sh" DESTINATION . PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ)
-    else()
-        install(TARGETS gridcoinresearchd DESTINATION bin COMPONENT daemon)
-    endif()
-
-    # --------------------------------------------------------------------------
-    # 2. Linux Packaging (Tarball)
-    # --------------------------------------------------------------------------
-    if(UNIX AND NOT APPLE)
-        set(CPACK_GENERATOR "TGZ")
-
-        # Naming convention: gridcoinresearch-5.x.x-x86_64-linux-gnu.tar.gz
-        set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_PROCESSOR}-linux-gnu")
-
-        # We strip the binaries to make the tarball smaller
-        set(CPACK_STRIP_FILES ON)
-    endif()
-
-    # --------------------------------------------------------------------------
-    # 3. macOS Packaging (DragNDrop)
-    # --------------------------------------------------------------------------
-    if(APPLE)
-        set(CPACK_GENERATOR "DragNDrop")
-        set(CPACK_DMG_VOLUME_NAME "Gridcoin")
-        set(CPACK_SYSTEM_NAME "macOS")
-
-        # TODO: More fancy config for background image.
-        install(TARGETS gridcoinresearchd gridcoinresearch BUNDLE DESTINATION .)
-    endif()
-
-    include(CPack)
+if(CMAKE_C_COMPILER_TARGET)
+    # Naming: gridcoinresearch-5.x.x-x86_64-pc-linux-gnu.tar.gz
+    set(CPACK_SYSTEM_NAME "${CMAKE_C_COMPILER_TARGET}")
 endif()
+
+set(CPACK_NSIS_PACKAGE_NAME ${PROJECT_NAME})
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "gridcoinresearch-${PROJECT_VERSION}")
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_SOURCE_PACKAGE_FILE_NAME}-${CPACK_SYSTEM_NAME}")
+set(CPACK_DMG_VOLUME_NAME "Gridcoin")
+
+# Strip the binaries to make the tarball smaller
+set(CPACK_STRIP_FILES ON)
+
+# File included at cpack time, once per generator after setting CPACK_GENERATOR
+# to the actual generator being used; allows per-generator setting of CPACK_*
+# variables at cpack time.
+configure_file(
+    "${CMAKE_SOURCE_DIR}/build-aux/cpack/CPackOptions.cmake.in"
+    "${CMAKE_BINARY_DIR}/CPackOptions.cmake"
+    @ONLY
+)
+set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/CPackOptions.cmake")
+
+include(CPack)
