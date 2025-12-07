@@ -101,3 +101,33 @@ cmake --build build -j <# of cpus>
 doas cmake --install build
 ```
 
+## 4\. Running Gridcoin
+
+### If you followed option A (Daemon only)
+
+If you installed Gridcoin, you can launch from the terminal.
+
+```sh
+gridcoinresearchd
+```
+
+If you did not install, you can run directly from the build folder. Assuming you are still in the Gridcoin-Research repo directory,
+
+```
+./build/src/gridcoinresearchd
+```
+
+### If you followed option B (GUI)
+
+If you installed Gridcoin, you can launch from the terminal or use the Desktop menu.
+
+```sh
+gridcoinresearch
+```
+
+If you did not install, you can run directly from the build folder. Assuming you are still in the Gridcoin-Research repo directory,
+
+```
+./build/src/qt/gridcoinresearch
+```
+
