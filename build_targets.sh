@@ -282,6 +282,17 @@ if [[ "$TARGET" == "all" || "$TARGET" == "depends" ]] && [[ "$(uname -s)" == "Li
         make HOST=x86_64-pc-linux-gnu $DEPENDS_ARGS -j $CORES
         cd ..
 
+        # This is necessary because for hermeticity reasons, depends locks down search paths
+        DEPENDS_NATIVE_BIN="$(pwd)/depends/x86_64-pc-linux-gnu/native/bin"
+
+        if [ -x "$DEPENDS_NATIVE_BIN/xxd" ]; then
+            echo ">>> Forcing CMake to use Native xxd: $DEPENDS_NATIVE_BIN/xxd"
+            # We append this to EXTRA_ARGS so it gets passed to the cmake configuration line below
+            EXTRA_ARGS="$EXTRA_ARGS -DXXD=$DEPENDS_NATIVE_BIN/xxd"
+        else
+            echo ">>> WARNING: Native xxd not found at $DEPENDS_NATIVE_BIN/xxd"
+        fi
+
         # Clean previous build
         rm -rf build_linux_depends
 
@@ -345,6 +356,17 @@ if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]] && [[ "$(uname -s)" == "Linu
 
         make HOST=x86_64-w64-mingw32 $DEPENDS_ARGS -j $CORES
         cd ..
+
+        # This is necessary because for hermeticity reasons, depends locks down search paths
+        DEPENDS_NATIVE_BIN="$(pwd)/depends/x86_64-w64-mingw32/native/bin"
+
+        if [ -x "$DEPENDS_NATIVE_BIN/xxd" ]; then
+            echo ">>> Forcing CMake to use Native xxd: $DEPENDS_NATIVE_BIN/xxd"
+            # We append this to EXTRA_ARGS so it gets passed to the cmake configuration line below
+            EXTRA_ARGS="$EXTRA_ARGS -DXXD=$DEPENDS_NATIVE_BIN/xxd"
+        else
+            echo ">>> WARNING: Native xxd not found at $DEPENDS_NATIVE_BIN/xxd"
+        fi
 
         # Clean previous build
         rm -rf build_win64
