@@ -18,6 +18,7 @@ on:
 env:
   # Global settings for all jobs
   BUILD_TYPE: Release
+  OS_REF: ubuntu-24.04
   USE_CCACHE: true
 
 jobs:
@@ -90,7 +91,7 @@ jobs:
             depends/work
             depends/${{ matrix.host }}
             depends/sdk-sources
-          key: depends-${{ matrix.host }}-${{ hashFiles('depends/packages/*', 'depends/Makefile', 'depends/qt.include') }}
+          key: ${{ env.os_ref }}-depends-${{ matrix.host }}-${{ hashFiles('depends/packages/*', 'depends/Makefile', 'depends/qt.include') }}
 
       # 4. Build Depends
       - name: Build Depends
