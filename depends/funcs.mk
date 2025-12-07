@@ -41,7 +41,7 @@ define fetch_file
       ( \
         $(call fetch_file_inner,$(1),$(2),$(3),$(4),$(5)) \
         $(foreach fallback_url,$(FALLBACK_DOWNLOAD_PATHS), \
-          || (echo "Primary download failed, trying fallback: $(fallback_url)" && $(call fetch_file_inner,$(1),$(fallback_url),$(3),$(4),$(5))) \
+          || (echo "Primary download failed, trying fallback: $(fallback_url)" && $(call fetch_file_inner,$(1),$(fallback_url),$(4),$(4),$(5))) \
         ) \
         || (echo "All fallbacks failed for $(3)." && exit 1) \
       ) \
