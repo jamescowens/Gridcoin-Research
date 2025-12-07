@@ -32,6 +32,47 @@ cd Gridcoin-Research
 git checkout master
 ````
 
+
+## 1a. Ubuntu 22.04 Compatibility (_Important_)
+
+If you are running **Ubuntu 22.04 (Jammy Jellyfish)**, you must manually install a newer MinGW toolchain. The default package provided by Ubuntu 22.04 is too old (GCC 10 / MinGW Headers 8.0.0) and lacks the Direct3D 12 definitions required by Qt6.
+
+**First, remove any existing system MinGW packages to prevent conflicts:**
+```bash
+sudo apt-get remove g++-mingw-w64-x86-64 gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
+```
+
+**Do not attempt to use `apt install` for MinGW on Ubuntu 22.04.**
+
+Instead, use the following commands to install the **xPack** standalone toolchain (GCC 13.2.0 + MinGW 11 + POSIX Threads):
+
+```bash
+
+# 1. Create a directory for the toolchain and change to that directory
+mkdir -p ~/toolchains && cd ~/toolchains
+
+# 2. Download the xPack standalone toolchain (Linux Host -> Windows Target)
+wget [https://github.com/xpack-dev-tools/mingw-w64-gcc-xpack/releases/download/v13.2.0-1/xpack-mingw-w64-gcc-13.2.0-1-linux-x64.tar.gz](https://github.com/xpack-dev-tools/mingw-w64-gcc-xpack/releases/download/v13.2.0-1/xpack-mingw-w64-gcc-13.2.0-1-linux-x64.tar.gz)
+
+# 3. Extract the archive
+tar -xf xpack-mingw-w64-gcc-13.2.0-1-linux-x64.tar.gz
+
+# 4. Rename for simplicity
+mv xpack-mingw-w64-gcc-13.2.0-1 mingw64-posix
+
+# 5. Add the toolchain to your PATH (Run this every time you open a terminal, or add to ~/.bashrc)
+export PATH="$HOME/toolchains/mingw64-posix/bin:$PATH"
+
+# 6. Verify the installation
+# The version should be 13.2.0 and the Thread model must be 'posix'
+x86_64-w64-mingw32-g++ -v
+
+# 7. Change back to your Gridcoin repo directory
+cd ~/Gridcoin-Research
+```
+
+Once this is set up, proceed to **Step 2**. The `build_targets.sh` script will automatically detect this custom toolchain and skip the system dependency installation for the compiler.
+
 ## 2\. Build the Windows Executable
 
 We use the `build_targets.sh` helper script. This script handles:
@@ -59,14 +100,16 @@ Run the following command:
   * **`PARALLEL=<int>`**: (Optional) Limit the number of CPU cores used.
 
 ### Performance Notes
+
 #### Nested Virtualization
+
 If you are running WSL inside a Virtual Machine (e.g., VMware Workstation, VirtualBox), you may experience system instability or "freezes" during the linking phase due to nested virtualization I/O overhead.
 
- **Solution:** Reduce the CPU count of the VM to 2, or limit the build parallelism using `PARALLEL=2`.
+**Solution:** Reduce the CPU count of the VM to 2, or limit the build parallelism using `PARALLEL=2`.
 
 #### Initial Build
 
- The first time you run this, it will take a significant amount of time to compile the dependencies (Qt, Boost, etc.). Subsequent builds will be much faster.
+The first time you run this, it will take a significant amount of time to compile the dependencies (Qt, Boost, etc.). Subsequent builds will be much faster.
 
 ## 3\. Verify the Build
 
@@ -90,7 +133,7 @@ If you wish to create the installable package, use CPack (part of CMake) after t
 Do not attempt to build the installer if you used `BUILD_TYPE=Debug`. The resulting executables may be too large for the NSIS compressor to handle, and the process will fail. Use `RelWithDebInfo` or `Release`.
 
 ```bash
-cpack -G NSIS64 --config build_win64/CPackConfig.cmake
+cpack -G NSIS64 --config build_win64/CPackConfig.cmake -B build_win64
 ```
 
 The resulting installer will be generated in the `build_win64` directory with the format:
