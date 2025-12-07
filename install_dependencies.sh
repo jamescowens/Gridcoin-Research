@@ -93,19 +93,74 @@ install_deps() {
 
         debian|ubuntu|linuxmint)
             # Base Build Tools
-            append_base build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 cmake git curl ccache doxygen graphviz bison xxd
+            append_base build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 cmake git curl ccache doxygen graphviz bison xxd libxkbcommon-dev
 
             # Libraries for Native Build
             append_base libssl-dev libevent-dev libboost-all-dev libminiupnpc-dev libqrencode-dev libzip-dev libcurl4-openssl-dev zipcmp zipmerge ziptool
 
             # Qt6 Packages (Qt5 names are not defined here as most are EOL)
-            append_qt qt6-base-dev qt6-tools-dev qt6-l10n-tools libqt6charts6-dev libqt6svg6-dev libqt6core5compat6-dev
+            append_qt qt6-base-dev qt6-tools-dev qt6-l10n-tools qt6-tools-dev-tools libqt6charts6-dev libqt6svg6-dev libqt6core5compat6-dev
 
             # Windows Cross-Compile Tools
-            append_mingw g++-mingw-w64-x86-64 nsis
+            # NOTE: We only append NSIS here. The MinGW compiler (g++-mingw-w64-x86-64)
+            # is handled conditionally below to support manual installs on Ubuntu 22.04.
+            append_mingw nsis
 
             # Wine (Emulator for Native Linux only)
-            append_wine wine64
+            append_wine wine wine64
+            
+            # Smart Check for MinGW Headers on Ubuntu 22.04
+            if [[ "$TARGET" == "win64" || "$TARGET" == "all" ]]; then
+                SHOULD_INSTALL_MINGW="true"
+
+                if grep -q "22.04" /etc/os-release; then
+                    # 1. Check if binary exists
+                    MINGW_BIN="x86_64-w64-mingw32-g++"
+                    if command -v "$MINGW_BIN" &> /dev/null; then
+                        
+                        # 2. Check HEADER version directly using the preprocessor
+                        # We look for __MINGW64_VERSION_MAJOR in _mingw.h
+                        MINGW_HEADER_VER=$(echo "#include <_mingw.h>" | "$MINGW_BIN" -E -dM - 2>/dev/null | grep "^#define __MINGW64_VERSION_MAJOR " | awk '{print $3}')
+                        
+                        # Default to 0 if grep failed
+                        if [ -z "$MINGW_HEADER_VER" ]; then MINGW_HEADER_VER=0; fi
+
+                        # 3. Logic Gate: We need headers >= 9 for D3D12/Qt6 support
+                        if [[ "$MINGW_HEADER_VER" -ge 9 ]]; then
+                            echo "Detected manual MinGW install (Header Version $MINGW_HEADER_VER). Skipping repo package."
+                            SHOULD_INSTALL_MINGW="false"
+                        else
+                             echo "Error: Detected MinGW header version $MINGW_HEADER_VER is too old (Need >= 9)."
+                             # We must force 'false' here so we fall through to the fatal error block below
+                             # We cannot simply install the repo package to fix this, as the repo package IS the problem.
+                             SHOULD_INSTALL_MINGW="false" 
+                             FORCE_FAIL_2204="true"
+                        fi
+                    else
+                        # Binary missing entirely
+                        echo "Error: MinGW compiler not found."
+                        SHOULD_INSTALL_MINGW="false" # Do not try to install repo package
+                        FORCE_FAIL_2204="true"
+                    fi
+
+                    # Fatal Error Block for 22.04
+                    if [[ "$FORCE_FAIL_2204" == "true" ]]; then
+                        echo "----------------------------------------------------------------"
+                        echo "CRITICAL: Windows Cross-Compilation on Ubuntu 22.04 requires manual setup."
+                        echo "          The standard repository packages are too old (Headers < 9.0)."
+                        echo ""
+                        echo "          You must manually install a newer MinGW toolchain (v9+)"
+                        echo "          OR upgrade to Ubuntu 24.04+."
+                        echo "----------------------------------------------------------------"
+                        exit 1
+                    fi
+                fi
+
+                # If logic allows, append the compiler package (Standard path for non-22.04)
+                if [[ "$SHOULD_INSTALL_MINGW" == "true" ]]; then
+                    append_mingw g++-mingw-w64-x86-64
+                fi
+            fi
             ;;
 
         fedora|rhel)
