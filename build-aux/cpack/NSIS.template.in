@@ -78,9 +78,9 @@ ShowUninstDetails show
 Section -Main SEC0000
     SetOutPath $INSTDIR
     SetOverwrite on
-    File @CMAKE_BINARY_DIR@\bin\${GRIDCOIN_GUI_NAME}
+    File @CPACK_TEMPORARY_DIRECTORY@\gui\bin\${GRIDCOIN_GUI_NAME}
     SetOutPath $INSTDIR\daemon
-    File @CMAKE_BINARY_DIR@\bin\${GRIDCOIN_DAEMON_NAME}
+    File @CPACK_TEMPORARY_DIRECTORY@\daemon\bin\${GRIDCOIN_DAEMON_NAME}
     SetOutPath $INSTDIR\doc
     File /oname=COPYING.txt @CPACK_RESOURCE_FILE_LICENSE@
     File /oname=CHANGELOG.md @CPACK_RESOURCE_FILE_CHANGELOG@
