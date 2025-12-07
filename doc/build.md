@@ -13,7 +13,7 @@ for various build targets:
 | **Windows via WSL**| CMake (depends) | **Stable** | [build-windows-wsl.md](build-windows-wsl.md) |
 | **macOS** | CMake | **Stable** | [build-macos.md](build-macos.md) |
 | **MSYS2** | CMake | *Deprecated* | [build-msys2.md](build-msys2.md) |
-| **FreeBSD** | CMake | *Experimental* | [build-freebsd.md](build-freebsd.md) |
+| **FreeBSD** | CMake | **Stable but not checked in CI/CD** | [build-freebsd.md](build-freebsd.md) |
 | **OpenBSD** | CMake | **Stable but not checked in CI/CD** | [build-openbsd.md](build-openbsd.md) |
 
 This document covers these build targets:
