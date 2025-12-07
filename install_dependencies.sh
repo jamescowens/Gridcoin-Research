@@ -108,7 +108,7 @@ install_deps() {
 
             # Wine (Emulator for Native Linux only)
             append_wine wine wine64
-            
+
             # Smart Check for MinGW Headers on Ubuntu 22.04
             if [[ "$TARGET" == "win64" || "$TARGET" == "all" ]]; then
                 SHOULD_INSTALL_MINGW="true"
@@ -117,11 +117,11 @@ install_deps() {
                     # 1. Check if binary exists
                     MINGW_BIN="x86_64-w64-mingw32-g++"
                     if command -v "$MINGW_BIN" &> /dev/null; then
-                        
+
                         # 2. Check HEADER version directly using the preprocessor
                         # We look for __MINGW64_VERSION_MAJOR in _mingw.h
                         MINGW_HEADER_VER=$(echo "#include <_mingw.h>" | "$MINGW_BIN" -E -dM - 2>/dev/null | grep "^#define __MINGW64_VERSION_MAJOR " | awk '{print $3}')
-                        
+
                         # Default to 0 if grep failed
                         if [ -z "$MINGW_HEADER_VER" ]; then MINGW_HEADER_VER=0; fi
 
@@ -133,7 +133,7 @@ install_deps() {
                              echo "Error: Detected MinGW header version $MINGW_HEADER_VER is too old (Need >= 9)."
                              # We must force 'false' here so we fall through to the fatal error block below
                              # We cannot simply install the repo package to fix this, as the repo package IS the problem.
-                             SHOULD_INSTALL_MINGW="false" 
+                             SHOULD_INSTALL_MINGW="false"
                              FORCE_FAIL_2204="true"
                         fi
                     else
