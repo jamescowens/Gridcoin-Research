@@ -271,7 +271,7 @@ if(ENABLE_UPNP)
         target_compile_definitions(gridcoin_util PRIVATE MINIUPNP_STATICLIB)
     endif()
 
-    target_link_libraries(gridcoin_util PUBLIC PkgConfig::MINIUPNPC)
+    target_link_libraries(gridcoin_util PUBLIC ${LIBMINIUPNPC})
 endif()
 
 # Daemon
@@ -304,30 +304,39 @@ if(ENABLE_DAEMON)
 
         target_sources(gridcoinresearchd PRIVATE gridcoinresearchd-res.rc)
         set_source_files_properties(gridcoinresearchd-res.rc PROPERTIES
-            COMPILE_FLAGS "-I${CMAKE_BINARY_DIR} -DWINDRES_PREPROC"
-        )
-
-        add_custom_command(TARGET gridcoinresearchd POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/release
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                $<TARGET_FILE:gridcoinresearchd>
-                ${CMAKE_BINARY_DIR}/release/gridcoinresearchd.exe
-            COMMAND ${CMAKE_STRIP} ${CMAKE_BINARY_DIR}/release/gridcoinresearchd.exe
-            COMMENT "Copying and stripping gridcoinresearchd for NSIS installer"
+            COMPILE_FLAGS "-I${CMAKE_BINARY_DIR}"
+            COMPILE_DEFINITIONS WINDRES_PREPROC
         )
     endif()
 
     if(UNIX)
         # Link the unix-specific libs
-        target_link_libraries(gridcoinresearchd PUBLIC -lm ${ATOMICS_LIBRARIES} ${RT_LIBRARIES})
+        target_link_libraries(gridcoinresearchd PUBLIC
+            -lm ${ATOMICS_LIBRARIES} ${RT_LIBRARIES}
+        )
     endif()
 
-    if(ENABLE_UPNP)
-        target_link_libraries(gridcoinresearchd PUBLIC PkgConfig::MINIUPNPC)
-    endif()
+    set_target_properties(gridcoinresearchd PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    )
 
+    # Installation
     if(UNIX AND NOT APPLE)
-        # ... (your install block is fine) ...
+        include(GNUInstallDirs)
+        install(TARGETS gridcoinresearchd COMPONENT daemon
+            DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        )
+        install(FILES "${CMAKE_SOURCE_DIR}/doc/gridcoinresearchd.1" COMPONENT daemon
+            DESTINATION "${CMAKE_INSTALL_MANDIR}/man1"
+        )
+        install(FILES "${CMAKE_SOURCE_DIR}/contrib/init/gridcoinresearchd.service" COMPONENT daemon
+            DESTINATION "lib/systemd/system"
+        )
+    else()
+        install(TARGETS gridcoinresearchd COMPONENT daemon
+            RUNTIME DESTINATION bin
+            BUNDLE  DESTINATION "."
+        )
     endif()
 endif()
 

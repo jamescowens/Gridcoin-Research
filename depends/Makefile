@@ -194,6 +194,7 @@ $(host_prefix)/toolchain.cmake : toolchain.cmake.in $(host_prefix)/.stamp_$(fina
             -e 's|@STRIP@|$(host_STRIP)|' \
             -e 's|@OBJCOPY@|$(host_OBJCOPY)|' \
             -e 's|@OBJDUMP@|$(host_OBJDUMP)|' \
+            -e 's|@WINDRES@|$(host_WINDRES)|' \
             -e 's|@CFLAGS@|$(strip $(host_CFLAGS))|' \
             -e 's|@CFLAGS_RELEASE@|$(strip $(host_release_CFLAGS))|' \
             -e 's|@CFLAGS_DEBUG@|$(strip $(host_debug_CFLAGS))|' \
@@ -206,12 +207,6 @@ $(host_prefix)/toolchain.cmake : toolchain.cmake.in $(host_prefix)/.stamp_$(fina
             -e 's|@LDFLAGS@|$(strip $(host_LDFLAGS))|' \
             -e 's|@LDFLAGS_RELEASE@|$(strip $(host_release_LDFLAGS))|' \
             -e 's|@LDFLAGS_DEBUG@|$(strip $(host_debug_LDFLAGS))|' \
-            -e 's|@qt_packages@|$(qt_packages_)|' \
-            -e 's|@qrencode_packages@|$(qrencode_packages_)|' \
-            -e 's|@zmq_packages@|$(zmq_packages_)|' \
-            -e 's|@wallet_packages@|$(wallet_packages_)|' \
-            -e 's|@usdt_packages@|$(usdt_packages_)|' \
-            -e 's|@ipc_packages@|$(ipc_packages_)|' \
             $< > $@
 	touch $@
 

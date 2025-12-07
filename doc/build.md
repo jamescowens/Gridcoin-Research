@@ -242,10 +242,10 @@ ctest --test-dir build_win64
 ### Step 4: Install (Create Installer Package for Windows)
 
 ```
-cmake --build build_win64 --target deploy
+cpack -G NSIS64 --config build_win64/CPackConfig.cmake
 ```
 
-This installer file will be output to build_win64/gridcoin-<release\>-win64.exe.
+This installer file will be output to `build_win64/gridcoin-<release>-win64-setup.exe`.
 
 -----
 

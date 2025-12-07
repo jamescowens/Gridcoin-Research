@@ -269,26 +269,10 @@ set_target_properties(gridcoinresearch PROPERTIES
     MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/share/qt/Info.plist.cmake.in"
     RESOURCE ${MACOSX_BUNDLE_RESOURCE_FILES}
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-# Installation Rules (Linux)
-if(UNIX AND NOT APPLE)
-    include(GNUInstallDirs)
-    install(TARGETS gridcoinresearch
-        DESTINATION "${CMAKE_INSTALL_BINDIR}"
-    )
-    install(DIRECTORY "${CMAKE_SOURCE_DIR}/src/qt/res/icons"
-        DESTINATION "${CMAKE_INSTALL_DATADIR}"
-    )
-    install(FILES "${CMAKE_SOURCE_DIR}/contrib/gridcoinresearch.desktop"
-        DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
-    )
-    install(FILES "${CMAKE_SOURCE_DIR}/doc/gridcoinresearch.1"
-        DESTINATION "${CMAKE_INSTALL_MANDIR}/man1"
-    )
-endif()
-
-# Windows Specifics (Libraries, Icons, Deployment)
+# Windows Specifics
 if(WIN32)
     target_link_libraries(gridcoinresearch PRIVATE
         ws2_32
@@ -299,15 +283,27 @@ if(WIN32)
         shlwapi
         iphlpapi
     )
+endif()
 
-    # Ensure the binary is copied and stripped for the NSIS installer
-    add_custom_command(TARGET gridcoinresearch POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/release
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE:gridcoinresearch>
-            ${CMAKE_BINARY_DIR}/release/gridcoinresearch.exe
-        COMMAND ${CMAKE_STRIP} ${CMAKE_BINARY_DIR}/release/gridcoinresearch.exe
-        COMMENT "Copying and stripping gridcoinresearch for NSIS installer"
+# Installation
+if(UNIX AND NOT APPLE)
+    include(GNUInstallDirs)
+    install(TARGETS gridcoinresearch COMPONENT gui
+        DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    )
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/share/icons" COMPONENT gui
+        DESTINATION "${CMAKE_INSTALL_DATADIR}"
+    )
+    install(FILES "${CMAKE_SOURCE_DIR}/contrib/gridcoinresearch.desktop" COMPONENT gui
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
+    )
+    install(FILES "${CMAKE_SOURCE_DIR}/doc/gridcoinresearch.1" COMPONENT gui
+        DESTINATION "${CMAKE_INSTALL_MANDIR}/man1"
+    )
+else()
+    install(TARGETS gridcoinresearch COMPONENT gui
+        RUNTIME DESTINATION bin
+        BUNDLE  DESTINATION "."
     )
 endif()
 
