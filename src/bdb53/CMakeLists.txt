@@ -39,6 +39,15 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
         "CFLAGS=-Wno-error=implicit-int -Wno-incompatible-pointer-types"
     )
 endif()
+if(CMAKE_CROSSCOMPILING)
+    list(APPEND BDB_FLAGS
+        "--host=${CMAKE_C_COMPILER_TARGET}"
+        "CC=${CMAKE_C_COMPILER}"
+        "CXX=${CMAKE_CXX_COMPILER}"
+        "AR=${CMAKE_AR}"
+        "RANLIB=${CMAKE_RANLIB}"
+    )
+endif()
 
 # Make flags
 # ==========

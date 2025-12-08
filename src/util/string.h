@@ -94,7 +94,7 @@ std::string ToString(const T& t)
 
 /**
  * @brief Locale-independent version of ToString specifically for doubles with
- * the ability to specificy the precision.
+ * the ability to specify the precision.
  *
  * @param t Input double floating point
  * @param precision

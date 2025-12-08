@@ -1100,7 +1100,7 @@ dnl counter implementations. In 1.63 and later the std::atomic approach is defau
 m4_pattern_allow(DBOOST_AC_USE_STD_ATOMIC) dnl otherwise it's treated like a macro
 BOOST_CPPFLAGS="-DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC $BOOST_CPPFLAGS"
 
-dnl If we're using Boost >= 1.89.0 then we wont have defined BOOST_SYSTEM_LIBS, so we shouldn't use it here
+dnl If we're using Boost >= 1.89.0 then we will not have defined BOOST_SYSTEM_LIBS, so we shouldn't use it here
 if [ test "$BOOST_SYSTEM_IS_HEADER" -eq "1"]; then
     BOOST_LIBS="$BOOST_LDFLAGS $BOOST_FILESYSTEM_LIB $BOOST_IOSTREAMS_LIB $BOOST_THREAD_LIB $BOOST_ZLIB_LIB"
 else

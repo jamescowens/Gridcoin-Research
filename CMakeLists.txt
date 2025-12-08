@@ -8,6 +8,7 @@
 
 cmake_minimum_required(VERSION 3.18)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/build-aux/cmake")
+set(CPACK_MODULE_PATH "${CPACK_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/build-aux/cpack")
 
 
 # Hunter Package Manager
@@ -69,8 +70,20 @@ include(CheckIncludeFile)
 include(CheckPIESupported)
 include(CheckSymbolExists)
 
-include(CheckSSE)
-include(CheckStrerrorR)
+# SIMD checks are compile-only, so they are safe for cross-compilation.
+# We run them unconditionally. The compiler flags will determine success/fail.
+include(CheckSSE41)
+include(CheckAVX2)
+include(CheckSHANI)
+include(CheckARMSHANI)
+
+# Runtime checks must still be skipped during cross-compilation
+if(NOT CMAKE_CROSSCOMPILING)
+    include(CheckStrerrorR)
+else()
+    message(STATUS "Cross-compiling: skipping CheckStrerrorR probe.")
+endif()
+
 include(FindPkgConfig)
 include(HunterGate)
 include(VersionFromGit)
@@ -121,9 +134,11 @@ option(BUNDLED_QT5      "Use the bundled version of Qt 5" ${HUNTER_ENABLED})
 # Handle dependencies
 # ===================
 
+set(MINIUPNPC_USE_STATIC_LIBS ${STATIC_LIBS})
+
 set(QT5_MINIMUM_VERSION 5.9.5)
 set(QT6_MINIMUM_VERSION 6.2.0)
-set(QT_COMPONENTS Core Concurrent Gui LinguistTools Network Widgets)
+set(QT_COMPONENTS Core Concurrent Gui LinguistTools Network Widgets Svg)
 set(QT_HUNTER_COMPONENTS qtbase qttools)
 if(USE_QT6)
     list(APPEND QT_COMPONENTS Core5Compat)
@@ -136,7 +151,7 @@ if(ENABLE_TESTS)
 endif()
 
 set(BOOST_MINIMUM_VERSION 1.63.0)
-set(BOOST_COMPONENTS filesystem iostreams thread)
+set(BOOST_COMPONENTS filesystem iostreams thread serialization date_time)
 set(BOOST_HUNTER_COMPONENTS system atomic regex ${BOOST_COMPONENTS})
 if(ENABLE_TESTS)
     list(APPEND BOOST_COMPONENTS unit_test_framework)
@@ -170,11 +185,18 @@ endif()
 if(BUNDLED_BOOST)
     hunter_add_package(Boost COMPONENTS ${BOOST_HUNTER_COMPONENTS})
 endif()
+
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.30)
     # Allow to find old Boost (pre 1.70) with new CMake (3.30 and later).
     cmake_policy(SET CMP0167 OLD)
 endif()
+
 find_package(Boost ${BOOST_MINIMUM_VERSION} REQUIRED)
+
+if(Boost_VERSION VERSION_LESS 1.69.0)
+    list(APPEND BOOST_COMPONENTS system)
+endif()
+
 if(Boost_VERSION VERSION_LESS 1.70.0)
     find_package(Boost ${BOOST_MINIMUM_VERSION} COMPONENTS ${BOOST_COMPONENTS} REQUIRED)
 else()
@@ -198,6 +220,8 @@ if(BUNDLED_LIBZIP)
     hunter_add_package(libzip)
 endif()
 find_package(libzip CONFIG REQUIRED)
+
+find_package(ZLIB REQUIRED)
 
 if(USE_ASM)
     enable_language(ASM)
@@ -237,7 +261,13 @@ if(ENABLE_GUI)
 endif()
 
 if(ENABLE_UPNP)
-    pkg_check_modules(MINIUPNPC REQUIRED IMPORTED_TARGET miniupnpc>=1.9)
+    pkg_check_modules(MINIUPNPC IMPORTED_TARGET miniupnpc>=1.9)
+    if(MINIUPNPC_FOUND)
+        set(LIBMINIUPNPC PkgConfig::MINIUPNPC)
+    else()
+        find_package(miniupnpc CONFIG REQUIRED)
+        set(LIBMINIUPNPC miniupnpc::miniupnpc)
+    endif()
 endif()
 
 if(ENABLE_TESTS)
@@ -298,10 +328,18 @@ if(CMAKE_CXX_BYTE_ORDER EQUAL BIG_ENDIAN)
 endif()
 
 # Check headers
-check_include_file("byteswap.h" HAVE_BYTESWAP_H)
-check_include_file("endian.h" HAVE_ENDIAN_H)
-check_include_file("sys/endian.h" HAVE_SYS_ENDIAN_H)
-check_include_file("sys/prctl.h" HAVE_SYS_PRCTL_H)
+if(CMAKE_CROSSCOMPILING AND WIN32)
+    message(STATUS "Cross-compiling for Windows: forcing POSIX headers to 'not found'")
+    set(HAVE_BYTESWAP_H FALSE CACHE INTERNAL "Manually set to false for Windows cross-compile")
+    set(HAVE_ENDIAN_H FALSE CACHE INTERNAL "Manually set to false for Windows cross-compile")
+    set(HAVE_SYS_ENDIAN_H FALSE CACHE INTERNAL "Manually set to false for Windows cross-compile")
+    set(HAVE_SYS_PRCTL_H FALSE CACHE INTERNAL "Manually set to false for Windows cross-compile")
+else()
+    check_include_file("byteswap.h" HAVE_BYTESWAP_H)
+    check_include_file("endian.h" HAVE_ENDIAN_H)
+    check_include_file("sys/endian.h" HAVE_SYS_ENDIAN_H)
+    check_include_file("sys/prctl.h" HAVE_SYS_PRCTL_H)
+endif()
 
 if(HAVE_ENDIAN_H)
     set(ENDIAN_INCLUDES "endian.h")
@@ -374,3 +412,50 @@ add_subdirectory(src)
 if(ENABLE_DOCS)
     add_subdirectory(doc)
 endif()
+
+# CPack packaging
+# ===============
+
+# Common metadata
+set(CPACK_PACKAGE_VERSION_TWEAK ${PROJECT_VERSION_TWEAK})
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "GridcoinResearch")
+set(CPACK_PACKAGE_VENDOR "The Gridcoin Community")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Gridcoin Research Wallet")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://gridcoin.us")
+set(CPACK_PACKAGE_CONTACT "Gridcoin Developers <dev@gridcoin.us>")
+set(CPACK_PACKAGE_CHECKSUM SHA256)
+set(CPACK_COPYRIGHT_STRING "Copyright (C) 2014-${COPYRIGHT_YEAR} ${COPYRIGHT_HOLDERS_FINAL}")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
+set(CPACK_RESOURCE_FILE_CHANGELOG "${CMAKE_SOURCE_DIR}/CHANGELOG.md")
+set(CPACK_ICONDIR "${CMAKE_SOURCE_DIR}/share/pixmaps")
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set(CPACK_WINDOWS_BITS 32)
+else()
+    set(CPACK_WINDOWS_BITS 64)
+endif()
+
+if(CMAKE_C_COMPILER_TARGET)
+    # Naming: gridcoinresearch-5.x.x-x86_64-pc-linux-gnu.tar.gz
+    set(CPACK_SYSTEM_NAME "${CMAKE_C_COMPILER_TARGET}")
+endif()
+
+set(CPACK_NSIS_PACKAGE_NAME ${PROJECT_NAME})
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "gridcoinresearch-${PROJECT_VERSION}")
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_SOURCE_PACKAGE_FILE_NAME}-${CPACK_SYSTEM_NAME}")
+set(CPACK_DMG_VOLUME_NAME "Gridcoin")
+
+# Strip the binaries to make the tarball smaller
+set(CPACK_STRIP_FILES ON)
+
+# File included at cpack time, once per generator after setting CPACK_GENERATOR
+# to the actual generator being used; allows per-generator setting of CPACK_*
+# variables at cpack time.
+configure_file(
+    "${CMAKE_SOURCE_DIR}/build-aux/cpack/CPackOptions.cmake.in"
+    "${CMAKE_BINARY_DIR}/CPackOptions.cmake"
+    @ONLY
+)
+set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/CPackOptions.cmake")
+
+include(CPack)

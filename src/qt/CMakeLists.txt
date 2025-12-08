@@ -2,6 +2,22 @@
 # ============
 add_subdirectory(locale)
 
+# Cleanup: Remove stale Qt MOC files
+# ==================================
+# Autotools (and older build methods) generate .moc and moc_*.cpp files
+# directly in the source tree. These conflict with CMake's AUTOMOC.
+file(GLOB_RECURSE STALE_MOC_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.moc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/moc_*.cpp"
+)
+
+if(STALE_MOC_FILES)
+    message(STATUS "Detected stale Qt MOC files in source tree. Cleaning up...")
+    foreach(STALE_FILE ${STALE_MOC_FILES})
+        message(STATUS "  Removing: ${STALE_FILE}")
+        file(REMOVE "${STALE_FILE}")
+    endforeach()
+endif()
 
 # libgridcoinqt
 # =============
@@ -146,6 +162,7 @@ target_link_libraries(gridcoinqt PUBLIC
     ${QT}::Gui
     ${QT}::Network
     ${QT}::Widgets
+    ${QT}::Svg
     gridcoin_util
 )
 
@@ -183,9 +200,23 @@ add_dependencies(gridcoinqt gridcoinqt_l10n)
 # Application
 # ===========
 
-add_executable(gridcoinresearch bitcoin.cpp)
+# Prepare resources (Icons) for Windows
+if(WIN32)
+    set(GRIDCOIN_RC res/gridcoinresearch.rc)
 
-set(MACOSX_BUNDLE_RESOURCE_FILES res/icons/gridcoin.icns)
+    # Ensure windres can find the referenced icon files
+    set_source_files_properties(${GRIDCOIN_RC} PROPERTIES
+        COMPILE_DEFINITIONS WINDRES_PREPROC
+        COMPILE_FLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}/res"
+    )
+endif()
+
+# Define the executable
+# Note: We add ${GRIDCOIN_RC} to the sources so the icon is compiled into the binary
+add_executable(gridcoinresearch bitcoin.cpp ${GRIDCOIN_RC})
+
+# macOS Bundle Resources
+set(MACOSX_BUNDLE_RESOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/res/icons/gridcoin.icns")
 if(APPLE)
     target_sources(gridcoinresearch PRIVATE ${MACOSX_BUNDLE_RESOURCE_FILES})
 endif()
@@ -193,33 +224,88 @@ endif()
 target_link_libraries(gridcoinresearch PRIVATE
     ${RUNTIME_LIBS}
     ${QT}::Widgets
+    CURL::libcurl
     gridcoin_util
     gridcoinqt
 )
+
+# Linux Static Math Lib Workaround
+if(UNIX AND NOT APPLE AND DEFINED DEP_LIB)
+# 1. The "Imposter" Math Target
+    # We must link against the system's SHARED libm to avoid static linking issues with glibc.
+    # Detect the location: OpenSUSE/Fedora use /lib64, Ubuntu/Debian use /lib/x86_64-linux-gnu.
+    if(EXISTS "/lib64/libm.so.6")
+        set(SYSTEM_LIBM "/lib64/libm.so.6")
+    elseif(EXISTS "/lib/x86_64-linux-gnu/libm.so.6")
+        set(SYSTEM_LIBM "/lib/x86_64-linux-gnu/libm.so.6")
+    else()
+        # Fallback: Ask CMake to find it (though this might return a .a if we aren't careful)
+        find_library(SYSTEM_LIBM NAMES m.so.6 m)
+    endif()
+
+    if(SYSTEM_LIBM)
+        add_library(m SHARED IMPORTED GLOBAL)
+        set_target_properties(m PROPERTIES IMPORTED_LOCATION "${SYSTEM_LIBM}")
+        target_link_libraries(gridcoinresearch PRIVATE m)
+    else()
+        message(FATAL_ERROR "Could not find system libm.so.6. Required for static builds.")
+    endif()
+
+    # 2. THE AUTOMATED MANUAL FIX
+    set(MY_LIBS_LIST
+        "${DEP_LIB}/libfreetype.a"
+        "${DEP_LIB}/libfontconfig.a"
+        "${DEP_LIB}/libexpat.a"
+        "${DEP_LIB}/libxcb-util.a"
+    )
+    string(REPLACE ";" " " MANUAL_STATIC_FIX "${MY_LIBS_LIST}")
+    set(CMAKE_CXX_LINK_EXECUTABLE
+        "<CMAKE_CXX_COMPILER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES> ${MANUAL_STATIC_FIX}"
+    )
+endif()
 
 set_target_properties(gridcoinresearch PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/share/qt/Info.plist.cmake.in"
     RESOURCE ${MACOSX_BUNDLE_RESOURCE_FILES}
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-if(UNIX AND NOT APPLE)
-    include(GNUInstallDirs)
-    install(TARGETS gridcoinresearch
-        DESTINATION "${CMAKE_INSTALL_BINDIR}"
-    )
-    install(DIRECTORY "${CMAKE_SOURCE_DIR}/share/icons"
-        DESTINATION "${CMAKE_INSTALL_DATADIR}"
-    )
-    install(FILES "${CMAKE_SOURCE_DIR}/contrib/gridcoinresearch.desktop"
-        DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
-    )
-    install(FILES "${CMAKE_SOURCE_DIR}/doc/gridcoinresearch.1"
-        DESTINATION "${CMAKE_INSTALL_MANDIR}/man1"
+# Windows Specifics
+if(WIN32)
+    target_link_libraries(gridcoinresearch PRIVATE
+        ws2_32
+        wsock32
+        wldap32
+        crypt32
+        bcrypt
+        shlwapi
+        iphlpapi
     )
 endif()
 
+# Installation
+if(UNIX AND NOT APPLE)
+    include(GNUInstallDirs)
+    install(TARGETS gridcoinresearch COMPONENT gui
+        DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    )
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/share/icons" COMPONENT gui
+        DESTINATION "${CMAKE_INSTALL_DATADIR}"
+    )
+    install(FILES "${CMAKE_SOURCE_DIR}/contrib/gridcoinresearch.desktop" COMPONENT gui
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
+    )
+    install(FILES "${CMAKE_SOURCE_DIR}/doc/gridcoinresearch.1" COMPONENT gui
+        DESTINATION "${CMAKE_INSTALL_MANDIR}/man1"
+    )
+else()
+    install(TARGETS gridcoinresearch COMPONENT gui
+        RUNTIME DESTINATION bin
+        BUNDLE  DESTINATION "."
+    )
+endif()
 
 # Tests
 # =====

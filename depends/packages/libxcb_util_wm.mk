@@ -6,8 +6,9 @@ $(package)_sha256_hash=28bf8179640eaa89276d2b0f1ce4285103d136be6c98262b6151aaee1
 $(package)_dependencies=libxcb
 
 define $(package)_set_vars
-$(package)_config_opts=--disable-static --disable-devel-docs --without-doxygen
+$(package)_config_opts=--disable-shared --enable-static --disable-devel-docs --without-doxygen LIBS="-lXau"
 $(package)_config_opts += --disable-dependency-tracking --enable-option-checking
+$(package)_config_opts +=--libdir=$($($(package)_type)_prefix)/lib
 endef
 
 define $(package)_preprocess_cmds

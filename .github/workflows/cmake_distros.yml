@@ -1,0 +1,89 @@
+name: CMake Distribution Native Builds
+
+on:
+  # Trigger on any push/PR to any branch (matches production/compatibility workflows)
+  push:
+    branches:
+      - '**'
+    tags:
+      - "v*"
+      - "5.*"
+  pull_request:
+    branches:
+      - '**'
+  # Manual trigger for debugging
+  workflow_dispatch:
+
+jobs:
+  validate-distro:
+    name: ${{ matrix.distro }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distro: Fedora Latest
+            image: fedora:latest
+            prep_cmd: "dnf install -y which sudo git"
+            build_args: ""
+
+          - distro: OpenSUSE Leap 15.6
+            image: opensuse/leap:15.6
+            prep_cmd: "zypper refresh && zypper install -y sudo which git"
+            build_args: "CC=gcc-13 CXX=g++-13"
+
+          - distro: OpenSUSE Tumbleweed
+            image: opensuse/tumbleweed
+            prep_cmd: "zypper refresh && zypper install -y sudo which git"
+            build_args: ""
+
+          - distro: Arch Linux
+            image: archlinux:latest
+            prep_cmd: "pacman -Sy --noconfirm sudo which git base-devel"
+            build_args: ""
+
+          - distro: Debian Unstable (Sid)
+            image: debian:sid
+            prep_cmd: "apt-get update && apt-get install -y sudo git"
+            build_args: ""
+
+          - distro: Linux Mint 22 (Wilma)
+            image: linuxmintd/mint22-amd64
+            prep_cmd: "apt-get update && apt-get install -y sudo git"
+            build_args: ""
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test Full Build on Distro
+        run: |
+          echo "Running full build on ${{ matrix.image }}..."
+
+          # DOCKER-IN-DOCKER:
+          # On GitHub, ${{ github.workspace }} is the correct physical path.
+          # On 'act', we are inside a container, so ${{ github.workspace }} is valid ONLY inside 'act'.
+          # The Host Docker Daemon needs the REAL path, which we pass via 'HOST_WORKSPACE'.
+
+          MOUNT_PATH="${HOST_WORKSPACE:-${{ github.workspace }}}"
+
+          docker run --rm \
+            -v "$MOUNT_PATH":/mnt/host_source:ro \
+            ${{ matrix.image }} \
+            /bin/bash -c " \
+              ${{ matrix.prep_cmd }} && \
+              \
+              mkdir -p /work && \
+              cp -r /mnt/host_source/. /work && \
+              cd /work && \
+              \
+              git config --global --add safe.directory /work && \
+              chmod +x install_dependencies.sh build_targets.sh && \
+              \
+              ./build_targets.sh \
+                  TARGET=native \
+                  BUILD_TYPE=RelWithDebInfo \
+                  SKIP_DEPS=false \
+                  USE_CCACHE=false \
+                  CLEAN_BUILD=true \
+                  PARALLEL=${CMAKE_BUILD_PARALLEL_LEVEL:-4} \
+                  ${{ matrix.build_args }}"

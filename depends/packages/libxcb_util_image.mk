@@ -6,8 +6,10 @@ $(package)_sha256_hash=2db96a37d78831d643538dd1b595d7d712e04bdccf8896a5e18ce0f39
 $(package)_dependencies=libxcb libxcb_util
 
 define $(package)_set_vars
-$(package)_config_opts=--disable-static --disable-devel-docs --without-doxygen
+$(package)_config_opts=--enable-static --disable-shared --disable-devel-docs --without-doxygen LIBS="-lxcb-shm -lxcb-render -lxcb-shape -lXau"
 $(package)_config_opts+= --disable-dependency-tracking --enable-option-checking
+
+$(package)_config_opts +=--libdir=$($($(package)_type)_prefix)/lib
 endef
 
 define $(package)_preprocess_cmds

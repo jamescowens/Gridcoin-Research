@@ -208,7 +208,7 @@ CAmount MRC::ComputeMRCFee() const
     // To accommodate V13+ blocks which can have much larger magnitude units (up to 5), we have changed the fee calculation
     // to switch to 256 bit integer calculations if necessary similar to what is in AccrualDelta(). The rationale for the overflow
     // test is as follows. The m_research_subsidy converted back to GRC (which divides by 100,000,000 and therefore rounds down) + 1
-    // to get the equivalent of rounding up, then multipled by the zero_payout_interval and the fee_fraction numerator is checked
+    // to get the equivalent of rounding up, then multiplied by the zero_payout_interval and the fee_fraction numerator is checked
     // against the max numeric limit of CAmount divided by 100,000,000. If it is greater than this, then 256 bit integer arithmetic
     // is used else the original calculation is used.
     CAmount overflow_test = (m_research_subsidy / COIN + 1) * zero_payout_interval * fee_fraction.GetNumerator();

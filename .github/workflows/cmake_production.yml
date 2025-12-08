@@ -1,0 +1,379 @@
+name: CMake Production Builds
+
+on:
+  # Trigger on any push/PR to any branch (matches production/compatibility workflows)
+  push:
+    branches:
+      - '**'
+    # AND run on release tags (triggers the deploy job)
+    tags:
+      - "v*"
+      - "5.*"
+  pull_request:
+    branches:
+      - '**'
+  # Manual trigger for debugging
+  workflow_dispatch:
+
+env:
+  # Global settings for all jobs
+  BUILD_TYPE: Release
+  OS_REF: ubuntu-24.04
+  USE_CCACHE: true
+
+jobs:
+  # ----------------------------------------------------------------------
+  # JOB 1: Depends Builds (Linux Static & Windows Cross)
+  # ----------------------------------------------------------------------
+  depends-builds:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux Static
+          - name: Linux Static (Depends)
+            host: x86_64-pc-linux-gnu
+            build_dir: build_linux_depends
+            # Pass specific flags for static linux build
+            cmake_args: >
+              -DSTATIC_LIBS=ON
+              -DCMAKE_CXX_FLAGS="-fPIE"
+              -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++ -Wl,-Bdynamic"
+            cpack_generator: TGZ
+
+          # Windows Cross-Compile
+          - name: Windows Cross-Compile
+            host: x86_64-w64-mingw32
+            build_dir: build_win64
+            # Pass specific flags for Windows cross build
+            cmake_args: >
+              -DSYSTEM_XXD=ON
+              -DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/wine
+              -DCMAKE_EXE_LINKER_FLAGS="-static"
+            cpack_generator: NSIS64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 1. Install Host Tools
+      - name: Install System Dependencies
+        run: |
+          source ./install_dependencies.sh
+          install_deps all false false
+
+          # Ensure wine is installed for Windows testing
+          if [[ "${{ matrix.host }}" == *"mingw"* ]]; then
+             sudo dpkg --add-architecture i386
+             sudo apt-get update
+             sudo apt-get install -y wine-stable wine64 wine32
+          fi
+
+      # 2. Setup Concurrency (New Step)
+      - name: Setup Concurrency
+        run: |
+          if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
+            echo "CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "CTEST_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "Concurrency: Auto-detected $(nproc) cores."
+          else
+            echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
+          fi
+
+      # 3. Cache Depends
+      - name: Cache Depends
+        id: cache-depends
+        uses: actions/cache@v4
+        with:
+          path: |
+            depends/built
+            depends/work
+            depends/${{ matrix.host }}
+            depends/sdk-sources
+          key: ${{ env.os_ref }}-depends-${{ matrix.host }}-${{ hashFiles('depends/packages/*', 'depends/Makefile', 'depends/qt.include') }}
+
+      # 4. Build Depends
+      - name: Build Depends
+        if: steps.cache-depends.outputs.cache-hit != 'true'
+        run: |
+          cd depends
+          # Make (legacy) needs explicit -j flag; we use the variable if set, else nproc
+          make HOST=${{ matrix.host }} -j${CMAKE_BUILD_PARALLEL_LEVEL:-$(nproc)}
+
+      # 5. Configure CMake
+      - name: Configure CMake
+        run: |
+          CC_LAUNCHER='-DCMAKE_C_COMPILER_LAUNCHER=ccache'
+          CXX_LAUNCHER='-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
+          TOOLCHAIN_PATH=$(pwd)/depends/${{ matrix.host }}/toolchain.cmake
+          DEP_LIB_PATH=$(pwd)/depends/${{ matrix.host }}/lib
+
+          # Handle Qt6 Cross-Compilation (Windows)
+          HOST_TOOLS_DIR="depends/${{ matrix.host }}/native"
+
+          if [ -d "$HOST_TOOLS_DIR" ]; then
+             QT_HOST_PATH="$(pwd)/$HOST_TOOLS_DIR"
+             QT_HOST_PATH_CMAKE_DIR="${QT_HOST_PATH}/lib/cmake"
+             echo "Cross-compiling detected. Setting QT_HOST_PATH=$QT_HOST_PATH"
+             EXTRA_CMAKE_ARGS="-DQT_HOST_PATH=$QT_HOST_PATH -DQT_HOST_PATH_CMAKE_DIR=$QT_HOST_PATH_CMAKE_DIR"
+          else
+             EXTRA_CMAKE_ARGS=""
+          fi
+
+          cmake -B ${{ matrix.build_dir }} \
+            --toolchain "$TOOLCHAIN_PATH" \
+            -DENABLE_GUI=ON \
+            -DUSE_QT6=ON \
+            -DENABLE_UPNP=ON \
+            -DDEFAULT_UPNP=ON \
+            -DENABLE_TESTS=ON \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DDEP_LIB="${DEP_LIB_PATH}" \
+            $EXTRA_CMAKE_ARGS \
+            $CC_LAUNCHER \
+            $CXX_LAUNCHER \
+            ${{ matrix.cmake_args }}
+
+      # 6. Build
+      - name: Build
+        # Removed explicit --parallel flag; CMake reads the env var automatically
+        run: cmake --build ${{ matrix.build_dir }}
+
+      # 7. Hermeticity Check
+      - name: Verify Hermeticity (Linux)
+        if: contains(matrix.host, 'linux')
+        run: |
+          echo "Checking binaries for unexpected shared library dependencies..."
+
+          # 1. Define the Allowlist (Regex)
+          # We expect ONLY:
+          # - linux-vdso.so.1 (Kernel interface)
+          # - libm.so.6 (Math)
+          # - libc.so.6 (C Runtime)
+          # - ld-linux-x86-64.so.2 (Dynamic Loader)
+          ALLOWED='linux-vdso\.so|libm\.so|libc\.so|ld-linux-x86-64'
+
+          # 2. Identify binaries to check (Corrected Paths)
+          # We check both the GUI (src/qt/) and Daemon (src/)
+          BINARIES="${{ matrix.build_dir }}/src/qt/gridcoinresearch ${{ matrix.build_dir }}/src/gridcoinresearchd"
+
+          fail_count=0
+
+          for bin in $BINARIES; do
+            if [ -f "$bin" ]; then
+              echo "------------------------------------------------"
+              echo "Scanning: $bin"
+
+              # Run ldd, strip whitespace
+              # grep -vE removes the allowed lines.
+              # Any output remaining represents a LEAK (a dynamic dependency).
+              LEAKS=$(ldd "$bin" | grep -vE "$ALLOWED" | sed 's/^[ \t]*//' || true)
+
+              if [ -n "$LEAKS" ]; then
+                echo "::error::NON-HERMETIC DEPENDENCY DETECTED!"
+                echo "The following system libraries are dynamically linked (unexpected):"
+                echo "$LEAKS"
+                fail_count=$((fail_count+1))
+              else
+                echo "✅ Verified hermetic."
+              fi
+            else
+              # Warn but don't fail immediately if a binary is missing (e.g. GUI disabled)
+              echo "::warning::Binary not found at expected path: $bin"
+            fi
+          done
+
+          if [ "$fail_count" -gt 0 ]; then
+            echo "::error::Hermeticity check failed for $fail_count binary(ies)."
+            exit 1
+          fi
+
+      # 8a. Test (Linux)
+      - name: Run Tests (Linux)
+        if: contains(matrix.host, 'linux')
+        env:
+          QT_QPA_PLATFORM: offscreen
+        # Removed -j flag; CTest reads env var
+        run: ctest --test-dir ${{ matrix.build_dir }} --output-on-failure
+
+      # 8b. Test (Windows)
+      - name: Run Tests (Windows)
+        if: contains(matrix.host, 'mingw')
+        env:
+          QT_QPA_PLATFORM: offscreen
+          WINEDLLOVERRIDES: "mscoree,mshtml="
+          WINEARCH: win64
+        run: |
+          wineboot --init || true
+          # Removed -j flag; CTest reads env var
+          ctest --test-dir ${{ matrix.build_dir }} --output-on-failure
+
+      # 9. Package
+      - name: Create Package
+        run: |
+          cpack -G ${{ matrix.cpack_generator }} --config ${{ matrix.build_dir }}/CPackConfig.cmake -B release_packages
+
+      # 10. Prepare Flat Artifacts
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p dist
+
+          # Linux: Flatten Tarball
+          if [[ "${{ matrix.host }}" == *"linux"* ]]; then
+             cp release_packages/*.tar.gz dist/
+          fi
+
+          # Windows: Flatten Installer, Daemon, AND GUI (with version rename)
+          if [[ "${{ matrix.host }}" == *"mingw"* ]]; then
+             # 1. Copy Installer
+             INSTALLER=$(find release_packages -maxdepth 1 -name "gridcoin-*-setup.exe" | head -n 1)
+             if [ -f "$INSTALLER" ]; then
+               cp "$INSTALLER" dist/
+
+               # 2. Extract Version from Installer name (e.g. gridcoin-5.4.9.6-win64-setup.exe)
+               BASENAME=$(basename "$INSTALLER")
+               VERSION=$(awk -F '-' '{ print $2 }' <<< "$BASENAME")
+
+               # 3. Copy and Rename Daemon (Stripped binary in bin/)
+               DAEMON_SRC="${{ matrix.build_dir }}/bin/gridcoinresearchd.exe"
+               if [ -f "$DAEMON_SRC" ]; then
+                  cp "$DAEMON_SRC" "dist/gridcoinresearchd-${VERSION}-win64.exe"
+               else
+                  echo "::warning::Daemon binary not found at $DAEMON_SRC"
+               fi
+
+               # 4. Copy and Rename GUI (Stripped binary in bin/)
+               GUI_SRC="${{ matrix.build_dir }}/bin/gridcoinresearch.exe"
+               if [ -f "$GUI_SRC" ]; then
+                  cp "$GUI_SRC" "dist/gridcoinresearch-${VERSION}-win64.exe"
+               else
+                  echo "::warning::GUI binary not found at $GUI_SRC"
+               fi
+             else
+               # Fallback just in case naming changes
+               cp release_packages/*.exe dist/ || true
+             fi
+          fi
+
+      # 11. Upload Artifacts
+      - name: Upload Artifacts
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridcoin-${{ matrix.host }}
+          path: |
+            release_packages/*.tar.gz
+            release_packages/*.exe
+          retention-days: 5
+
+  # ----------------------------------------------------------------------
+  # JOB 2: macOS Native
+  # ----------------------------------------------------------------------
+  macos-native:
+    name: macOS Native (Homebrew Qt6)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          brew update
+          brew install qt boost openssl libevent miniupnpc qrencode libzip ccache cmake
+
+      - name: Configure Ccache
+        uses: actions/cache@v4
+        with:
+          path: /Users/runner/Library/Caches/ccache
+          key: ccache-macos-${{ github.sha }}
+          restore-keys: ccache-macos-
+
+      # Setup Concurrency for macOS too
+      - name: Setup Concurrency
+        run: |
+          if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
+            # macOS usually uses sysctl -n hw.logicalcpu, but nproc might not exist
+            # We'll use the sysctl command directly
+            CORES=$(sysctl -n hw.logicalcpu)
+            echo "CMAKE_BUILD_PARALLEL_LEVEL=$CORES" >> $GITHUB_ENV
+            echo "CTEST_PARALLEL_LEVEL=$CORES" >> $GITHUB_ENV
+            echo "Concurrency: Auto-detected $CORES cores."
+          else
+            echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
+          fi
+
+      - name: Configure CMake
+        run: |
+          export CC_LAUNCHER='-DCMAKE_C_COMPILER_LAUNCHER=ccache'
+          export CXX_LAUNCHER='-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
+          QT6_PATH=$(brew --prefix qt)
+          OPENSSL_ROOT=$(brew --prefix openssl)
+
+          cmake -B build \
+            -DCMAKE_PREFIX_PATH="$QT6_PATH" \
+            -DENABLE_GUI=ON \
+            -DENABLE_QRENCODE=ON \
+            -DENABLE_UPNP=ON \
+            -DDEFAULT_UPNP=ON \
+            -DENABLE_TESTS=ON \
+            -DENABLE_DOCS=OFF \
+            -DUSE_QT6=ON \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT" \
+            $CC_LAUNCHER \
+            $CXX_LAUNCHER
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Package (DMG)
+        run: cpack -G DragNDrop --config build/CPackConfig.cmake -B release_packages
+
+      - name: Upload Artifacts
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridcoin-macos-dmg
+          path: release_packages/*.dmg
+          retention-days: 5
+
+  # ----------------------------------------------------------------------
+  # JOB 3: Deploy (GitHub Release)
+  # ----------------------------------------------------------------------
+  deploy:
+    name: Create Release
+    needs: [depends-builds, macos-native]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: gridcoin-*
+          merge-multiple: true
+          path: release_assets
+
+      - name: Flatten and Checksum
+        working-directory: release_assets
+        run: |
+          # Move any nested files to the current directory
+          find . -mindepth 2 -type f -exec mv {} . \; || true
+
+          # Clean up empty directories
+          find . -type d -empty -delete || true
+
+          # Generate checksums for the now-flattened files
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release_assets/*
+          draft: true
+          generate_release_notes: true

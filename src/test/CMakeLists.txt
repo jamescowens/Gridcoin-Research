@@ -56,10 +56,37 @@ add_executable(test_gridcoin
 
 add_subdirectory(data)
 
+target_include_directories(test_gridcoin PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_BINARY_DIR}/src
+)
+
+# Handle Boost Test linking mode automatically
+if(NOT STATIC_LIBS)
+    # Native Build: Linking against shared .so libraries requires this flag
+    target_compile_definitions(test_gridcoin PRIVATE BOOST_TEST_DYN_LINK)
+else()
+    # Depends Build: Linking against static .a libraries requires this flag (or simply omitting DYN_LINK)
+    target_compile_definitions(test_gridcoin PRIVATE BOOST_TEST_STATIC_LINK)
+endif()
+
+set_property(SOURCE test_gridcoin.cpp APPEND PROPERTY
+    COMPILE_DEFINITIONS "BOOST_TEST_MODULE=Gridcoin Test Suite"
+)
+
 target_link_libraries(test_gridcoin PRIVATE
     ${RUNTIME_LIBS}
     Boost::unit_test_framework
     gridcoin_util
+
+    # Dependencies of gridcoin_util
+    ${LIBBDB_CXX} ${LIBLEVELDB} ${LIBSECP256K1} ${LIBUNIVALUE}
+    Boost::boost Boost::filesystem Boost::iostreams Boost::thread Boost::date_time Boost::serialization Boost::unit_test_framework
+    CURL::libcurl
+    OpenSSL::Crypto OpenSSL::SSL
+    Threads::Threads
+    libzip::zip
+    ZLIB::ZLIB
 )
 
 add_test(NAME gridcoin_tests COMMAND test_gridcoin)
