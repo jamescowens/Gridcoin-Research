@@ -61,7 +61,7 @@ VotingPage::VotingPage(QWidget* parent)
     ui->activePollsTab->setPollFilterFlags(PollFilterFlag::ACTIVE);
     ui->finishedPollsTab->setPollFilterFlags(PollFilterFlag::FINISHED);
 
-    m_filter_action->setShortcut(Qt::CTRL + Qt::Key_F);
+    m_filter_action->setShortcut(Qt::CTRL | Qt::Key_F);
     ui->filterLineEdit->addAction(m_filter_action.get(), QLineEdit::LeadingPosition);
     ui->cardsToggleButton->hide();
     ui->sortButton->setMenu(new PollSortMenu(this));

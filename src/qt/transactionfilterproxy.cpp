@@ -2,7 +2,7 @@
 
 #include "transactiontablemodel.h"
 #include "transactionrecord.h"
-#include "util.h"
+#include "util/system.h"
 
 #include <QDateTime>
 
@@ -13,7 +13,7 @@ const QDateTime TransactionFilterProxy::MIN_DATE = QDateTime::fromSecsSinceEpoch
 // Last date that can be represented (far in the future)
 const QDateTime TransactionFilterProxy::MAX_DATE = QDateTime::fromSecsSinceEpoch(0xFFFFFFFF);
 
-//Halford 1-2-2015 
+//Halford 1-2-2015
 TransactionFilterProxy::TransactionFilterProxy(QObject *parent) :
     QSortFilterProxyModel(parent),
     dateFrom(MIN_DATE),
@@ -55,29 +55,33 @@ bool TransactionFilterProxy::filterAcceptsRow(int sourceRow, const QModelIndex &
     return true;
 }
 
+// Note that invalidateFilter() is just a deprecated alias for invalidate(), so these have been changed to invalidate()
+// to silence the compiler warnings for Qt 6+.
+// TODO: Redesign to narrow scope of invalidation.
+
 void TransactionFilterProxy::setDateRange(const QDateTime &from, const QDateTime &to)
 {
     this->dateFrom = from;
     this->dateTo = to;
-    invalidateFilter();
+    invalidate();
 }
 
 void TransactionFilterProxy::setAddressPrefix(const QString &addrPrefix)
 {
     this->addrPrefix = addrPrefix;
-    invalidateFilter();
+    invalidate();
 }
 
 void TransactionFilterProxy::setTypeFilter(quint32 modes)
 {
     this->typeFilter = modes;
-    invalidateFilter();
+    invalidate();
 }
 
 void TransactionFilterProxy::setMinAmount(qint64 minimum)
 {
     this->minAmount = minimum;
-    invalidateFilter();
+    invalidate();
 }
 
 void TransactionFilterProxy::setLimit(int limit)
@@ -94,7 +98,7 @@ int TransactionFilterProxy::getLimit()
 void TransactionFilterProxy::setShowInactive(bool showInactive)
 {
     this->showInactive = showInactive;
-    invalidateFilter();
+    invalidate();
 }
 
 int TransactionFilterProxy::rowCount(const QModelIndex &parent) const
