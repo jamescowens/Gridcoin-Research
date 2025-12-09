@@ -19,7 +19,11 @@ print_help() {
     echo "                      Default: all"
     echo "  BUILD_TYPE=<type>   Set the CMake build type. Options: Release, Debug, RelWithDebInfo."
     echo "                      Default: RelWithDebInfo"
-    echo "  CLEAN_BUILD=<bool>  Force a clean build even if executables exist. Options: true, false."
+    echo "  CLEAN_BUILD=<mode>  Clean build behavior."
+    echo "                      Options:"
+    echo "                        true  : Full clean (wipes build dir AND depends artifacts)"
+    echo "                        main  : Main clean (wipes build dir, KEEPS depends artifacts)"
+    echo "                        false : Smart build (skips if version/commit matches)"
     echo "                      Default: false"
     echo "  SKIP_DEPS=<bool>    Skip installing system dependencies (step 1). Options: true, false."
     echo "                      Default: false"
@@ -27,6 +31,8 @@ print_help() {
     echo "                      Default: false"
     echo "  WITH_GUI=<bool>     Build the GUI wallet. Options: true, false."
     echo "                      Default: true"
+    echo "  WITH_DOCS=<bool>    Build Doxygen documentation. Options: true, false."
+    echo "                      Default: false"
     echo "  USE_QT6=<bool>      Use Qt6 for Native/macOS build. Options: true, false."
     echo "                      Default: true (Set to false for Qt5)"
     echo "  PARALLEL=<int>      Specify number of build threads to use (i.e. -j X)."
@@ -40,6 +46,59 @@ print_help() {
     echo ""
 }
 
+# Get the current robust git version string (hash + dirty status)
+get_current_git_state() {
+    if [ -d ".git" ]; then
+        git describe --always --dirty --abbrev=12 --exclude=* 2>/dev/null
+    else
+        echo "unknown"
+    fi
+}
+
+# Check if we can skip the build
+# Usage: should_skip_build "BUILD_DIR" "FILE_1" "FILE_2" ...
+# Returns 0 (true) if we should skip, 1 (false) if we must build
+should_skip_build() {
+    local BUILD_DIR=$1
+    shift
+
+    local CURRENT_STATE
+    CURRENT_STATE=$(get_current_git_state)
+
+    # If explicit clean requested, never skip
+    if [ "$CLEAN_BUILD" == "true" ] || [ "$CLEAN_BUILD" == "main" ]; then
+        return 1
+    fi
+
+    # Check that ALL passed executables exist
+    for EXE in "$@"; do
+        if [ ! -f "$EXE" ]; then
+            return 1
+        fi
+    done
+
+    # If no state file from previous build, never skip
+    if [ ! -f "$BUILD_DIR/.build_state" ]; then
+        return 1
+    fi
+
+    local LAST_STATE
+    LAST_STATE=$(cat "$BUILD_DIR/.build_state")
+
+    if [ "$CURRENT_STATE" == "$LAST_STATE" ]; then
+        echo ">>> Build up-to-date ($CURRENT_STATE). Skipping..."
+        return 0
+    fi
+
+    return 1
+}
+
+# Write the current state to file upon success
+write_build_state() {
+    local BUILD_DIR=$1
+    get_current_git_state > "$BUILD_DIR/.build_state"
+}
+
 # ==============================================================================
 # ARGUMENT PARSING
 # ==============================================================================
@@ -51,6 +110,7 @@ CLEAN_BUILD="false"
 SKIP_DEPS="false"
 USE_CCACHE="false"
 WITH_GUI="true"
+WITH_DOCS="false"
 USE_QT6="true"
 CC_OVERRIDE=""
 CXX_OVERRIDE=""
@@ -81,6 +141,10 @@ for arg in "$@"; do
             ;;
         WITH_GUI=*)
             WITH_GUI="${arg#*=}"
+            shift
+            ;;
+        WITH_DOCS=*)
+            WITH_DOCS="${arg#*=}"
             shift
             ;;
         USE_QT6=*)
@@ -154,6 +218,13 @@ else
     GUI_CMAKE_FLAG="-DENABLE_GUI=OFF"
 fi
 
+# Docs Logic
+if [ "$WITH_DOCS" = "true" ]; then
+    DOCS_CMAKE_FLAG="-DENABLE_DOCS=ON"
+else
+    DOCS_CMAKE_FLAG="-DENABLE_DOCS=OFF"
+fi
+
 # Determine Concurrency
 if [ -n "$PARALLEL" ]; then
     CORES="$PARALLEL"
@@ -178,6 +249,7 @@ echo "Clean Build:  $CLEAN_BUILD"
 echo "Skip Deps:    $SKIP_DEPS"
 echo "Use Ccache:   $USE_CCACHE"
 echo "With GUI:     $WITH_GUI"
+echo "With Docs:    $WITH_DOCS"
 echo "Qt6:          $USE_QT6"
 if [ -n "$MANUAL_QT_PATH" ]; then echo "Manual Qt:    $MANUAL_QT_PATH"; fi
 if [ -n "$EXTRA_ARGS" ]; then     echo "Extra Args:   $EXTRA_ARGS"; fi
@@ -211,29 +283,35 @@ fi
 # ==============================================================================
 # STEP 2: BUILD LINUX NATIVE (Target #1)
 # ==============================================================================
-TARGET1_EXE="build/src/gridcoinresearchd"
+TARGET1_DAEMON="build/bin/gridcoinresearchd"
+TARGET1_GUI="build/bin/gridcoinresearch"
 
-# Only run if target matches AND we are on Linux
 if [[ "$TARGET" == "all" || "$TARGET" == "native" ]] && [[ "$(uname -s)" == "Linux" ]]; then
     echo "----------------------------------------------------------------"
     echo "[Step 2] Building Target 1: Linux Native..."
     echo "----------------------------------------------------------------"
 
-    if [ "$CLEAN_BUILD" = "false" ] && [ -f "$TARGET1_EXE" ]; then
-        echo ">>> Executable found at $TARGET1_EXE. Skipping build."
+    ARTIFACTS=("$TARGET1_DAEMON")
+    if [ "$WITH_GUI" == "true" ]; then ARTIFACTS+=("$TARGET1_GUI"); fi
+
+    if should_skip_build "build" "${ARTIFACTS[@]}"; then
+        echo ">>> Executable(s) found and version matches. Skipping build."
     else
-        # Clean previous build
-        rm -rf build
+        # Clean previous build if requested
+        if [ "$CLEAN_BUILD" == "true" ] || [ "$CLEAN_BUILD" == "main" ]; then
+            echo ">>> Cleaning build directory..."
+            rm -rf build
+        fi
 
         # Configuration from build.md "1. Linux Native Build"
         cmake -B build \
             $GUI_CMAKE_FLAG \
+            $DOCS_CMAKE_FLAG \
             -DENABLE_QRENCODE=ON \
             -DUSE_DBUS=ON \
             -DENABLE_UPNP=ON \
             -DDEFAULT_UPNP=ON \
             -DENABLE_PIE=ON \
-            -DENABLE_DOCS=ON \
             -DENABLE_TESTS=ON \
             $NATIVE_QT_FLAG \
             -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
@@ -246,6 +324,9 @@ if [[ "$TARGET" == "all" || "$TARGET" == "native" ]] && [[ "$(uname -s)" == "Lin
         # Test
         ctest --test-dir build -j $CORES
 
+        # Write state file (Only if build and test succeeded)
+        write_build_state "build"
+
         echo ">>> Linux Native Build Successful."
     fi
 fi
@@ -253,16 +334,26 @@ fi
 # ==============================================================================
 # STEP 3: BUILD LINUX STATIC DEPENDS (Target #2)
 # ==============================================================================
-TARGET2_EXE="build_linux_depends/src/gridcoinresearchd"
+TARGET2_DAEMON="build_linux_depends/bin/gridcoinresearchd"
+TARGET2_GUI="build_linux_depends/bin/gridcoinresearch"
 
 if [[ "$TARGET" == "all" || "$TARGET" == "depends" ]] && [[ "$(uname -s)" == "Linux" ]]; then
     echo "----------------------------------------------------------------"
     echo "[Step 3] Building Target 2: Linux Static (Depends System)..."
     echo "----------------------------------------------------------------"
 
-    if [ "$CLEAN_BUILD" = "false" ] && [ -f "$TARGET2_EXE" ]; then
-        echo ">>> Executable found at $TARGET2_EXE. Skipping build."
+    ARTIFACTS=("$TARGET2_DAEMON")
+    if [ "$WITH_GUI" == "true" ]; then ARTIFACTS+=("$TARGET2_GUI"); fi
+
+    if should_skip_build "build_linux_depends" "${ARTIFACTS[@]}"; then
+        echo ">>> Executable(s) found and version matches. Skipping build."
     else
+        # Clean previous build if requested
+        if [ "$CLEAN_BUILD" == "true" ] || [ "$CLEAN_BUILD" == "main" ]; then
+            echo ">>> Cleaning build directory..."
+            rm -rf build_linux_depends
+        fi
+
         # Build Dependencies
         cd depends
         if [ "$CLEAN_BUILD" = "true" ]; then
@@ -293,9 +384,6 @@ if [[ "$TARGET" == "all" || "$TARGET" == "depends" ]] && [[ "$(uname -s)" == "Li
             echo ">>> WARNING: Native xxd not found at $DEPENDS_NATIVE_BIN/xxd"
         fi
 
-        # Clean previous build
-        rm -rf build_linux_depends
-
         # Set DEP_LIB variable required by the recipe
         DEP_LIB=$(pwd)/depends/x86_64-pc-linux-gnu/lib
         export DEP_LIB
@@ -304,6 +392,7 @@ if [[ "$TARGET" == "all" || "$TARGET" == "depends" ]] && [[ "$(uname -s)" == "Li
         cmake -B build_linux_depends \
             --toolchain depends/x86_64-pc-linux-gnu/toolchain.cmake \
             $GUI_CMAKE_FLAG \
+            $DOCS_CMAKE_FLAG \
             -DUSE_QT6=ON \
             -DSTATIC_LIBS=ON \
             -DENABLE_UPNP=ON \
@@ -321,6 +410,9 @@ if [[ "$TARGET" == "all" || "$TARGET" == "depends" ]] && [[ "$(uname -s)" == "Li
         # Test
         ctest --test-dir build_linux_depends -j $CORES
 
+        # Write state file
+        write_build_state "build_linux_depends"
+
         echo ">>> Linux Static Build Successful."
     fi
 fi
@@ -328,16 +420,26 @@ fi
 # ==============================================================================
 # STEP 4: BUILD WINDOWS CROSS-COMPILE (Target #3)
 # ==============================================================================
-TARGET3_EXE="build_win64/src/gridcoinresearchd.exe"
+TARGET3_DAEMON="build_win64/bin/gridcoinresearchd.exe"
+TARGET3_GUI="build_win64/bin/gridcoinresearch.exe"
 
 if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]] && [[ "$(uname -s)" == "Linux" ]]; then
     echo "----------------------------------------------------------------"
     echo "[Step 4] Building Target 3: Windows Cross-Compile..."
     echo "----------------------------------------------------------------"
 
-    if [ "$CLEAN_BUILD" = "false" ] && [ -f "$TARGET3_EXE" ]; then
-        echo ">>> Executable found at $TARGET3_EXE. Skipping build."
+    ARTIFACTS=("$TARGET3_DAEMON")
+    if [ "$WITH_GUI" == "true" ]; then ARTIFACTS+=("$TARGET3_GUI"); fi
+
+    if should_skip_build "build_win64" "${ARTIFACTS[@]}"; then
+        echo ">>> Executable(s) found and version matches. Skipping build."
     else
+        # Clean previous build if requested
+        if [ "$CLEAN_BUILD" == "true" ] || [ "$CLEAN_BUILD" == "main" ]; then
+            echo ">>> Cleaning build directory..."
+            rm -rf build_win64
+        fi
+
         # Build Dependencies
         cd depends
         if [ "$CLEAN_BUILD" = "true" ]; then
@@ -368,9 +470,6 @@ if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]] && [[ "$(uname -s)" == "Linu
             echo ">>> WARNING: Native xxd not found at $DEPENDS_NATIVE_BIN/xxd"
         fi
 
-        # Clean previous build
-        rm -rf build_win64
-
         # WSL Detection for Emulator Flag
         if grep -qE "(Microsoft|WSL)" /proc/version &> /dev/null; then
             echo ">>> WSL Environment detected: Using native execution for Windows binaries (No Wine)."
@@ -383,6 +482,7 @@ if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]] && [[ "$(uname -s)" == "Linu
         cmake -B build_win64 \
             --toolchain depends/x86_64-w64-mingw32/toolchain.cmake \
             $GUI_CMAKE_FLAG \
+            $DOCS_CMAKE_FLAG \
             -DUSE_QT6=ON \
             -DENABLE_UPNP=ON \
             -DDEFAULT_UPNP=ON \
@@ -399,6 +499,9 @@ if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]] && [[ "$(uname -s)" == "Linu
         # Test
         ctest --test-dir build_win64 -j $CORES
 
+        # Write state file
+        write_build_state "build_win64"
+
         echo ">>> Windows Build Successful."
     fi
 fi
@@ -406,22 +509,25 @@ fi
 # ==============================================================================
 # STEP 5: BUILD macOS NATIVE (Target #4)
 # ==============================================================================
-if [[ "$WITH_GUI" == "true" ]]; then
-    TARGET4_EXE="build_macos/src/qt/gridcoinresearch.app/Contents/MacOS/gridcoinresearch"
-else
-    TARGET4_EXE="build_macos/src/gridcoinresearchd"
-fi
+TARGET4_DAEMON="build_macos/bin/gridcoinresearchd"
+TARGET4_GUI="build_macos/bin/gridcoinresearch.app/Contents/MacOS/gridcoinresearch"
 
 if [[ "$TARGET" == "all" || "$TARGET" == "macos" ]] && [[ "$(uname -s)" == "Darwin" ]]; then
     echo "----------------------------------------------------------------"
     echo "[Step 5] Building Target 4: macOS Native..."
     echo "----------------------------------------------------------------"
 
-    if [ "$CLEAN_BUILD" = "false" ] && [ -f "$TARGET4_EXE" ]; then
-        echo ">>> Executable found at $TARGET4_EXE. Skipping build."
+    ARTIFACTS=("$TARGET4_DAEMON")
+    if [ "$WITH_GUI" == "true" ]; then ARTIFACTS+=("$TARGET4_GUI"); fi
+
+    if should_skip_build "build_macos" "${ARTIFACTS[@]}"; then
+        echo ">>> Executable(s) found and version matches. Skipping build."
     else
-        # Clean previous build
-        rm -rf build_macos
+        # Clean previous build if requested
+        if [ "$CLEAN_BUILD" == "true" ] || [ "$CLEAN_BUILD" == "main" ]; then
+            echo ">>> Cleaning build directory..."
+            rm -rf build_macos
+        fi
 
         OPENSSL_ROOT=$(brew --prefix openssl)
         # Fix for missing icudata on macOS (ICU is keg-only)
@@ -470,11 +576,11 @@ if [[ "$TARGET" == "all" || "$TARGET" == "macos" ]] && [[ "$(uname -s)" == "Darw
         cmake -B build_macos \
             -DCMAKE_PREFIX_PATH="$PREFIX_PATHS" \
             $GUI_CMAKE_FLAG \
+            $DOCS_CMAKE_FLAG \
             -DENABLE_QRENCODE=ON \
             -DENABLE_UPNP=ON \
             -DDEFAULT_UPNP=ON \
             -DENABLE_TESTS=ON \
-            -DENABLE_DOCS=OFF \
             $NATIVE_QT_FLAG \
             -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
             -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT" \
@@ -487,6 +593,9 @@ if [[ "$TARGET" == "all" || "$TARGET" == "macos" ]] && [[ "$(uname -s)" == "Darw
         # Test
         ctest --test-dir build_macos -j $CORES
 
+        # Write state file
+        write_build_state "build_macos"
+
         echo ">>> macOS Build Successful."
     fi
 fi
@@ -495,10 +604,10 @@ echo "----------------------------------------------------------------"
 echo "ALL BUILDS COMPLETE"
 echo "----------------------------------------------------------------"
 if [[ "$(uname -s)" == "Linux" ]]; then
-    if [[ "$TARGET" == "all" || "$TARGET" == "native" ]]; then echo "1. Linux Native: $TARGET1_EXE"; fi
-    if [[ "$TARGET" == "all" || "$TARGET" == "depends" ]]; then echo "2. Linux Static: $TARGET2_EXE"; fi
-    if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]]; then echo "3. Windows:      $TARGET3_EXE"; fi
+    if [[ "$TARGET" == "all" || "$TARGET" == "native" ]]; then echo "1. Linux Native: $TARGET1_DAEMON"; fi
+    if [[ "$TARGET" == "all" || "$TARGET" == "depends" ]]; then echo "2. Linux Static: $TARGET2_DAEMON"; fi
+    if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]]; then echo "3. Windows:      $TARGET3_DAEMON"; fi
 fi
 if [[ "$(uname -s)" == "Darwin" ]]; then
-    if [[ "$TARGET" == "all" || "$TARGET" == "macos" ]]; then echo "4. macOS Native: $TARGET4_EXE"; fi
+    if [[ "$TARGET" == "all" || "$TARGET" == "macos" ]]; then echo "4. macOS Native: $TARGET4_DAEMON"; fi
 fi
