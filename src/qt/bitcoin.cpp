@@ -295,6 +295,10 @@ int main(int argc, char *argv[])
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#else
+    // QT6: Disable scale factor rounding. This ensures that if a user manually
+    // sets QT_FONT_DPI or uses fractional scaling, icons/windows scale smoothly.
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif
     // Initiate the app here to support choosing the data directory.
     Q_INIT_RESOURCE(bitcoin);
