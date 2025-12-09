@@ -51,6 +51,8 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+add_compile_definitions(HAVE_CMAKE)
+
 if(MSVC)
     if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
         message(FATAL_ERROR "It's not yet possible to build Gridcoin with MSVC")

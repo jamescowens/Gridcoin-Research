@@ -31,7 +31,13 @@ const std::string CLIENT_NAME("Halford");
     #define BUILD_DESC BUILD_GIT_TAG
     #define BUILD_SUFFIX ""
 #else
+// Autotools passes "x.y.z", so we must append "." + build (w) -> "x.y.z.w"
+// CMake passes "x.y.z.w", so appending build (w) again would create "x.y.z.w.w"
+#ifdef HAVE_CMAKE
+    #define BUILD_DESC_FROM_PACKAGE(package, build) "v" package
+#else
     #define BUILD_DESC_FROM_PACKAGE(package, build) "v" package "." DO_STRINGIZE(build)
+#endif
     #define BUILD_DESC BUILD_DESC_FROM_PACKAGE(PACKAGE_VERSION, CLIENT_VERSION_BUILD)
     #if CLIENT_VERSION_IS_RELEASE
         #define BUILD_SUFFIX ""

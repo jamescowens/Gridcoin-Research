@@ -26,9 +26,16 @@ elseif(UNIX AND NOT APPLE)
     add_compile_definitions(_FILE_OFFSET_BITS=64)
 endif()
 
+# These two files MUST be removed during a cmake build to ensure that an unclean autotools
+# in-source build does not pollute the cmake build process.
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/config/gridcoin-config.h")
     message(STATUS "Detected stale Autotools configuration file. Removing: ${CMAKE_CURRENT_SOURCE_DIR}/config/gridcoin-config.h")
     file(REMOVE "${CMAKE_CURRENT_SOURCE_DIR}/config/gridcoin-config.h")
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/obj/build.h")
+    message(STATUS "Detected stale Autotools configuration file. Removing: ${CMAKE_CURRENT_SOURCE_DIR}/obj/build.h")
+    file(REMOVE "${CMAKE_CURRENT_SOURCE_DIR}/obj/build.h")
 endif()
 
 # Dependencies
