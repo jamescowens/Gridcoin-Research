@@ -9,6 +9,7 @@ for various build targets:
 | :--- | :--- | :--- | :--- |
 | **Linux (Native)** | CMake | **Stable** | This file |
 | **Linux (Static)** | CMake (depends) | **Stable** | This file |
+| **Linux Alpine (MUSL) ** | CMake | **Experimental** | This file |
 | **Windows (Cross)**| CMake (depends) | **Stable** | This file |
 | **Windows via WSL**| CMake (depends) | **Stable** | [build-windows-wsl.md](build-windows-wsl.md) |
 | **macOS** | CMake | **Stable** | [build-macos.md](build-macos.md) |

@@ -52,6 +52,12 @@ jobs:
             prep_cmd: "apt-get update && apt-get install -y sudo git"
             build_args: ""
 
+          - distro: Alpine Linux (Edge)
+            image: alpine:latest
+            # Alpine needs bash installed explicitly because scripts use /bin/bash shebang
+            prep_cmd: "apk update && apk add bash sudo git"
+            build_args: ""
+
     steps:
       - uses: actions/checkout@v4
 
@@ -66,10 +72,13 @@ jobs:
 
           MOUNT_PATH="${HOST_WORKSPACE:-${{ github.workspace }}}"
 
+          # FIX: Use /bin/sh instead of /bin/bash for the initial entrypoint.
+          # Alpine (and others) always have /bin/sh, but Alpine does NOT have /bin/bash by default.
+          # The prep_cmd will install bash for the build scripts.
           docker run --rm \
             -v "$MOUNT_PATH":/mnt/host_source:ro \
             ${{ matrix.image }} \
-            /bin/bash -c " \
+            /bin/sh -c " \
               ${{ matrix.prep_cmd }} && \
               \
               mkdir -p /work && \
@@ -85,5 +94,7 @@ jobs:
                   SKIP_DEPS=false \
                   USE_CCACHE=false \
                   CLEAN_BUILD=true \
+                  WITH_GUI=true \
+                  USE_QT6=true \
                   PARALLEL=${CMAKE_BUILD_PARALLEL_LEVEL:-4} \
                   ${{ matrix.build_args }}"

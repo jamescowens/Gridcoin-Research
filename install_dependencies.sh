@@ -285,6 +285,20 @@ install_deps() {
             append_wine wine
             ;;
 
+        alpine)
+            # Base Build Tools
+            # 'build-base' is Alpine's build-essential.
+            # 'linux-headers' often needed. 'bash' is needed for these scripts.
+            # 'libexecinfo-dev' is sometimes needed for backtraces on musl.
+            append_base build-base cmake git curl ccache doxygen graphviz bison linux-headers xxd bash
+
+            # Libraries
+            append_base boost-dev openssl-dev libevent-dev miniupnpc-dev libqrencode-dev libzip-dev curl-dev
+
+            # Qt6 Packages
+            append_qt qt6-qtbase-dev qt6-qttools-dev qt6-qtcharts-dev qt6-qtsvg-dev qt6-qt5compat-dev
+            ;;
+
         *)
             echo "Error: Unsupported distribution '$OS'."
             return 1
@@ -367,6 +381,10 @@ install_deps() {
             ;;
         arch|manjaro)
             sudo pacman -S --noconfirm $PKGS_TO_INSTALL
+            ;;
+        alpine)
+            sudo apk update
+            sudo apk add $PKGS_TO_INSTALL
             ;;
     esac
 }
