@@ -290,7 +290,7 @@ install_deps() {
             # 'build-base' is Alpine's build-essential.
             # 'linux-headers' often needed. 'bash' is needed for these scripts.
             # 'libexecinfo-dev' is sometimes needed for backtraces on musl.
-            append_base build-base cmake git curl ccache doxygen graphviz bison linux-headers xxd bash
+            append_base build-base cmake git curl ccache doxygen graphviz bison linux-headers xxd bash autoconf automake libtool perl
 
             # Libraries
             append_base boost-dev openssl-dev libevent-dev miniupnpc-dev libqrencode-dev libzip-dev curl-dev

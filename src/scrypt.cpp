@@ -6,10 +6,10 @@
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -29,6 +29,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <vector>
 
 #include "util.h"
 #include "scrypt.h"
@@ -167,14 +168,14 @@ uint256 scrypt(const void* data, size_t datalen, const void* salt, size_t saltle
 
 uint256 scrypt_hash(const void* input, size_t inputlen)
 {
-    unsigned char scratchpad[SCRYPT_BUFFER_SIZE];
-    return scrypt_nosalt(input, inputlen, scratchpad);
+    static thread_local std::vector<unsigned char> scratchpad(SCRYPT_BUFFER_SIZE);
+    return scrypt_nosalt(input, inputlen, scratchpad.data());
 }
 
 uint256 scrypt_salted_hash(const void* input, size_t inputlen, const void* salt, size_t saltlen)
 {
-    unsigned char scratchpad[SCRYPT_BUFFER_SIZE];
-    return scrypt(input, inputlen, salt, saltlen, scratchpad);
+    static thread_local std::vector<unsigned char> scratchpad(SCRYPT_BUFFER_SIZE);
+    return scrypt(input, inputlen, salt, saltlen, scratchpad.data());
 }
 
 uint256 scrypt_salted_multiround_hash(const void* input, size_t inputlen, const void* salt, size_t saltlen, const unsigned int nRounds)
@@ -193,7 +194,6 @@ uint256 scrypt_salted_multiround_hash(const void* input, size_t inputlen, const 
 
 uint256 scrypt_blockhash(const void* input)
 {
-    unsigned char scratchpad[SCRYPT_BUFFER_SIZE];
-    return scrypt_nosalt(input, 80, scratchpad);
+    static thread_local std::vector<unsigned char> scratchpad(SCRYPT_BUFFER_SIZE);
+    return scrypt_nosalt(input, 80, scratchpad.data());
 }
-
