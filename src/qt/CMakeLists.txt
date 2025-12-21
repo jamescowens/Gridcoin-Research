@@ -231,24 +231,33 @@ target_link_libraries(gridcoinresearch PRIVATE
 
 # Linux Static Math Lib Workaround
 if(UNIX AND NOT APPLE AND DEFINED DEP_LIB)
-# 1. The "Imposter" Math Target
-    # We must link against the system's SHARED libm to avoid static linking issues with glibc.
-    # Detect the location: OpenSUSE/Fedora use /lib64, Ubuntu/Debian use /lib/x86_64-linux-gnu.
+    # 1. The "Imposter" Math Target
+    # We must link against the system's SHARED libm to avoid static linking issues.
+
+    # Detect the location:
     if(EXISTS "/lib64/libm.so.6")
+        # RHEL / CentOS / Fedora / OpenSUSE
         set(SYSTEM_LIBM "/lib64/libm.so.6")
     elseif(EXISTS "/lib/x86_64-linux-gnu/libm.so.6")
+        # Debian / Ubuntu
         set(SYSTEM_LIBM "/lib/x86_64-linux-gnu/libm.so.6")
+    elseif(EXISTS "/usr/lib/libm.so")
+        # Alpine Linux (Musl)
+        set(SYSTEM_LIBM "/usr/lib/libm.so")
     else()
-        # Fallback: Ask CMake to find it (though this might return a .a if we aren't careful)
-        find_library(SYSTEM_LIBM NAMES m.so.6 m)
+        # Fallback: Ask CMake to find it.
+        # We use CMAKE_FIND_ROOT_PATH_BOTH to allow breaking out of the cross-compile
+        # sandbox to find the host system's libm.
+        find_library(SYSTEM_LIBM NAMES m.so.6 m libm.so CMAKE_FIND_ROOT_PATH BOTH)
     endif()
 
     if(SYSTEM_LIBM)
+        message(STATUS "Using System Math Lib: ${SYSTEM_LIBM}")
         add_library(m SHARED IMPORTED GLOBAL)
         set_target_properties(m PROPERTIES IMPORTED_LOCATION "${SYSTEM_LIBM}")
         target_link_libraries(gridcoinresearch PRIVATE m)
     else()
-        message(FATAL_ERROR "Could not find system libm.so.6. Required for static builds.")
+        message(FATAL_ERROR "Could not find system libm.so.6 (or libm.so). Required for static builds.")
     endif()
 
     # 2. THE AUTOMATED MANUAL FIX
