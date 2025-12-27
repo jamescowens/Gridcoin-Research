@@ -54,7 +54,7 @@ src/
 
 #### Interaction Pattern
 ```
-RPC/GUI → Contract Creation → Transaction Broadcast → 
+RPC/GUI → Contract Creation → Transaction Broadcast →
 Block Validation → Dispatcher → Handler → Registry Update
 ```
 
@@ -77,8 +77,8 @@ Block Validation → Dispatcher → Handler → Registry Update
 
 #### Lifecycle
 ```
-Generate Key → Create Payload → Sign → Broadcast Contract → 
-Pending State → Superblock Verification → Active → 
+Generate Key → Create Payload → Sign → Broadcast Contract →
+Pending State → Superblock Verification → Active →
 (5 months) → Renewable → (6 months) → Expired
 ```
 
@@ -104,8 +104,8 @@ Pending State → Superblock Verification → Active →
 
 **Detection Process**:
 ```
-Read BOINC client_state.xml → Parse Projects → 
-Validate Team Membership → Check Whitelist → 
+Read BOINC client_state.xml → Parse Projects →
+Validate Team Membership → Check Whitelist →
 Compute CPID → Determine Eligibility
 ```
 
@@ -200,8 +200,8 @@ Compute CPID → Determine Eligibility
 
 **Convergence Algorithm**:
 ```
-Scraper Manifests → Part Hash Comparison → 
-Project-Level Agreement → Combine Compatible Parts → 
+Scraper Manifests → Part Hash Comparison →
+Project-Level Agreement → Combine Compatible Parts →
 Generate Candidates → Validate Supermajority → Select Best
 ```
 
@@ -295,8 +295,8 @@ if (entry) {
 
 **Process**:
 ```
-Check Accrual > 0 → Calculate Fee → Create MRC Contract → 
-Sign with Beacon Key → Broadcast → Validation → 
+Check Accrual > 0 → Calculate Fee → Create MRC Contract →
+Sign with Beacon Key → Broadcast → Validation →
 Claim Processed (no registry storage needed)
 ```
 
@@ -344,8 +344,8 @@ Claim Processed (no registry storage needed)
 
 **Staking Process**:
 ```
-Select UTXOs → Calculate Kernel Hash → Check Difficulty → 
-Create Coinstake → Add Research Claim (if eligible) → 
+Select UTXOs → Calculate Kernel Hash → Check Difficulty →
+Create Coinstake → Add Research Claim (if eligible) →
 Apply Sidestakes → Build Block → Sign → Broadcast
 ```
 

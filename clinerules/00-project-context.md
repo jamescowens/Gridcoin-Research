@@ -5,7 +5,7 @@ This is the Gridcoin-Research cryptocurrency project - an open-source blockchain
 
 ## Current Version Status
 - **Latest Stable Release**: 5.4.8.0 (2024-04-10) - "leisure"
-- **Development Version**: 5.4.9.0 (scheduled 2025-02-16) - "leisure"  
+- **Development Version**: 5.4.9.0 (scheduled 2025-02-16) - "leisure"
 - **Build Version in CMakeLists.txt**: 5.4.9.8 (development/testing)
 - **Note**: Version numbers between releases may increment for CI/testing purposes
 

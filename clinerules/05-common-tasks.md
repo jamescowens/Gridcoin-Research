@@ -73,7 +73,7 @@ UniValue mycommand(const JSONRPCRequest& request)
     // 5. Build JSON response
     UniValue response(UniValue::VOBJ);
     response.pushKV("result", result);
-    
+
     return response;
 }
 ```
@@ -178,16 +178,16 @@ public:
     std::string m_value;
     int64_t m_timestamp;
     uint256 m_hash;
-    
+
     // Status tracking
     enum class Status { ACTIVE, DELETED, PENDING };
     Status m_status;
-    
+
     // Required methods
     bool WellFormed() const;
     std::string Key() const { return m_key; }
     std::pair<std::string, std::string> KeyValueToString() const;
-    
+
     // Serialization
     ADD_SERIALIZE_METHODS;
     template <typename Stream, typename Operation>
@@ -203,28 +203,28 @@ public:
 class MyNewTypePayload : public IContractPayload {
 public:
     MyNewTypeEntry m_entry;
-    
+
     // IContractPayload interface
     GRC::ContractType ContractType() const override {
         return GRC::ContractType::MYNEWTYPE;
     }
-    
+
     bool WellFormed(const ContractAction action) const override {
         return m_entry.WellFormed();
     }
-    
+
     std::string LegacyKeyString() const override {
         return m_entry.Key();
     }
-    
+
     std::string LegacyValueString() const override {
         return m_entry.m_value;
     }
-    
+
     CAmount RequiredBurnAmount() const override {
         return 0.5 * COIN;  // Set appropriate burn fee
     }
-    
+
     ADD_SERIALIZE_METHODS;
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action) {
@@ -237,7 +237,7 @@ class MyNewTypeRegistry : public IContractHandler {
 private:
     // Storage maps
     std::map<std::string, std::shared_ptr<MyNewTypeEntry>> m_entries;
-    
+
 public:
     // IContractHandler interface
     void Reset() override;
@@ -246,7 +246,7 @@ public:
     void Add(const ContractContext& ctx) override;
     void Delete(const ContractContext& ctx) override;
     void Revert(const ContractContext& ctx) override;
-    
+
     // Custom query methods
     std::shared_ptr<MyNewTypeEntry> Try(const std::string& key) const;
 };
@@ -278,12 +278,12 @@ bool MyNewTypeEntry::WellFormed() const {
 
 bool MyNewTypeRegistry::Validate(const Contract& contract, const CTransaction& tx, int& DoS) const {
     const auto payload = contract.SharePayload<MyNewTypePayload>();
-    
+
     if (!payload->WellFormed(contract.m_action)) {
         DoS = 25;
         return false;
     }
-    
+
     // Additional validation logic
     return true;
 }
@@ -293,7 +293,7 @@ void MyNewTypeRegistry::Add(const ContractContext& ctx) {
     auto entry = std::make_shared<MyNewTypeEntry>(payload->m_entry);
     entry->m_status = MyNewTypeEntry::Status::ACTIVE;
     entry->m_timestamp = ctx.m_pindex->nTime;
-    
+
     m_entries[entry->Key()] = entry;
 }
 
@@ -340,7 +340,7 @@ BOOST_AUTO_TEST_CASE(it_validates_well_formed_entries)
     GRC::MyNewTypeEntry entry;
     entry.m_key = "test";
     entry.m_value = "value";
-    
+
     BOOST_CHECK(entry.WellFormed() == true);
 }
 
@@ -385,14 +385,14 @@ bool ValidateBlock(const CBlock& block, const CBlockIndex* pindex) {
     if (!ExistingRule(block)) {
         return false;
     }
-    
+
     // New rule (only after activation)
     if (NewConsensusRule(pindex)) {
         if (!NewRule(block)) {
             return error("Block fails new consensus rule");
         }
     }
-    
+
     return true;
 }
 ```
@@ -480,7 +480,7 @@ class MyNewDialog : public QDialog
 public:
     explicit MyNewDialog(QWidget *parent = nullptr);
     ~MyNewDialog();
-    
+
     void setModel(WalletModel *model);
 
 private Q_SLOTS:
@@ -541,9 +541,9 @@ MyNewDialog::MyNewDialog(QWidget *parent) :
     m_model(nullptr)
 {
     ui->setupUi(this);
-    
+
     // Connect signals
-    connect(ui->actionButton, &QPushButton::clicked, 
+    connect(ui->actionButton, &QPushButton::clicked,
             this, &MyNewDialog::onButtonClicked);
 }
 
@@ -561,10 +561,10 @@ void MyNewDialog::setModel(WalletModel *model)
 void MyNewDialog::onButtonClicked()
 {
     if (!m_model) return;
-    
+
     // Perform action using model
     // m_model->someOperation();
-    
+
     updateDisplay();
 }
 
@@ -631,7 +631,7 @@ A user reports incorrect research rewards, zero magnitude, or beacon problems.
 ./gridcoinresearch-cli getstakinginfo
 
 # Look for:
-# - "researcher_status": Should be "active" 
+# - "researcher_status": Should be "active"
 # - "cpid": Should be valid hex string
 # - "magnitude": Should be > 0 if doing research
 ```
@@ -739,10 +739,10 @@ BOOST_AUTO_TEST_CASE(it_does_something_correctly)
 {
     // Arrange
     GRC::MyFeature feature;
-    
+
     // Act
     bool result = feature.DoSomething();
-    
+
     // Assert
     BOOST_CHECK(result == true);
 }
@@ -750,7 +750,7 @@ BOOST_AUTO_TEST_CASE(it_does_something_correctly)
 BOOST_AUTO_TEST_CASE(it_handles_errors_gracefully)
 {
     GRC::MyFeature feature;
-    
+
     // Test error condition
     BOOST_CHECK_THROW(feature.DoInvalidOperation(), std::runtime_error);
 }
@@ -769,7 +769,7 @@ BOOST_AUTO_TEST_CASE(it_works_with_blockchain)
 {
     // You have a 100-block chain available
     BOOST_CHECK(chainActive.Height() == 100);
-    
+
     // Test code
 }
 
@@ -855,7 +855,7 @@ bool ValidateProjectStats(const ProjectStats& stats) {
         LogPrintf("ERROR: Negative RAC detected");
         return false;
     }
-    
+
     // Existing validation
     return true;
 }

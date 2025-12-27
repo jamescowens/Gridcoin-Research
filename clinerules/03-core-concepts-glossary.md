@@ -18,7 +18,7 @@ This glossary provides definitions for Gridcoin-specific terminology. Understand
 
 ### Mining ID
 - **Definition**: Variant type representing researcher identity state
-- **Types**: 
+- **Types**:
   - `Cpid`: Valid researcher with BOINC projects
   - `Noncruncher`: Investor mode (no research)
   - `Invalid`: No valid configuration
@@ -110,7 +110,7 @@ This glossary provides definitions for Gridcoin-specific terminology. Understand
 
 ### Quorum
 - **Definition**: Consensus mechanism for validating superblocks
-- **Requirements**: 
+- **Requirements**:
   - Supermajority agreement among scrapers
   - Matching quorum hash
   - Valid manifest convergence
@@ -127,7 +127,7 @@ This glossary provides definitions for Gridcoin-specific terminology. Understand
 
 ### Convergence
 - **Definition**: Process of finding agreement among scraper manifests
-- **Algorithm**: 
+- **Algorithm**:
   1. Collect manifests from multiple scrapers
   2. Find common project statistics
   3. Build consensus superblock from agreement
@@ -285,7 +285,7 @@ This glossary provides definitions for Gridcoin-specific terminology. Understand
 
 ### Protocol Entry
 - **Definition**: Blockchain-stored configuration parameter
-- **Examples**: 
+- **Examples**:
   - Minimum stake age
   - Superblock interval
   - Version numbers

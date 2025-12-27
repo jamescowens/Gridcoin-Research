@@ -63,7 +63,7 @@ Transaction → Contract Detection → Validation → Handler Dispatch → Regis
 
 **Reward Flow:**
 ```
-BOINC Stats → Scraper Collection → Superblock Consensus → 
+BOINC Stats → Scraper Collection → Superblock Consensus →
 Magnitude Assignment → Accrual Calculation → Stake Block Claim
 ```
 
@@ -80,7 +80,7 @@ Magnitude Assignment → Accrual Calculation → Stake Block Claim
 
 **Validation Hierarchy:**
 ```
-Raw Stats → Manifest Creation → Convergence Analysis → 
+Raw Stats → Manifest Creation → Convergence Analysis →
 Superblock Generation → Quorum Validation → Blockchain Commitment
 ```
 
@@ -94,7 +94,7 @@ Superblock Generation → Quorum Validation → Blockchain Commitment
 
 **Staking Process:**
 ```
-UTXO Selection → Kernel Hash Calculation → Difficulty Check → 
+UTXO Selection → Kernel Hash Calculation → Difficulty Check →
 Coinstake Creation → Research Claim (if applicable) → Block Assembly → Broadcast
 ```
 
