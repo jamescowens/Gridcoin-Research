@@ -37,10 +37,8 @@ QObject(_parent),
 parent(_parent),
 programName(_programName),
 mode(None),
-trayIcon(_trayIcon)
-#ifdef USE_DBUS
-    ,interface(nullptr)
-#endif
+trayIcon(_trayIcon),
+interface(nullptr)
 {
     if(_trayIcon && _trayIcon->supportsMessages())
     {
