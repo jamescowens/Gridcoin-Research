@@ -18,6 +18,7 @@ This guide provides step-by-step workflows for common development scenarios in t
 8. [Modifying Scraper Logic](#8-modifying-scraper-logic)
 9. [Protocol Parameter Changes](#9-protocol-parameter-changes)
 10. [Performance Optimization](#10-performance-optimization)
+11. [Ensuring Documentation Passes Lint Checks](#11-ensuring-documentation-passes-lint-checks)
 
 ---
 
@@ -951,6 +952,77 @@ void ProcessData(const LargeObject& obj) {  // Reference
     // Use obj
 }
 ```
+
+---
+
+## 11. Ensuring Documentation Passes Lint Checks
+
+### Scenario
+You've created or modified markdown documentation and need to ensure it passes the project's lint checker before submitting to GitHub.
+
+### Understanding Lint Requirements
+The Gridcoin project uses `test/lint/lint-whitespace.sh` which checks:
+- **Trailing whitespace** at end of lines
+- **Tab characters** instead of spaces (in code files)
+- Various other whitespace issues
+
+Lint failures will **block PR merges** in GitHub CI/CD, so it's essential to verify before committing.
+
+### Quick Fix for Markdown Files
+
+Remove trailing whitespace from all markdown files in a directory:
+```bash
+cd path/to/directory
+for file in *.md; do sed -i 's/[[:space:]]*$//' "$file"; done
+```
+
+Verify the fix worked:
+```bash
+# Should return nothing if all whitespace is removed
+grep -n '\s\+$' *.md
+```
+
+### Running Full Lint Suite
+
+From repository root:
+```bash
+# Run all lint checks
+test/lint/lint-all.sh
+
+# Run only whitespace check
+test/lint/lint-whitespace.sh
+```
+
+### Common Issues
+
+**VS Code "Trim Trailing Whitespace" Not Working**:
+- May only apply to current file, not all files
+- Use the sed command above for comprehensive cleanup
+
+**Mixed Line Endings** (Windows):
+```bash
+# Convert CRLF to LF
+dos2unix *.md
+# Or
+sed -i 's/\r$//' *.md
+```
+
+**Tab Characters in Markdown**:
+```bash
+# Find tabs
+grep -n $'\t' *.md
+
+# Replace tabs with 4 spaces
+sed -i 's/\t/    /g' *.md
+```
+
+### Pre-Commit Checklist
+- [ ] No trailing whitespace
+- [ ] No tab characters in markdown
+- [ ] Code examples use consistent indentation
+- [ ] Lint checker passes (`test/lint/lint-all.sh`)
+
+**Remember**: Always verify lint compliance before submitting documentation PRs to avoid CI failures.
 
 ---
 
