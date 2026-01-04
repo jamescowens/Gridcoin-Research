@@ -306,29 +306,65 @@ Claim Processed (no registry storage needed)
 
 ---
 
-### 9. Scraper System (`src/scraper/`)
+### 9. Scraper System (`src/gridcoin/scraper/`)
 
-**Purpose**: Collect and validate BOINC project statistics.
+**Purpose**: Collect, validate, and distribute BOINC project statistics for superblock generation. Scraper nodes download project stats, package them into signed manifests, and distribute via P2P. Subscriber nodes receive manifests from multiple scrapers and perform convergence to reach consensus on network statistics.
 
-#### Key Files
+#### Files & Responsibilities
 
 | File | Purpose |
 |------|---------|
-| `scraper.h/cpp` | Main scraper logic, HTTP downloads |
-| `fwd.h` | Forward declarations for scraper types |
-| `http.h/cpp` | HTTP client for statistics downloads |
+| `scraper.h/cpp` | Main scraper logic, statistics downloads, convergence |
+| `fwd.h` | Forward declarations, data structures, enums |
+| `http.h/cpp` | HTTP client for project statistics downloads |
+| `scraper_net.h/cpp` | Manifest P2P networking and distribution |
+| `scraper_registry.h/cpp` | Authorization contract management (IContractHandler) |
 
-**Key Structures**:
-- **ScraperStats**: Parsed project statistics
-- **CScraperManifest**: Signed statistics package
-- **ConvergedManifest**: Consensus result from multiple scrapers
-- **ScraperPendingBeaconMap**: Beacon verification data
+#### Key Classes
+- **CScraperManifest**: Signed statistics package with projects and beacon data
+- **ConvergedManifest**: Consensus result from multiple scrapers (manifest or project-level)
+- **ScraperStats**: Parsed project statistics (TC, RAC, magnitudes)
+- **ScraperEntry**: Authorization entry with status (AUTHORIZED, EXPLORER, etc.)
+- **ScraperRegistry**: Contract-based authorization management
+- **CSplitBlob**: Abstract base for part-based data distribution
 
-**Operation Modes**:
-- **Active Scraper**: Downloads stats, creates manifests
-- **Passive Subscriber**: Receives manifests from other scrapers
+#### Authorization System
+Two-level authorization model controls scraper operations:
+- **Level 1**: `IsScraperAuthorized()` - Network-wide policy for downloading statistics
+- **Level 2**: `IsScraperAuthorizedToBroadcastManifests()` - Per-node permission to publish manifests
 
-**Thread**: `ThreadScraper()` or `ThreadScraperSubscriber()`
+Authorization managed via SCRAPER contracts with statuses:
+- **NOT_AUTHORIZED**: Cannot publish manifests
+- **AUTHORIZED**: Can publish manifests
+- **EXPLORER**: Extended statistics retention permissions
+
+#### Convergence Process
+Determines consensus from multiple scraper manifests:
+1. **Manifest-level** (preferred): Multiple scrapers publish identical content hashes
+2. **Project-level** (fallback): Agreement on per-project basis when manifests differ
+3. **Supermajority**: `NumScrapersForSupermajority(count)` determines threshold
+4. **Output**: `ScraperGetSuperblockContract()` generates superblock from convergence
+
+#### Key Operations
+**Active Scraper Mode**:
+- Download project statistics via HTTP
+- Parse and validate statistics files
+- Create signed manifests with beacon verification data
+- Publish manifests to network via `CScraperManifest::addManifest()`
+
+**Passive Subscriber Mode**:
+- Receive manifests from authorized scrapers
+- Validate manifest signatures and authorization
+- Perform convergence analysis
+- Generate superblock contracts from consensus
+
+**Storage**:
+- **Database**: `scraper.dat` (LevelDB) - Authorization registry
+- **File Manifest**: Tracks downloaded statistics files with retention policies
+
+**Thread**: `ThreadScraper()` (active) or `ThreadScraperSubscriber()` (passive)
+
+**Global Access**: `GetScraperRegistry()` → ScraperRegistry&
 
 ---
 
@@ -457,7 +493,7 @@ static const CRPCCommand commands[] = {
 - Parse client_state.xml
 
 #### Appcache (`src/gridcoin/appcache.h/cpp`)
-- Legacy key-value storage (being phased out)
+- Legacy key-value storage (phased out - complete removal pending)
 - Compatibility with older protocol entries
 
 ---

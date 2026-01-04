@@ -4,9 +4,10 @@
 This is the Gridcoin-Research cryptocurrency project - an open-source blockchain platform that rewards users for contributing computational power to scientific research through BOINC (Berkeley Open Infrastructure for Network Computing).
 
 ## Current Version Status
-- **Latest Stable Release**: 5.4.8.0 (2024-04-10) - "leisure"
-- **Development Version**: 5.4.9.0 (scheduled 2025-02-16) - "leisure"
-- **Build Version in CMakeLists.txt**: 5.4.9.8 (development/testing)
+- **Latest Stable Release**: 5.4.9.0 - "leisure"
+- **Development Version**: 5.4.9.8 (current development/testing)
+- **Next Major Release**: Natasha (5.5.0.0) - Mandatory upgrade, in testnet/development
+- **Build Version in CMakeLists.txt**: 5.4.9.8 (increments for CI/testing purposes)
 - **Note**: Version numbers between releases may increment for CI/testing purposes
 
 ## Codebase Statistics (Last Updated: December 23, 2025)
@@ -49,11 +50,12 @@ This is the Gridcoin-Research cryptocurrency project - an open-source blockchain
 - `contrib/` - Contribution tools and scripts
 - `depends/` - Build dependencies
 - `build-aux/` - Build automation files
+- `.github/workflows/` - GitHub Actions CI/CD configuration
 
 ## Build System
-- **Primary**: CMake (CMakeLists.txt) - Still marked as experimental but functional for most platforms
-- **Legacy/Stable Fallback**: Autotools (configure.ac, Makefile.am) - Recommended for production builds
-- **Note**: CMake support is improving but Autotools remains the stable option for all platforms
+- **Primary**: CMake (CMakeLists.txt) - Experimental in 5.4.9.0, but now primary build system in testnet/development branches (will be primary for 5.5.0.0+)
+- **Legacy/Stable Fallback**: Autotools (configure.ac, Makefile.am) - Recommended for production builds on 5.4.9.0
+- **Note**: CMake support is improving rapidly and will become the default build system in Natasha (5.5.0.0)
 
 ## Programming Languages
 - Primary: C++ (cryptocurrency core)
@@ -67,9 +69,9 @@ This is the Gridcoin-Research cryptocurrency project - an open-source blockchain
   - Location: External via depends/ or system
   - Components: filesystem, iostreams, thread, serialization, date_time, interprocess, test framework
 
-- **OpenSSL 1.1.1l** - Cryptographic functions for TLS, hashing, and encryption
+- **OpenSSL 1.1.1l** - Limited cryptographic use (minimal dependency)
   - Location: External via depends/ or system
-  - Note: Configured without many optional ciphers for reduced attack surface
+  - Note: OpenSSL usage has been significantly reduced; configured without many optional ciphers for reduced attack surface
 
 - **Berkeley DB 5.3.x** - Wallet database storage (BDB CXX)
   - Location: Bundled in src/bdb53/ or system

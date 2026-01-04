@@ -109,7 +109,7 @@ This glossary provides definitions for Gridcoin-specific terminology. Understand
 - **Location**: `src/gridcoin/superblock.h/cpp`
 
 ### Quorum
-- **Definition**: Consensus mechanism for validating superblocks
+- **Definition**: Legacy component (pre-Fern), now primarily a facade for scraper convergence functions. Consensus mechanism for validating superblocks
 - **Requirements**:
   - Supermajority agreement among scrapers
   - Matching quorum hash
@@ -198,7 +198,7 @@ This glossary provides definitions for Gridcoin-specific terminology. Understand
 - **Definition**: Hash calculation determining if UTXO can stake
 - **Inputs**: Previous block hash, UTXO data, current time
 - **Target**: Must be less than difficulty target
-- **Attempts**: Checked every second with new timestamp
+- **Attempts**: Checked every ~8 seconds (loop has 8-second sleep), with 16-second time mask granularity for stake distinguishability
 
 ### Coinstake
 - **Definition**: Special transaction that proves stake and distributes rewards
@@ -221,6 +221,7 @@ This glossary provides definitions for Gridcoin-specific terminology. Understand
 - **Location**: Created in `CreateCoinStake()`, modified in `SplitCoinStakeOutput()` and `CreateMRCRewards()`
 
 ### Coin Age
+- **Legacy**: Coin age not used after block version 9. Modern staking uses coin weight only.
 - **Definition**: Time-weighted coin value (Amount × Days Held)
 - **Minimum**: Coins must age before eligible for staking
 - **Consumed**: Resets to zero when coins stake
@@ -234,7 +235,7 @@ This glossary provides definitions for Gridcoin-specific terminology. Understand
 - **Definition**: Special transaction that modifies blockchain state
 - **Detection**: Identified by specific message format in transaction
 - **Burn Fee**: Coins sent to unspendable address (prevents spam)
-- **Types**: Beacon, Project, Protocol, SideStake, MRC, TxMessage
+- **Types**: Unknown, Beacon, Claim, Message, Poll, Project, Protocol, Scraper, Vote, MRC, SideStake, OUT_OF_BOUND (marker)
 - **Location**: `src/gridcoin/contract/`
 
 ### Contract Action
@@ -258,6 +259,9 @@ This glossary provides definitions for Gridcoin-specific terminology. Understand
 - **Definition**: Persistent state managed by contract handler
 - **Examples**: BeaconRegistry, Whitelist, ProtocolRegistry, SideStakeRegistry
 - **Database**: LevelDB backend for most registries
+- **Note**: Not all contract types have backing registries:
+  - **With Registries**: Beacon, Project, Protocol, Scraper, SideStake (need persistent state)
+  - **Without Registries**: Claim (validated inline), Message (stateless), Poll/Vote (separate system), MRC (stateless validation), Unknown/OUT_OF_BOUND (markers)
 - **Pattern**: Factory pattern for type-specific access
 
 ---
@@ -295,7 +299,7 @@ This glossary provides definitions for Gridcoin-specific terminology. Understand
 
 ### AppCache (Legacy)
 - **Definition**: Older key-value storage system for protocol data
-- **Status**: Being phased out in favor of registries
+- **Status**: Effectively phased out. Remaining legacy calls pending complete removal.
 - **Sections**: Different categories of cached data
 - **Location**: `src/gridcoin/appcache.h/cpp`
 
@@ -308,7 +312,7 @@ This glossary provides definitions for Gridcoin-specific terminology. Understand
 - **Detection**: Parses BOINC `client_state.xml` for projects
 - **Modes**:
   - **Solo**: Individual researcher with CPID
-  - **Pool**: Delegate rewards to pool (not currently supported)
+  - **Pool**: GUI indicator for pool participation - causes wallet to act identically to non-cruncher mode except for certain GUI functions. No actual pool delegation occurs.
   - **Investor**: No BOINC participation (noncruncher)
 - **Eligibility**: Valid projects, team membership, beacon status
 - **Location**: `src/gridcoin/researcher.h/cpp`
@@ -326,12 +330,11 @@ This glossary provides definitions for Gridcoin-specific terminology. Understand
 
 ## Network & Synchronization
 
-### Snapshot
-- **Definition**: Pre-validated blockchain download for fast sync
-- **Source**: `snapshot.gridcoin.us`
-- **Format**: Compressed archive of blockchain data
-- **Verification**: SHA256 checksum
-- **Purpose**: Reduces initial sync from days to hours
+### Snapshot (Deprecated)
+- **Status**: Discontinued - snapshot servers disabled
+- **Reason**: Security - full sync from genesis eliminates trust requirements
+- **Sync Time**: Complete sync now takes < 5 hours on modern hardware with good connection
+- **Note**: Snapshot functionality still exists in code but is no longer recommended or supported
 
 ### Checkpoint
 - **Definition**: Hardcoded block hash at specific height
@@ -340,7 +343,7 @@ This glossary provides definitions for Gridcoin-specific terminology. Understand
 - **Location**: `src/checkpoints.cpp`
 
 ### Reorg (Reorganization)
-- **Definition**: Blockchain switches to different chain with more work
+- **Definition**: Blockchain switches to different chain with more trust (not more work)
 - **Cause**: Competing chains, network splits
 - **Depth**: Number of blocks replaced
 - **Impact**: Contracts may be reverted, transactions may become invalid
@@ -356,16 +359,24 @@ This glossary provides definitions for Gridcoin-specific terminology. Understand
 - **Type**: `int64_t`
 
 ### uint256
-- **Definition**: 256-bit unsigned integer
+- **Definition**: 256-bit unsigned integer (lightweight blob, no arithmetic)
 - **Uses**: Block hashes, transaction IDs, Merkle roots
 - **Format**: Usually displayed as 64-character hex string
 - **Location**: `src/uint256.h`
 
+### arith_uint256
+- **Definition**: 256-bit unsigned integer with arithmetic operations support
+- **Location**: `src/arith_uint256.h`
+- **Note**: Split from uint256 (following Bitcoin Core) for performance - use lighter uint256 when arithmetic not needed
+
 ### Fraction
 - **Definition**: Rational number represented as numerator/denominator
+- **Consensus-Critical**: The Fraction class is essential for deterministic calculations. Historical use of floating-point caused forking incidents due to CPU architecture differences. All consensus arithmetic now uses integer-based Fraction calculations.
 - **Usage**: Precise percentage calculations (sidestakes, allocations)
 - **Operations**: Simplification, comparison, arithmetic
-- **Location**: `src/gridcoin/sidestake.h` (Allocation class)
+- **Location**:
+  - **Base `Fraction` class**: `src/util.h` (core rational number implementation)
+  - **Derived `Allocation` class**: `src/gridcoin/sidestake.h` (extends Fraction for percentage allocations in sidestake rewards)
 
 ### CTxDestination
 - **Definition**: Variant type for transaction destinations
@@ -417,6 +428,11 @@ This glossary provides definitions for Gridcoin-specific terminology. Understand
 - **Configuration**: `-debug=<category>` flag
 - **Examples**: `net`, `contract`, `scraper`, `miner`, `tally`
 - **Output**: `debug.log` file
+
+### Boost Unit Testing Suite
+- **Framework**: Boost.Test
+- **Location**: `src/test/`
+- **Run**: `make check` or via CMake test targets
 
 ---
 

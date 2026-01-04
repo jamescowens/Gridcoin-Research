@@ -19,6 +19,7 @@ This guide provides step-by-step workflows for common development scenarios in t
 9. [Protocol Parameter Changes](#9-protocol-parameter-changes)
 10. [Performance Optimization](#10-performance-optimization)
 11. [Ensuring Documentation Passes Lint Checks](#11-ensuring-documentation-passes-lint-checks)
+12. [Working with CI/CD](#12-working-with-cicd)
 
 ---
 
@@ -300,6 +301,55 @@ void MyNewTypeRegistry::Add(const ContractContext& ctx) {
 
 // Implement other methods...
 ```
+
+#### 2.3.1 Registry Database Setup (Optional)
+
+If your registry needs persistent storage, leverage the `registry_db.h` template system for automatic LevelDB serialization:
+
+**Key Concept**: The `registry_db.h` template provides a standardized way to persist registry state to LevelDB with automatic serialization/deserialization.
+
+**Setup Pattern**:
+```cpp
+// In mynewtype.h
+#include "gridcoin/contract/registry_db.h"
+
+class MyNewTypeRegistry : public IContractHandler {
+private:
+    RegistryDB<MyNewTypeEntry> m_db;  // Template handles persistence
+
+public:
+    MyNewTypeRegistry()
+        : m_db("mynewtype")  // Database filename prefix
+    {
+    }
+
+    // Database operations
+    void StoreToDB(const MyNewTypeEntry& entry) {
+        m_db.Store(entry.Key(), entry);
+    }
+
+    std::shared_ptr<MyNewTypeEntry> LoadFromDB(const std::string& key) {
+        return m_db.Load(key);
+    }
+
+    void EraseFromDB(const std::string& key) {
+        m_db.Erase(key);
+    }
+};
+```
+
+**Benefits**:
+- Automatic serialization using entry's `SerializationOp`
+- Consistent error handling
+- Transaction support for atomic updates
+- Iterator support for full registry scans
+
+**Example Registries Using This Pattern**:
+- `BeaconRegistry` → `beacon.dat`
+- `Whitelist` → `project.dat`
+- `ProtocolRegistry` → `protocol.dat`
+
+**Note**: For stateless handlers (like MRCRegistry) or memory-only registries, skip the database template and manage state directly.
 
 #### 2.4 Register with Dispatcher
 Edit `src/gridcoin/contract/contract.cpp`:
@@ -1052,11 +1102,190 @@ sed -i 's/\t/    /g' *.md
 
 ---
 
+## 12. Working with CI/CD
+
+### Scenario
+You want to verify your changes will pass GitHub Actions CI/CD before pushing, or understand what automated checks run on your PRs.
+
+### Overview
+
+The project uses **4 GitHub Actions workflows** in `.github/workflows/` to ensure code quality:
+
+| Workflow | File | Purpose |
+|----------|------|---------|
+| **Production** | `cmake_production.yml` | Builds release artifacts (Linux Static, Windows, macOS) and handles deployment |
+| **Compatibility** | `cmake_compatibility.yml` | Tests cross-compilation for ARM64/ARMhf architectures |
+| **Quality** | `cmake_quality.yml` | Runs sanitizers (ASan/UBSan) and linters (code format, shell scripts, Python) |
+| **Distro Validation** | `cmake_distros.yml` | Validates build scripts on 6+ Linux distribution families |
+
+**Trigger**: All workflows run automatically on:
+- Push to any branch
+- Pull Request creation/updates
+- Tagged releases (`v*`, `5.*`)
+
+### Running CI Locally
+
+The **killer feature** of Gridcoin's CI system is that you can run the **exact same** pipelines locally before pushing. This uses `act` (Docker-based GitHub Actions runner) to simulate the CI environment.
+
+#### Prerequisites
+
+```bash
+# Install act
+sudo zypper install act  # openSUSE
+brew install act         # macOS
+# Or see: https://github.com/nektos/act
+
+# Verify Docker is running
+docker ps
+```
+
+#### Basic Usage
+
+Run the full Production pipeline:
+```bash
+cd Gridcoin-Research/
+./contrib/devtools/run-local-ci.sh workflow=.github/workflows/cmake_production.yml
+```
+
+Run a specific job (e.g., Windows build only):
+```bash
+./contrib/devtools/run-local-ci.sh \
+  workflow=.github/workflows/cmake_production.yml \
+  job=depends-builds \
+  matrix=host:x86_64-w64-mingw32
+```
+
+Run Quality checks (sanitizers + linters):
+```bash
+./contrib/devtools/run-local-ci.sh workflow=.github/workflows/cmake_quality.yml
+```
+
+Validate a specific Linux distro:
+```bash
+./contrib/devtools/run-local-ci.sh \
+  workflow=.github/workflows/cmake_distros.yml \
+  job=validate-distro \
+  matrix=image:"archlinux:latest"
+```
+
+#### Key Features
+
+**Isolation**: Builds run in `/tmp/act-gridcoin-XXX` - your local source tree is never touched.
+
+**Auto-Scaling**: The script calculates `nproc / jobs` to prevent system overload (e.g., 6 parallel distro builds on 32-core machine = ~5 threads each).
+
+**Caching**: Maps `~/.ccache` to containers for fast subsequent runs.
+
+**Dirty Tree Support**: Uses `rsync` to copy your working directory, including uncommitted changes.
+
+### Common CI/CD Tasks
+
+#### Before Pushing Code
+
+```bash
+# 1. Run linters (fastest check)
+./contrib/devtools/run-local-ci.sh \
+  workflow=.github/workflows/cmake_quality.yml \
+  job=lint
+
+# 2. If lint passes, test your platform
+./contrib/devtools/run-local-ci.sh \
+  workflow=.github/workflows/cmake_production.yml \
+  job=depends-builds \
+  matrix=host:x86_64-pc-linux-gnu  # Or your target platform
+```
+
+#### Debugging CI Failures
+
+**View GitHub Actions logs**:
+1. Go to PR → "Checks" tab
+2. Click failing workflow
+3. Expand failed step to see error
+
+**Reproduce locally**:
+```bash
+# Copy the exact matrix parameters from the failing job
+./contrib/devtools/run-local-ci.sh \
+  workflow=<failing_workflow.yml> \
+  job=<job_name> \
+  matrix=<exact_matrix_params>
+```
+
+**Common Issues**:
+- **Lint failures**: Run `test/lint/lint-all.sh` locally first
+- **Test failures**: Run `./src/test/test_gridcoinresearch --log_level=all` for verbose output
+- **Sanitizer errors**: Run with ASan locally: `./contrib/devtools/run-local-ci.sh workflow=.github/workflows/cmake_quality.yml job=sanitizers`
+
+#### Understanding Workflow Structure
+
+Each workflow YAML file defines:
+- **Triggers**: When it runs (push, PR, tags)
+- **Jobs**: Parallel tasks (e.g., linux-build, windows-build, macos-build)
+- **Matrix**: Parameter variations (e.g., different architectures, distros)
+- **Steps**: Individual commands within each job
+
+**Example job hierarchy**:
+```
+cmake_production.yml
+├── depends-builds (job)
+│   ├── matrix: x86_64-pc-linux-gnu (Linux Static)
+│   ├── matrix: x86_64-w64-mingw32 (Windows)
+│   └── matrix: x86_64-apple-darwin (macOS - runs on separate job)
+└── deploy (job - only on tags)
+```
+
+### Release Deployment
+
+When a tag is pushed (e.g., `v5.4.9.99`):
+
+1. All Production builds complete
+2. `deploy` job activates
+3. Downloads all artifacts (Linux `.tar.gz`, Windows `.exe`, macOS `.dmg`)
+4. Generates `SHA256SUMS.txt`
+5. Creates **Draft Release** on GitHub with binaries attached
+
+**Manual steps** (maintainer only):
+- Review draft release
+- Add release notes
+- Publish release
+
+### Best Practices
+
+**Pre-Push Checklist**:
+- [ ] Run linters locally (`test/lint/lint-all.sh`)
+- [ ] Run unit tests (`./src/test/test_gridcoinresearch`)
+- [ ] Test CI job for your platform if making build system changes
+- [ ] Check that code follows `01-coding.md` style guide
+
+**For Major Changes**:
+- [ ] Run full Production pipeline locally
+- [ ] Run Compatibility checks if modifying core logic
+- [ ] Run Quality checks if touching consensus/memory-critical code
+
+**Documentation Changes**:
+- [ ] Always run lint checker before pushing markdown
+- [ ] Use `sed` to strip trailing whitespace (see section 11)
+- [ ] Remember: Lint failures **block PR merges**
+
+### Advanced: Technical Details
+
+For complete documentation on:
+- Hermetic build system (`depends`)
+- Cross-compilation toolchain setup
+- Windows testing via Wine
+- Distro isolation strategies
+- Caching and optimization
+
+**See**: `Gridcoin-Research/doc/ci_cd.md`
+
+---
+
 ## Related Documentation
 
 - **Architecture**: `02-architecture-overview.md`
 - **Glossary**: `03-core-concepts-glossary.md`
 - **Components**: `04-component-guide.md`
 - **Coding Style**: `01-coding.md`
+- **CI/CD Technical Details**: `Gridcoin-Research/doc/ci_cd.md`
 
 This guide provides practical workflows for common tasks. Always take Baby Steps™ - make one focused change at a time, test thoroughly, and document your work. **The process is the product.**

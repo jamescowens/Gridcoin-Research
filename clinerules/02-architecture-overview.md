@@ -41,10 +41,13 @@ The contract system is Gridcoin's mechanism for blockchain-based governance and 
 
 **Key Concepts:**
 - **Contracts** are special transactions that modify blockchain state
-- **Contract Types**: Beacon, Project (whitelist), Protocol, SideStake, MRC, TxMessage
+- **Contract Types**: Unknown, Beacon, Claim, Message, Poll, Project, Protocol, Scraper, Vote, MRC, SideStake (+ OUT_OF_BOUND marker)
 - **Contract Actions**: Add, Delete, Remove
+- **Note**: Not all contract types have persistent registry databases:
+  - **With Registry DB**: Beacon, Project, Protocol, Scraper, SideStake
+  - **Without Registry DB**: Claim, Message, Poll, Vote, MRC, Unknown, OUT_OF_BOUND
 - **Handlers** process and validate contracts (registry pattern)
-- **Registries** maintain current state for each contract type
+- **Registries** maintain current state for contract types with persistent storage
 
 **Data Flow:**
 ```
@@ -69,14 +72,14 @@ Magnitude Assignment → Accrual Calculation → Stake Block Claim
 
 ### 3. Superblock & Quorum System (`src/gridcoin/quorum.*, superblock.*`)
 
-**Purpose:** Achieve distributed consensus on research statistics without central authority.
+**Purpose:** Quorum voting was the consensus mechanism pre-Fern. In Fern+ (block version 11+), the Quorum component remains as a facade for scraper convergence and superblock validation logic, but no voting occurs. Scraper convergence now achieves consensus.
 
 **Process:**
 1. **Scraper Nodes** collect BOINC project statistics independently
 2. **Convergence** algorithm finds agreement among scraper manifests
 3. **Superblock** created containing project stats and CPID magnitudes
 4. **Quorum** validation ensures supermajority agreement
-5. **Committed** to blockchain approximately every 24 hours
+5. **Committed** to blockchain in the next staked block after 24 hours have passed since the last superblock and convergence has been achieved on statistics. In general, this equals ~24 hours + 45 seconds (half of the 90-second block interval).
 
 **Validation Hierarchy:**
 ```
@@ -87,7 +90,7 @@ Superblock Generation → Quorum Validation → Blockchain Commitment
 ### 4. Proof-of-Stake Consensus (`src/miner.*, main.cpp`)
 
 **Key Differences from Bitcoin:**
-- **No mining**: Uses coin-age based staking instead of proof-of-work
+- **No mining**: Uses coin weight only (not coin-age, which was removed after block version 9) instead of proof-of-work
 - **Research Rewards**: Stake blocks claim accumulated research rewards
 - **Dual Subsidy**: Block reward = stake subsidy + research subsidy
 - **Required Elements**: Kernel meets difficulty target, valid coinstake transaction
@@ -131,10 +134,13 @@ Coinstake Creation → Research Claim (if applicable) → Block Assembly → Bro
 - **LevelDB** (`blocks/index/`): Block index, transaction index
 - **Wallet** (`wallet.dat`): Keys, transactions, metadata
 - **Registry DBs**: Beacon, project, protocol, sidestake state
+- **Note**: Registries are also persisted in LevelDB
 
 ### Configuration
-- **gridcoinresearch.conf**: User settings
+- **gridcoinresearch.conf**: Read-only user settings (cannot be modified while wallet running)
+- **gridcoinsettings.json**: Read-write settings (modified by wallet during runtime)
 - **config.xml** (BOINC): Client state for researcher detection
+- **Note**: Like Bitcoin Core, configuration is split between a read-only .conf file and a read-write .json file for runtime changes. However, not all config settings support modification while the wallet is running.
 
 ## Thread Architecture
 
@@ -164,7 +170,8 @@ Key threads (see `01-coding.md` for complete list):
 - **Soft Changes**: Backward compatible improvements
 
 **Block Versions:**
-- Version 11: Current consensus rules
+- Version 12: Current consensus rules (mainnet), Version 13 in testnet/development
+- Version 11: Previous consensus rules
 - Version 10: Legacy superblock format
 - Earlier versions: Phased out
 
@@ -176,7 +183,7 @@ Key threads (see `01-coding.md` for complete list):
 - **No Direct Communication**: Gridcoin reads BOINC state passively
 
 ### Network Services
-- **Snapshot Server**: Fast blockchain sync (`snapshot.gridcoin.us`)
+- **Snapshot (Deprecated)**: Snapshot functionality has been deprecated in favor of full blockchain sync from genesis (typically < 5 hours on modern hardware). This improves security by eliminating trust in snapshot providers.
 - **Update Checker**: Version notification system
 - **DNS Seeders**: Bootstrap peer discovery
 
@@ -186,14 +193,18 @@ Key threads (see `01-coding.md` for complete list):
 2. **Superblock Validation**: Multi-scraper consensus prevents manipulation
 3. **Contract Burns**: Prevent spam by requiring burned coins
 4. **Mandatory Sidestakes**: Protocol-enforced fee distributions
+   - **Note**: Mandatory sidestakes are implemented in v13+ (currently testnet/development only)
 5. **Split CPID Detection**: Prevents gaming by using same email across projects
+
+**Poll Weight Types:**
+- Only BALANCE and BALANCE_AND_MAGNITUDE PollWeightTypes are allowed, as these are immune to Sybil attacks without biometric identification.
 
 ## Performance Characteristics
 
 - **Block Time**: ~90 seconds target
 - **Superblock Interval**: ~1 day (daily consensus on magnitudes)
 - **Beacon Lifetime**: ~6 months before renewal required
-- **Accrual Limit**: ~16,384 GRC maximum unclaimed research rewards
+- **Accrual Limit**: ~16,384 GRC maximum (current), will scale with protocol parameters in Natasha (5.5.0.0)
 - **Stake Weight**: Calculated from coin age and UTXO amount
 
 ## Future Architecture Notes
@@ -203,5 +214,6 @@ Key threads (see `01-coding.md` for complete list):
 - More testable components with dependency injection
 - Reduced global state and lock contention
 - Better abstraction of blockchain storage
+- Scraper convergence is fundamental to superblock consensus
 
-This architecture has evolved from Bitcoin's original design while adding substantial complexity for research reward integration. Understanding the contract system, superblock consensus, and accrual accounting is essential for working with Gridcoin-specific features.
+This architecture has evolved from Bitcoin's original design while adding substantial complexity for research reward integration. Understanding the contract system, superblock consensus, accrual accounting, and scraper convergence is essential for working with Gridcoin-specific features.
