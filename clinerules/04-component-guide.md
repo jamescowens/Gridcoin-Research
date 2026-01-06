@@ -13,7 +13,7 @@ src/
 ├── gridcoin/              # Gridcoin-specific business logic
 │   ├── contract/          # Contract system implementation
 │   ├── accrual/           # Accrual calculation engines
-│   ├── scraper/           # (moved to src/scraper/)
+│   ├── scraper/           # Scraper system (statistics collection & convergence)
 │   └── *.h/cpp            # Core Gridcoin components
 ├── rpc/                   # RPC command implementations
 ├── qt/                    # Qt GUI components
@@ -359,8 +359,20 @@ Determines consensus from multiple scraper manifests:
 - Generate superblock contracts from consensus
 
 **Storage**:
-- **Database**: `scraper.dat` (LevelDB) - Authorization registry
-- **File Manifest**: Tracks downloaded statistics files with retention policies
+- **Database**: Authorization stored in main LevelDB (shared with blockchain) using registry-specific key prefix via `KeyType()`
+- **Data Directory**: `<data directory>/Scraper` (mainnet) or `/testnet/Scraper` (testnet)
+
+**Files on Authorized/Active Scraper Nodes**:
+- `Manifest.csv.gz` - Compressed text file containing the File Manifest (listing of current project statistics files)
+- `BeaconList.csv.gz` - Compressed text file containing list of active beacons
+- `VerifiedBeacons.dat` - Binary file containing serialized list of pending beacons verified in latest convergence (will be activated on next superblock)
+- `<project>-<etag>.csv.gz` - Compressed text files containing project statistics snapshots filtered for active CPIDs (beacons). The etag represents the fingerprint of those stats and is recorded in the filename.
+- `Stats.csv.gz` - Statistics map output for current scraper stats based on last file manifest entry
+- `ConvergedStats.csv.gz` - Statistics map output for current convergence
+- Additional files present in explorer mode (raw unprocessed project statistics)
+
+**Files on Scraper Subscriber (Normal) Nodes**:
+- `ConvergedStats.csv.gz` - Only file present; represents current convergence output calculated from received manifests/project data
 
 **Thread**: `ThreadScraper()` (active) or `ThreadScraperSubscriber()` (passive)
 
