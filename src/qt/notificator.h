@@ -6,9 +6,7 @@
 
 QT_BEGIN_NAMESPACE
 class QSystemTrayIcon;
-#ifdef USE_DBUS
 class QDBusInterface;
-#endif
 QT_END_NAMESPACE
 
 /** Cross-platform desktop notification client. */
@@ -54,11 +52,9 @@ private:
     QString programName;
     Mode mode;
     QSystemTrayIcon *trayIcon;
-#ifdef USE_DBUS
     QDBusInterface *interface;
 
     void notifyDBus(Class cls, const QString &title, const QString &text, const QIcon &icon, int millisTimeout);
-#endif
     void notifySystray(Class cls, const QString &title, const QString &text, int millisTimeout);
 #ifdef Q_OS_MAC
     void notifyMacUserNotificationCenter(const QString &title, const QString &text);
