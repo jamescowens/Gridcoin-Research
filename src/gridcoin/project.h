@@ -647,8 +647,8 @@ public:
         //!
         //! \param total_credit
         //! \param sb_from_baseline
-        //!
-        void UpdateGreylistCandidateEntry(std::optional<uint64_t> total_credit, uint8_t sb_from_baseline)
+        //! \param use_benefit_of_doubt Flag to enable the benefit of the doubt logic for the head superblock.
+        void UpdateGreylistCandidateEntry(std::optional<uint64_t> total_credit, uint8_t sb_from_baseline, bool use_benefit_of_doubt)
         {
             if (sb_from_baseline > 0) {
                 // ZCD part. Remember we are going backwards, so if total_credit is greater than or equal to
@@ -658,7 +658,20 @@ public:
                     // If total credit is greater than the bookmark, this means that (going forward in time) credit actually
                     // declined, so we must add a day for the credit decline (going forward in time). If total credit
                     // is std::nullopt, then this means no statistics available, which also is a ZCD.
-                    if ((total_credit && total_credit >= m_TC_bookmark) || !total_credit){
+
+                    // [Added] Benefit of the Doubt Exception
+                    // If the initial bookmark (Head/Candidate) is missing, that means the project is missing from
+                    // the CURRENT superblock (the baseline). This is likely a transient local scraper failure on
+                    // the staking node. We give the "benefit of the doubt" for this one specific interval
+                    // (sb_from_baseline == 1) to prevent a single node's connection issue from forcing
+                    // a greylist event.
+                    bool head_scraper_failure = false;
+
+                    if (use_benefit_of_doubt) {
+                        head_scraper_failure = (sb_from_baseline == 1 && !m_TC_initial_bookmark);
+                    }
+
+                    if (!head_scraper_failure && ((total_credit && total_credit >= m_TC_bookmark) || !total_credit)){
                         ++m_zcd_20_SB_count;
                     }
                 }

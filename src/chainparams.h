@@ -171,6 +171,12 @@ inline bool IsProjectV2Enabled(int nHeight)
     return nHeight >= Params().GetConsensus().ProjectV2Height;
 }
 
+inline bool IsAutoGreylistAuditEnabled(int nHeight)
+{
+    // The argument driven override temporarily here to facilitate testing.
+    return nHeight >= gArgs.GetArg("-autogreylistauditheight", Params().GetConsensus().AutoGreylistAuditHeight);
+}
+
 inline bool IsSuperblockV3Enabled(int nHeight)
 {
     // The argument driven override temporarily here to facilitate testing.

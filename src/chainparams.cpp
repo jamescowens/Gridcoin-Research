@@ -71,6 +71,7 @@ public:
         consensus.BlockV13Height = std::numeric_limits<int>::max();
         consensus.PollV3Height = 2671700;
         consensus.ProjectV2Height = 2671700;
+        consensus.AutoGreylistAuditHeight = std::numeric_limits<int>::max();
         consensus.DefaultConstantBlockReward = 10 * COIN;
         consensus.ConstantBlockRewardFloor = 0;
         consensus.ConstantBlockRewardCeiling = 500 * COIN;
@@ -192,6 +193,7 @@ public:
         consensus.BlockV13Height = 2870000;
         consensus.PollV3Height = 1944820;
         consensus.ProjectV2Height = 1944820;
+        consensus.AutoGreylistAuditHeight = std::numeric_limits<int>::max();
         consensus.DefaultConstantBlockReward = 10 * COIN;
         consensus.ConstantBlockRewardFloor = 0;
         consensus.ConstantBlockRewardCeiling = 500 * COIN;

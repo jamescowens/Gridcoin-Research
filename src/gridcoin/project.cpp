@@ -449,6 +449,9 @@ void AutoGreylist::RefreshWithSuperblock(SuperblockPtr superblock_ptr_in,
         return;
     }
 
+    // [Added] Determine the flag based on the height of the superblock being processed.
+    bool use_benefit_of_doubt = IsAutoGreylistAuditEnabled(superblock_ptr_in.m_height);
+
     unsigned int superblock_count = 0;
 
     // Notice the superblock_ptr_in m_projects_all_cpid_total_credits MUST ALREADY BE POPULATED to record the TC state into
@@ -545,23 +548,26 @@ void AutoGreylist::RefreshWithSuperblock(SuperblockPtr superblock_ptr_in,
 
             auto project = superblock_ptr->m_projects_all_cpids_total_credits.m_projects_all_cpid_total_credits.find(iter.m_name);
 
-                   // This record MUST be found, because for the record to be in the whitelist, it must have at least a first record.
+            // This record MUST be found, because for the record to be in the whitelist, it must have at least a first record.
             auto project_first_active = project_first_actives.find(iter.m_name);
 
-                   // The purpose of this time comparison is to ONLY post greylist candidate entry (updates) for superblocks that are
-                   // equal to or after the first entry date. Remember we are going backwards here. There cannot be entries held against
-                   // a whitelisted project from before it was ever whitelisted. This check is required to ensure the greylist rules work
-                   // correctly for newly whitelisted projects that are within the 40 day window for WAS and 20 day window for ZCD.
+            // The purpose of this time comparison is to ONLY post greylist candidate entry (updates) for superblocks that are
+            // equal to or after the first entry date. Remember we are going backwards here. There cannot be entries held against
+            // a whitelisted project from before it was ever whitelisted. This check is required to ensure the greylist rules work
+            // correctly for newly whitelisted projects that are within the 40 day window for WAS and 20 day window for ZCD.
             if (project_first_active != project_first_actives.end()
                 && superblock_ptr.m_timestamp >= project_first_active->second->m_timestamp) {
                 if (project != superblock_ptr->m_projects_all_cpids_total_credits.m_projects_all_cpid_total_credits.end()) {
                     // Update greylist candidate entry with the total credit for each project present in superblock.
-                    greylist_entry->second.UpdateGreylistCandidateEntry(project->second, superblock_count);
+                    // [Changed] Pass use_benefit_of_doubt
+                    greylist_entry->second.UpdateGreylistCandidateEntry(project->second, superblock_count, use_benefit_of_doubt);
                 } else {
                     // Record updated greylist candidate entry with nullopt total credit. This is for a project that is in the
                     // whitelist, but does not have a project entry in this superblock. This would be because the scrapers could
                     // not converge on the project for this superblock.
-                    greylist_entry->second.UpdateGreylistCandidateEntry(std::optional<uint64_t>(std::nullopt), superblock_count);
+                    // [Changed] Pass use_benefit_of_doubt
+                    greylist_entry->second.UpdateGreylistCandidateEntry(std::optional<uint64_t>(std::nullopt), superblock_count,
+                                                                        use_benefit_of_doubt);
                 }
             }
         }

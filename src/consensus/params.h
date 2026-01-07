@@ -42,6 +42,8 @@ struct Params {
     int ProjectV2Height;
     /** Block height at which project v4 contracts are allowed */
     int ProjectV4Height;
+    /** Height at which the benefit of the doubt logic is enabled for autogreylist evaluation */
+    int AutoGreylistAuditHeight;
     /**
       * @brief The default GRC paid for a constant block reward.
       *
