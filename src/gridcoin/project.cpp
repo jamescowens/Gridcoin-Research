@@ -606,6 +606,17 @@ void AutoGreylist::RefreshWithAndUpdateSuperblock(Superblock& superblock) EXCLUS
             superblock.m_project_status.m_project_status.insert(std::make_pair(project.m_name, project.m_status));
         }
     }
+
+    // Invalidate m_superblock_hash so that Refresh() re-evaluates with the actual on-chain superblock. The evaluation
+    // above used a candidate superblock bound to pindexBest, which may be past the most recent superblock block height.
+    // When pindexBest > SB height, the just-staked superblock appears as a historical entry (sb_from_baseline == 1) with
+    // identical TC to the candidate (built from stale convergence), producing a false ZCD. Since the quorum hash excludes
+    // m_project_status, the candidate hash equals the on-chain superblock hash, causing Refresh() to false cache-hit and
+    // perpetuate the inflated ZCD. Resetting here forces Refresh() to re-evaluate at the correct baseline height.
+    {
+        LOCK(autogreylist_lock);
+        m_superblock_hash = Superblock().GetHash();
+    }
 }
 
 void AutoGreylist::Reset()
