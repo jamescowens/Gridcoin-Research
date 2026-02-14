@@ -1377,4 +1377,159 @@ BOOST_AUTO_TEST_CASE(it_auto_greylists_correctly)
     delete whitelist_index_entry;
 }
 
+BOOST_AUTO_TEST_CASE(it_applies_benefit_of_doubt_correctly)
+{
+    /**
+     * This test exercises the "Benefit of the Doubt" logic in the AutoGreylist system. When a staking node's scraper
+     * fails to reach a project, the head superblock is missing the project's total credit entry. Without the
+     * benefit-of-doubt fix, std::optional comparison semantics cause the valid historical SB at sb_from_baseline == 1
+     * to be counted as a false ZCD (because any engaged optional >= nullopt in C++17). The fix suppresses this false
+     * ZCD at the head position.
+     *
+     * The test also verifies the "deferred penalty": once a good SB becomes the new head and the bad SB ages to
+     * sb_from_baseline == 1, the missing data is correctly counted as a ZCD.
+     *
+     * Scenario A (benefit-of-doubt ON, head missing):
+     *   Head (nullopt) -> SB-1 (TC=1000) -> SB-2 (TC=500)
+     *   Expected: ZCD = 0 (false ZCD suppressed at sb==1)
+     *
+     * Scenario A' (benefit-of-doubt OFF, same data):
+     *   Expected: ZCD = 1 (false ZCD counted at sb==1)
+     *
+     * Scenario B (deferred penalty, good head after bad SB):
+     *   Head (TC=2000) -> SB-1 (nullopt) -> SB-2 (TC=1000) -> SB-3 (TC=500)
+     *   Expected: ZCD = 1 (nullopt at sb==1 correctly counted, benefit-of-doubt does not apply
+     *   because head has data)
+     */
+
+    GRC::Whitelist& whitelist = GRC::GetWhitelist();
+
+    std::shared_ptr<GRC::AutoGreylist> auto_greylist = GRC::GetAutoGreylistCache();
+
+    whitelist.Reset();
+
+    int height = 0;
+    int64_t time = 0;
+
+    // Add a project for testing.
+    AddProjectEntry(3, "bod_test", "http://bod.test", false, height, time, true);
+
+    // Create dummy CBlockIndex for the whitelist entry.
+    CBlockIndex* whitelist_index_entry = new CBlockIndex;
+
+    ++height;
+    ++time;
+
+    // ---- Build the superblock chain: SB1(TC=500), SB2(TC=1000), SB3(nullopt), SB4(TC=2000) ----
+
+    auto unit_test_blocks = std::make_shared<std::map<int, std::pair<CBlockIndex*, GRC::SuperblockPtr>>>();
+
+    CBlockIndex* index_ptr = whitelist_index_entry;
+    CBlockIndex* index_ptr_prev = nullptr;
+
+    // Helper to build a superblock at the next height.
+    auto build_sb = [&](std::optional<uint64_t> tc) {
+        index_ptr_prev = index_ptr;
+        index_ptr = new CBlockIndex;
+        index_ptr->nHeight = height;
+        index_ptr->nTime = time;
+        index_ptr->MarkAsSuperblock();
+        index_ptr->pprev = index_ptr_prev;
+
+        GRC::Superblock superblock = GRC::Superblock();
+
+        if (tc) {
+            superblock.m_projects_all_cpids_total_credits.m_projects_all_cpid_total_credits
+                .insert(std::make_pair("bod_test", *tc));
+        }
+
+        GRC::SuperblockPtr superblock_ptr = GRC::SuperblockPtr();
+        superblock_ptr.Replace(superblock);
+        superblock_ptr.Rebind(index_ptr);
+
+        unit_test_blocks->insert(std::make_pair(height, std::make_pair(index_ptr, superblock_ptr)));
+
+        ++height;
+        ++time;
+    };
+
+    build_sb(500);    // SB at height 1: TC = 500
+    build_sb(1000);   // SB at height 2: TC = 1000
+    build_sb({});     // SB at height 3: TC = nullopt (scraper failure)
+    build_sb(2000);   // SB at height 4: TC = 2000
+
+    // ---- Scenario A: Benefit-of-doubt ON, head is the bad SB (nullopt at height 3) ----
+    // Head: nullopt -> sb_from_baseline==1: TC=1000 -> sb_from_baseline==2: TC=500
+    // Expected: ZCD = 0 (benefit-of-doubt suppresses false ZCD at sb==1)
+
+    gArgs.ForceSetArg("-autogreylistauditheight", "0");
+
+    auto_greylist->Reset();
+
+    // Use SB at height 3 (nullopt) as the head.
+    auto head_iter = unit_test_blocks->find(3);
+    auto_greylist->RefreshWithSuperblock(head_iter->second.second, unit_test_blocks);
+
+    {
+        auto greylist_candidate = auto_greylist->begin()->second;
+
+        LogPrintf("info: %s: Scenario A (BoD ON, head missing) - ZCD = %u (expected 0)",
+                  "it_applies_benefit_of_doubt_correctly", greylist_candidate.m_zcd_20_SB_count);
+
+        BOOST_CHECK_EQUAL(greylist_candidate.m_zcd_20_SB_count, 0);
+    }
+
+    // ---- Scenario A': Same data, benefit-of-doubt OFF ----
+    // Expected: ZCD = 1 (TC=1000 >= nullopt bookmark at sb==1 -> false ZCD counted)
+
+    gArgs.ForceSetArg("-autogreylistauditheight", ToString(std::numeric_limits<int>::max()));
+
+    auto_greylist->Reset();
+
+    auto_greylist->RefreshWithSuperblock(head_iter->second.second, unit_test_blocks);
+
+    {
+        auto greylist_candidate = auto_greylist->begin()->second;
+
+        LogPrintf("info: %s: Scenario A' (BoD OFF, head missing) - ZCD = %u (expected 1)",
+                  "it_applies_benefit_of_doubt_correctly", greylist_candidate.m_zcd_20_SB_count);
+
+        BOOST_CHECK_EQUAL(greylist_candidate.m_zcd_20_SB_count, 1);
+    }
+
+    // ---- Scenario B: Deferred penalty — bad SB ages past head, benefit-of-doubt ON ----
+    // Head: TC=2000 -> sb_from_baseline==1: nullopt -> sb_from_baseline==2: TC=1000 -> sb_from_baseline==3: TC=500
+    // Expected: ZCD = 1 (nullopt at sb==1 correctly counted; benefit-of-doubt does NOT apply because head has data)
+
+    gArgs.ForceSetArg("-autogreylistauditheight", "0");
+
+    auto_greylist->Reset();
+
+    // Use SB at height 4 (TC=2000) as the head.
+    head_iter = unit_test_blocks->find(4);
+    auto_greylist->RefreshWithSuperblock(head_iter->second.second, unit_test_blocks);
+
+    {
+        auto greylist_candidate = auto_greylist->begin()->second;
+
+        LogPrintf("info: %s: Scenario B (BoD ON, deferred penalty) - ZCD = %u (expected 1)",
+                  "it_applies_benefit_of_doubt_correctly", greylist_candidate.m_zcd_20_SB_count);
+
+        BOOST_CHECK_EQUAL(greylist_candidate.m_zcd_20_SB_count, 1);
+    }
+
+    // ---- Cleanup ----
+
+    // Restore default (disabled) state.
+    gArgs.ForceSetArg("-autogreylistauditheight", ToString(std::numeric_limits<int>::max()));
+
+    for (auto& iter : *unit_test_blocks) {
+        delete iter.second.first;
+    }
+
+    unit_test_blocks->clear();
+
+    delete whitelist_index_entry;
+}
+
 BOOST_AUTO_TEST_SUITE_END()
