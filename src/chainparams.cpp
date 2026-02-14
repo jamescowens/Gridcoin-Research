@@ -193,7 +193,7 @@ public:
         consensus.BlockV13Height = 2870000;
         consensus.PollV3Height = 1944820;
         consensus.ProjectV2Height = 1944820;
-        consensus.AutoGreylistAuditHeight = std::numeric_limits<int>::max();
+        consensus.AutoGreylistAuditHeight = 3111000;
         consensus.DefaultConstantBlockReward = 10 * COIN;
         consensus.ConstantBlockRewardFloor = 0;
         consensus.ConstantBlockRewardCeiling = 500 * COIN;
