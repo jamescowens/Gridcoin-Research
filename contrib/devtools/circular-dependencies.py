@@ -3,9 +3,18 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/licenses/mit-license.php.
 
+import argparse
 import sys
 import re
 from typing import Dict, List, Set
+
+parser = argparse.ArgumentParser(description='Detect circular dependencies among source modules.')
+parser.add_argument('--headers-only', action='store_true',
+                    help='Only consider #include edges originating from header files. '
+                         'This detects true header-to-header cycles while ignoring '
+                         'module-level cycles caused by .cpp implementation includes.')
+parser.add_argument('files', nargs='*', help='Source files to analyze')
+args = parser.parse_args()
 
 MAPPING = {
     'core_read.cpp': 'core_io.cpp',
@@ -38,7 +47,7 @@ deps: Dict[str, Set[str]] = dict()
 RE = re.compile("^#include [<\"](.*)[\">]")
 
 # Iterate over files, and create list of modules
-for arg in sys.argv[1:]:
+for arg in args.files:
     module = module_name(arg)
     if module is None:
         print("Ignoring file %s (does not constitute module)\n" % arg)
@@ -49,6 +58,8 @@ for arg in sys.argv[1:]:
 # Iterate again, and build list of direct dependencies for each module
 # TODO: implement support for multiple include directories
 for arg in sorted(files.keys()):
+    if args.headers_only and not arg.endswith('.h'):
+        continue
     module = files[arg]
     with open(arg, 'r', encoding="utf8") as f:
         for line in f:
