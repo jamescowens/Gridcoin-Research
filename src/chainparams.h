@@ -184,6 +184,13 @@ inline bool IsSuperblockV3Enabled(int nHeight)
     return nHeight >= gArgs.GetArg("-superblockv3height", Params().GetConsensus().SuperblockV3Height);
 }
 
+inline bool IsV14Enabled(int nHeight)
+{
+    // The argument driven override temporarily here to facilitate testing.
+
+    return nHeight >= gArgs.GetArg("-blockv14height", Params().GetConsensus().BlockV14Height);
+}
+
 inline bool IsProjectV4Enabled(int nHeight)
 {
     // The argument driven override temporarily here to facilitate testing.

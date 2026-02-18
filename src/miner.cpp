@@ -6,6 +6,7 @@
 
 #include "amount.h"
 #include "consensus/merkle.h"
+#include "consensus/tx_verify.h"
 #include "txdb.h"
 #include "miner.h"
 #include "main.h"
@@ -555,6 +556,13 @@ bool CreateRestOfTheBlock(CBlock &block, CBlockIndex* pindexPrev,
             if (!ConnectInputs(tx, txdb, mapInputs, mapTestPoolTmp, CDiskTxPos(1,1,1), pindexPrev, false, true))
             {
                 LogPrint(BCLog::LogFlags::NOISY, "Unable to connect inputs for tx %s ",tx.GetHash().GetHex());
+                continue;
+            }
+
+            // BIP68: Skip transactions that don't satisfy sequence locks when v14 is active.
+            if (IsV14Enabled(nHeight) && !CheckSequenceLocks(tx, 0, pindexPrev)) {
+                LogPrint(BCLog::LogFlags::NOISY, "Not including tx %s due to unsatisfied sequence locks",
+                         tx.GetHash().GetHex());
                 continue;
             }
 
@@ -1393,11 +1401,13 @@ void StakeMiner(CWallet *pwallet)
 
         // * Create a bare block
 
-        // This transition code is to handle the v12 to v13 transition. The other transition handling
-        // for block versions in the stakeminer have been removed, because no blocks of an earlier version
-        // than v13 can be staked now, since the chain is past the v12 transition height.
+        // Block version transition handling. The other transition handling
+        // for block versions prior to v13 have been removed, because no blocks
+        // of an earlier version than v13 can be staked now.
         if (!IsV13Enabled(pindexPrev->nHeight + 1)) {
             StakeBlock.nVersion = 12;
+        } else if (!IsV14Enabled(pindexPrev->nHeight + 1)) {
+            StakeBlock.nVersion = 13;
         }
 
         StakeBlock.nTime = GetAdjustedTime();

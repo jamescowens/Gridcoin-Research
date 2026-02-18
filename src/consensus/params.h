@@ -36,6 +36,8 @@ struct Params {
     int BlockV12Height;
     /** Block height at which v13 blocks are created */
     int BlockV13Height;
+    /** Block height at which v14 blocks are created (CLTV + CSV + BIP68) */
+    int BlockV14Height;
     /** Block height at which poll v3 contract payloads are valid */
     int PollV3Height;
     /** Block height at which project v2 contracts are allowed */
