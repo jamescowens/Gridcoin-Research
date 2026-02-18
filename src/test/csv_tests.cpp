@@ -15,7 +15,7 @@ extern uint256 SignatureHash(CScript scriptCode, const CTransaction& txTo, unsig
 
 static CScript BuildCSVScript(int64_t nSequence)
 {
-    // Script: <nSequence> OP_CHECKSEQUENCEVERIFY OP_DROP <pubkey> OP_CHECKSIG
+    // Script fragment: <nSequence> OP_CHECKSEQUENCEVERIFY OP_DROP
     CScript script;
     script << CScriptNum(nSequence);
     script << OP_CHECKSEQUENCEVERIFY;

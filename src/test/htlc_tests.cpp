@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(htlc_script_roundtrip)
     vector<unsigned char> hash(32);
     CSHA256().Write(preimage, sizeof(preimage) - 1).Finalize(hash.data());
 
-    int64_t timeout = 1700000000; // some future timestamp
+    int64_t timeout = 1700000000; // example Unix timestamp (Nov 2023)
 
     CScript script = CreateHTLCScript(hash, receiver_pubkey, sender_pubkey, timeout);
 

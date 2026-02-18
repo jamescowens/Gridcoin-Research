@@ -565,7 +565,9 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                 {
                     if (!(flags & SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY)) {
                         // not enabled; treat as a NOP2
-                        return (flags & SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS) == 0;
+                        if (flags & SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS)
+                            return false;
+                        break;
                     }
 
                     if (stack.size() < 1)
@@ -631,7 +633,9 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                 {
                     if (!(flags & SCRIPT_VERIFY_CHECKSEQUENCEVERIFY)) {
                         // not enabled; treat as a NOP3
-                        return (flags & SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS) == 0;
+                        if (flags & SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS)
+                            return false;
+                        break;
                     }
 
                     if (stack.size() < 1)

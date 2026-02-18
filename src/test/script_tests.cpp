@@ -52,6 +52,11 @@ CScript ParseScript(string s)
                 mapOpNames[strName.substr(3)] = static_cast<opcodetype>(op);
             }
         }
+        // Add NOP aliases for opcodes that were repurposed (CLTV/CSV)
+        mapOpNames["OP_NOP2"] = OP_CHECKLOCKTIMEVERIFY;
+        mapOpNames["NOP2"] = OP_CHECKLOCKTIMEVERIFY;
+        mapOpNames["OP_NOP3"] = OP_CHECKSEQUENCEVERIFY;
+        mapOpNames["NOP3"] = OP_CHECKSEQUENCEVERIFY;
     }
 
     vector<string> words;
@@ -202,19 +207,6 @@ BOOST_AUTO_TEST_CASE(script_valid)
     // ... where scriptSig and scriptPubKey are stringified
     // scripts.
     UniValue tests = read_json(std::string(json_tests::script_valid, json_tests::script_valid + sizeof(json_tests::script_valid)));
-
-    {
-        std::string testJson = R"(["0x48 0x304502202de8c03fc525285c9c535631019a5f2af7c6454fa9eb392a3756a4917c420edd02210046130bf2baf7cfc065067c8b9e33a066d9c15edcea9feb0ca2d233e3597925b401","0x21 0x038282263212c609d9ea2a6e3e172de238d8c39cabd5ac1ca10646e23fd5f51508 CHECKSIG","","P2PK with too much S padding but no DERSIG"])";
-        UniValue test = read_json(testJson);
-        
-        string scriptSigString = test[0].get_str();
-        CScript scriptSig = ParseScript(scriptSigString);
-        string scriptPubKeyString = test[1].get_str();
-        CScript scriptPubKey = ParseScript(scriptPubKeyString);
-        unsigned int scriptflags = ParseScriptFlags(test[2].get_str());
-
-        DoTest(scriptPubKey, scriptSig, scriptflags, true, "AWAAWA");
-    }
 
     for (unsigned int idx = 0; idx < tests.size(); idx++) {
         UniValue test = tests[idx];
