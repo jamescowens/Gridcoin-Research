@@ -25,7 +25,7 @@ using namespace boost::algorithm;
 
 static const unsigned int flags = SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_STRICTENC;
 
-unsigned int ParseScriptFlags(string strFlags);
+static unsigned int ParseScriptFlags(string strFlags);
 extern uint256 SignatureHash(CScript scriptCode, const CTransaction& txTo, unsigned int nIn, int nHashType);
 
 CScript ParseScript(string s)
@@ -109,6 +109,47 @@ UniValue read_json(const std::string& jsondata)
     return v.get_array();
 }
 
+
+static unsigned int ParseScriptFlags(string strFlags)
+{
+    if (strFlags.empty() || strFlags == "NONE") return SCRIPT_VERIFY_NONE;
+
+    unsigned int flags = 0;
+    vector<string> words;
+    split(words, strFlags, is_any_of(","));
+
+    for (const string& word : words) {
+        if (word == "NONE") {
+            // Nothing
+        } else if (word == "P2SH") {
+            flags |= SCRIPT_VERIFY_P2SH;
+        } else if (word == "STRICTENC") {
+            flags |= SCRIPT_VERIFY_STRICTENC;
+        } else if (word == "DERSIG") {
+            flags |= SCRIPT_VERIFY_DERSIG;
+        } else if (word == "LOW_S") {
+            flags |= SCRIPT_VERIFY_LOW_S;
+        } else if (word == "NULLDUMMY") {
+            flags |= SCRIPT_VERIFY_NULLDUMMY;
+        } else if (word == "SIGPUSHONLY") {
+            flags |= SCRIPT_VERIFY_SIGPUSHONLY;
+        } else if (word == "MINIMALDATA") {
+            flags |= SCRIPT_VERIFY_MINIMALDATA;
+        } else if (word == "DISCOURAGE_UPGRADABLE_NOPS") {
+            flags |= SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS;
+        } else if (word == "CLEANSTACK") {
+            flags |= SCRIPT_VERIFY_CLEANSTACK;
+        } else if (word == "CHECKLOCKTIMEVERIFY") {
+            flags |= SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY;
+        } else if (word == "CHECKSEQUENCEVERIFY") {
+            flags |= SCRIPT_VERIFY_CHECKSEQUENCEVERIFY;
+        } else {
+            BOOST_ERROR("Unknown flag: " + word);
+        }
+    }
+
+    return flags;
+}
 
 BOOST_AUTO_TEST_SUITE(script_tests)
 

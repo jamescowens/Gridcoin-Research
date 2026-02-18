@@ -31,7 +31,7 @@ static const std::map<std::string, unsigned int> mapFlagNames = {
     {"SIGPUSHONLY", SCRIPT_VERIFY_SIGPUSHONLY},
 };
 
-unsigned int ParseScriptFlags(std::string strFlags)
+static unsigned int ParseScriptFlags(std::string strFlags)
 {
     unsigned int flags = SCRIPT_VERIFY_NONE;
     if (strFlags.empty() || strFlags == "NONE") return flags;

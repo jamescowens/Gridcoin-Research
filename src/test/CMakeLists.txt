@@ -4,7 +4,9 @@ if(NOT SYSTEM_XXD)
 endif()
 
 add_executable(test_gridcoin
+    bip68_tests.cpp
     checkpoints_tests.cpp
+    csv_tests.cpp
     dos_tests.cpp
     accounting_tests.cpp
     addrman_tests.cpp
@@ -18,6 +20,7 @@ add_executable(test_gridcoin
     fs_tests.cpp
     getarg_tests.cpp
     gridcoin_tests.cpp
+    htlc_tests.cpp
     gridcoin/block_finder_tests.cpp
     gridcoin/beacon_tests.cpp
     gridcoin/claim_tests.cpp
