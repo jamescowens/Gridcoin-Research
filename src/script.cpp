@@ -224,8 +224,8 @@ const char* GetOpName(opcodetype opcode)
 
     // expansion
     case OP_NOP1                   : return "OP_NOP1";
-    case OP_NOP2                   : return "OP_NOP2";
-    case OP_NOP3                   : return "OP_NOP3";
+    case OP_CHECKLOCKTIMEVERIFY     : return "OP_CHECKLOCKTIMEVERIFY";
+    case OP_CHECKSEQUENCEVERIFY    : return "OP_CHECKSEQUENCEVERIFY";
     case OP_NOP4                   : return "OP_NOP4";
     case OP_NOP5                   : return "OP_NOP5";
     case OP_NOP6                   : return "OP_NOP6";
@@ -434,6 +434,43 @@ bool static CheckMinimalPush(const valtype& data, opcodetype opcode) {
     return true;
 }
 
+static bool CheckSequenceVerify(const CScriptNum& nSequence, const CTransaction& txTo, unsigned int nIn)
+{
+    // Fail if the transaction's version number is not set high
+    // enough to trigger BIP68 rules.
+    if (txTo.nVersion < 2)
+        return false;
+
+    // Sequence numbers with the most significant bit set are not
+    // consensus constrained. Testing that the transaction's sequence
+    // number does not have this flag ensures we are comparing against
+    // a value from the transaction that is treated as a relative lock-time.
+    if (txTo.vin[nIn].nSequence & SEQUENCE_LOCKTIME_DISABLE_FLAG)
+        return false;
+
+    // Mask off the lock-time type bit to get the numeric value.
+    const uint32_t nLockTimeMask = SEQUENCE_LOCKTIME_TYPE_FLAG | SEQUENCE_LOCKTIME_MASK;
+    const int64_t txToSequence = (int64_t)(txTo.vin[nIn].nSequence & nLockTimeMask);
+    const int64_t nSequenceMasked = nSequence.GetInt64() & nLockTimeMask;
+
+    // There are two kinds of nSequence: lock-by-blockheight and
+    // lock-by-blocktime, distinguished by the type flag bit.
+    // We want to compare apples to apples, so fail if the type
+    // bits don't match.
+    if (!((txToSequence <  SEQUENCE_LOCKTIME_TYPE_FLAG && nSequenceMasked <  SEQUENCE_LOCKTIME_TYPE_FLAG) ||
+          (txToSequence >= SEQUENCE_LOCKTIME_TYPE_FLAG && nSequenceMasked >= SEQUENCE_LOCKTIME_TYPE_FLAG)))
+    {
+        return false;
+    }
+
+    // Now that we know we're comparing the same type, the comparison
+    // is a simple numeric one.
+    if (nSequenceMasked > txToSequence)
+        return false;
+
+    return true;
+}
+
 bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, unsigned int flags, const CTransaction& txTo, unsigned int nIn)
 {
     CScript::const_iterator pc = script.begin();
@@ -590,7 +627,41 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     break;
                 }
 
-                case OP_NOP1: case OP_NOP3: case OP_NOP4: case OP_NOP5:
+                case OP_CHECKSEQUENCEVERIFY:
+                {
+                    if (!(flags & SCRIPT_VERIFY_CHECKSEQUENCEVERIFY)) {
+                        // not enabled; treat as a NOP3
+                        return (flags & SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS) == 0;
+                    }
+
+                    if (stack.size() < 1)
+                        return false;
+
+                    // nSequence, like nLockTime, is a 32-bit unsigned
+                    // integer field. See the comment in case
+                    // OP_CHECKLOCKTIMEVERIFY regarding 5-byte numerics.
+                    const CScriptNum nSequence(stacktop(-1), fRequireMinimal, 5);
+
+                    // In the rare event that the argument may be < 0 due to
+                    // some arithmetic being done first, you can always use
+                    // 0 MAX CHECKSEQUENCEVERIFY.
+                    if (nSequence < 0)
+                        return false;
+
+                    // To provide for future soft-fork extensibility, if the
+                    // operand has the disabled flag set, CHECKSEQUENCEVERIFY
+                    // behaves as a NOP.
+                    if ((nSequence & SEQUENCE_LOCKTIME_DISABLE_FLAG) != 0)
+                        break;
+
+                    // Compare the specified sequence number with the input.
+                    if (!CheckSequenceVerify(nSequence, txTo, nIn))
+                        return false;
+
+                    break;
+                }
+
+                case OP_NOP1: case OP_NOP4: case OP_NOP5:
                 case OP_NOP6: case OP_NOP7: case OP_NOP8: case OP_NOP9: case OP_NOP10:
                 {
                     if (flags & SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS)
