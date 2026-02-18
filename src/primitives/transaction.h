@@ -131,6 +131,34 @@ public:
     std::string ToString() const;
 };
 
+/* BIP68 — Relative lock-time using consensus-enforced sequence numbers.
+ *
+ * These constants define the meaning of the nSequence field when
+ * CTransaction::nVersion >= 2.
+ */
+
+/** Setting nSequence to this value for every input in a transaction
+ *  disables nLockTime. */
+static const uint32_t SEQUENCE_FINAL = 0xffffffff;
+
+/** If this flag is set, the input's nSequence is NOT interpreted as a
+ *  relative lock-time. */
+static const uint32_t SEQUENCE_LOCKTIME_DISABLE_FLAG = (1U << 31);
+
+/** If nSequence encodes a relative lock-time and this flag is set, the
+ *  relative lock-time has units of 512 seconds, otherwise it specifies
+ *  blocks. */
+static const uint32_t SEQUENCE_LOCKTIME_TYPE_FLAG = (1U << 22);
+
+/** If nSequence encodes a relative lock-time, this mask is applied to
+ *  extract that lock-time from the sequence field. */
+static const uint32_t SEQUENCE_LOCKTIME_MASK = 0x0000ffff;
+
+/** In order to use the same number of bits to encode roughly the same
+ *  wall-clock duration, and target a granularity of 512 seconds, time-based
+ *  relative lock-times are measured in units of 2^SEQUENCE_LOCKTIME_GRANULARITY
+ *  seconds. */
+static const int SEQUENCE_LOCKTIME_GRANULARITY = 9; // 512-second units
 
 /** An output of a transaction.  It contains the public key that the next input
  * must be able to sign with to claim it.
