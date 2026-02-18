@@ -1,3 +1,23 @@
+# Cleanup: Remove stale generated header files
+# =============================================
+# Prior build methods (and in-source builds) generated .json.h, .bin.h, and
+# .txt.h files directly in the source tree. CMake generates these in the build
+# directory, but stale source-tree copies shadow them via include path ordering,
+# causing the compiler to pick up outdated data.
+file(GLOB STALE_GENERATED_HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.json.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.bin.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.txt.h"
+)
+
+if(STALE_GENERATED_HEADERS)
+    message(STATUS "Detected stale generated test data headers in source tree. Cleaning up...")
+    foreach(STALE_FILE ${STALE_GENERATED_HEADERS})
+        message(STATUS "  Removing: ${STALE_FILE}")
+        file(REMOVE "${STALE_FILE}")
+    endforeach()
+endif()
+
 set(JSON_TEST_FILES
     base58_encode_decode.json
     key_io_invalid.json
