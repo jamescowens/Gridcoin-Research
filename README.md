@@ -13,7 +13,7 @@ These dependencies are required:
 
  Library      | Purpose          | Description
  -------------|------------------|----------------------------------------------------------------
- cmake        | Build            | Build system (optional)
+ cmake        | Build            | Build system
  pkgconf      | Build            | Learn library inter-dependencies
  openssl      | Crypto           | Random Number Generation, Elliptic Curve Cryptography
  libboost     | Utility          | Library for threading, data structures, etc
@@ -25,13 +25,7 @@ These dependencies are required:
 
 To build, run:
 
-* With CMake:
-
   `mkdir -p build && cd build && cmake .. && cmake --build .`
-
-* With Autotools:
-
-  `./autogen.sh && ./configure && make`
 
 For more detailed and platform-specific instructions, see [the doc folder.](doc/)
 

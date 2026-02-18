@@ -653,10 +653,6 @@ src/test/test_gridcoinresearch
 - `CMakeLists.txt` (root)
 - `src/CMakeLists.txt` (source configuration)
 
-**Autotools** (legacy):
-- `configure.ac`, `Makefile.am`
-- Platform-specific configuration
-
 ---
 
 ## Quick Component Lookup

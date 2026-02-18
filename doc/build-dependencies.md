@@ -10,7 +10,7 @@ These packages are required to build the Gridcoin client to run on your local Li
 ```bash
 sudo apt-get update
 sudo apt-get install \
-    build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 \
+    build-essential pkg-config bsdmainutils python3 \
     cmake git curl \
     libssl-dev libevent-dev libboost-all-dev \
     libminiupnpc-dev libqrencode-dev libzip-dev \
@@ -21,7 +21,7 @@ sudo apt-get install \
 
 ```bash
 sudo dnf install \
-    libstdc++-static gcc-c++ libtool automake autoconf pkgconf-pkg-config python3 \
+    libstdc++-static gcc-c++ pkgconf-pkg-config python3 \
     cmake git curl patch perl-FindBin bison flex \
     openssl-devel libevent-devel boost-devel \
     miniupnpc-devel qrencode-devel libzip-devel \
@@ -37,7 +37,7 @@ sudo zypper addrepo -f https://download.opensuse.org/repositories/windows:/mingw
 
 sudo zypper install \
     -t pattern devel_basis \
-    libtool automake autoconf pkg-config python3 \
+    pkg-config python3 \
     cmake git curl \
     libopenssl-devel libevent-devel boost-devel \
     miniupnpc-devel qrencode-devel libzip-devel \
