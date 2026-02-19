@@ -880,9 +880,17 @@ private:
                             return error("%s: FAILED: coinstake output has invalid destination.");
                         }
 
+                        // Skip outputs to the coinstake destination. When a mandatory sidestake address matches
+                        // the staker's address, the miner suppresses the dedicated sidestake output and returns
+                        // the funds via the normal coinstake split outputs instead. Without this check, the
+                        // validator would miscount those split outputs as mandatory sidestakes.
+                        if (output_destination == coinstake_destination) {
+                            continue;
+                        }
+
                         std::vector<GRC::SideStake_ptr> mandatory_sidestake
                             = GRC::GetSideStakeRegistry().TryActive(output_destination,
-                                                                    GRC::SideStake::FilterFlag::MANDATORY);;
+                                                                    GRC::SideStake::FilterFlag::MANDATORY);
 
                         // The output is deemed to match if the destination matches AND the computed allocation matches or exceeds
                         // what is required by the mandatory sidestake. Note that the test uses the GRC::Allocation class, which
