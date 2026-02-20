@@ -596,7 +596,66 @@ QString TransactionTableModel::formatTooltip(const TransactionRecord *rec) const
     {
         tooltip += QString(" ") + formatTxToAddress(rec, true);
     }
+
+    QString explanation = formatTxTypeExplanation(rec);
+    if (!explanation.isEmpty()) {
+        tooltip += QString(": ") + explanation;
+    }
+
     return tooltip;
+}
+
+QString TransactionTableModel::formatTxTypeExplanation(const TransactionRecord *rec) const
+{
+    if (rec->type == TransactionRecord::Generated) {
+        switch (rec->status.generated_type) {
+        case GRC::MinedType::POS:
+            return tr("Earned by staking a block (Proof of Stake).");
+        case GRC::MinedType::POR:
+            return tr("Earned by staking a block with BOINC research rewards (Proof of Stake + Research Rewards).");
+        case GRC::MinedType::SUPERBLOCK:
+            return tr("Earned by staking a superblock.");
+        case GRC::MinedType::ORPHANED:
+            return tr("This staked block was orphaned and did not become part of the chain.");
+        case GRC::MinedType::POS_SIDE_STAKE_RCV:
+            return tr("Side stake received from another staker's Proof of Stake reward.");
+        case GRC::MinedType::POR_SIDE_STAKE_RCV:
+            return tr("Side stake received from another staker's research reward.");
+        case GRC::MinedType::POS_SIDE_STAKE_SEND:
+            return tr("Your staking reward automatically allocated this side stake; no manual send occurred.");
+        case GRC::MinedType::POR_SIDE_STAKE_SEND:
+            return tr("Your research staking reward automatically allocated this side stake; no manual send occurred.");
+        case GRC::MinedType::MRC_RCV:
+            return tr("MRC payment received from a staker who included your MRC claim.");
+        case GRC::MinedType::MRC_SEND:
+            return tr("Your staked block automatically paid this MRC claim; no manual send occurred.");
+        default:
+            return tr("Mined transaction of unknown type.");
+        }
+    }
+
+    switch (rec->type) {
+    case TransactionRecord::SendToAddress:
+    case TransactionRecord::SendToOther:
+        return tr("Funds sent to another address.");
+    case TransactionRecord::RecvWithAddress:
+    case TransactionRecord::RecvFromOther:
+        return tr("Funds received.");
+    case TransactionRecord::SendToSelf:
+        return tr("Payment to yourself (e.g. change consolidation).");
+    case TransactionRecord::BeaconAdvertisement:
+        return tr("Beacon advertisement linking your CPID to your wallet.");
+    case TransactionRecord::Poll:
+        return tr("On-chain poll creation transaction.");
+    case TransactionRecord::Vote:
+        return tr("On-chain vote transaction.");
+    case TransactionRecord::Message:
+        return tr("On-chain message transaction.");
+    case TransactionRecord::MRC:
+        return tr("Manual Rewards Claim request submitted to the network.");
+    default:
+        return QString();
+    }
 }
 
 QVariant TransactionTableModel::data(const QModelIndex &index, int role) const

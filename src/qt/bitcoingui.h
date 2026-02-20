@@ -158,6 +158,9 @@ private:
     QAction *snapshotAction;
     QAction *resetblockchainAction;
     QAction *m_mask_values_action;
+    QAction *openWikiAction;
+    QAction *openFaqAction;
+    QAction *openGuidesAction;
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
@@ -264,6 +267,9 @@ private slots:
     void snapshotClicked();
     void resetblockchainClicked();
     void setPrivacy();
+    void openWikiClicked();
+    void openFaqClicked();
+    void openGuidesClicked();
     bool tryQuit();
 
 #ifndef Q_OS_MAC

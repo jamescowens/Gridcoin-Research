@@ -360,6 +360,18 @@ void BitcoinGUI::createActions()
     boincAction->setStatusTip(tr("Gridcoin rewards distributed computing with BOINC"));
     boincAction->setMenuRole(QAction::TextHeuristicRole);
 
+    openWikiAction = new QAction(tr("Gridcoin &Wiki"), this);
+    openWikiAction->setStatusTip(tr("Open the Gridcoin Wiki"));
+    openWikiAction->setMenuRole(QAction::TextHeuristicRole);
+
+    openFaqAction = new QAction(tr("&FAQ"), this);
+    openFaqAction->setStatusTip(tr("Open the Gridcoin FAQ"));
+    openFaqAction->setMenuRole(QAction::TextHeuristicRole);
+
+    openGuidesAction = new QAction(tr("&Guides"), this);
+    openGuidesAction->setStatusTip(tr("Open the Gridcoin Guides"));
+    openGuidesAction->setMenuRole(QAction::TextHeuristicRole);
+
     // We use lambdas here to squash the argument to showNormalIfMinized.
     connect(overviewAction, &QAction::triggered, this, [this]{ this->showNormalIfMinimized(); });
     connect(overviewAction, &QAction::triggered, this, &BitcoinGUI::gotoOverviewPage);
@@ -378,6 +390,9 @@ void BitcoinGUI::createActions()
     connect(exchangeAction, &QAction::triggered, this, &BitcoinGUI::exchangeClicked);
     connect(boincAction, &QAction::triggered, this, &BitcoinGUI::boincStatsClicked);
     connect(chatAction, &QAction::triggered, this, &BitcoinGUI::chatClicked);
+    connect(openWikiAction, &QAction::triggered, this, &BitcoinGUI::openWikiClicked);
+    connect(openFaqAction, &QAction::triggered, this, &BitcoinGUI::openFaqClicked);
+    connect(openGuidesAction, &QAction::triggered, this, &BitcoinGUI::openGuidesClicked);
 
     quitAction = new QAction(tr("E&xit"), this);
     quitAction->setToolTip(tr("Quit application"));
@@ -596,6 +611,10 @@ void BitcoinGUI::createMenuBar()
     community->addAction(websiteAction);
 
     QMenu *help = appMenuBar->addMenu(tr("&Help"));
+    help->addAction(openWikiAction);
+    help->addAction(openFaqAction);
+    help->addAction(openGuidesAction);
+    help->addSeparator();
     help->addAction(openRPCConsoleAction);
     help->addSeparator();
     help->addAction(diagnosticsAction);
@@ -1428,6 +1447,21 @@ void BitcoinGUI::websiteClicked()
 void BitcoinGUI::exchangeClicked()
 {
     QDesktopServices::openUrl(QUrl("https://gridcoin.us/exchange.htm#GridcoinWallet"));
+}
+
+void BitcoinGUI::openWikiClicked()
+{
+    QDesktopServices::openUrl(QUrl("https://gridcoin.us/wiki/"));
+}
+
+void BitcoinGUI::openFaqClicked()
+{
+    QDesktopServices::openUrl(QUrl("https://gridcoin.us/wiki/faq.html"));
+}
+
+void BitcoinGUI::openGuidesClicked()
+{
+    QDesktopServices::openUrl(QUrl("https://gridcoin.us/guides/"));
 }
 
 void BitcoinGUI::peersClicked()
