@@ -4,6 +4,7 @@
 #include <QStringList>
 
 static constexpr auto MAX_DIGITS_BTC = 16;
+const QChar BitcoinUnits::THIN_SPACE(0x2009);
 
 BitcoinUnits::BitcoinUnits(QObject *parent):
         QAbstractListModel(parent),
@@ -101,8 +102,15 @@ QString BitcoinUnits::format(int unit, qint64 n, bool fPlus, bool justify)
     qint64 remainder = n_abs % coin;
     QString quotient_str = QString::number(quotient);
 
+    // Insert thin spaces (U+2009) as thousands separators in the integer part
+    for (int i = quotient_str.size() - 3; i > 0; i -= 3) {
+        quotient_str.insert(i, THIN_SPACE);
+    }
+
     if (justify) {
-        quotient_str = quotient_str.rightJustified(MAX_DIGITS_BTC - num_decimals, ' ');
+        int max_digits = MAX_DIGITS_BTC - num_decimals;
+        int max_separators = (max_digits - 1) / 3;
+        quotient_str = quotient_str.rightJustified(max_digits + max_separators, ' ');
     }
 
     QString remainder_str = QString::number(remainder).rightJustified(num_decimals, '0');
@@ -179,7 +187,12 @@ bool BitcoinUnits::parse(int unit, const QString &value, qint64 *val_out)
     if(!valid(unit) || value.isEmpty())
         return false; // Refuse to parse invalid unit or empty string
     int num_decimals = decimals(unit);
-    QStringList parts = value.split(".");
+
+    // Strip thin space thousands separators before parsing
+    QString cleaned = value;
+    cleaned.remove(THIN_SPACE);
+
+    QStringList parts = cleaned.split(".");
 
     if(parts.size() > 2)
     {

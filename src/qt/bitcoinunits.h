@@ -52,6 +52,8 @@ public:
     static QString formatOverviewRounded(qint64 amount, bool privacy = false);
     //! Parse string to coin amount
     static bool parse(int unit, const QString &value, qint64 *val_out);
+    //! Thin space (U+2009) used as thousands separator in formatted amounts
+    static const QChar THIN_SPACE;
     ///@}
 
     //! @name AbstractListModel implementation

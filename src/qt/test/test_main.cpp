@@ -1,6 +1,7 @@
 #include <QTest>
 #include <QObject>
 
+#include "bitcoinunitstests.h"
 #include "uritests.h"
 
 #if defined(QT_STATICPLUGIN)
@@ -23,8 +24,12 @@ int main(int argc, char *argv[])
 {
     bool fInvalid = false;
 
-    URITests test1;
+    BitcoinUnitsTests test1;
     if (QTest::qExec(&test1) != 0)
+        fInvalid = true;
+
+    URITests test2;
+    if (QTest::qExec(&test2) != 0)
         fInvalid = true;
 
     return fInvalid;

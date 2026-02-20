@@ -57,7 +57,11 @@ void BitcoinAmountField::setText(const QString &text)
     if (text.isEmpty())
         amount->clear();
     else
-        amount->setValue(text.toDouble());
+    {
+        QString cleaned = text;
+        cleaned.remove(BitcoinUnits::THIN_SPACE); // Strip thin space thousands separators
+        amount->setValue(cleaned.toDouble());
+    }
 }
 
 void BitcoinAmountField::clear()
