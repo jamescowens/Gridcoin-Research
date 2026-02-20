@@ -491,19 +491,25 @@ void CoinControlDialog::clipboardQuantity()
 // copy label "Amount" to clipboard
 void CoinControlDialog::clipboardAmount()
 {
-    QApplication::clipboard()->setText(ui->coinControlAmountLabel->text().left(ui->coinControlAmountLabel->text().indexOf(" ")));
+    QString text = ui->coinControlAmountLabel->text().left(ui->coinControlAmountLabel->text().indexOf(" "));
+    text.remove(BitcoinUnits::THIN_SPACE);
+    QApplication::clipboard()->setText(text);
 }
 
 // copy label "Fee" to clipboard
 void CoinControlDialog::clipboardFee()
 {
-    QApplication::clipboard()->setText(ui->coinControlFeeLabel->text().left(ui->coinControlFeeLabel->text().indexOf(" ")));
+    QString text = ui->coinControlFeeLabel->text().left(ui->coinControlFeeLabel->text().indexOf(" "));
+    text.remove(BitcoinUnits::THIN_SPACE);
+    QApplication::clipboard()->setText(text);
 }
 
 // copy label "After fee" to clipboard
 void CoinControlDialog::clipboardAfterFee()
 {
-    QApplication::clipboard()->setText(ui->coinControlAfterFeeLabel->text().left(ui->coinControlAfterFeeLabel->text().indexOf(" ")));
+    QString text = ui->coinControlAfterFeeLabel->text().left(ui->coinControlAfterFeeLabel->text().indexOf(" "));
+    text.remove(BitcoinUnits::THIN_SPACE);
+    QApplication::clipboard()->setText(text);
 }
 
 // copy label "Bytes" to clipboard
@@ -521,7 +527,9 @@ void CoinControlDialog::clipboardLowOutput()
 // copy label "Change" to clipboard
 void CoinControlDialog::clipboardChange()
 {
-    QApplication::clipboard()->setText(ui->coinControlChangeLabel->text().left(ui->coinControlChangeLabel->text().indexOf(" ")));
+    QString text = ui->coinControlChangeLabel->text().left(ui->coinControlChangeLabel->text().indexOf(" "));
+    text.remove(BitcoinUnits::THIN_SPACE);
+    QApplication::clipboard()->setText(text);
 }
 
 // treeview: sort
