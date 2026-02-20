@@ -19,7 +19,13 @@
 #include "guiconstants.h"
 #include "gridcoin/voting/fwd.h"
 
+#include <functional>
+
 #include <QAbstractItemDelegate>
+#include <QApplication>
+#include <QClipboard>
+#include <QLabel>
+#include <QMenu>
 #include <QPainter>
 
 #define DECORATION_SIZE 40
@@ -173,6 +179,31 @@ OverviewPage::OverviewPage(QWidget *parent) :
     showOutOfSyncWarning(true);
 
     showHideMRCToolButton();
+
+    // Set up right-click "Copy amount" context menus on balance labels
+    auto setupCopyMenu = [this](QLabel* label, std::function<qint64()> getAmount) {
+        label->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(label, &QWidget::customContextMenuRequested, this, [this, label, getAmount](const QPoint& pos) {
+            if (m_privacy) return;
+            QMenu menu;
+            menu.addAction(tr("Copy amount"), this, [this, getAmount]() {
+                int unit = walletModel->getOptionsModel()->getDisplayUnit();
+                QString text = BitcoinUnits::format(unit, getAmount());
+                text.remove(BitcoinUnits::THIN_SPACE);
+                QApplication::clipboard()->setText(text);
+            });
+            menu.exec(label->mapToGlobal(pos));
+        });
+    };
+
+    setupCopyMenu(ui->headerBalanceLabel, [this]() { return currentBalance; });
+    setupCopyMenu(ui->balanceLabel, [this]() { return currentBalance; });
+    setupCopyMenu(ui->stakeLabel, [this]() { return currentStake; });
+    setupCopyMenu(ui->unconfirmedLabel, [this]() { return currentUnconfirmedBalance; });
+    setupCopyMenu(ui->immatureLabel, [this]() { return currentImmatureBalance; });
+    setupCopyMenu(ui->totalLabel, [this]() {
+        return currentBalance + currentStake + currentUnconfirmedBalance + currentImmatureBalance;
+    });
 }
 
 void OverviewPage::handleTransactionClicked(const QModelIndex &index)
