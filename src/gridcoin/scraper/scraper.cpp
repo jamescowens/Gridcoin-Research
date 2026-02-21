@@ -105,6 +105,23 @@ std::vector<std::string> vauthenicationetags;
 int64_t ndownloadsize = 0;
 int64_t nuploadsize = 0;
 
+//!
+//! \brief Normalize a project master URL for consistent map key comparison.
+//!
+//! Ensures a trailing slash so that URLs from the whitelist (via BaseUrl())
+//! and from user-provided ownership proofs match reliably.
+//!
+static std::string NormalizeProjectUrl(std::string url)
+{
+    url = TrimString(url);
+
+    if (!url.empty() && url.back() != '/') {
+        url += '/';
+    }
+
+    return url;
+}
+
 /*********************
 * Global Defaults    *
 *********************/
@@ -653,7 +670,7 @@ BeaconConsensus GetConsensusBeaconList()
         auto proof_iter = ownership_proofs.find(key_id);
         if (proof_iter != ownership_proofs.end()) {
             beaconentry.has_ownership_proof = true;
-            beaconentry.ownership_master_url = proof_iter->second.m_master_url;
+            beaconentry.ownership_master_url = NormalizeProjectUrl(proof_iter->second.m_master_url);
             beaconentry.ownership_account_id = proof_iter->second.m_account_id;
             beaconentry.ownership_rsa_signature = proof_iter->second.m_rsa_signature;
             beaconentry.beacon_public_key_hex = HexStr(pending_beacon.m_public_key);
@@ -2477,6 +2494,9 @@ void DownloadProjectPublicKeys(const WhitelistSnapshot& projectWhitelist)
         }
 
         // The value from get_project_config.php is a base64-encoded PEM public key.
+        // Trim whitespace that may be present from XML line-wrapping.
+        b64_pubkey = TrimString(b64_pubkey);
+
         bool invalid = false;
         std::string pem_key = DecodeBase64(b64_pubkey, &invalid);
 
@@ -2487,7 +2507,7 @@ void DownloadProjectPublicKeys(const WhitelistSnapshot& projectWhitelist)
             continue;
         }
 
-        std::string master_url = prjs.BaseUrl();
+        std::string master_url = NormalizeProjectUrl(prjs.BaseUrl());
 
         _log(logattribute::INFO, __func__,
              "Found ownership proof public key for project " + prjs.m_name
@@ -2774,13 +2794,15 @@ bool ProcessProjectRacFileByCPID(const std::string& project, const fs::path& fil
     }
 
     // Build a lookup map of v3 pending beacon entries (those with ownership proofs) by CPID
-    // for efficient v3 verification path lookup during user record processing.
-    std::unordered_map<std::string, const ScraperPendingBeaconEntry*> v3_pending_by_cpid;
+    // for efficient v3 verification path lookup during user record processing. Multiple
+    // pending beacons may exist for the same CPID (e.g. from different wallets or projects),
+    // so each CPID maps to a vector of candidates that are all checked during verification.
+    std::unordered_map<std::string, std::vector<const ScraperPendingBeaconEntry*>> v3_pending_by_cpid;
     for (const auto& entry : Consensus.mPendingMap)
     {
         if (entry.second.has_ownership_proof)
         {
-            v3_pending_by_cpid[entry.second.cpid] = &entry.second;
+            v3_pending_by_cpid[entry.second.cpid].push_back(&entry.second);
         }
     }
 
@@ -2822,23 +2844,25 @@ bool ProcessProjectRacFileByCPID(const std::string& project, const fs::path& fil
                 bool v3_verified = false;
 
                 // v3 path: ownership proof verification via RSA-SHA512 signature from the BOINC project.
+                // Multiple v3 pending beacons may exist for the same CPID, so iterate all candidates.
                 auto v3_iter = v3_pending_by_cpid.find(cpid);
                 if (v3_iter != v3_pending_by_cpid.end())
                 {
-                    const ScraperPendingBeaconEntry* v3_entry = v3_iter->second;
-
-                    // Extract the BOINC account ID from the user record.
+                    // Extract the BOINC account ID from the user record once for all candidates.
                     const std::string s_user_id = ExtractXML(data, "<id>", "</id>");
                     uint32_t user_account_id = 0;
 
-                    if (!s_user_id.empty() && ParseUInt32(s_user_id, &user_account_id)
-                            && user_account_id == v3_entry->ownership_account_id)
+                    if (!s_user_id.empty() && ParseUInt32(s_user_id, &user_account_id))
                     {
-                        // Account ID matches — look up the project RSA public key.
-                        auto key_iter = Consensus.mProjectPublicKeys.find(v3_entry->ownership_master_url);
-
-                        if (key_iter != Consensus.mProjectPublicKeys.end())
+                        for (const auto* v3_entry : v3_iter->second)
                         {
+                            if (user_account_id != v3_entry->ownership_account_id) continue;
+
+                            // Account ID matches — look up the project RSA public key.
+                            auto key_iter = Consensus.mProjectPublicKeys.find(v3_entry->ownership_master_url);
+
+                            if (key_iter == Consensus.mProjectPublicKeys.end()) continue;
+
                             // Reconstruct the signed message: "{account_id} {beacon_public_key_hex}"
                             const std::string signed_message = ToString(v3_entry->ownership_account_id)
                                                                + " " + v3_entry->beacon_public_key_hex;
@@ -2875,6 +2899,11 @@ bool ProcessProjectRacFileByCPID(const std::string& project, const fs::path& fil
                                      + ", account_id " + ToString(v3_entry->ownership_account_id)
                                      + ", project " + v3_entry->ownership_master_url);
                             }
+
+                            // If this candidate verified, no need to check remaining candidates
+                            // for this user record. Other candidates for this CPID may still verify
+                            // against different user records (different account IDs on this project).
+                            if (v3_verified) break;
                         }
                     }
                 }

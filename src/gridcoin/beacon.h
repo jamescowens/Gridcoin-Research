@@ -34,6 +34,8 @@ class Contract;
 //!
 struct OwnershipProof
 {
+    static constexpr size_t MAX_URL_SIZE = 500; //!< Maximum serialized URL length.
+
     std::string m_master_url;             //!< Project master URL.
     uint32_t m_account_id = 0;            //!< BOINC numeric account ID.
     std::vector<uint8_t> m_rsa_signature; //!< RSA-SHA512 signature from project.
@@ -53,7 +55,7 @@ struct OwnershipProof
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action)
     {
-        READWRITE(m_master_url);
+        READWRITE(LIMITED_STRING(m_master_url, MAX_URL_SIZE));
         READWRITE(m_account_id);
         READWRITE(m_rsa_signature);
     }
