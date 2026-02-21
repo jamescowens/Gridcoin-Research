@@ -8,6 +8,7 @@
 
 #include "gridcoin/appcache.h"
 #include "gridcoin/beacon.h"
+#include "gridcoin/crypto/rsaverify.h"
 #include "gridcoin/project.h"
 #include "gridcoin/protocol.h"
 #include "gridcoin/quorum.h"
@@ -81,6 +82,10 @@ CCriticalSection cs_TeamIDMap;
  * @brief Protects the global map for verified beacons, g_verified_beacons
  */
 CCriticalSection cs_VerifiedBeacons;
+/**
+ * @brief Protects the global map for project public keys, g_project_public_keys
+ */
+CCriticalSection cs_ProjectPublicKeys;
 
 /**
  * @brief Flag that indicates whether the scraper is supposed to be active
@@ -521,6 +526,12 @@ bool ProcessProjectTeamFile(const std::string& project, const fs::path& file, co
  */
 bool DownloadProjectRacFilesByCPID(const WhitelistSnapshot& projectWhitelist);
 /**
+ * @brief Download project public keys for account ownership proof verification from whitelisted projects.
+ * Fetches get_project_config.php for each project and extracts the account_ownership_public_key element.
+ * @param projectWhitelist
+ */
+void DownloadProjectPublicKeys(const WhitelistSnapshot& projectWhitelist);
+/**
  * @brief Process a project RAC (user) file (which has CPID level statistics) into a filtered statistcs file
  * @param project
  * @param file
@@ -574,6 +585,7 @@ BeaconConsensus GetConsensusBeaconList()
     BeaconConsensus consensus;
     std::vector<std::pair<Cpid, Beacon_ptr>> beacon_ptrs;
     std::vector<std::pair<CKeyID, Beacon_ptr>> pending_beacons;
+    std::map<CKeyID, OwnershipProof> ownership_proofs;
     int64_t max_time;
 
     {
@@ -595,6 +607,9 @@ BeaconConsensus GetConsensusBeaconList()
         beacon_ptrs.assign(beacon_map.begin(), beacon_map.end());
         pending_beacons.reserve(pending_beacon_map.size());
         pending_beacons.assign(pending_beacon_map.begin(), pending_beacon_map.end());
+
+        // Copy ownership proofs for v3 pending beacons.
+        ownership_proofs = beacon_registry.PendingOwnershipProofs();
     }
 
     for (const auto& beacon_pair : beacon_ptrs)
@@ -634,6 +649,16 @@ BeaconConsensus GetConsensusBeaconList()
         beaconentry.cpid = pending_beacon.m_cpid.ToString();
         beaconentry.key_id = key_id;
 
+        // Populate v3 ownership proof fields from the side map if present.
+        auto proof_iter = ownership_proofs.find(key_id);
+        if (proof_iter != ownership_proofs.end()) {
+            beaconentry.has_ownership_proof = true;
+            beaconentry.ownership_master_url = proof_iter->second.m_master_url;
+            beaconentry.ownership_account_id = proof_iter->second.m_account_id;
+            beaconentry.ownership_rsa_signature = proof_iter->second.m_rsa_signature;
+            beaconentry.beacon_public_key_hex = HexStr(pending_beacon.m_public_key);
+        }
+
         consensus.mPendingMap.emplace(pending_beacon.GetVerificationCode(), std::move(beaconentry));
     }
 
@@ -649,6 +674,14 @@ BeaconConsensus GetConsensusBeaconList()
  * This map has to be global because the scraper function is reentrant.
  */
 ScraperVerifiedBeacons g_verified_beacons GUARDED_BY(cs_VerifiedBeacons);
+
+/**
+ * @brief Global map of project public keys for account ownership proof verification.
+ * Key: project master_url, Value: PEM-encoded RSA public key.
+ * Populated by DownloadProjectPublicKeys() each scraper cycle.
+ */
+std::map<std::string, std::string> g_project_public_keys GUARDED_BY(cs_ProjectPublicKeys);
+int64_t g_project_public_keys_timestamp GUARDED_BY(cs_ProjectPublicKeys) = 0;
 
 ScraperVerifiedBeacons& GetVerifiedBeacons() EXCLUSIVE_LOCKS_REQUIRED(cs_VerifiedBeacons)
 {
@@ -1611,6 +1644,11 @@ void Scraper(bool bSingleShot)
             // unless explorer mode (fExplorer) is true.
             if (require_team_whitelist_membership() || explorer_mode()) DownloadProjectTeamFiles(projectWhitelist);
 
+            // Download project public keys for account ownership proof verification. This fetches
+            // get_project_config.php for each whitelisted project and extracts the RSA public key
+            // if the project supports the BOINC account ownership extension.
+            DownloadProjectPublicKeys(projectWhitelist);
+
             DownloadProjectRacFilesByCPID(projectWhitelist);
 
             // If explorer mode is set (fExplorer is true), then download host files. These are currently not use for any
@@ -2405,6 +2443,70 @@ EXCLUSIVE_LOCKS_REQUIRED(cs_TeamIDMap)
     return true;
 }
 
+void DownloadProjectPublicKeys(const WhitelistSnapshot& projectWhitelist)
+{
+    _log(logattribute::INFO, __func__, "Downloading project public keys for ownership proof verification.");
+
+    Http http;
+    std::map<std::string, std::string> project_public_keys;
+
+    for (const auto& prjs : projectWhitelist)
+    {
+        std::string url = prjs.BaseUrl() + "get_project_config.php";
+
+        std::string xml_content;
+        try
+        {
+            xml_content = http.DownloadToString(url);
+        }
+        catch (const std::exception& e)
+        {
+            _log(logattribute::WARNING, __func__,
+                 "Failed to download get_project_config.php for " + prjs.m_name + ": " + e.what());
+            continue;
+        }
+
+        std::string b64_pubkey = ExtractXML(xml_content,
+                                            "<account_ownership_public_key>",
+                                            "</account_ownership_public_key>");
+
+        if (b64_pubkey.empty())
+        {
+            // Project does not support account ownership proof — this is expected for most projects.
+            continue;
+        }
+
+        // The value from get_project_config.php is a base64-encoded PEM public key.
+        bool invalid = false;
+        std::string pem_key = DecodeBase64(b64_pubkey, &invalid);
+
+        if (invalid || pem_key.empty())
+        {
+            _log(logattribute::WARNING, __func__,
+                 "Failed to base64-decode public key for " + prjs.m_name);
+            continue;
+        }
+
+        std::string master_url = prjs.BaseUrl();
+
+        _log(logattribute::INFO, __func__,
+             "Found ownership proof public key for project " + prjs.m_name
+             + " (master_url: " + master_url + ")");
+
+        project_public_keys.insert(std::make_pair(std::move(master_url), std::move(pem_key)));
+    }
+
+    // Update the global under lock.
+    {
+        LOCK(cs_ProjectPublicKeys);
+        g_project_public_keys = std::move(project_public_keys);
+        g_project_public_keys_timestamp = GetAdjustedTime();
+    }
+
+    _log(logattribute::INFO, __func__,
+         "Completed. " + ToString(g_project_public_keys.size()) + " project(s) have ownership proof public keys.");
+}
+
 bool DownloadProjectRacFilesByCPID(const WhitelistSnapshot& projectWhitelist)
 {
     auto explorer_mode = []() { LOCK(cs_ScraperGlobals); return fExplorer; };
@@ -2429,6 +2531,12 @@ bool DownloadProjectRacFilesByCPID(const WhitelistSnapshot& projectWhitelist)
     // Get a consensus map of Beacons.
     BeaconConsensus Consensus = GetConsensusBeaconList();
     _log(logattribute::INFO, "DownloadProjectRacFiles", "Getting consensus map of Beacons.");
+
+    // Populate the project public keys from the global for ownership proof verification.
+    {
+        LOCK(cs_ProjectPublicKeys);
+        Consensus.mProjectPublicKeys = g_project_public_keys;
+    }
 
     // Check if any verified beacons are now active, and if so, remove from the ScraperVerifiedBeacons map.
     UpdateVerifiedBeaconsFromConsensus(Consensus);
@@ -2665,6 +2773,17 @@ bool ProcessProjectRacFileByCPID(const std::string& project, const fs::path& fil
         mTeamIDsForProject = TeamIDMap.find(project)->second;
     }
 
+    // Build a lookup map of v3 pending beacon entries (those with ownership proofs) by CPID
+    // for efficient v3 verification path lookup during user record processing.
+    std::unordered_map<std::string, const ScraperPendingBeaconEntry*> v3_pending_by_cpid;
+    for (const auto& entry : Consensus.mPendingMap)
+    {
+        if (entry.second.has_ownership_proof)
+        {
+            v3_pending_by_cpid[entry.second.cpid] = &entry.second;
+        }
+    }
+
     std::string line;
     stringbuilder builder;
 
@@ -2699,28 +2818,91 @@ bool ProcessProjectRacFileByCPID(const std::string& project, const fs::path& fil
 
             if (!already_verified)
             {
-                // Attempt to verify.
+                // Attempt to verify. Try v3 (ownership proof) first, then fall through to v2 (username match).
+                bool v3_verified = false;
 
-                const std::string username = ExtractXML(data, "<name>", "</name>");
-
-                // Base58-encoded beacon verification code sizes fall within:
-                if (username.size() >= 26 && username.size() <= 28)
+                // v3 path: ownership proof verification via RSA-SHA512 signature from the BOINC project.
+                auto v3_iter = v3_pending_by_cpid.find(cpid);
+                if (v3_iter != v3_pending_by_cpid.end())
                 {
-                    // The username has to be temporarily changed to a "verification code" that is
-                    // a base58 encoded version of the public key of the pending beacon, so that
-                    // it will match the mPendingMap entry. This is the crux of the user validation.
-                    const auto iter_pair = Consensus.mPendingMap.find(username);
+                    const ScraperPendingBeaconEntry* v3_entry = v3_iter->second;
 
-                    if (iter_pair != Consensus.mPendingMap.end() && iter_pair->second.cpid == cpid)
+                    // Extract the BOINC account ID from the user record.
+                    const std::string s_user_id = ExtractXML(data, "<id>", "</id>");
+                    uint32_t user_account_id = 0;
+
+                    if (!s_user_id.empty() && ParseUInt32(s_user_id, &user_account_id)
+                            && user_account_id == v3_entry->ownership_account_id)
                     {
-                        // This copies the pending beacon entry into the local VerifiedBeacons map and updates
-                        // the time entry.
-                        IncomingVerifiedBeacons.mVerifiedMap[iter_pair->first] = iter_pair->second;
+                        // Account ID matches — look up the project RSA public key.
+                        auto key_iter = Consensus.mProjectPublicKeys.find(v3_entry->ownership_master_url);
 
-                        _log(logattribute::INFO, "ProcessProjectRacFileByCPID", "Verified pending beacon for verification code "
-                             + iter_pair->first + ", cpid " + iter_pair->second.cpid);
+                        if (key_iter != Consensus.mProjectPublicKeys.end())
+                        {
+                            // Reconstruct the signed message: "{account_id} {beacon_public_key_hex}"
+                            const std::string signed_message = ToString(v3_entry->ownership_account_id)
+                                                               + " " + v3_entry->beacon_public_key_hex;
 
-                        IncomingVerifiedBeacons.timestamp = GetAdjustedTime();
+                            std::vector<uint8_t> message_bytes(signed_message.begin(), signed_message.end());
+
+                            if (GRC::VerifyRSASHA512(message_bytes, v3_entry->ownership_rsa_signature, key_iter->second))
+                            {
+                                // RSA verification succeeded. Find the pending map entry by verification code
+                                // (the key in mPendingMap) to add to verified beacons.
+                                for (const auto& pending_entry : Consensus.mPendingMap)
+                                {
+                                    if (pending_entry.second.cpid == cpid
+                                            && pending_entry.second.has_ownership_proof
+                                            && pending_entry.second.ownership_account_id == v3_entry->ownership_account_id)
+                                    {
+                                        IncomingVerifiedBeacons.mVerifiedMap[pending_entry.first] = pending_entry.second;
+
+                                        _log(logattribute::INFO, __func__,
+                                             "Verified pending beacon via ownership proof for cpid " + cpid
+                                             + ", account_id " + ToString(v3_entry->ownership_account_id)
+                                             + ", project " + v3_entry->ownership_master_url);
+
+                                        IncomingVerifiedBeacons.timestamp = GetAdjustedTime();
+                                        v3_verified = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                _log(logattribute::WARNING, __func__,
+                                     "RSA signature verification failed for cpid " + cpid
+                                     + ", account_id " + ToString(v3_entry->ownership_account_id)
+                                     + ", project " + v3_entry->ownership_master_url);
+                            }
+                        }
+                    }
+                }
+
+                // v2 path: traditional username-based beacon verification.
+                if (!v3_verified)
+                {
+                    const std::string username = ExtractXML(data, "<name>", "</name>");
+
+                    // Base58-encoded beacon verification code sizes fall within:
+                    if (username.size() >= 26 && username.size() <= 28)
+                    {
+                        // The username has to be temporarily changed to a "verification code" that is
+                        // a base58 encoded version of the public key of the pending beacon, so that
+                        // it will match the mPendingMap entry. This is the crux of the user validation.
+                        const auto iter_pair = Consensus.mPendingMap.find(username);
+
+                        if (iter_pair != Consensus.mPendingMap.end() && iter_pair->second.cpid == cpid)
+                        {
+                            // This copies the pending beacon entry into the local VerifiedBeacons map and updates
+                            // the time entry.
+                            IncomingVerifiedBeacons.mVerifiedMap[iter_pair->first] = iter_pair->second;
+
+                            _log(logattribute::INFO, "ProcessProjectRacFileByCPID", "Verified pending beacon for verification code "
+                                 + iter_pair->first + ", cpid " + iter_pair->second.cpid);
+
+                            IncomingVerifiedBeacons.timestamp = GetAdjustedTime();
+                        }
                     }
                 }
             }
@@ -3974,6 +4156,14 @@ ScraperStatsVerifiedBeaconsTotalCredits GetScraperStatsByConvergedManifest(const
         ++exclude_parts_from_count;
     }
 
+    iter = StructConvergedManifest.ConvergedManifestPartPtrsMap.find("ProjectPublicKeys");
+    if (iter != StructConvergedManifest.ConvergedManifestPartPtrsMap.end())
+    {
+        // ProjectPublicKeys is a non-project part; exclude from active project count.
+        // The data is available in the converged manifest for future use.
+        ++exclude_parts_from_count;
+    }
+
     unsigned int nActiveProjects = StructConvergedManifest.ConvergedManifestPartPtrsMap.size() - exclude_parts_from_count;
 
     // If a project part is greylisted, do not count it as an active project, even though stats have been collected.
@@ -3997,8 +4187,10 @@ ScraperStatsVerifiedBeaconsTotalCredits GetScraperStatsByConvergedManifest(const
         std::string project = entry->first;
         ScraperStats mProjectScraperStats;
 
-        // Do not process the BeaconList, VerifiedBeacons, or ProjectsAllCpidTotalCredits as a project stats file.
-        if (project != "BeaconList" && project != "VerifiedBeacons" && project != "ProjectsAllCpidTotalCredits")
+        // Do not process the BeaconList, VerifiedBeacons, ProjectsAllCpidTotalCredits, or ProjectPublicKeys
+        // as a project stats file.
+        if (project != "BeaconList" && project != "VerifiedBeacons" && project != "ProjectsAllCpidTotalCredits"
+                && project != "ProjectPublicKeys")
         {
             _log(logattribute::INFO, "GetScraperStatsByConvergedManifest", "Processing stats for project: " + project);
 
@@ -4086,6 +4278,12 @@ ScraperStatsVerifiedBeaconsTotalCredits GetScraperStatsFromSingleManifest(CScrap
 
     stats_verified_beacons_tc.m_total_credit_map = projects_all_cpid_total_credits_map;
 
+    iter = StructDummyConvergedManifest.ConvergedManifestPartPtrsMap.find("ProjectPublicKeys");
+    if (iter != StructDummyConvergedManifest.ConvergedManifestPartPtrsMap.end())
+    {
+        ++exclude_parts_from_count;
+    }
+
     unsigned int nActiveProjects = StructDummyConvergedManifest.ConvergedManifestPartPtrsMap.size()
             - exclude_parts_from_count;
 
@@ -4107,8 +4305,10 @@ ScraperStatsVerifiedBeaconsTotalCredits GetScraperStatsFromSingleManifest(CScrap
         std::string project = entry->first;
         ScraperStats mProjectScraperStats;
 
-        // Do not process the BeaconList, VerifiedBeacons, or ProjectsAllCpidTotalCredits as a project stats file.
-        if (project != "BeaconList" && project != "VerifiedBeacons" && project != "ProjectsAllCpidTotalCredits")
+        // Do not process the BeaconList, VerifiedBeacons, ProjectsAllCpidTotalCredits, or ProjectPublicKeys
+        // as a project stats file.
+        if (project != "BeaconList" && project != "VerifiedBeacons" && project != "ProjectsAllCpidTotalCredits"
+                && project != "ProjectPublicKeys")
         {
             _log(logattribute::INFO, "GetScraperStatsFromSingleManifest", "Processing stats for project: " + project);
 
@@ -4763,6 +4963,36 @@ EXCLUSIVE_LOCKS_REQUIRED(cs_StructScraperFileManifest, CScraperManifest::cs_mapM
 
             iPartNum++;
         }
+
+        // Project public keys for account ownership proof verification "project" part.
+        {
+            LOCK(cs_ProjectPublicKeys);
+
+            if (!g_project_public_keys.empty())
+            {
+                CScraperManifest::dentry ProjectEntry;
+
+                ProjectEntry.project = "ProjectPublicKeys";
+                ProjectEntry.LastModified = g_project_public_keys_timestamp;
+                ProjectEntry.current = true;
+
+                ProjectEntry.part1 = iPartNum;
+                ProjectEntry.partc = 0;
+                ProjectEntry.GridcoinTeamID = -1; //Not used anymore
+
+                ProjectEntry.last = 1;
+
+                manifest->projects.push_back(ProjectEntry);
+
+                CDataStream part(SER_NETWORK, 1);
+
+                part << g_project_public_keys;
+
+                manifest->addPartData(std::move(part), true);
+
+                iPartNum++;
+            }
+        }
     }
 
     // "Sign" and "send".
@@ -5353,7 +5583,8 @@ bool ScraperConstructConvergedManifestByProject(const WhitelistSnapshot& project
             // The vParts[0] is always the BeaconList.
             StructConvergedManifest.ConvergedManifestPartPtrsMap.insert(std::make_pair("BeaconList", manifest->vParts[0]));
 
-            // Also include the VerifiedBeaconList and ProjectsAllCpidTotalCredits "projects" if present in the parts.
+            // Also include the VerifiedBeaconList, ProjectsAllCpidTotalCredits, and ProjectPublicKeys
+            // "projects" if present in the parts.
             for (const auto& iter : manifest->projects)
             {
                 // The normal (active) beacon list is always part 0, so skip part 0 for this loop.
@@ -5361,14 +5592,15 @@ bool ScraperConstructConvergedManifestByProject(const WhitelistSnapshot& project
                     continue;
                 }
 
-                if (iter.project == "VerifiedBeacons" || iter.project == "ProjectsAllCpidTotalCredits") {
+                if (iter.project == "VerifiedBeacons" || iter.project == "ProjectsAllCpidTotalCredits"
+                        || iter.project == "ProjectPublicKeys") {
                     StructConvergedManifest.ConvergedManifestPartPtrsMap.insert(std::make_pair(iter.project,
                                                                                                manifest->vParts[iter.part1]));
                 }
             }
 
             _log(logattribute::INFO, __func__,
-                 "After BeaconList, VerifiedBeacons, and ProjectsAllCpidTotalCredits insert "
+                 "After BeaconList, VerifiedBeacons, ProjectsAllCpidTotalCredits, and ProjectPublicKeys insert "
                  "StructConvergedManifest.ConvergedManifestPartPtrsMap.size() = "
                  + ToString(StructConvergedManifest.ConvergedManifestPartPtrsMap.size()));
 
@@ -5403,6 +5635,13 @@ bool ScraperConstructConvergedManifestByProject(const WhitelistSnapshot& project
                     StructConvergedManifest.CScraperConvergedManifest_ptr->addPart(iter->second->hash);
                 }
 
+                iter = StructConvergedManifest.ConvergedManifestPartPtrsMap.find("ProjectPublicKeys");
+
+                if (iter != StructConvergedManifest.ConvergedManifestPartPtrsMap.end())
+                {
+                    StructConvergedManifest.CScraperConvergedManifest_ptr->addPart(iter->second->hash);
+                }
+
                 // Now the rest of the projects (parts).
 
                 for (iter = StructConvergedManifest.ConvergedManifestPartPtrsMap.begin();
@@ -5410,7 +5649,8 @@ bool ScraperConstructConvergedManifestByProject(const WhitelistSnapshot& project
                 {
                     if (iter->first != "BeaconList"
                             && iter->first != "VerifiedBeacons"
-                            && iter->first != "ProjectsAllCpidTotalCredits")
+                            && iter->first != "ProjectsAllCpidTotalCredits"
+                            && iter->first != "ProjectPublicKeys")
                     {
                         StructConvergedManifest.CScraperConvergedManifest_ptr->addPart(iter->second->hash);
                     }

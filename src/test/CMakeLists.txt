@@ -32,6 +32,7 @@ add_executable(test_gridcoin
     gridcoin/project_tests.cpp
     gridcoin/protocol_tests.cpp
     gridcoin/researcher_tests.cpp
+    gridcoin/rsaverify_tests.cpp
     gridcoin/scraper_registry_tests.cpp
     gridcoin/sidestake_tests.cpp
     gridcoin/superblock_tests.cpp

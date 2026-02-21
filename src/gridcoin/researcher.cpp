@@ -752,6 +752,51 @@ AdvertiseBeaconResult SendBeaconContract(
 }
 
 //!
+//! \brief Send a v3 beacon contract with an ownership proof.
+//!
+//! \param cpid  CPID to send a beacon for.
+//! \param beacon Contains the CPID's beacon public key.
+//! \param proof BOINC proof-of-account-ownership data.
+//!
+//! \return A variant that contains the new public key if successful or a
+//! description of the error that occurred.
+//!
+AdvertiseBeaconResult SendBeaconContractV3(
+    const Cpid& cpid,
+    Beacon beacon,
+    OwnershipProof proof)
+{
+    if (!IsV14Enabled(nBestHeight)) {
+        LogPrintf("WARNING: %s: v3 beacons not yet active (requires v14).", __func__);
+        return BeaconError::TX_FAILED;
+    }
+
+    const BeaconError error = CheckBeaconTransactionViable(pwalletMain, cpid);
+
+    if (error != BeaconError::NONE) {
+        return error;
+    }
+
+    BeaconPayload payload(cpid, beacon, std::move(proof));
+
+    if (!SignBeaconPayload(payload)) {
+        return BeaconError::MISSING_KEY;
+    }
+
+    // v3 beacon payloads require contract version >= 3.
+    uint32_t contract_version = IsV13Enabled(nBestHeight) ? 3 : 2;
+
+    const auto result_pair = SendContract(
+        MakeContract<BeaconPayload>(contract_version, ContractAction::ADD, std::move(payload)));
+
+    if (!result_pair.second.empty()) {
+        return BeaconError::TX_FAILED;
+    }
+
+    return AdvertiseBeaconResult(std::move(beacon.m_public_key));
+}
+
+//!
 //! \brief Generate keys for and send a new beacon contract.
 //!
 //! \param cpid The CPID to create the beacon for.

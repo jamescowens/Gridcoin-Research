@@ -227,6 +227,14 @@ struct ScraperPendingBeaconEntry
     uint160 key_id;
     int64_t timestamp;
 
+    // v3 ownership proof fields — populated locally from the beacon registry,
+    // NOT transmitted in manifests. Serialization methods remain unchanged.
+    bool has_ownership_proof = false;
+    std::string ownership_master_url;
+    uint32_t ownership_account_id = 0;
+    std::vector<uint8_t> ownership_rsa_signature;
+    std::string beacon_public_key_hex;
+
     template<typename Stream>
     void Serialize(Stream& stream) const
     {
@@ -257,6 +265,11 @@ struct BeaconConsensus
     uint256 nBlockHash;
     ScraperBeaconMap mBeaconMap;
     ScraperPendingBeaconMap mPendingMap;
+
+    //! Project RSA public keys for ownership proof verification.
+    //! Key: project master_url, Value: PEM-encoded RSA public key.
+    //! Populated from converged ProjectPublicKeys manifest part.
+    std::map<std::string, std::string> mProjectPublicKeys;
 };
 
 /** Small structure to define the fields for verified beacons and (un)serialization */
