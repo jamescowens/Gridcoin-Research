@@ -6,6 +6,7 @@
 #include "amount.h"
 #include "chainparams.h"
 #include "consensus/merkle.h"
+#include "consensus/tx_verify.h"
 #include "gridcoin/voting/registry.h"
 #include "util.h"
 #include "net.h"
@@ -541,6 +542,14 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CTransaction &tx, bool* pfMissingInput
         // Validate any contracts published in the transaction:
         if (!tx.GetContracts().empty() && !CheckContracts(tx, mapInputs, pindexBest->nHeight)) {
             return false;
+        }
+
+        // BIP68: Check relative lock-time (sequence locks) when v14 is active.
+        if (IsV14Enabled(nBestHeight + 1)) {
+            if (!CheckSequenceLocks(tx, 0, pindexBest)) {
+                return error("AcceptToMemoryPool : sequence locks not satisfied for tx %s",
+                             hash.ToString().substr(0, 10).c_str());
+            }
         }
 
         // Check against previous transactions

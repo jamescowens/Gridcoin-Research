@@ -69,6 +69,7 @@ public:
         consensus.BlockV11Height = 2053000;
         consensus.BlockV12Height = 2671700;
         consensus.BlockV13Height = std::numeric_limits<int>::max();
+        consensus.BlockV14Height = std::numeric_limits<int>::max();
         consensus.PollV3Height = 2671700;
         consensus.ProjectV2Height = 2671700;
         consensus.AutoGreylistAuditHeight = std::numeric_limits<int>::max();
@@ -191,6 +192,7 @@ public:
         consensus.BlockV11Height = 1301500;
         consensus.BlockV12Height = 1871830;
         consensus.BlockV13Height = 2870000;
+        consensus.BlockV14Height = std::numeric_limits<int>::max();
         consensus.PollV3Height = 1944820;
         consensus.ProjectV2Height = 1944820;
         consensus.AutoGreylistAuditHeight = 3111000;

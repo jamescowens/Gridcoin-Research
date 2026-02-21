@@ -17,6 +17,7 @@
 #include "gridcoin/support/block_finder.h"
 #include "gridcoin/tx_message.h"
 #include "gridcoin/voting/payloads.h"
+#include "htlc.h"
 #include <key_io.h>
 #include "node/blockstorage.h"
 #include "policy/policy.h"
@@ -1631,6 +1632,19 @@ UniValue decodescript(const UniValue& params, bool fHelp)
     }
     ScriptPubKeyToJSON(script, r, false);
 
+    // Detect HTLC scripts
+    vector<unsigned char> htlc_hash;
+    CPubKey htlc_receiver, htlc_sender;
+    int64_t htlc_timeout;
+    if (ParseHTLCScript(script, htlc_hash, htlc_receiver, htlc_sender, htlc_timeout)) {
+        UniValue htlc(UniValue::VOBJ);
+        htlc.pushKV("hash", HexStr(htlc_hash));
+        htlc.pushKV("receiver_pubkey", HexStr(htlc_receiver));
+        htlc.pushKV("sender_pubkey", HexStr(htlc_sender));
+        htlc.pushKV("timeout", htlc_timeout);
+        r.pushKV("htlc", htlc);
+    }
+
     r.pushKV("p2sh", EncodeDestination(script.GetID()));
     return r;
 }
@@ -1817,7 +1831,7 @@ UniValue signrawtransaction(const UniValue& params, bool fHelp)
         {
             txin.scriptSig = CombineSignatures(prevPubKey, mergedTx, i, txin.scriptSig, txv.vin[i].scriptSig);
         }
-        if (!VerifyScript(txin.scriptSig, prevPubKey, mergedTx, i, 0))
+        if (!VerifyScript(txin.scriptSig, prevPubKey, STANDARD_SCRIPT_VERIFY_FLAGS, mergedTx, i))
             fComplete = false;
     }
 

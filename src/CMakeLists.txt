@@ -132,6 +132,7 @@ add_library(gridcoin_util STATIC
     crypter.cpp
     dbwrapper.cpp
     fs.cpp
+    htlc.cpp
     gridcoin/backup.cpp
     gridcoin/beacon.cpp
     gridcoin/boinc.cpp
@@ -189,6 +190,7 @@ add_library(gridcoin_util STATIC
     random.cpp
     randomenv.cpp
     rpc/blockchain.cpp
+    rpc/htlc.cpp
     rpc/client.cpp
     rpc/dataacq.cpp
     rpc/mining.cpp

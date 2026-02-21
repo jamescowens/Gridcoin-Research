@@ -19,6 +19,35 @@
 
 using namespace std;
 
+static const std::map<std::string, unsigned int> mapFlagNames = {
+    {"P2SH", SCRIPT_VERIFY_P2SH},
+    {"DERSIG", SCRIPT_VERIFY_DERSIG},
+    {"NULLDUMMY", SCRIPT_VERIFY_NULLDUMMY},
+    {"STRICTENC", SCRIPT_VERIFY_STRICTENC},
+    {"MINIMALDATA", SCRIPT_VERIFY_MINIMALDATA},
+    {"DISCOURAGE_UPGRADABLE_NOPS", SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS},
+    {"CLEANSTACK", SCRIPT_VERIFY_CLEANSTACK},
+    {"LOW_S", SCRIPT_VERIFY_LOW_S},
+    {"SIGPUSHONLY", SCRIPT_VERIFY_SIGPUSHONLY},
+};
+
+static unsigned int ParseScriptFlags(std::string strFlags)
+{
+    unsigned int flags = SCRIPT_VERIFY_NONE;
+    if (strFlags.empty() || strFlags == "NONE") return flags;
+
+    std::vector<std::string> words = SplitString(strFlags, ',');
+    for (const std::string& word : words)
+    {
+        if (!mapFlagNames.count(word)) {
+            BOOST_ERROR("Bad test: unknown verification flag '" << word << "'");
+            continue;
+        }
+        flags |= mapFlagNames.at(word);
+    }
+    return flags;
+}
+
 // In script_tests.cpp
 extern UniValue read_json(const std::string& jsondata);
 extern CScript ParseScript(string s);
@@ -72,8 +101,9 @@ BOOST_AUTO_TEST_CASE(tx_valid)
     // Read tests from test/data/tx_valid.json
     // Format is an array of arrays
     // Inner arrays are either [ "comment" ]
-    // or [[[prevout hash, prevout index, prevout scriptPubKey], [input 2], ...],"], serializedTransaction, enforceP2SH
-    // ... where all scripts are stringified scripts.
+    // or [[[prevout hash, prevout index, prevout scriptPubKey], [input 2], ...],
+    //     serializedTransaction, verifyFlags]
+    // verifyFlags can be a bool (legacy enforceP2SH) or a string of flag names.
     UniValue tests = read_json(std::string(json_tests::tx_valid, json_tests::tx_valid + sizeof(json_tests::tx_valid)));
 
     for (unsigned int idx = 0; idx < tests.size(); idx++)
@@ -82,7 +112,7 @@ BOOST_AUTO_TEST_CASE(tx_valid)
         string strTest = test.write();
         if (test[0].isArray())
         {
-            if (test.size() != 3 || !test[1].isStr() || !test[2].isBool())
+            if (test.size() != 3 || !test[1].isStr() || (!test[2].isBool() && !test[2].isStr()))
             {
                 BOOST_ERROR("Bad test 1: " << strTest);
                 continue;
@@ -132,7 +162,11 @@ BOOST_AUTO_TEST_CASE(tx_valid)
                     break;
                 }
 
-                BOOST_CHECK_MESSAGE(VerifyScript(tx.vin[i].scriptSig, mapprevOutScriptPubKeys[tx.vin[i].prevout], tx, i, 0),
+                // Support both old format (bool enforceP2SH) and new format (string flags)
+                unsigned int verify_flags = test[2].isBool()
+                    ? (test[2].get_bool() ? SCRIPT_VERIFY_P2SH : SCRIPT_VERIFY_NONE)
+                    : ParseScriptFlags(test[2].get_str());
+                BOOST_CHECK_MESSAGE(VerifyScript(tx.vin[i].scriptSig, mapprevOutScriptPubKeys[tx.vin[i].prevout], verify_flags, tx, i),
                         strTest);
             }
         }
@@ -144,8 +178,9 @@ BOOST_AUTO_TEST_CASE(tx_invalid)
     // Read tests from test/data/tx_invalid.json
     // Format is an array of arrays
     // Inner arrays are either [ "comment" ]
-    // or [[[prevout hash, prevout index, prevout scriptPubKey], [input 2], ...],"], serializedTransaction, enforceP2SH
-    // ... where all scripts are stringified scripts.
+    // or [[[prevout hash, prevout index, prevout scriptPubKey], [input 2], ...],
+    //     serializedTransaction, verifyFlags]
+    // verifyFlags can be a bool (legacy enforceP2SH) or a string of flag names.
     UniValue tests = read_json(std::string(json_tests::tx_invalid, json_tests::tx_invalid + sizeof(json_tests::tx_invalid)));
 
     for (unsigned int idx = 0; idx < tests.size(); idx++)
@@ -154,7 +189,7 @@ BOOST_AUTO_TEST_CASE(tx_invalid)
         std::string strTest = test.write();
         if (test[0].isArray())
         {
-            if (test.size() != 3 || !test[1].isStr() || !test[2].isBool())
+            if (test.size() != 3 || !test[1].isStr() || (!test[2].isBool() && !test[2].isStr()))
             {
                 BOOST_ERROR("Bad test 1: " << strTest);
                 continue;
@@ -200,7 +235,11 @@ BOOST_AUTO_TEST_CASE(tx_invalid)
                     break;
                 }
 
-                fValid = VerifyScript(tx.vin[i].scriptSig, mapprevOutScriptPubKeys[tx.vin[i].prevout], tx, i, 0);
+                // Support both old format (bool enforceP2SH) and new format (string flags)
+                unsigned int verify_flags = test[2].isBool()
+                    ? (test[2].get_bool() ? SCRIPT_VERIFY_P2SH : SCRIPT_VERIFY_NONE)
+                    : ParseScriptFlags(test[2].get_str());
+                fValid = VerifyScript(tx.vin[i].scriptSig, mapprevOutScriptPubKeys[tx.vin[i].prevout], verify_flags, tx, i);
             }
 
             BOOST_CHECK_MESSAGE(!fValid, strTest);

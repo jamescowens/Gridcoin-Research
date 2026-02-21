@@ -5,6 +5,7 @@
 
 #include "checkpoints.h"
 #include "consensus/merkle.h"
+#include "consensus/tx_verify.h"
 #include "dbwrapper.h"
 #include "main.h"
 #include "gridcoin/beacon.h"
@@ -434,7 +435,7 @@ bool ConnectInputs(CTransaction& tx, CTxDB& txdb, MapPrevTx inputs, std::map<uin
             if (!(fBlock && (nBestHeight < Params().Checkpoints().GetHeight())))
             {
                 // Verify signature
-                if (!VerifySignature(txPrev, tx, i, 0))
+                if (!VerifySignature(txPrev, tx, GetBlockScriptFlags(*pindexBlock), i, 0))
                 {
                     return tx.DoS(100,error("ConnectInputs() : %s VerifySignature failed", tx.GetHash().ToString().substr(0,10).c_str()));
                 }
@@ -1615,6 +1616,19 @@ bool GridcoinConnectBlock(
 }
 } // Anonymous namespace
 
+unsigned int GetBlockScriptFlags(const CBlockIndex& block_index)
+{
+    unsigned int flags{SCRIPT_VERIFY_P2SH};
+
+    // BIP65 (CLTV) and BIP112 (CSV) are enforced starting with block version 14.
+    if (IsV14Enabled(block_index.nHeight)) {
+        flags |= SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY;
+        flags |= SCRIPT_VERIFY_CHECKSEQUENCEVERIFY;
+    }
+
+    return flags;
+}
+
 bool ConnectBlock(CBlock& block, CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
 {
     // Check it again in case a previous version let a bad block in, but skip BlockSig checking
@@ -2070,6 +2084,7 @@ bool AcceptBlock(CBlock& block, bool generated_by_me) EXCLUSIVE_LOCKS_REQUIRED(c
             || (IsV11Enabled(nHeight) && block.nVersion < 11)
             || (IsV12Enabled(nHeight) && block.nVersion < 12)
             || (IsV13Enabled(nHeight) && block.nVersion < 13)
+            || (IsV14Enabled(nHeight) && block.nVersion < 14)
             ) {
         return block.DoS(20, error("%s: reject too old nVersion = %d", __func__, block.nVersion));
     } else if ((!IsProtocolV2(nHeight) && block.nVersion >= 7)
@@ -2079,6 +2094,7 @@ bool AcceptBlock(CBlock& block, bool generated_by_me) EXCLUSIVE_LOCKS_REQUIRED(c
                || (!IsV11Enabled(nHeight) && block.nVersion >= 11)
                || (!IsV12Enabled(nHeight) && block.nVersion >= 12)
                || (!IsV13Enabled(nHeight) && block.nVersion >= 13)
+               || (!IsV14Enabled(nHeight) && block.nVersion >= 14)
                ) {
         return block.DoS(100, error("%s: reject too new nVersion = %d", __func__, block.nVersion));
     }
@@ -2129,6 +2145,13 @@ bool AcceptBlock(CBlock& block, bool generated_by_me) EXCLUSIVE_LOCKS_REQUIRED(c
         // Check that all transactions are finalized
         if (!IsFinalTx(tx, nHeight, block.GetBlockTime()))
             return block.DoS(10, error("%s: contains a non-final transaction", __func__));
+
+        // BIP68: Check sequence locks for v14+ blocks (skip coinbase and coinstake)
+        if (IsV14Enabled(nHeight) && !tx.IsCoinBase() && !tx.IsCoinStake()) {
+            if (!CheckSequenceLocks(tx, 0, pindexPrev)) {
+                return block.DoS(10, error("%s: contains a transaction with unsatisfied sequence locks", __func__));
+            }
+        }
     }
 
     // Check that the block chain matches the known block chain up to a checkpoint
