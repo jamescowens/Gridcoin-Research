@@ -14,6 +14,7 @@
 #include <util/string.h>
 #include "gridcoin/mrc.h"
 #include "gridcoin/support/block_finder.h"
+#include "gridcoin/support/xml.h"
 
 #include <univalue.h>
 #include <stdexcept>
@@ -1516,16 +1517,17 @@ UniValue beaconauth(const UniValue& params, bool fHelp)
 
 UniValue advertisebeaconv3(const UniValue& params, bool fHelp)
 {
-    if (fHelp || params.size() != 4)
+    if (fHelp || params.size() != 1)
         throw runtime_error(
-                "advertisebeaconv3 <beacon_public_key> <master_url> <account_id> <rsa_signature_hex>\n"
+                "advertisebeaconv3 <ownership_proof_xml>\n"
                 "\n"
                 "Send a v3 beacon with a BOINC account ownership proof.\n"
                 "\n"
-                "<beacon_public_key>  --> Hex public key from beaconauth\n"
-                "<master_url>         --> BOINC project master URL\n"
-                "<account_id>         --> BOINC numeric account ID\n"
-                "<rsa_signature_hex>  --> Hex-encoded RSA-SHA512 signature from the project\n"
+                "<ownership_proof_xml> --> The XML block returned by the BOINC project's\n"
+                "  proof-of-account-ownership page. Must contain <master_url>, <msg>,\n"
+                "  and <signature> elements. The <msg> field should have the format:\n"
+                "  \"{account_id} {beacon_public_key_hex}\" (the project generates this\n"
+                "  when you enter the beacon public key from beaconauth).\n"
                 "\n"
                 "Requires wallet to be fully unlocked.\n");
 
@@ -1542,27 +1544,64 @@ UniValue advertisebeaconv3(const UniValue& params, bool fHelp)
             "No CPID detected. Cannot send a beacon in non-cruncher mode");
     }
 
-    const std::string public_key_hex = params[0].get_str();
-    const std::string master_url = params[1].get_str();
-    const uint32_t account_id = static_cast<uint32_t>(params[2].get_int());
-    const std::string rsa_sig_hex = params[3].get_str();
+    // Parse the XML block from the BOINC project.
+    const std::string xml = params[0].get_str();
 
+    const std::string master_url = ExtractXML(xml, "<master_url>", "</master_url>");
+    const std::string msg = ExtractXML(xml, "<msg>", "</msg>");
+    const std::string sig_b64 = ExtractXML(xml, "<signature>", "</signature>");
+
+    if (master_url.empty() || msg.empty() || sig_b64.empty()) {
+        throw JSONRPCError(
+            RPC_INVALID_PARAMETER,
+            "Failed to parse ownership proof XML. Expected <master_url>, <msg>, "
+            "and <signature> elements.");
+    }
+
+    // Parse the msg field: "{account_id} {beacon_public_key_hex}"
+    const size_t space_pos = msg.find(' ');
+
+    if (space_pos == std::string::npos || space_pos + 1 >= msg.size()) {
+        throw JSONRPCError(
+            RPC_INVALID_PARAMETER,
+            "Invalid <msg> format. Expected \"{account_id} {beacon_public_key_hex}\"");
+    }
+
+    uint32_t account_id = 0;
+    if (!ParseUInt32(msg.substr(0, space_pos), &account_id) || account_id == 0) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid account ID in <msg> field");
+    }
+
+    const std::string public_key_hex = msg.substr(space_pos + 1);
     const std::vector<uint8_t> pubkey_bytes = ParseHex(public_key_hex);
     CPubKey beacon_pubkey(pubkey_bytes);
 
     if (!beacon_pubkey.IsValid()) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid beacon public key");
+        throw JSONRPCError(
+            RPC_INVALID_PARAMETER,
+            "Invalid beacon public key in <msg> field");
+    }
+
+    // Verify that the wallet holds the private key for this beacon.
+    if (!pwalletMain->HaveKey(beacon_pubkey.GetID())) {
+        throw JSONRPCError(
+            RPC_INVALID_ADDRESS_OR_KEY,
+            "Wallet does not contain the private key for this beacon public key. "
+            "Did you run beaconauth first?");
+    }
+
+    bool b64_invalid = false;
+    const std::vector<uint8_t> rsa_sig_bytes = DecodeBase64(sig_b64.c_str(), &b64_invalid);
+
+    if (b64_invalid || rsa_sig_bytes.empty()) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid base64 in <signature> field");
     }
 
     GRC::Beacon beacon(beacon_pubkey);
     GRC::OwnershipProof proof;
     proof.m_master_url = master_url;
     proof.m_account_id = account_id;
-    proof.m_rsa_signature = ParseHex(rsa_sig_hex);
-
-    if (proof.m_rsa_signature.empty()) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid RSA signature hex");
-    }
+    proof.m_rsa_signature = rsa_sig_bytes;
 
     GRC::AdvertiseBeaconResult result = GRC::SendBeaconContractV3(*cpid, beacon, std::move(proof));
 
