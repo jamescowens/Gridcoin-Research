@@ -171,6 +171,8 @@ extern UniValue walletdiagnose(const UniValue& params, bool fHelp);
 
 // Staking
 extern UniValue advertisebeacon(const UniValue& params, bool fHelp);
+extern UniValue advertisebeaconv3(const UniValue& params, bool fHelp);
+extern UniValue beaconauth(const UniValue& params, bool fHelp);
 extern UniValue beaconreport(const UniValue& params, bool fHelp);
 extern UniValue beaconconvergence(const UniValue& params, bool fHelp);
 extern UniValue beaconstatus(const UniValue& params, bool fHelp);

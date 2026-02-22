@@ -604,15 +604,9 @@ bool CheckBeaconPrivateKey(const CWallet* const wallet, const CPubKey& public_ke
     return true;
 }
 
-//!
-//! \brief Generate a new beacon key pair.
-//!
-//! \param cpid The participant's current primary CPID.
-//!
-//! \return A variant that contains the new public key if successful or a
-//! description of the error that occurred.
-//!
-AdvertiseBeaconResult GenerateBeaconKey(const Cpid& cpid)
+} // anonymous namespace
+
+AdvertiseBeaconResult GRC::GenerateBeaconKey(const Cpid& cpid)
 {
     LogPrintf("%s: Generating new keys for %s...", __func__, cpid.ToString());
 
@@ -646,6 +640,8 @@ AdvertiseBeaconResult GenerateBeaconKey(const Cpid& cpid)
 
     return public_key;
 }
+
+namespace {
 
 //!
 //! \brief Sign a new beacon payload with the beacon's private key.
@@ -751,17 +747,9 @@ AdvertiseBeaconResult SendBeaconContract(
     return AdvertiseBeaconResult(std::move(beacon.m_public_key));
 }
 
-//!
-//! \brief Send a v3 beacon contract with an ownership proof.
-//!
-//! \param cpid  CPID to send a beacon for.
-//! \param beacon Contains the CPID's beacon public key.
-//! \param proof BOINC proof-of-account-ownership data.
-//!
-//! \return A variant that contains the new public key if successful or a
-//! description of the error that occurred.
-//!
-AdvertiseBeaconResult SendBeaconContractV3(
+} // anonymous namespace
+
+AdvertiseBeaconResult GRC::SendBeaconContractV3(
     const Cpid& cpid,
     Beacon beacon,
     OwnershipProof proof)
@@ -795,6 +783,8 @@ AdvertiseBeaconResult SendBeaconContractV3(
 
     return AdvertiseBeaconResult(std::move(beacon.m_public_key));
 }
+
+namespace {
 
 //!
 //! \brief Generate keys for and send a new beacon contract.

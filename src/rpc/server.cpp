@@ -357,6 +357,8 @@ static const CRPCCommand vRPCCommands[] =
 
   // Staking commands
     { "advertisebeacon",         &advertisebeacon,         cat_staking        },
+    { "advertisebeaconv3",       &advertisebeaconv3,       cat_staking        },
+    { "beaconauth",              &beaconauth,              cat_staking        },
     { "beaconconvergence",       &beaconconvergence,       cat_staking        },
     { "beaconreport",            &beaconreport,            cat_staking        },
     { "beaconstatus",            &beaconstatus,            cat_staking        },

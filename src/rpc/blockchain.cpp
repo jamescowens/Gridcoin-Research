@@ -1459,6 +1459,164 @@ UniValue advertisebeacon(const UniValue& params, bool fHelp)
     throw JSONRPCError(RPC_INTERNAL_ERROR, "Unexpected error occurred");
 }
 
+UniValue beaconauth(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() != 0)
+        throw runtime_error(
+                "beaconauth\n"
+                "\n"
+                "Generate a beacon key pair and return the public key hex.\n"
+                "Use the public key to obtain a BOINC account ownership proof\n"
+                "from a project that supports the ownership proof extension,\n"
+                "then call advertisebeaconv3 with the proof to send the beacon.\n"
+                "\n"
+                "Requires wallet to be fully unlocked.\n");
+
+    EnsureWalletIsUnlocked();
+
+    LOCK2(cs_main, pwalletMain->cs_wallet);
+
+    const GRC::ResearcherPtr researcher = GRC::Researcher::Get();
+    const GRC::CpidOption cpid = researcher->Id().TryCpid();
+
+    if (!cpid) {
+        throw JSONRPCError(
+            RPC_INVALID_REQUEST,
+            "No CPID detected. Cannot generate beacon keys in non-cruncher mode");
+    }
+
+    GRC::AdvertiseBeaconResult result = GRC::GenerateBeaconKey(*cpid);
+
+    if (auto public_key_option = result.TryPublicKey()) {
+        const GRC::Beacon beacon(std::move(*public_key_option));
+
+        UniValue res(UniValue::VOBJ);
+
+        res.pushKV("result", "SUCCESS");
+        res.pushKV("cpid", cpid->ToString());
+        res.pushKV("public_key", HexStr(beacon.m_public_key));
+        res.pushKV("verification_code", beacon.GetVerificationCode());
+
+        return res;
+    }
+
+    switch (result.Error()) {
+        case GRC::BeaconError::NONE:
+            break; // suppress warning
+        case GRC::BeaconError::MISSING_KEY:
+            throw JSONRPCError(
+                RPC_INVALID_ADDRESS_OR_KEY,
+                "Failed to generate beacon key");
+        default:
+            break;
+    }
+
+    throw JSONRPCError(RPC_INTERNAL_ERROR, "Unexpected error occurred");
+}
+
+UniValue advertisebeaconv3(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() != 4)
+        throw runtime_error(
+                "advertisebeaconv3 <beacon_public_key> <master_url> <account_id> <rsa_signature_hex>\n"
+                "\n"
+                "Send a v3 beacon with a BOINC account ownership proof.\n"
+                "\n"
+                "<beacon_public_key>  --> Hex public key from beaconauth\n"
+                "<master_url>         --> BOINC project master URL\n"
+                "<account_id>         --> BOINC numeric account ID\n"
+                "<rsa_signature_hex>  --> Hex-encoded RSA-SHA512 signature from the project\n"
+                "\n"
+                "Requires wallet to be fully unlocked.\n");
+
+    EnsureWalletIsUnlocked();
+
+    LOCK2(cs_main, pwalletMain->cs_wallet);
+
+    const GRC::ResearcherPtr researcher = GRC::Researcher::Get();
+    const GRC::CpidOption cpid = researcher->Id().TryCpid();
+
+    if (!cpid) {
+        throw JSONRPCError(
+            RPC_INVALID_REQUEST,
+            "No CPID detected. Cannot send a beacon in non-cruncher mode");
+    }
+
+    const std::string public_key_hex = params[0].get_str();
+    const std::string master_url = params[1].get_str();
+    const uint32_t account_id = static_cast<uint32_t>(params[2].get_int());
+    const std::string rsa_sig_hex = params[3].get_str();
+
+    const std::vector<uint8_t> pubkey_bytes = ParseHex(public_key_hex);
+    CPubKey beacon_pubkey(pubkey_bytes);
+
+    if (!beacon_pubkey.IsValid()) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid beacon public key");
+    }
+
+    GRC::Beacon beacon(beacon_pubkey);
+    GRC::OwnershipProof proof;
+    proof.m_master_url = master_url;
+    proof.m_account_id = account_id;
+    proof.m_rsa_signature = ParseHex(rsa_sig_hex);
+
+    if (proof.m_rsa_signature.empty()) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid RSA signature hex");
+    }
+
+    GRC::AdvertiseBeaconResult result = GRC::SendBeaconContractV3(*cpid, beacon, std::move(proof));
+
+    if (auto public_key_option = result.TryPublicKey()) {
+        UniValue res(UniValue::VOBJ);
+
+        res.pushKV("result", "SUCCESS");
+        res.pushKV("cpid", cpid->ToString());
+        res.pushKV("public_key", HexStr(*public_key_option));
+        res.pushKV("verification_code", beacon.GetVerificationCode());
+
+        return res;
+    }
+
+    switch (result.Error()) {
+        case GRC::BeaconError::NONE:
+            break; // suppress warning
+        case GRC::BeaconError::INSUFFICIENT_FUNDS:
+            throw JSONRPCError(
+                RPC_WALLET_INSUFFICIENT_FUNDS,
+                "Available balance too low to send a beacon transaction");
+        case GRC::BeaconError::MISSING_KEY:
+            throw JSONRPCError(
+                RPC_INVALID_ADDRESS_OR_KEY,
+                "Beacon private key missing or invalid");
+        case GRC::BeaconError::NO_CPID:
+            throw JSONRPCError(
+                RPC_INVALID_REQUEST,
+                "No CPID detected. Cannot send a beacon in non-cruncher mode");
+        case GRC::BeaconError::NOT_NEEDED:
+            throw JSONRPCError(
+                RPC_INVALID_REQUEST,
+                "An active beacon already exists for this CPID");
+        case GRC::BeaconError::PENDING:
+            throw JSONRPCError(
+                RPC_INVALID_REQUEST,
+                "A beacon advertisement is already pending for this CPID");
+        case GRC::BeaconError::TX_FAILED:
+            throw JSONRPCError(
+                RPC_WALLET_ERROR,
+                "Unable to send beacon transaction. See debug.log");
+        case GRC::BeaconError::WALLET_LOCKED:
+            throw JSONRPCError(
+                RPC_WALLET_UNLOCK_NEEDED,
+                "Wallet locked. Unlock it fully to send a beacon transaction");
+        case GRC::BeaconError::ALEADY_IN_MEMPOOL:
+            throw JSONRPCError(
+                RPC_INVALID_REQUEST,
+                "Beacon transaction for this CPID is already in the mempool");
+    }
+
+    throw JSONRPCError(RPC_INTERNAL_ERROR, "Unexpected error occurred");
+}
+
 UniValue revokebeacon(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)

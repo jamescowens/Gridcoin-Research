@@ -360,6 +360,33 @@ private:
     std::variant<CPubKey, BeaconError> m_result;
 };
 
+class OwnershipProof;
+
+//!
+//! \brief Generate a new beacon key pair.
+//!
+//! \param cpid The participant's current primary CPID.
+//!
+//! \return A variant that contains the new public key if successful or a
+//! description of the error that occurred.
+//!
+AdvertiseBeaconResult GenerateBeaconKey(const Cpid& cpid);
+
+//!
+//! \brief Send a v3 beacon contract with an ownership proof.
+//!
+//! \param cpid  CPID to send a beacon for.
+//! \param beacon Contains the CPID's beacon public key.
+//! \param proof BOINC proof-of-account-ownership data.
+//!
+//! \return A variant that contains the new public key if successful or a
+//! description of the error that occurred.
+//!
+AdvertiseBeaconResult SendBeaconContractV3(
+    const Cpid& cpid,
+    Beacon beacon,
+    OwnershipProof proof);
+
 //!
 //! \brief Manages the global BOINC researcher context.
 //!
