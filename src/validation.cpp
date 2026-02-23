@@ -1515,6 +1515,11 @@ bool TryLoadSuperblock(
                     block.GetHash(),
                     pindex->nHeight);
 
+        // A beacon activation may change the researcher's eligibility status,
+        // so mark the context dirty to refresh the cached status on the next
+        // Researcher::Refresh() call.
+        GRC::Researcher::MarkDirty();
+
         // Notify the GUI if present that beacons have changed.
         uiInterface.BeaconChanged();
     }
