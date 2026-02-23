@@ -77,3 +77,9 @@ These transactions record on-chain governance and identity actions.
 | **Poll** | A transaction that creates an on-chain governance poll. |
 | **Vote** | A transaction that records your vote on an on-chain poll. |
 | **Message** | A transaction that records an on-chain message. |
+
+## Other
+
+| Label | Description |
+|-------|-------------|
+| *(unlabeled)* | A transaction with mixed inputs and outputs that could not be broken down into individual payees. This is uncommon in normal wallet usage. |

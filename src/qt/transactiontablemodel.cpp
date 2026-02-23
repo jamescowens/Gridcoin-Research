@@ -653,6 +653,8 @@ QString TransactionTableModel::formatTxTypeExplanation(const TransactionRecord *
         return tr("On-chain message transaction.");
     case TransactionRecord::MRC:
         return tr("Manual Rewards Claim request submitted to the network.");
+    case TransactionRecord::Other:
+        return tr("Transaction with mixed inputs and outputs.");
     default:
         return QString();
     }
