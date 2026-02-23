@@ -613,6 +613,8 @@ private:
     //!
     static bool IsInMainChain(const CBlockHeader& header)
     {
+        LOCK(cs_main);
+
         const auto iter = mapBlockIndex.find(header.GetHash());
 
         if (iter == mapBlockIndex.end()) {
@@ -1201,9 +1203,16 @@ PollResultOption PollResult::BuildFor(const PollReference& poll_ref)
         VoteCounter counter(txdb, result.m_poll);
 
         if (result.m_poll.IncludesMagnitudeWeight()) {
-            counter.EnableMagnitudeWeight(
-                ResolveSuperblockForPoll(result.m_poll),
-                ResolveMoneySupplyForPoll(result.m_poll));
+            SuperblockPtr superblock;
+            uint64_t supply;
+
+            {
+                LOCK(cs_main);
+                superblock = ResolveSuperblockForPoll(result.m_poll);
+                supply = ResolveMoneySupplyForPoll(result.m_poll);
+            }
+
+            counter.EnableMagnitudeWeight(std::move(superblock), supply);
         }
 
         LogPrint(BCLog::LogFlags::VOTE, "INFO: %s: number of votes = %u for poll %s",
