@@ -219,13 +219,21 @@ UniValue VoteDetailsToJson(const PollResult& result)
 
 UniValue VoteDetailsToJson(const PollReference& poll_ref)
 {
+    GetPollRegistry().registry_traversal_in_progress = true;
+
     try {
         if (const PollResultOption result = PollResult::BuildFor(poll_ref)) {
+            GetPollRegistry().registry_traversal_in_progress = false;
+
             return VoteDetailsToJson(*result);
         }
     } catch (InvalidDuetoReorgFork& e) {
+        GetPollRegistry().registry_traversal_in_progress = false;
+
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Failed to load poll from disk due to reorg in progress during inquiry.");
     }
+
+    GetPollRegistry().registry_traversal_in_progress = false;
 
     throw JSONRPCError(RPC_INTERNAL_ERROR, "Failed to load poll from disk.");
 }
