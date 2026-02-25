@@ -1517,9 +1517,9 @@ UniValue beaconauth(const UniValue& params, bool fHelp)
 
 UniValue advertisebeaconv3(const UniValue& params, bool fHelp)
 {
-    if (fHelp || params.size() != 1)
+    if (fHelp || params.size() < 1 || params.size() > 2)
         throw runtime_error(
-                "advertisebeaconv3 <ownership_proof_xml>\n"
+                "advertisebeaconv3 <ownership_proof_xml> ( force )\n"
                 "\n"
                 "Send a v3 beacon with a BOINC account ownership proof.\n"
                 "\n"
@@ -1528,6 +1528,10 @@ UniValue advertisebeaconv3(const UniValue& params, bool fHelp)
                 "  and <signature> elements. The <msg> field should have the format:\n"
                 "  \"{account_id} {beacon_public_key_hex}\" (the project generates this\n"
                 "  when you enter the beacon public key from beaconauth).\n"
+                "\n"
+                "[force] --> If true, send the beacon even when an active or pending\n"
+                "  beacon already exists for your CPID. This is useful if you lose a\n"
+                "  wallet with your original beacon keys but not necessary otherwise.\n"
                 "\n"
                 "Requires wallet to be fully unlocked.\n");
 
@@ -1543,6 +1547,8 @@ UniValue advertisebeaconv3(const UniValue& params, bool fHelp)
             RPC_INVALID_REQUEST,
             "No CPID detected. Cannot send a beacon in non-cruncher mode");
     }
+
+    const bool force = params.size() >= 2 ? params[1].get_bool() : false;
 
     // Parse the XML block from the BOINC project.
     const std::string xml = params[0].get_str();
@@ -1603,7 +1609,7 @@ UniValue advertisebeaconv3(const UniValue& params, bool fHelp)
     proof.m_account_id = account_id;
     proof.m_rsa_signature = rsa_sig_bytes;
 
-    GRC::AdvertiseBeaconResult result = GRC::SendBeaconContractV3(*cpid, beacon, std::move(proof));
+    GRC::AdvertiseBeaconResult result = GRC::SendBeaconContractV3(*cpid, beacon, std::move(proof), force);
 
     if (auto public_key_option = result.TryPublicKey()) {
         UniValue res(UniValue::VOBJ);

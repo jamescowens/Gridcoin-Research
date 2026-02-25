@@ -752,11 +752,26 @@ AdvertiseBeaconResult SendBeaconContract(
 AdvertiseBeaconResult GRC::SendBeaconContractV3(
     const Cpid& cpid,
     Beacon beacon,
-    OwnershipProof proof)
+    OwnershipProof proof,
+    const bool force)
 {
     if (!IsV14Enabled(nBestHeight)) {
         LogPrintf("WARNING: %s: v3 beacons not yet active (requires v14).", __func__);
         return BeaconError::TX_FAILED;
+    }
+
+    if (!force) {
+        if (g_recent_beacons.Try(cpid)) {
+            LogPrintf("%s: Beacon awaiting confirmation already", __func__);
+            return BeaconError::PENDING;
+        }
+
+        const BeaconOption current_beacon = GetBeaconRegistry().TryActive(cpid, GetAdjustedTime());
+
+        if (current_beacon) {
+            LogPrintf("%s: Active beacon already exists for CPID", __func__);
+            return BeaconError::NOT_NEEDED;
+        }
     }
 
     const BeaconError error = CheckBeaconTransactionViable(pwalletMain, cpid);
@@ -781,7 +796,11 @@ AdvertiseBeaconResult GRC::SendBeaconContractV3(
         return BeaconError::TX_FAILED;
     }
 
-    return AdvertiseBeaconResult(std::move(beacon.m_public_key));
+    AdvertiseBeaconResult result(std::move(beacon.m_public_key));
+
+    g_recent_beacons.Remember(cpid, result);
+
+    return result;
 }
 
 namespace {

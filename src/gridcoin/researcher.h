@@ -375,9 +375,10 @@ AdvertiseBeaconResult GenerateBeaconKey(const Cpid& cpid);
 //!
 //! \brief Send a v3 beacon contract with an ownership proof.
 //!
-//! \param cpid  CPID to send a beacon for.
+//! \param cpid   CPID to send a beacon for.
 //! \param beacon Contains the CPID's beacon public key.
-//! \param proof BOINC proof-of-account-ownership data.
+//! \param proof  BOINC proof-of-account-ownership data.
+//! \param force  If true, skip pending/active beacon checks.
 //!
 //! \return A variant that contains the new public key if successful or a
 //! description of the error that occurred.
@@ -385,7 +386,8 @@ AdvertiseBeaconResult GenerateBeaconKey(const Cpid& cpid);
 AdvertiseBeaconResult SendBeaconContractV3(
     const Cpid& cpid,
     Beacon beacon,
-    OwnershipProof proof);
+    OwnershipProof proof,
+    const bool force = false);
 
 //!
 //! \brief Manages the global BOINC researcher context.
