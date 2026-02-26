@@ -1,0 +1,29 @@
+services:
+  gridcoin-gui:
+    image: ghcr.io/gridcoin-community/gridcoinresearch:latest
+    container_name: gridcoin-gui
+    restart: unless-stopped
+    stop_grace_period: 120s
+    command: ["gridcoinresearch"]
+    environment:
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - ${GRIDCOIN_DATA_DIR:-./.gridcoin}:/home/gridcoin/.GridcoinResearch
+      - boinc-data:/var/lib/boinc:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+    ports:
+      - "${P2P_PORT:-32749}:32749"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  boinc:
+    image: boinc/client:latest
+    container_name: boinc
+    restart: unless-stopped
+    volumes:
+      - boinc-data:/var/lib/boinc
+
+volumes:
+  boinc-data:
