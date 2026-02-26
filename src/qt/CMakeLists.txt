@@ -74,6 +74,7 @@ add_library(gridcoinqt STATIC
     researcher/researcherwizardpoolpage.cpp
     researcher/researcherwizardpoolsummarypage.cpp
     researcher/researcherwizardprojectspage.cpp
+    researcher/researcherwizardownershipproofpage.cpp
     researcher/researcherwizardsummarypage.cpp
     rpcconsole.cpp
     sendcoinsdialog.cpp

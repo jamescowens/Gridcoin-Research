@@ -3,6 +3,7 @@
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
 #include <key_io.h>
+#include "chainparams.h"
 #include "main.h"
 #include "gridcoin/beacon.h"
 #include "gridcoin/boinc.h"
@@ -12,7 +13,9 @@
 #include "gridcoin/researcher.h"
 #include "gridcoin/scraper/scraper.h"
 #include "gridcoin/superblock.h"
+#include "gridcoin/support/xml.h"
 #include "node/ui_interface.h"
+#include "util/strencodings.h"
 
 #include "qt/bitcoinunits.h"
 #include "qt/guiutil.h"
@@ -784,8 +787,133 @@ BeaconStatus ResearcherModel::advertiseBeacon()
     return MapAdvertiseBeaconError(result.Error());
 }
 
+bool ResearcherModel::isV14Enabled() const
+{
+    return IsV14Enabled(nBestHeight);
+}
+
+bool ResearcherModel::hasV3CapableProjects() const
+{
+    return !GetProjectsWithOwnershipProofSupport().empty();
+}
+
+std::vector<std::pair<QString, QString>> ResearcherModel::buildV3ProjectList() const
+{
+    const std::set<std::string> v3_urls = GetProjectsWithOwnershipProofSupport();
+
+    if (v3_urls.empty()) {
+        return {};
+    }
+
+    const WhitelistSnapshot whitelist = GetWhitelist().Snapshot(
+        ProjectEntry::ProjectFilterFlag::ALL_BUT_DELETED);
+
+    std::vector<std::pair<QString, QString>> result;
+
+    for (const auto& project : whitelist) {
+        std::string base_url = project.BaseUrl();
+
+        // Normalize: ensure trailing slash for comparison.
+        if (!base_url.empty() && base_url.back() != '/') {
+            base_url += '/';
+        }
+
+        if (v3_urls.count(base_url) > 0) {
+            result.emplace_back(
+                QString::fromStdString(project.DisplayName()),
+                QString::fromStdString(project.DisplayUrl()));
+        }
+    }
+
+    return result;
+}
+
+QString ResearcherModel::generateBeaconKeyForV3()
+{
+    const CpidOption cpid = m_researcher->Id().TryCpid();
+
+    if (!cpid) {
+        return QString();
+    }
+
+    AdvertiseBeaconResult result = GenerateBeaconKey(*cpid);
+
+    if (auto public_key = result.TryPublicKey()) {
+        m_cached_beacon_pubkey_hex = QString::fromStdString(HexStr(*public_key));
+        return m_cached_beacon_pubkey_hex;
+    }
+
+    return QString();
+}
+
+BeaconStatus ResearcherModel::advertiseBeaconV3(const QString& ownership_proof_xml)
+{
+    const CpidOption cpid = m_researcher->Id().TryCpid();
+
+    if (!cpid) {
+        return BeaconStatus::NO_CPID;
+    }
+
+    const std::string xml = ownership_proof_xml.toStdString();
+
+    const std::string master_url = ExtractXML(xml, "<master_url>", "</master_url>");
+    const std::string msg = ExtractXML(xml, "<msg>", "</msg>");
+    const std::string sig_b64 = ExtractXML(xml, "<signature>", "</signature>");
+
+    if (master_url.empty() || msg.empty() || sig_b64.empty()) {
+        return BeaconStatus::ERROR_TX_FAILED;
+    }
+
+    // Parse the msg field: "{account_id} {beacon_public_key_hex}"
+    const size_t space_pos = msg.find(' ');
+
+    if (space_pos == std::string::npos || space_pos + 1 >= msg.size()) {
+        return BeaconStatus::ERROR_TX_FAILED;
+    }
+
+    uint32_t account_id = 0;
+    if (!ParseUInt32(msg.substr(0, space_pos), &account_id) || account_id == 0) {
+        return BeaconStatus::ERROR_TX_FAILED;
+    }
+
+    const std::string public_key_hex = msg.substr(space_pos + 1);
+    const std::vector<uint8_t> pubkey_bytes = ParseHex(public_key_hex);
+    CPubKey beacon_pubkey(pubkey_bytes);
+
+    if (!beacon_pubkey.IsValid()) {
+        return BeaconStatus::ERROR_TX_FAILED;
+    }
+
+    if (!pwalletMain->HaveKey(beacon_pubkey.GetID())) {
+        return BeaconStatus::ERROR_MISSING_KEY;
+    }
+
+    bool b64_invalid = false;
+    const std::vector<uint8_t> rsa_sig_bytes = DecodeBase64(sig_b64.c_str(), &b64_invalid);
+
+    if (b64_invalid || rsa_sig_bytes.empty()) {
+        return BeaconStatus::ERROR_TX_FAILED;
+    }
+
+    Beacon beacon(beacon_pubkey);
+    OwnershipProof proof;
+    proof.m_master_url = master_url;
+    proof.m_account_id = account_id;
+    proof.m_rsa_signature = rsa_sig_bytes;
+
+    AdvertiseBeaconResult result = SendBeaconContractV3(*cpid, beacon, std::move(proof));
+
+    return MapAdvertiseBeaconError(result.Error());
+}
+
+QString ResearcherModel::cachedBeaconPubKeyHex() const
+{
+    return m_cached_beacon_pubkey_hex;
+}
+
 void ResearcherModel::onWizardClose()
 {
+    m_cached_beacon_pubkey_hex.clear();
     m_wizard_open = false;
 }
 
