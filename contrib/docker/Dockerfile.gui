@@ -1,5 +1,6 @@
 FROM ubuntu:24.04
 
+ARG TARGETARCH
 ARG UID=1000
 ARG GID=1000
 
@@ -32,12 +33,36 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && groupadd -f -g ${GID} gridcoin \
     && useradd -u ${UID} -g gridcoin -d /home/gridcoin -m -s /bin/bash gridcoin
 
+# Install runtime libraries for dynamically-linked arm64 binary
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+        apt-get update && apt-get install -y --no-install-recommends \
+            libboost-filesystem1.83.0 \
+            libboost-thread1.83.0 \
+            libboost-iostreams1.83.0 \
+            libboost-serialization1.83.0 \
+            libboost-date-time1.83.0 \
+            libboost-chrono1.83.0 \
+            libboost-program-options1.83.0 \
+            libssl3t64 \
+            libcurl4t64 \
+            libzip4t64 \
+            libminiupnpc17 \
+            libqt6core6t64 \
+            libqt6gui6t64 \
+            libqt6widgets6t64 \
+            libqt6network6t64 \
+            libqt6charts6 \
+            libqt6svg6 \
+            libqt6core5compat6 \
+        && rm -rf /var/lib/apt/lists/*; \
+    fi
+
 COPY entrypoint.sh /entrypoint.sh
 COPY healthcheck.sh /healthcheck.sh
 RUN chmod +x /entrypoint.sh /healthcheck.sh
 
-COPY bin/amd64/gridcoinresearchd /usr/local/bin/
-COPY bin/amd64/gridcoinresearch /usr/local/bin/
+COPY bin/${TARGETARCH}/gridcoinresearchd /usr/local/bin/
+COPY bin/${TARGETARCH}/gridcoinresearch /usr/local/bin/
 
 VOLUME ["/home/gridcoin/.GridcoinResearch"]
 

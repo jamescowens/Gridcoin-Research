@@ -9,8 +9,12 @@ Official Docker images for running Gridcoin as a headless daemon or with the Qt 
 | `ghcr.io/gridcoin-community/gridcoinresearchd` | Headless daemon only |
 | `ghcr.io/gridcoin-community/gridcoinresearch` | Daemon + Qt GUI |
 
-Both images currently support `linux/amd64`. ARM64 support is planned for a future release
-once the depends build system supports aarch64 cross-compilation.
+Both images support `linux/amd64` and `linux/arm64`.
+
+**Note:** The amd64 images use statically-linked binaries and are smaller (~100 MB). The arm64
+images use dynamically-linked binaries (cross-compiled with system libraries) and include
+runtime shared libraries, making them larger (~200-300 MB). The Docker container provides
+the hermetic environment for arm64 instead of static linking.
 
 ## Quick Start
 

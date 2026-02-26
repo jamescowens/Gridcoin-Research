@@ -335,11 +335,106 @@ jobs:
           retention-days: 5
 
   # ----------------------------------------------------------------------
+  # JOB 2b: ARM64 Cross-Build (for Docker)
+  # ----------------------------------------------------------------------
+  arm64-cross-build:
+    name: Linux ARM64 Cross-Build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add ARM64 Architecture
+        run: |
+          sudo dpkg --add-architecture arm64
+          sudo add-apt-repository -y universe
+          sudo add-apt-repository -y multiverse
+          sudo sed -i 's/^Types: deb$/Types: deb\nArchitectures: amd64/' /etc/apt/sources.list.d/ubuntu.sources
+          cat <<EOF | sudo tee /etc/apt/sources.list.d/arm64.list
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble main universe multiverse restricted
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-updates main universe multiverse restricted
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-security main universe multiverse restricted
+          EOF
+          sudo apt-get update
+
+      - name: Install ARM64 Toolchain & Libraries
+        run: |
+          sudo dpkg --remove --force-all libcurl4-openssl-dev libcurl4-gnutls-dev libcups2 libcups2t64 || true
+          sudo apt-get update
+          sudo apt-get -f install -y
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build zipcmp zipmerge ziptool qemu-user-static \
+            g++-aarch64-linux-gnu qt6-base-dev:arm64 qt6-charts-dev:arm64 qt6-svg-dev:arm64 \
+            qt6-l10n-tools:arm64 qt6-tools-dev:arm64 qt6-tools-dev-tools:arm64 \
+            libqt6core5compat6-dev:arm64 libssl-dev:arm64 libzip-dev:arm64 \
+            libcurl4-openssl-dev:arm64 libboost-system-dev:arm64 libboost-filesystem-dev:arm64 \
+            libboost-thread-dev:arm64 libboost-iostreams-dev:arm64 libboost-program-options-dev:arm64 \
+            libboost-serialization-dev:arm64 libboost-chrono-dev:arm64 \
+            libminiupnpc-dev:arm64 libxkbcommon-dev:arm64 \
+            libcups2t64:arm64 \
+            ccache
+
+      - name: Setup Concurrency
+        run: |
+          if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
+            echo "CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "CTEST_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "Concurrency: Auto-detected $(nproc) cores."
+          else
+            echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
+          fi
+
+      - name: Configure Ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-prod-arm64-${{ github.sha }}
+          restore-keys: ccache-prod-arm64-
+
+      - name: Configure CMake (Cross)
+        env:
+          PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig
+        run: |
+          cmake -B build_arm64 -GNinja \
+            -DCMAKE_SYSTEM_NAME=Linux \
+            -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+            -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
+            -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
+            -DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu \
+            -DCMAKE_FIND_ROOT_PATH="/usr/lib/aarch64-linux-gnu;/usr/include/aarch64-linux-gnu" \
+            -DCMAKE_SYSROOT=/ \
+            -DENABLE_GUI=ON \
+            -DUSE_QT6=ON \
+            -DQt6_DIR=/usr/lib/aarch64-linux-gnu/cmake/Qt6 \
+            -DENABLE_UPNP=ON \
+            -DDEFAULT_UPNP=ON \
+            -DENABLE_TESTS=OFF \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+      - name: Build
+        run: cmake --build build_arm64
+
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p dist
+          cp build_arm64/bin/gridcoinresearchd dist/
+          cp build_arm64/bin/gridcoinresearch dist/
+
+      - name: Upload Artifacts
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridcoin-aarch64-linux-gnu
+          path: dist/
+          retention-days: 5
+
+  # ----------------------------------------------------------------------
   # JOB 3: Publish Docker Images
   # ----------------------------------------------------------------------
   docker-publish:
     name: Publish Docker Images
-    needs: [depends-builds]
+    needs: [depends-builds, arm64-cross-build]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
@@ -354,17 +449,29 @@ jobs:
           name: gridcoin-x86_64-pc-linux-gnu
           path: artifacts/amd64
 
+      - name: Download ARM64 Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gridcoin-aarch64-linux-gnu
+          path: artifacts/arm64
+
       - name: Stage Binaries
         run: |
           cd contrib/docker
-          mkdir -p bin/amd64
+          mkdir -p bin/amd64 bin/arm64
 
           mkdir -p /tmp/amd64-extract
           tar -xzf ../../artifacts/amd64/*.tar.gz -C /tmp/amd64-extract --strip-components=1
           cp /tmp/amd64-extract/bin/gridcoinresearchd bin/amd64/
           cp /tmp/amd64-extract/bin/gridcoinresearch bin/amd64/
 
-          chmod +x bin/amd64/gridcoin*
+          cp ../../artifacts/arm64/gridcoinresearchd bin/arm64/
+          cp ../../artifacts/arm64/gridcoinresearch bin/arm64/
+
+          chmod +x bin/amd64/gridcoin* bin/arm64/gridcoin*
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -388,7 +495,7 @@ jobs:
         with:
           context: contrib/docker
           file: contrib/docker/Dockerfile.headless
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/gridcoinresearchd:${{ steps.version.outputs.version }}
@@ -399,7 +506,7 @@ jobs:
         with:
           context: contrib/docker
           file: contrib/docker/Dockerfile.gui
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/gridcoinresearch:${{ steps.version.outputs.version }}
