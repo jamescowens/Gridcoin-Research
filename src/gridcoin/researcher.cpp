@@ -757,7 +757,7 @@ AdvertiseBeaconResult GRC::SendBeaconContractV3(
 {
     if (!IsV14Enabled(nBestHeight)) {
         LogPrintf("WARNING: %s: v3 beacons not yet active (requires v14).", __func__);
-        return BeaconError::TX_FAILED;
+        return BeaconError::V14_NOT_ENABLED;
     }
 
     if (!force) {

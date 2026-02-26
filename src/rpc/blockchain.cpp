@@ -1447,6 +1447,10 @@ UniValue advertisebeacon(const UniValue& params, bool fHelp)
             throw JSONRPCError(
                 RPC_WALLET_ERROR,
                 "Unable to send beacon transaction. See debug.log");
+        case GRC::BeaconError::V14_NOT_ENABLED:
+            throw JSONRPCError(
+                RPC_INVALID_REQUEST,
+                "v3 beacons are not yet active (requires block version 14)");
         case GRC::BeaconError::WALLET_LOCKED:
             throw JSONRPCError(
                 RPC_WALLET_UNLOCK_NEEDED,
@@ -1649,6 +1653,10 @@ UniValue advertisebeaconv3(const UniValue& params, bool fHelp)
             throw JSONRPCError(
                 RPC_WALLET_ERROR,
                 "Unable to send beacon transaction. See debug.log");
+        case GRC::BeaconError::V14_NOT_ENABLED:
+            throw JSONRPCError(
+                RPC_INVALID_REQUEST,
+                "v3 beacons are not yet active (requires block version 14)");
         case GRC::BeaconError::WALLET_LOCKED:
             throw JSONRPCError(
                 RPC_WALLET_UNLOCK_NEEDED,
@@ -1715,6 +1723,8 @@ UniValue revokebeacon(const UniValue& params, bool fHelp)
             throw JSONRPCError(
                 RPC_WALLET_ERROR,
                 "Unable to send beacon transaction. See debug.log");
+        case GRC::BeaconError::V14_NOT_ENABLED:
+            throw JSONRPCError(RPC_INTERNAL_ERROR, "Unexpected error occurred");
         case GRC::BeaconError::WALLET_LOCKED:
             throw JSONRPCError(
                 RPC_WALLET_UNLOCK_NEEDED,

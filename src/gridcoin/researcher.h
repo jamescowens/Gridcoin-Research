@@ -305,6 +305,7 @@ enum class BeaconError
     NOT_NEEDED,         //!< Beacon exists for the CPID. No renewal needed.
     PENDING,            //!< Not enough time elapsed for pending advertisement.
     TX_FAILED,          //!< Beacon contract transacton failed to send.
+    V14_NOT_ENABLED,    //!< v3 beacons require block version 14 or higher.
     WALLET_LOCKED,      //!< Wallet not fully unlocked.
     ALEADY_IN_MEMPOOL   //!< A beacon contract for this CPID is already in the mempool.
 };
