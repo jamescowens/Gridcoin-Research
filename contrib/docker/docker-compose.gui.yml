@@ -15,11 +15,17 @@ services:
       - "${P2P_PORT:-32749}:32749"
     read_only: true
     tmpfs:
-      - /tmp
+      - /tmp/gridcoin
     security_opt:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETUID
+      - SETGID
 
   boinc:
     image: boinc/client:latest

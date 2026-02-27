@@ -335,7 +335,67 @@ jobs:
           retention-days: 5
 
   # ----------------------------------------------------------------------
-  # JOB 2b: ARM64 Cross-Build (for Docker)
+  # JOB 2b: AMD64 Native Build (for Docker)
+  # ----------------------------------------------------------------------
+  amd64-native-build:
+    name: Linux AMD64 Native Build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          source ./install_dependencies.sh
+          install_deps native true true
+
+      - name: Setup Concurrency
+        run: |
+          if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
+            echo "CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "CTEST_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "Concurrency: Auto-detected $(nproc) cores."
+          else
+            echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
+          fi
+
+      - name: Configure Ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-prod-amd64-native-${{ github.sha }}
+          restore-keys: ccache-prod-amd64-native-
+
+      - name: Configure CMake
+        run: |
+          cmake -B build_native \
+            -DENABLE_GUI=ON \
+            -DUSE_QT6=ON \
+            -DENABLE_UPNP=ON \
+            -DDEFAULT_UPNP=ON \
+            -DENABLE_TESTS=OFF \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+      - name: Build
+        run: cmake --build build_native
+
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p dist
+          cp build_native/bin/gridcoinresearchd dist/
+          cp build_native/bin/gridcoinresearch dist/
+
+      - name: Upload Artifacts
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridcoin-x86_64-linux-gnu
+          path: dist/
+          retention-days: 5
+
+  # ----------------------------------------------------------------------
+  # JOB 2c: ARM64 Cross-Build (for Docker)
   # ----------------------------------------------------------------------
   arm64-cross-build:
     name: Linux ARM64 Cross-Build
@@ -434,7 +494,7 @@ jobs:
   # ----------------------------------------------------------------------
   docker-publish:
     name: Publish Docker Images
-    needs: [depends-builds, arm64-cross-build]
+    needs: [amd64-native-build, arm64-cross-build]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
@@ -446,7 +506,7 @@ jobs:
       - name: Download x86_64 Build Artifact
         uses: actions/download-artifact@v4
         with:
-          name: gridcoin-x86_64-pc-linux-gnu
+          name: gridcoin-x86_64-linux-gnu
           path: artifacts/amd64
 
       - name: Download ARM64 Build Artifact
@@ -460,10 +520,8 @@ jobs:
           cd contrib/docker
           mkdir -p bin/amd64 bin/arm64
 
-          mkdir -p /tmp/amd64-extract
-          tar -xzf ../../artifacts/amd64/*.tar.gz -C /tmp/amd64-extract --strip-components=1
-          cp /tmp/amd64-extract/bin/gridcoinresearchd bin/amd64/
-          cp /tmp/amd64-extract/bin/gridcoinresearch bin/amd64/
+          cp ../../artifacts/amd64/gridcoinresearchd bin/amd64/
+          cp ../../artifacts/amd64/gridcoinresearch bin/amd64/
 
           cp ../../artifacts/arm64/gridcoinresearchd bin/arm64/
           cp ../../artifacts/arm64/gridcoinresearch bin/arm64/

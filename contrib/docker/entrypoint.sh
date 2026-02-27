@@ -19,11 +19,15 @@ server=1
 rpcuser=gridcoinrpc
 rpcpassword=$(openssl rand -hex 32)
 rpcallowip=127.0.0.1
-# Docker internal networks -- allows RPC from linked containers.
-# Customize these for production; see README for details.
-rpcallowip=10.0.0.0/8
-rpcallowip=172.16.0.0/12
-rpcallowip=192.168.0.0/16
+# Allow RPC from Docker networks. Any rpcallowip entry causes the daemon
+# to bind on all interfaces (required for Docker port forwarding).
+# Host-side access is restricted by -p 127.0.0.1:15715:15715.
+# Gridcoin uses wildcard matching (not CIDR), so 172.*.*.* is broader
+# than RFC 1918's 172.16-31.x.x -- acceptable since only Docker network
+# traffic can reach the container's interfaces.
+rpcallowip=10.*.*.*
+rpcallowip=172.*.*.*
+rpcallowip=192.168.*.*
 EOF
     chown gridcoin:gridcoin "${CONF_FILE}"
     chmod 0600 "${CONF_FILE}"

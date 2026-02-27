@@ -11,11 +11,9 @@ Official Docker images for running Gridcoin as a headless daemon or with the Qt 
 
 Both images support `linux/amd64` and `linux/arm64`.
 
-**Note:** The amd64 images use statically-linked binaries and are smaller (~95 MB headless,
-~143 MB GUI). The arm64 images use dynamically-linked binaries (cross-compiled with system
-libraries) and include runtime shared libraries, making them larger (~134 MB headless,
-~438 MB GUI). The Docker container provides the hermetic environment for arm64 instead of
-static linking.
+Both architectures use dynamically-linked binaries built with Ubuntu 24.04 system libraries.
+The Docker container provides the hermetic runtime environment (consistent library versions)
+instead of static linking.
 
 ## Quick Start
 
@@ -95,7 +93,14 @@ regularly, especially before upgrading.
 On first run, if no `gridcoinresearch.conf` exists, the entrypoint creates one with:
 - `server=1` (RPC server enabled)
 - Random `rpcpassword` (generated via `openssl rand -hex 32`)
-- `rpcallowip` entries for localhost and Docker internal networks
+- `rpcallowip` wildcard entries for localhost and private networks (`10.*.*.*`,
+  `172.*.*.*`, `192.168.*.*`). Gridcoin uses wildcard matching for `rpcallowip` (not
+  CIDR notation). Note: `172.*.*.*` is broader than RFC 1918's `172.16.0.0/12` because
+  the wildcard syntax cannot express subnet boundaries; this is acceptable since these
+  entries only affect traffic that reaches the container's network interfaces. The
+  presence of any `rpcallowip` entry causes the RPC server to listen on all interfaces
+  inside the container (not just loopback), which is required for Docker port forwarding
+  to work.
 - `printtoconsole=1` (forced for Docker log visibility)
 
 ### Environment Variables
@@ -161,23 +166,25 @@ The GUI image includes the Qt XCB (X11) platform plugin.
 
 ## Building Locally
 
-Build static binaries using the `depends/` system, then create Docker images:
+Build dynamically-linked binaries with system libraries, then create Docker images:
 
 ```bash
-# 1. Build static binaries
-cmake -B build_depends \
-  --toolchain depends/x86_64-pc-linux-gnu/toolchain.cmake \
-  -DSTATIC_LIBS=ON -DENABLE_GUI=ON -DENABLE_TESTS=OFF \
-  -DCMAKE_BUILD_TYPE=Release
-cmake --build build_depends -j$(nproc)
+# 1. Install build dependencies (Ubuntu 24.04)
+source ./install_dependencies.sh
+install_deps native true true
 
-# 2. Stage binaries
+# 2. Build
+cmake -B build -DENABLE_GUI=ON -DUSE_QT6=ON -DENABLE_TESTS=OFF \
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j$(nproc)
+
+# 3. Stage binaries
 cd contrib/docker
 mkdir -p bin/amd64
-cp ../../build_depends/src/gridcoinresearchd bin/amd64/
-cp ../../build_depends/src/qt/gridcoinresearch bin/amd64/
+cp ../../build/bin/gridcoinresearchd bin/amd64/
+cp ../../build/bin/gridcoinresearch bin/amd64/
 
-# 3. Build images
+# 4. Build images
 docker build -f Dockerfile.headless -t gridcoin-headless .
 docker build -f Dockerfile.gui -t gridcoin-gui .
 ```
@@ -197,11 +204,12 @@ The images follow defense-in-depth principles:
 
 - **Non-root execution:** The daemon runs as user `gridcoin` (UID/GID 1000) via `gosu`
 - **Read-only filesystem:** `read_only: true` in docker-compose (writable data dir via volume)
-- **Dropped capabilities:** `cap_drop: ALL` removes all Linux capabilities
+- **Dropped capabilities:** `cap_drop: ALL` then `cap_add` restores only CHOWN,
+  DAC_OVERRIDE, FOWNER, SETUID, SETGID (minimum for entrypoint bootstrap and `gosu`)
 - **No privilege escalation:** `no-new-privileges` security option
 - **Private tmp:** `tmpfs` mount for `/tmp`
-- **Minimal base image:** `ubuntu:24.04` with only `ca-certificates`, `gosu`,
-  and `openssl` installed (GUI adds X11 libraries)
+- **Minimal base image:** `ubuntu:24.04` with only runtime dependencies installed
+  (GUI adds Qt6 and X11 libraries)
 - **Config permissions:** `gridcoinresearch.conf` created with mode `0600`
 
 ## Troubleshooting
@@ -216,7 +224,7 @@ docker logs gridcoin
 ### GUI shows "could not connect to display"
 
 1. Ensure `DISPLAY` is set: `echo $DISPLAY`
-2. Allow Docker X11 access: `xhost +local:docker`
+2. Allow X11 access for the current user: `xhost +SI:localuser:$(id -un)`
 3. Verify X11 socket exists: `ls /tmp/.X11-unix/`
 
 ### Sync is slow
