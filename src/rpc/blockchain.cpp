@@ -2420,7 +2420,7 @@ UniValue addkey(const UniValue& params, bool fHelp)
                     if (params.size() == 7) {
                         if (ToLower(params[6].get_str()) == "man_greylist") {
                             status = GRC::ProjectEntryStatus::MAN_GREYLISTED;
-                        } else if (ToLower(params[5].get_str()) == "auto_greylist_override") {
+                        } else if (ToLower(params[6].get_str()) == "auto_greylist_override") {
                             status = GRC::ProjectEntryStatus::AUTO_GREYLIST_OVERRIDE;
                         } else {
                             throw JSONRPCError(RPC_INVALID_PARAMETER, "project status specifier, if provided, "
