@@ -15,7 +15,7 @@ GCOV_EXECUTABLE="gcov"
 # Disable tests known to cause non-deterministic behaviour and document the source or point of non-determinism.
 NON_DETERMINISTIC_TESTS=()
 
-TEST_BITCOIN_BINARY="src/test/test_gridcoin"
+TEST_BITCOIN_BINARY="${TEST_BITCOIN_BINARY:-build/src/test/test_gridcoin}"
 
 print_usage() {
     echo "Usage: $0 [custom test filter (default: all but known non-deterministic tests)] [number of test runs (default: 2)]"
@@ -62,7 +62,7 @@ if ! command -v gcovr > /dev/null; then
 fi
 
 if [[ ! -e ${TEST_BITCOIN_BINARY} ]]; then
-    echo "Error: Executable ${TEST_BITCOIN_BINARY} not found. Build with coverage enabled and compile."
+    echo "Error: Executable ${TEST_BITCOIN_BINARY} not found. Build with CMake with coverage flags enabled (e.g. -DCMAKE_CXX_FLAGS='--coverage') or set TEST_BITCOIN_BINARY to the coverage-instrumented binary path."
     exit 1
 fi
 
