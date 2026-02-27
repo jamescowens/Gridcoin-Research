@@ -8,6 +8,8 @@
 #include "main.h"
 #include "gridcoin/beacon.h"
 #include "gridcoin/contract/contract.h"
+#include "gridcoin/researcher.h"
+#include "node/ui_interface.h"
 #include "util.h"
 #include "wallet/wallet.h"
 
@@ -584,6 +586,13 @@ void BeaconRegistry::Delete(const ContractContext& ctx)
 
     // Insert the deleted beacon entry in the storage db.
     m_beacon_db.insert(deleted_beacon.m_hash, height, deleted_beacon);
+
+    // A beacon revocation changes the researcher's eligibility status,
+    // so mark the context dirty to refresh the cached status.
+    Researcher::MarkDirty();
+
+    // Notify the GUI if present that beacons have changed.
+    uiInterface.BeaconChanged();
 }
 
 void BeaconRegistry::Revert(const ContractContext& ctx)
