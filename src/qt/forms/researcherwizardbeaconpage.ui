@@ -90,56 +90,80 @@
     </widget>
    </item>
    <item>
-    <widget class="QWidget" name="verificationMethodWrapper" native="true">
-     <layout class="QVBoxLayout" name="verificationMethodLayout">
-      <item>
-       <widget class="QLabel" name="verificationMethodLabel">
-        <property name="text">
-         <string>Choose verification method:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::NoTextInteraction</set>
-        </property>
-       </widget>
-      </item>
-      <item alignment="Qt::AlignHCenter">
-       <widget class="QRadioButton" name="v2RadioButton">
-        <property name="text">
-         <string>Classic verification (change BOINC username)</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item alignment="Qt::AlignHCenter">
-       <widget class="QRadioButton" name="v3RadioButton">
-        <property name="text">
-         <string>Account ownership proof (recommended if available)</string>
-        </property>
-       </widget>
-      </item>
-      <item alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="v3UnavailableLabel">
-        <property name="text">
-         <string notr="true"/>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::NoTextInteraction</set>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
+    <layout class="QHBoxLayout" name="verificationMethodOuterLayout">
+     <item>
+      <spacer name="verificationMethodLeftSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QWidget" name="verificationMethodWrapper" native="true">
+       <layout class="QVBoxLayout" name="verificationMethodLayout">
+        <item>
+         <widget class="QLabel" name="verificationMethodLabel">
+          <property name="text">
+           <string>Choose verification method:</string>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::NoTextInteraction</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="v2RadioButton">
+          <property name="text">
+           <string>Classic verification (change BOINC username)</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="v3RadioButton">
+          <property name="text">
+           <string>Account ownership proof (recommended if available)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="v3UnavailableLabel">
+          <property name="text">
+           <string notr="true"/>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::NoTextInteraction</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verificationMethodRightSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
    </item>
    <item alignment="Qt::AlignHCenter">
     <widget class="QPushButton" name="sendBeaconButton">
