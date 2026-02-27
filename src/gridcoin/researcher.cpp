@@ -604,15 +604,9 @@ bool CheckBeaconPrivateKey(const CWallet* const wallet, const CPubKey& public_ke
     return true;
 }
 
-//!
-//! \brief Generate a new beacon key pair.
-//!
-//! \param cpid The participant's current primary CPID.
-//!
-//! \return A variant that contains the new public key if successful or a
-//! description of the error that occurred.
-//!
-AdvertiseBeaconResult GenerateBeaconKey(const Cpid& cpid)
+} // anonymous namespace
+
+AdvertiseBeaconResult GRC::GenerateBeaconKey(const Cpid& cpid)
 {
     LogPrintf("%s: Generating new keys for %s...", __func__, cpid.ToString());
 
@@ -646,6 +640,8 @@ AdvertiseBeaconResult GenerateBeaconKey(const Cpid& cpid)
 
     return public_key;
 }
+
+namespace {
 
 //!
 //! \brief Sign a new beacon payload with the beacon's private key.
@@ -750,6 +746,64 @@ AdvertiseBeaconResult SendBeaconContract(
 
     return AdvertiseBeaconResult(std::move(beacon.m_public_key));
 }
+
+} // anonymous namespace
+
+AdvertiseBeaconResult GRC::SendBeaconContractV3(
+    const Cpid& cpid,
+    Beacon beacon,
+    OwnershipProof proof,
+    const bool force)
+{
+    if (!IsV14Enabled(nBestHeight)) {
+        LogPrintf("WARNING: %s: v3 beacons not yet active (requires v14).", __func__);
+        return BeaconError::V14_NOT_ENABLED;
+    }
+
+    if (!force) {
+        if (g_recent_beacons.Try(cpid)) {
+            LogPrintf("%s: Beacon awaiting confirmation already", __func__);
+            return BeaconError::PENDING;
+        }
+
+        const BeaconOption current_beacon = GetBeaconRegistry().TryActive(cpid, GetAdjustedTime());
+
+        if (current_beacon) {
+            LogPrintf("%s: Active beacon already exists for CPID", __func__);
+            return BeaconError::NOT_NEEDED;
+        }
+    }
+
+    const BeaconError error = CheckBeaconTransactionViable(pwalletMain, cpid);
+
+    if (error != BeaconError::NONE) {
+        return error;
+    }
+
+    BeaconPayload payload(cpid, beacon, std::move(proof));
+
+    if (!SignBeaconPayload(payload)) {
+        return BeaconError::MISSING_KEY;
+    }
+
+    // v3 beacon payloads require contract version >= 3.
+    uint32_t contract_version = IsV13Enabled(nBestHeight) ? 3 : 2;
+
+    const auto result_pair = SendContract(
+        MakeContract<BeaconPayload>(contract_version, ContractAction::ADD, std::move(payload)));
+
+    if (!result_pair.second.empty()) {
+        return BeaconError::TX_FAILED;
+    }
+
+    AdvertiseBeaconResult result(std::move(beacon.m_public_key));
+
+    g_recent_beacons.Remember(cpid, result);
+
+    return result;
+}
+
+namespace {
 
 //!
 //! \brief Generate keys for and send a new beacon contract.

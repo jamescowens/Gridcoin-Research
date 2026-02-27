@@ -283,6 +283,22 @@ public:
     //! \throws HttpException on invalid server response.
     //!
     std::string GetLatestVersionResponse();
+
+    //!
+    //! \brief Download URL content to a string.
+    //!
+    //! Fetches \p url content into a string buffer using optional HTTP
+    //! credentials. Validates the HTTP response code.
+    //!
+    //! \param url URL to download.
+    //! \param userpass Optional HTTP credentials.
+    //! \return The content of the URL as a string.
+    //! \throws HttpException on invalid server response.
+    //! \throws std::runtime_error on download failure.
+    //!
+    std::string DownloadToString(
+            const std::string& url,
+            const std::string& userpass = "");
     //!
     //! \brief Download Snapshot with progress updates.
     //!

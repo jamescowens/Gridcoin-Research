@@ -4,6 +4,7 @@
 
 #include <base58.h>
 #include <key_io.h>
+#include "chainparams.h"
 #include "logging.h"
 #include "main.h"
 #include "gridcoin/beacon.h"
@@ -255,7 +256,15 @@ BeaconPayload::BeaconPayload(const uint32_t version, const Cpid& cpid, Beacon be
 }
 
 BeaconPayload::BeaconPayload(const Cpid& cpid, Beacon beacon)
-    : BeaconPayload(CURRENT_VERSION, cpid, std::move(beacon))
+    : BeaconPayload(2, cpid, std::move(beacon))
+{
+}
+
+BeaconPayload::BeaconPayload(const Cpid& cpid, Beacon beacon, OwnershipProof proof)
+    : m_version(3)
+    , m_cpid(cpid)
+    , m_beacon(std::move(beacon))
+    , m_ownership_proof(std::move(proof))
 {
 }
 
@@ -312,6 +321,22 @@ const BeaconRegistry::BeaconMap& BeaconRegistry::Beacons() const
 const BeaconRegistry::PendingBeaconMap& BeaconRegistry::PendingBeacons() const
 {
     return m_pending;
+}
+
+const std::map<CKeyID, OwnershipProof>& BeaconRegistry::PendingOwnershipProofs() const
+{
+    return m_pending_ownership_proofs;
+}
+
+const OwnershipProof* BeaconRegistry::TryOwnershipProof(const CKeyID& key_id) const
+{
+    const auto iter = m_pending_ownership_proofs.find(key_id);
+
+    if (iter == m_pending_ownership_proofs.end()) {
+        return nullptr;
+    }
+
+    return &iter->second;
 }
 
 const std::set<Beacon_ptr>& BeaconRegistry::ExpiredBeacons() const
@@ -393,6 +418,7 @@ void BeaconRegistry::Reset()
 {
     m_beacons.clear();
     m_pending.clear();
+    m_pending_ownership_proofs.clear();
     m_expired_pending.clear();
     m_beacon_db.clear();
 }
@@ -539,6 +565,13 @@ void BeaconRegistry::Add(const ContractContext& ctx)
 
     // Insert a pointer to the entry in the m_pending map.
     m_pending[pending.GetId()] =  m_beacon_db.find(ctx.m_tx.GetHash())->second;
+
+    // For v3 payloads, store the ownership proof in the side map keyed by
+    // the pending beacon's key ID. The proof data is still valid in the
+    // payload even though m_beacon was moved (m_ownership_proof wasn't).
+    if (payload.m_version >= 3 && !payload.m_ownership_proof.Empty()) {
+        m_pending_ownership_proofs[pending.GetId()] = std::move(payload.m_ownership_proof);
+    }
 }
 
 void BeaconRegistry::Delete(const ContractContext& ctx)
@@ -555,6 +588,7 @@ void BeaconRegistry::Delete(const ContractContext& ctx)
 
     if (ctx->m_version >= 2) {
         m_pending.erase(payload->m_beacon.GetId());
+        m_pending_ownership_proofs.erase(payload->m_beacon.GetId());
     }
 
     auto iter = m_beacons.find(payload->m_cpid);
@@ -661,7 +695,8 @@ void BeaconRegistry::Revert(const ContractContext& ctx)
                           pending_to_revert->second->m_status.Raw());
                 }
 
-                // Remove the found pending entry.
+                // Remove the found pending entry and its ownership proof if any.
+                m_pending_ownership_proofs.erase(pending_to_revert->first);
                 m_pending.erase(pending_to_revert);
 
                 // Also remove this historical record, because in a revert it should not be retained.
@@ -1028,6 +1063,17 @@ bool BeaconRegistry::Validate(const Contract& contract, const CTransaction& tx, 
 
 bool BeaconRegistry::BlockValidate(const ContractContext& ctx, int& DoS) const
 {
+    // Reject v3 beacon payloads (ownership proofs) before v14 activation.
+    if (ctx.m_contract.m_version >= 2) {
+        const auto payload = ctx.m_contract.SharePayloadAs<BeaconPayload>();
+
+        if (payload->m_version >= 3 && !IsV14Enabled(ctx.m_pindex->nHeight)) {
+            DoS = 25;
+            LogPrint(LogFlags::CONTRACT, "%s: v3 beacon payload before v14 activation", __func__);
+            return false;
+        }
+    }
+
     return Validate(ctx.m_contract, ctx.m_tx, DoS);
 }
 
@@ -1094,6 +1140,7 @@ void BeaconRegistry::ActivatePending(
         // Remove the pending beacon entry from the pending map. (Note this entry still exists in the historical
         // table and the db.
         m_pending.erase(iter_pair.second->GetId());
+        m_pending_ownership_proofs.erase(iter_pair.second->GetId());
     }
 
     // Clear the expired pending beacon set. There is no need to retain expired beacons beyond one SB boundary (which is when
@@ -1136,6 +1183,7 @@ void BeaconRegistry::ActivatePending(
             m_expired_pending.insert(m_beacon_db.find(pending_beacon.m_hash)->second);
 
             // Remove the pending beacon entry from the m_pending map.
+            m_pending_ownership_proofs.erase(iter->first);
             iter = m_pending.erase(iter);
         } else {
             ++iter;
@@ -1389,6 +1437,7 @@ void BeaconRegistry::ResetInMemoryOnly()
 {
     m_beacons.clear();
     m_pending.clear();
+    m_pending_ownership_proofs.clear();
     m_expired_pending.clear();
     m_beacon_db.clear_in_memory_only();
 }

@@ -84,6 +84,7 @@ BeaconStatus MapAdvertiseBeaconError(const BeaconError error)
         case BeaconError::NOT_NEEDED:         return BeaconStatus::ERROR_NOT_NEEDED;
         case BeaconError::PENDING:            return BeaconStatus::PENDING;
         case BeaconError::TX_FAILED:          return BeaconStatus::ERROR_TX_FAILED;
+        case BeaconError::V14_NOT_ENABLED:    return BeaconStatus::ERROR_TX_FAILED;
         case BeaconError::WALLET_LOCKED:      return BeaconStatus::ERROR_WALLET_LOCKED;
         case BeaconError::ALEADY_IN_MEMPOOL:  return BeaconStatus::ALREADY_IN_MEMPOOL;
         }

@@ -305,6 +305,7 @@ enum class BeaconError
     NOT_NEEDED,         //!< Beacon exists for the CPID. No renewal needed.
     PENDING,            //!< Not enough time elapsed for pending advertisement.
     TX_FAILED,          //!< Beacon contract transacton failed to send.
+    V14_NOT_ENABLED,    //!< v3 beacons require block version 14 or higher.
     WALLET_LOCKED,      //!< Wallet not fully unlocked.
     ALEADY_IN_MEMPOOL   //!< A beacon contract for this CPID is already in the mempool.
 };
@@ -359,6 +360,35 @@ private:
     //!
     std::variant<CPubKey, BeaconError> m_result;
 };
+
+class OwnershipProof;
+
+//!
+//! \brief Generate a new beacon key pair.
+//!
+//! \param cpid The participant's current primary CPID.
+//!
+//! \return A variant that contains the new public key if successful or a
+//! description of the error that occurred.
+//!
+AdvertiseBeaconResult GenerateBeaconKey(const Cpid& cpid);
+
+//!
+//! \brief Send a v3 beacon contract with an ownership proof.
+//!
+//! \param cpid   CPID to send a beacon for.
+//! \param beacon Contains the CPID's beacon public key.
+//! \param proof  BOINC proof-of-account-ownership data.
+//! \param force  If true, skip pending/active beacon checks.
+//!
+//! \return A variant that contains the new public key if successful or a
+//! description of the error that occurred.
+//!
+AdvertiseBeaconResult SendBeaconContractV3(
+    const Cpid& cpid,
+    Beacon beacon,
+    OwnershipProof proof,
+    const bool force = false);
 
 //!
 //! \brief Manages the global BOINC researcher context.

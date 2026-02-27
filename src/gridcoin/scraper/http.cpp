@@ -279,6 +279,32 @@ std::string Http::GetEtag(
     throw std::runtime_error("No ETag response from project url <urlfile=" + url + ">");
 }
 
+std::string Http::DownloadToString(
+        const std::string& url,
+        const std::string& userpass)
+{
+    std::string buffer;
+
+    ScopedCurl curl = GetContext();
+    curl_easy_setopt(curl.get(), CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl.get(), CURLOPT_WRITEFUNCTION, curl_write_string);
+    curl_easy_setopt(curl.get(), CURLOPT_WRITEDATA, &buffer);
+    if (!userpass.empty()) {
+        curl_easy_setopt(curl.get(), CURLOPT_USERPWD, userpass.c_str());
+    }
+
+    CURLcode res = curl_easy_perform(curl.get());
+
+    if (res > 0)
+        throw std::runtime_error(tfm::strformat("Failed to download URL %s: %s", url, curl_easy_strerror(res)));
+
+    long response_code;
+    curl_easy_getinfo(curl.get(), CURLINFO_RESPONSE_CODE, &response_code);
+    EvaluateResponse(response_code, url);
+
+    return buffer;
+}
+
 std::string Http::GetLatestVersionResponse()
 {
     std::string buffer;
