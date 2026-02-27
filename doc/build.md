@@ -1,9 +1,6 @@
-# Gridcoin Build Guide (CMake)
+# Gridcoin Build Guide
 
-As of the 5.5.0.0 mandatory release ("Natasha milestone"), **CMake is the official build system for Gridcoin**. The Autotools build
-system (`./configure`) is deprecated and will be removed entirely in a leisure release following the mandatory. In the late stage
-development process for Natasha, the build system is in a state of transition. The following table provides the current status
-for various build targets:
+**CMake is the sole build system for Gridcoin.** The following table provides the current status for various build targets:
 
 | Platform | Build System | Status | Documentation |
 | :--- | :--- | :--- | :--- |
@@ -250,40 +247,30 @@ This installer file will be output to `build_win64/gridcoin-<release>-win64-setu
 
 -----
 
-## Autotools to CMake Migration Guide
+## CMake Options Quick Reference
 
-If you are accustomed to the legacy `autogen.sh` and `./configure` workflow, use this table to map your flags to CMake options.
+If you are familiar with the legacy Autotools build system (`./configure`), this table maps common flags to their CMake equivalents.
 
 | Feature | Autotools Flag | CMake Option |
 | :--- | :--- | :--- |
 | **Debug Build** | `--enable-debug` | `-DCMAKE_BUILD_TYPE=Debug` |
-| **Release with Debug Info** | `(Default)` | `-DCMAKE_BUILD_TYPE=RelWithDebInfo` |
-| **Release Build** | (Default using strip or make install) | `-DCMAKE_BUILD_TYPE=Release` |
+| **Release with Debug Info** | *(default)* | `-DCMAKE_BUILD_TYPE=RelWithDebInfo` |
+| **Release Build** | *(default + strip)* | `-DCMAKE_BUILD_TYPE=Release` |
 | **GUI** | `--with-gui` | `-DENABLE_GUI=ON` |
 | **No GUI** | `--without-gui` | `-DENABLE_GUI=OFF` |
 | **UPnP** | `--with-miniupnpc` | `-DENABLE_UPNP=ON` |
 | **QR Code** | `--with-qrencode` | `-DENABLE_QRENCODE=ON` |
 | **Tests** | `--enable-tests` | `-DENABLE_TESTS=ON` |
 | **DBus** | `--with-dbus` | `-DUSE_DBUS=ON` |
-| **Hardening** | `--enable-hardening` | `-DENABLE_PIE=ON` (and others) |
-| **Static Libs** | (Implicit in depends) | `-DSTATIC_LIBS=ON` |
+| **Hardening** | `--enable-hardening` | `-DENABLE_PIE=ON` |
+| **Static Libs** | *(implicit in depends)* | `-DSTATIC_LIBS=ON` |
 
-Note that the autotools default does not strip the debug symbols, and uses -O2 optimization. This corresponds to
-cmake's `-DCMAKE_BUILD_TYPE=RelWithDebInfo`. The cmake `-DCMAKE_BUILD_TYPE=Release` will use -02 optimization
-and also strip the debug symbols from the executables.
+**Build type note:** The old Autotools default did not strip debug symbols and used `-O2` optimization, which corresponds to CMake's `-DCMAKE_BUILD_TYPE=RelWithDebInfo`. CMake's `-DCMAKE_BUILD_TYPE=Release` uses `-O2` and also strips debug symbols. Omitting `-DCMAKE_BUILD_TYPE` entirely results in no optimization and is not recommended.
 
-Using no -DCMAKE_BUILD_TYPE flag with cmake will result in no optimization and is effectively a debug build. This is not recommended except for developers or where instructed by a developer for troubleshooting.
+**Common command equivalents:**
 
-### Running Tests
+| Task | Old Command | New Command |
+| :--- | :--- | :--- |
+| **Run tests** | `make check` | `ctest --test-dir build` |
+| **Verbose build** | `make V=1` | `cmake --build build --verbose` |
 
-  * **Old:** `make check`
-  * **New:** `ctest --test-dir build` or `./build/src/test/test_gridcoin`
-
-### Verbose Output
-
-  * **Old:** `make V=1`
-  * **New:** `cmake --build build --verbose`
-
-### Notes on Static Linking
-
-When using `-DSTATIC_LIBS=ON` (target \#2), the build system automatically adjusts the linkage for Boost Test to ensure the main entry point is generated correctly without conflicting with dynamic loading macros. This is handled internally by `src/test/CMakeLists.txt`.

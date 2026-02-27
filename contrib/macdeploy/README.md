@@ -3,7 +3,7 @@
 The `macdeployqtplus` script should not be run manually. Instead, after building as usual:
 
 ```bash
-make deploy
+cmake --build build --target deploy
 ```
 
 When complete, it will have produced `Gridcoin.dmg`.
@@ -57,10 +57,9 @@ the depends directory and deploy the .dmg:
 cd depends
 make HOST=x86_64-apple-darwin
 cd ..
-./autogen.sh # not required when building from tarball
-CONFIG_SITE=$PWD/depends/x86_64-apple-darwin/share/config.site ./configure --prefix=/
-make
-make deploy
+cmake -B build --toolchain depends/x86_64-apple-darwin/toolchain.cmake
+cmake --build build -j$(nproc)
+cmake --build build --target deploy
 ```
 
 ## NOTE: the below deterministic macOS DMG notes below are retained for historical purposes.

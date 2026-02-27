@@ -366,7 +366,7 @@ IContractHandler& Dispatcher::GetHandler(const ContractType type) {
 ```
 
 #### 2.5 Add to Build System
-Edit `src/CMakeLists.txt` or `src/Makefile.am`:
+Edit `src/CMakeLists.txt`:
 ```cmake
 # CMakeLists.txt
 set(GRIDCOIN_SOURCES

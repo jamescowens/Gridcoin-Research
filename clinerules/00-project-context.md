@@ -53,9 +53,7 @@ This is the Gridcoin-Research cryptocurrency project - an open-source blockchain
 - `.github/workflows/` - GitHub Actions CI/CD configuration
 
 ## Build System
-- **Primary**: CMake (CMakeLists.txt) - Experimental in 5.4.9.0, but now primary build system in testnet/development branches (will be primary for 5.5.0.0+)
-- **Legacy/Stable Fallback**: Autotools (configure.ac, Makefile.am) - Recommended for production builds on 5.4.9.0
-- **Note**: CMake support is improving rapidly and will become the default build system in Natasha (5.5.0.0)
+- **CMake** (CMakeLists.txt) - Sole build system since the 5.5.0.0 "Natasha" release
 
 ## Programming Languages
 - Primary: C++ (cryptocurrency core)
@@ -162,8 +160,7 @@ These dependencies are required for building the Qt GUI on Linux systems:
 
 ### Build & Development Tools
 
-- **CMake 3.18+** - Build system generator (experimental support)
-- **Autotools** - Traditional build system (configure.ac, Makefile.am)
+- **CMake 3.18+** - Build system generator
 - **pkg-config** - Library metadata helper
 - **Python 3** - Build scripts and utilities
 
