@@ -146,16 +146,11 @@ jobs:
         run: |
           echo "Checking binaries for unexpected shared library dependencies..."
 
-          # 1. Define the Allowlist (Regex)
-          # We expect ONLY:
-          # - linux-vdso.so.1 (Kernel interface)
-          # - libm.so.6 (Math)
-          # - libc.so.6 (C Runtime)
-          # - ld-linux-x86-64.so.2 (Dynamic Loader)
-          ALLOWED='linux-vdso\.so|libm\.so|libc\.so|ld-linux-x86-64'
+          # Use readelf -d to inspect NEEDED entries from the ELF dynamic section.
+          # Allowed shared libraries: libc.so.6 and libm.so.6 only.
+          ALLOWED='libc\.so|libm\.so'
 
-          # 2. Identify binaries to check (Corrected Paths)
-          # We check both the GUI (src/qt/) and Daemon (src/)
+          # Check both the GUI (src/qt/) and Daemon (src/)
           BINARIES="${{ matrix.build_dir }}/src/qt/gridcoinresearch ${{ matrix.build_dir }}/src/gridcoinresearchd"
 
           fail_count=0
@@ -165,10 +160,9 @@ jobs:
               echo "------------------------------------------------"
               echo "Scanning: $bin"
 
-              # Run ldd, strip whitespace
-              # grep -vE removes the allowed lines.
-              # Any output remaining represents a LEAK (a dynamic dependency).
-              LEAKS=$(ldd "$bin" | grep -vE "$ALLOWED" | sed 's/^[ \t]*//' || true)
+              # Extract NEEDED entries from ELF dynamic section
+              NEEDED=$(readelf -d "$bin" 2>/dev/null | grep '(NEEDED)' | sed 's/.*\[//;s/\]//' || true)
+              LEAKS=$(echo "$NEEDED" | grep -vE "$ALLOWED" | grep -v '^$' || true)
 
               if [ -n "$LEAKS" ]; then
                 echo "::error::NON-HERMETIC DEPENDENCY DETECTED!"
@@ -176,7 +170,7 @@ jobs:
                 echo "$LEAKS"
                 fail_count=$((fail_count+1))
               else
-                echo "✅ Verified hermetic."
+                echo "Verified hermetic. NEEDED: $(echo $NEEDED | tr '\n' ' ')"
               fi
             else
               # Warn but don't fail immediately if a binary is missing (e.g. GUI disabled)
@@ -341,7 +335,246 @@ jobs:
           retention-days: 5
 
   # ----------------------------------------------------------------------
-  # JOB 3: Deploy (GitHub Release)
+  # JOB 2b: AMD64 Native Build (for Docker)
+  # ----------------------------------------------------------------------
+  amd64-native-build:
+    name: Linux AMD64 Native Build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          source ./install_dependencies.sh
+          install_deps native true true
+
+      - name: Setup Concurrency
+        run: |
+          if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
+            echo "CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "CTEST_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "Concurrency: Auto-detected $(nproc) cores."
+          else
+            echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
+          fi
+
+      - name: Configure Ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-prod-amd64-native-${{ github.sha }}
+          restore-keys: ccache-prod-amd64-native-
+
+      - name: Configure CMake
+        run: |
+          cmake -B build_native \
+            -DENABLE_GUI=ON \
+            -DUSE_QT6=ON \
+            -DENABLE_UPNP=ON \
+            -DDEFAULT_UPNP=ON \
+            -DENABLE_TESTS=OFF \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+      - name: Build
+        run: cmake --build build_native
+
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p dist
+          cp build_native/bin/gridcoinresearchd dist/
+          cp build_native/bin/gridcoinresearch dist/
+
+      - name: Upload Artifacts
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridcoin-x86_64-linux-gnu
+          path: dist/
+          retention-days: 5
+
+  # ----------------------------------------------------------------------
+  # JOB 2c: ARM64 Cross-Build (for Docker)
+  # ----------------------------------------------------------------------
+  arm64-cross-build:
+    name: Linux ARM64 Cross-Build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add ARM64 Architecture
+        run: |
+          sudo dpkg --add-architecture arm64
+          sudo add-apt-repository -y universe
+          sudo add-apt-repository -y multiverse
+          sudo sed -i 's/^Types: deb$/Types: deb\nArchitectures: amd64/' /etc/apt/sources.list.d/ubuntu.sources
+          cat <<EOF | sudo tee /etc/apt/sources.list.d/arm64.list
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble main universe multiverse restricted
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-updates main universe multiverse restricted
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-security main universe multiverse restricted
+          EOF
+          sudo apt-get update
+
+      - name: Install ARM64 Toolchain & Libraries
+        run: |
+          sudo dpkg --remove --force-all libcurl4-openssl-dev libcurl4-gnutls-dev libcups2 libcups2t64 || true
+          sudo apt-get update
+          sudo apt-get -f install -y
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build zipcmp zipmerge ziptool qemu-user-static \
+            g++-aarch64-linux-gnu qt6-base-dev:arm64 qt6-charts-dev:arm64 qt6-svg-dev:arm64 \
+            qt6-l10n-tools:arm64 qt6-tools-dev:arm64 qt6-tools-dev-tools:arm64 \
+            libqt6core5compat6-dev:arm64 libssl-dev:arm64 libzip-dev:arm64 \
+            libcurl4-openssl-dev:arm64 libboost-system-dev:arm64 libboost-filesystem-dev:arm64 \
+            libboost-thread-dev:arm64 libboost-iostreams-dev:arm64 libboost-program-options-dev:arm64 \
+            libboost-serialization-dev:arm64 libboost-chrono-dev:arm64 \
+            libminiupnpc-dev:arm64 libxkbcommon-dev:arm64 \
+            libcups2t64:arm64 \
+            ccache
+
+      - name: Setup Concurrency
+        run: |
+          if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
+            echo "CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "CTEST_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "Concurrency: Auto-detected $(nproc) cores."
+          else
+            echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
+          fi
+
+      - name: Configure Ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-prod-arm64-${{ github.sha }}
+          restore-keys: ccache-prod-arm64-
+
+      - name: Configure CMake (Cross)
+        env:
+          PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig
+        run: |
+          cmake -B build_arm64 -GNinja \
+            -DCMAKE_SYSTEM_NAME=Linux \
+            -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+            -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
+            -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
+            -DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu \
+            -DCMAKE_FIND_ROOT_PATH="/usr/lib/aarch64-linux-gnu;/usr/include/aarch64-linux-gnu" \
+            -DCMAKE_SYSROOT=/ \
+            -DENABLE_GUI=ON \
+            -DUSE_QT6=ON \
+            -DQt6_DIR=/usr/lib/aarch64-linux-gnu/cmake/Qt6 \
+            -DENABLE_UPNP=ON \
+            -DDEFAULT_UPNP=ON \
+            -DENABLE_TESTS=OFF \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+      - name: Build
+        run: cmake --build build_arm64
+
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p dist
+          cp build_arm64/bin/gridcoinresearchd dist/
+          cp build_arm64/bin/gridcoinresearch dist/
+
+      - name: Upload Artifacts
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridcoin-aarch64-linux-gnu
+          path: dist/
+          retention-days: 5
+
+  # ----------------------------------------------------------------------
+  # JOB 3: Publish Docker Images
+  # ----------------------------------------------------------------------
+  docker-publish:
+    name: Publish Docker Images
+    needs: [amd64-native-build, arm64-cross-build]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download x86_64 Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gridcoin-x86_64-linux-gnu
+          path: artifacts/amd64
+
+      - name: Download ARM64 Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gridcoin-aarch64-linux-gnu
+          path: artifacts/arm64
+
+      - name: Stage Binaries
+        run: |
+          cd contrib/docker
+          mkdir -p bin/amd64 bin/arm64
+
+          cp ../../artifacts/amd64/gridcoinresearchd bin/amd64/
+          cp ../../artifacts/amd64/gridcoinresearch bin/amd64/
+
+          cp ../../artifacts/arm64/gridcoinresearchd bin/arm64/
+          cp ../../artifacts/arm64/gridcoinresearch bin/arm64/
+
+          chmod +x bin/amd64/gridcoin* bin/arm64/gridcoin*
+
+          echo "Staged binaries:"
+          file bin/amd64/* bin/arm64/*
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Version from Tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Build and Push Headless Image
+        uses: docker/build-push-action@v6
+        with:
+          context: contrib/docker
+          file: contrib/docker/Dockerfile.headless
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/gridcoinresearchd:${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/gridcoinresearchd:latest
+
+      - name: Build and Push GUI Image
+        uses: docker/build-push-action@v6
+        with:
+          context: contrib/docker
+          file: contrib/docker/Dockerfile.gui
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/gridcoinresearch:${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/gridcoinresearch:latest
+
+  # ----------------------------------------------------------------------
+  # JOB 4: Deploy (GitHub Release)
   # ----------------------------------------------------------------------
   deploy:
     name: Create Release
