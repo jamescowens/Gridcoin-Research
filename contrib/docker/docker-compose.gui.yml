@@ -13,6 +13,9 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix:ro
     ports:
       - "${P2P_PORT:-32749}:32749"
+    read_only: true
+    tmpfs:
+      - /tmp
     security_opt:
       - no-new-privileges:true
     cap_drop:

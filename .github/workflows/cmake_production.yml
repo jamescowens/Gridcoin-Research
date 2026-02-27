@@ -470,6 +470,9 @@ jobs:
 
           chmod +x bin/amd64/gridcoin* bin/arm64/gridcoin*
 
+          echo "Staged binaries:"
+          file bin/amd64/* bin/arm64/*
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 

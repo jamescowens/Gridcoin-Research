@@ -11,10 +11,11 @@ Official Docker images for running Gridcoin as a headless daemon or with the Qt 
 
 Both images support `linux/amd64` and `linux/arm64`.
 
-**Note:** The amd64 images use statically-linked binaries and are smaller (~100 MB). The arm64
-images use dynamically-linked binaries (cross-compiled with system libraries) and include
-runtime shared libraries, making them larger (~200-300 MB). The Docker container provides
-the hermetic environment for arm64 instead of static linking.
+**Note:** The amd64 images use statically-linked binaries and are smaller (~95 MB headless,
+~143 MB GUI). The arm64 images use dynamically-linked binaries (cross-compiled with system
+libraries) and include runtime shared libraries, making them larger (~134 MB headless,
+~438 MB GUI). The Docker container provides the hermetic environment for arm64 instead of
+static linking.
 
 ## Quick Start
 
@@ -30,13 +31,18 @@ docker run -d \
   ghcr.io/gridcoin-community/gridcoinresearchd:latest
 ```
 
+For RPC access, see [Exchange Deployment](#exchange-deployment) -- always bind the RPC
+port to `127.0.0.1` to avoid exposing credentials to the network.
+
 ### GUI
 
 ```bash
 docker pull ghcr.io/gridcoin-community/gridcoinresearch:latest
 
-# Allow X11 connections (run on host)
-xhost +local:docker
+# Allow X11 connections for the current local user only (run on host).
+# Avoid broad commands like 'xhost +local:' which allow any local container
+# to connect to your X server (keystroke capture, input injection).
+xhost +SI:localuser:$(id -un)
 
 docker run -d \
   --name gridcoin-gui \

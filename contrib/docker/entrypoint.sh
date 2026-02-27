@@ -19,6 +19,8 @@ server=1
 rpcuser=gridcoinrpc
 rpcpassword=$(openssl rand -hex 32)
 rpcallowip=127.0.0.1
+# Docker internal networks -- allows RPC from linked containers.
+# Customize these for production; see README for details.
 rpcallowip=10.0.0.0/8
 rpcallowip=172.16.0.0/12
 rpcallowip=192.168.0.0/16
