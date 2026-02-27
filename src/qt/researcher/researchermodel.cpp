@@ -16,6 +16,7 @@
 #include "gridcoin/support/xml.h"
 #include "node/ui_interface.h"
 #include "util/strencodings.h"
+#include <util/string.h>
 
 #include "qt/bitcoinunits.h"
 #include "qt/guiutil.h"
@@ -141,6 +142,8 @@ QString ResearcherModel::mapBeaconStatus(const BeaconStatus status)
             return tr("Current beacon is not renewable yet.");
         case BeaconStatus::ERROR_TX_FAILED:
             return tr("Unable to send beacon transaction. See debug.log");
+        case BeaconStatus::ERROR_INVALID_PROOF_XML:
+            return tr("Invalid ownership proof XML. Verify the pasted content.");
         case BeaconStatus::ERROR_WALLET_LOCKED:
             return tr("Unlock wallet fully to send a beacon transaction.");
         case BeaconStatus::NO_BEACON:
@@ -181,6 +184,7 @@ QIcon ResearcherModel::mapBeaconStatusIcon(const BeaconStatus status) const
         case BeaconStatus::ERROR_MISSING_KEY:        return make_icon(danger);
         case BeaconStatus::ERROR_NOT_NEEDED:         return make_icon(success);
         case BeaconStatus::ERROR_TX_FAILED:          return make_icon(danger);
+        case BeaconStatus::ERROR_INVALID_PROOF_XML: return make_icon(danger);
         case BeaconStatus::ERROR_WALLET_LOCKED:      return make_icon(danger);
         case BeaconStatus::NO_BEACON:                return make_icon(inactive);
         case BeaconStatus::NO_CPID:                  return make_icon(inactive);
@@ -832,6 +836,8 @@ QString ResearcherModel::generateBeaconKeyForV3()
 {
     const CpidOption cpid = m_researcher->Id().TryCpid();
 
+    // The wizard flow requires a CPID before reaching the beacon page, so
+    // this is not reachable in practice. Defensive check only.
     if (!cpid) {
         return QString();
     }
@@ -856,24 +862,24 @@ BeaconStatus ResearcherModel::advertiseBeaconV3(const QString& ownership_proof_x
 
     const std::string xml = ownership_proof_xml.toStdString();
 
-    const std::string master_url = ExtractXML(xml, "<master_url>", "</master_url>");
-    const std::string msg = ExtractXML(xml, "<msg>", "</msg>");
-    const std::string sig_b64 = ExtractXML(xml, "<signature>", "</signature>");
+    const std::string master_url = TrimString(ExtractXML(xml, "<master_url>", "</master_url>"));
+    const std::string msg = TrimString(ExtractXML(xml, "<msg>", "</msg>"));
+    const std::string sig_b64 = TrimString(ExtractXML(xml, "<signature>", "</signature>"));
 
     if (master_url.empty() || msg.empty() || sig_b64.empty()) {
-        return BeaconStatus::ERROR_TX_FAILED;
+        return BeaconStatus::ERROR_INVALID_PROOF_XML;
     }
 
     // Parse the msg field: "{account_id} {beacon_public_key_hex}"
     const size_t space_pos = msg.find(' ');
 
     if (space_pos == std::string::npos || space_pos + 1 >= msg.size()) {
-        return BeaconStatus::ERROR_TX_FAILED;
+        return BeaconStatus::ERROR_INVALID_PROOF_XML;
     }
 
     uint32_t account_id = 0;
     if (!ParseUInt32(msg.substr(0, space_pos), &account_id) || account_id == 0) {
-        return BeaconStatus::ERROR_TX_FAILED;
+        return BeaconStatus::ERROR_INVALID_PROOF_XML;
     }
 
     const std::string public_key_hex = msg.substr(space_pos + 1);
@@ -881,7 +887,7 @@ BeaconStatus ResearcherModel::advertiseBeaconV3(const QString& ownership_proof_x
     CPubKey beacon_pubkey(pubkey_bytes);
 
     if (!beacon_pubkey.IsValid()) {
-        return BeaconStatus::ERROR_TX_FAILED;
+        return BeaconStatus::ERROR_INVALID_PROOF_XML;
     }
 
     if (!pwalletMain->HaveKey(beacon_pubkey.GetID())) {
@@ -892,7 +898,7 @@ BeaconStatus ResearcherModel::advertiseBeaconV3(const QString& ownership_proof_x
     const std::vector<uint8_t> rsa_sig_bytes = DecodeBase64(sig_b64.c_str(), &b64_invalid);
 
     if (b64_invalid || rsa_sig_bytes.empty()) {
-        return BeaconStatus::ERROR_TX_FAILED;
+        return BeaconStatus::ERROR_INVALID_PROOF_XML;
     }
 
     Beacon beacon(beacon_pubkey);

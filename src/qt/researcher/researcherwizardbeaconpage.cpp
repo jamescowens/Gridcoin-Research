@@ -158,7 +158,7 @@ void ResearcherWizardBeaconPage::advertiseBeacon()
 
         m_v3_key_generated = true;
         updateBeaconStatus(tr("Beacon key generated. Press \"Next\" to continue."));
-        emit completeChanged();
+        refresh();
         return;
     }
 
@@ -196,5 +196,5 @@ void ResearcherWizardBeaconPage::onVerificationMethodToggled()
         ui->sendBeaconButton->setText(tr("&Advertise Beacon"));
     }
 
-    emit completeChanged();
+    refresh();
 }

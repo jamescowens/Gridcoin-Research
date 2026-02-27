@@ -1557,9 +1557,9 @@ UniValue advertisebeaconv3(const UniValue& params, bool fHelp)
     // Parse the XML block from the BOINC project.
     const std::string xml = params[0].get_str();
 
-    const std::string master_url = ExtractXML(xml, "<master_url>", "</master_url>");
-    const std::string msg = ExtractXML(xml, "<msg>", "</msg>");
-    const std::string sig_b64 = ExtractXML(xml, "<signature>", "</signature>");
+    const std::string master_url = TrimString(ExtractXML(xml, "<master_url>", "</master_url>"));
+    const std::string msg = TrimString(ExtractXML(xml, "<msg>", "</msg>"));
+    const std::string sig_b64 = TrimString(ExtractXML(xml, "<signature>", "</signature>"));
 
     if (master_url.empty() || msg.empty() || sig_b64.empty()) {
         throw JSONRPCError(

@@ -6,6 +6,7 @@
 #define GRIDCOIN_QT_RESEARCHER_RESEARCHERMODEL_H
 
 #include <memory>
+#include <utility>
 #include <vector>
 #include "amount.h"
 #include <QObject>
@@ -39,6 +40,7 @@ enum class BeaconStatus
     ERROR_MISSING_KEY,
     ERROR_NOT_NEEDED,
     ERROR_TX_FAILED,
+    ERROR_INVALID_PROOF_XML,
     ERROR_WALLET_LOCKED,
     NO_BEACON,
     NO_CPID,
