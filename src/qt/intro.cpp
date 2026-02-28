@@ -167,11 +167,18 @@ void Intro::setDataDirectory(const QString &dataDir)
 bool Intro::showIfNeeded(bool& did_show_intro)
 {
     QSettings settings;
-    // If data directory provided on command line AND -choosedatadir is not specified, no need to look at settings or
-    // show a picking dialog. The -choosedatadir test is required because showIfNeeded is called after the initialization
-    // of the optionsModel, which will populate the datadir from the GUI settings if present. Without it, you would then
-    // not be able to get the chooser dialog to come up again once a datadir is stored in the GUI settings config file.
-    if (!gArgs.GetArg("-datadir", "").empty() && !gArgs.GetBoolArg("-choosedatadir", DEFAULT_CHOOSE_DATADIR)) {
+    // If data directory provided on command line AND -choosedatadir is not specified AND the directory exists,
+    // no need to look at settings or show a picking dialog. The -choosedatadir test is required because
+    // showIfNeeded is called after the initialization of the optionsModel, which will populate the datadir
+    // from the GUI settings if present. Without it, you would then not be able to get the chooser dialog to
+    // come up again once a datadir is stored in the GUI settings config file.
+    //
+    // If the stored path does not exist (e.g. moved, deleted, or corrupted by a Unicode encoding issue),
+    // fall through to the directory chooser dialog so the user can reselect.
+    std::string datadir_arg = gArgs.GetArg("-datadir", "");
+    if (!datadir_arg.empty()
+            && !gArgs.GetBoolArg("-choosedatadir", DEFAULT_CHOOSE_DATADIR)
+            && fs::exists(datadir_arg)) {
         return true;
     }
     /* 1) Default data directory for operating system */
