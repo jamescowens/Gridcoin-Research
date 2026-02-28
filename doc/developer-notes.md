@@ -14,7 +14,7 @@ Developer Notes
         - [Compiling for debugging](#compiling-for-debugging)
         - [Compiling for gprof profiling](#compiling-for-gprof-profiling)
         - [`debug.log`](#debuglog)
-        - [Signet, testnet, and regtest modes](#signet-testnet-and-regtest-modes)
+        - [Testnet mode](#testnet-mode)
         - [DEBUG_LOCKORDER](#debug_lockorder)
         - [Valgrind suppressions file](#valgrind-suppressions-file)
         - [Compiling for test coverage](#compiling-for-test-coverage)
@@ -43,7 +43,6 @@ Developer Notes
         - [Suggestions and examples](#suggestions-and-examples)
     - [Release notes](#release-notes)
     - [RPC interface guidelines](#rpc-interface-guidelines)
-    - [Internal interface guidelines](#internal-interface-guidelines)
 
 <!-- markdown-toc end -->
 
@@ -52,11 +51,18 @@ Coding Style (General)
 
 Various coding styles have been used during the history of the codebase,
 and the result is not very consistent. However, we're now trying to converge to
-a single style, which is specified below. When writing patches, favor the new
-style over attempting to mimic the surrounding style, except for move-only
-commits.
+a single style, which is specified below. The following guidelines apply:
 
-Do not submit patches solely to modify the style of existing code.
+- **New code and new modules** should follow the style guide below.
+- **Modifying legacy code:** be consistent with the surrounding scope. Avoid
+  gratuitous style churn in otherwise focused patches.
+- **Don't mix cosmetic/style changes with domain changes** in the same commit.
+  If style cleanup is needed, do it in a separate commit (scripted-diff is
+  preferred for large-scale reformatting).
+- **New scopes within legacy code** (e.g. a new function in an old file) may
+  follow the style guide.
+- **Upstream (subtree) code** should not have its style modified in-tree. Send
+  style changes upstream.
 
 Coding Style (C++)
 ------------------
@@ -94,6 +100,13 @@ code.
   - Test suite naming convention: The Boost test suite in file
     `src/test/foo_tests.cpp` should be named `foo_tests`. Test suite names
     must be unique.
+
+  - **Legacy conventions:** Older code uses Hungarian notation for variable
+    names (`nCount`, `strName`, `fEnabled`, `vItems`, `mapEntries`,
+    `pPointer`) and the `C` class prefix (`CBlock`, `CWallet`). The modern
+    conventions above (snake_case, `m_` prefix, no `C` prefix) are preferred
+    for new code, but existing conventions should be respected per the general
+    style guidance above.
 
 - **Miscellaneous**
   - `++i` is preferred over `i++`.
@@ -231,11 +244,15 @@ Recommendations:
 
 ### Generating Documentation
 
-The documentation can be generated with `make docs` and cleaned up with `make
-clean-docs`. The resulting files are located in `doc/doxygen/html`; open
-`index.html` in that directory to view the homepage.
+The documentation can be generated with CMake:
 
-Before running `make docs`, you'll need to install these dependencies:
+```shell
+cmake -B build -DENABLE_DOCS=ON
+cmake --build build --target docs
+# Output: build/doc/doxygen/html/index.html
+```
+
+Before building the docs, you'll need to install these dependencies:
 
 Linux: `sudo apt install doxygen graphviz`
 
@@ -246,12 +263,22 @@ Development tips and tricks
 
 ### Compiling for debugging
 
-Run configure with `--enable-debug` to add additional compiler flags that
-produce better debugging builds.
+Configure with `-DCMAKE_BUILD_TYPE=Debug` to produce debugging builds:
+
+```shell
+cmake -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build -j $(nproc)
+```
+
+Note: The default build type `RelWithDebInfo` provides debug symbols with
+optimizations enabled, which is sufficient for most debugging with `gdb`.
 
 ### Compiling for gprof profiling
 
-Run configure with the `--enable-gprof` option, then make.
+gprof is not currently supported as a dedicated option in the CMake build
+system. Use `perf` instead (see [Performance profiling with
+perf](#performance-profiling-with-perf) below), which is the preferred modern
+approach and does not require recompilation.
 
 ### `debug.log`
 
@@ -266,20 +293,20 @@ needs for debugging, while -debug=NOISY results in extensive debugging entries.
 The Qt code routes `qDebug()` output to `debug.log` under category "qt": run
 with `-debug=qt` to see it.
 
-### testnet mode
+### Testnet mode
 
 If you are testing multi-machine code that needs to operate across the internet,
 you can run with the `-testnet` config option to test with "play Gridcoins" on
-the test network. Please ensure you have specified an `org=<identifier>` in your
-config file if you use testnet.
+the test network. Specify `org=<identifier>` in your config file when using
+testnet so that your nodes can be identified.
 
 ### DEBUG_LOCKORDER
 
 Gridcoin is a multi-threaded application, and deadlocks or other
-multi-threading bugs can be very difficult to track down. The `--enable-debug`
-configure option adds `-DDEBUG_LOCKORDER` to the compiler flags. This inserts
-run-time checks to keep track of which locks are held and adds warnings to the
-`debug.log` file if inconsistencies are detected.
+multi-threading bugs can be very difficult to track down. Building with
+`-DCMAKE_BUILD_TYPE=Debug` adds `-DDEBUG_LOCKORDER` to the compiler flags.
+This inserts run-time checks to keep track of which locks are held and adds
+warnings to the `debug.log` file if inconsistencies are detected.
 
 ### Assertions and Checks
 
@@ -326,18 +353,23 @@ $ ./test/functional/test_runner.py --valgrind
 
 ### Compiling for test coverage
 
-LCOV can be used to generate a test coverage report based upon `make check`
-execution. LCOV must be installed on your system (e.g. the `lcov` package
-on Debian/Ubuntu).
-
-To enable LCOV report generation during test runs:
+Dedicated lcov/coverage support is not yet integrated into the CMake build
+system. See [`doc/cmake-options.md`](cmake-options.md) for current build
+options. In the meantime, coverage can be achieved manually by adding
+`--coverage` to `CMAKE_CXX_FLAGS` and `CMAKE_EXE_LINKER_FLAGS`:
 
 ```shell
-./configure --enable-lcov
-make
-make cov
+cmake -B build_cov \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_CXX_FLAGS="--coverage" \
+  -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+cmake --build build_cov -j $(nproc)
+ctest --test-dir build_cov --output-on-failure
 
-# A coverage report will now be accessible at `./test_gridcoin.coverage/index.html`.
+# Generate report with lcov (install the `lcov` package on Debian/Ubuntu):
+lcov --capture --directory build_cov --output-file coverage.info
+genhtml coverage.info --output-directory coverage_report
+# Open coverage_report/index.html to view.
 ```
 
 ### Performance profiling with perf
@@ -384,45 +416,56 @@ or using a graphical tool like [Hotspot](https://github.com/KDAB/hotspot).
 See the functional test documentation for how to invoke perf within tests.
 
 
-### Sanitizers (coming soon)
+### Sanitizers
 
 Gridcoin Core can be compiled with various "sanitizers" enabled, which add
 instrumentation for issues regarding things like memory safety, thread race
-conditions, or undefined behavior. This is controlled with the
-`--with-sanitizers` configure flag, which should be a comma separated list of
-sanitizers to enable. The sanitizer list should correspond to supported
-`-fsanitize=` options in your compiler. These sanitizers have runtime overhead,
+conditions, or undefined behavior. These sanitizers have runtime overhead,
 so they are most useful when testing changes or producing debugging builds.
+Sanitizers are actively used in CI (see `.github/workflows/cmake_quality.yml`).
 
-Some examples:
+To build with AddressSanitizer (ASan) and UndefinedBehaviorSanitizer (UBSan),
+pass the flags via `CMAKE_CXX_FLAGS` and `CMAKE_EXE_LINKER_FLAGS`:
 
 ```bash
-# Enable both the address sanitizer and the undefined behavior sanitizer
-./configure --with-sanitizers=address,undefined
+cmake -B build_asan \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DUSE_ASM=OFF \
+  -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
+  -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+cmake --build build_asan -j $(nproc)
 
-# Enable the thread sanitizer
-./configure --with-sanitizers=thread
+# Run tests with suppression files:
+LSAN_OPTIONS=suppressions=test/sanitizer_suppressions/lsan \
+UBSAN_OPTIONS=suppressions=test/sanitizer_suppressions/ubsan:print_stacktrace=1:halt_on_error=1 \
+ASAN_OPTIONS=malloc_context_size=0:check_initialization_order=1 \
+  ctest --test-dir build_asan --output-on-failure
 ```
 
-If you are compiling with GCC you will typically need to install corresponding
-"san" libraries to actually compile with these flags, e.g. libasan for the
-address sanitizer, libtsan for the thread sanitizer, and libubsan for the
-undefined sanitizer. If you are missing required libraries, the configure script
-will fail with a linker error when testing the sanitizer flags.
+To build with ThreadSanitizer (TSan) instead:
 
-The test suite should pass cleanly with the `thread` and `undefined` sanitizers,
-but there are a number of known problems when using the `address` sanitizer. The
-address sanitizer is known to fail in
-[sha256_sse4::Transform](/src/crypto/sha256_sse4.cpp) which makes it unusable
-unless you also use `--disable-asm` when running configure. We would like to fix
-sanitizer issues, so please send pull requests if you can fix any errors found
-by the address sanitizer (or any other sanitizer).
+```bash
+cmake -B build_tsan \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_CXX_FLAGS="-fsanitize=thread" \
+  -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=thread"
+cmake --build build_tsan -j $(nproc)
 
-Not all sanitizer options can be enabled at the same time, e.g. trying to build
-with `--with-sanitizers=address,thread` will fail in the configure script as
-these sanitizers are mutually incompatible. Refer to your compiler manual to
-learn more about these options and which sanitizers are supported by your
-compiler.
+TSAN_OPTIONS=suppressions=test/sanitizer_suppressions/tsan \
+  ctest --test-dir build_tsan --output-on-failure
+```
+
+Suppression files for known issues in dependencies are located in
+`test/sanitizer_suppressions/` (lsan, tsan, ubsan).
+
+Notes:
+- `-DUSE_ASM=OFF` is recommended when using ASan, as the hand-written assembly
+  in SHA-256 can produce false positives.
+- If you are compiling with GCC you will typically need to install corresponding
+  "san" libraries, e.g. `libasan` for ASan, `libtsan` for TSan, and `libubsan`
+  for UBSan.
+- ASan and TSan are mutually incompatible and cannot be enabled at the same
+  time. Refer to your compiler manual for details.
 
 Additional resources:
 
@@ -443,13 +486,31 @@ The code is multi-threaded and uses mutexes and the
 Deadlocks due to inconsistent lock ordering (thread 1 locks `cs_main` and then
 `cs_wallet`, while thread 2 locks them in the opposite order: result, deadlock
 as each waits for the other to release its lock) are a problem. Compile with
-`-DDEBUG_LOCKORDER` (or use `--enable-debug`) to get lock order inconsistencies
-reported in the `debug.log` file.
+`-DDEBUG_LOCKORDER` (enabled by `-DCMAKE_BUILD_TYPE=Debug`) to get lock order
+inconsistencies reported in the `debug.log` file.
 
 Re-architecting the core code so there are better-defined interfaces
 between the various components is a goal, with any necessary locking
 done by the components (e.g. see the self-contained `FillableSigningProvider` class
 and its `cs_KeyStore` lock for example).
+
+Threads
+--------
+
+Gridcoin is a multi-threaded application. Key threads include:
+
+| Thread | Source | Description |
+|--------|--------|-------------|
+| `ThreadStakeMiner` | `src/miner.cpp` | Proof-of-stake block creation |
+| `ThreadScraper` | `src/gridcoin/scraper/scraper.cpp` | Active scraper: downloads BOINC project stats and publishes signed manifests (mutually exclusive with subscriber) |
+| `ThreadScraperSubscriber` | `src/gridcoin/scraper/scraper.cpp` | Subscriber: receives scraper manifests and runs convergence to build superblocks (mutually exclusive with scraper) |
+| `ThreadSocketHandler` | `src/net.cpp` | Low-level socket I/O for P2P connections |
+| `ThreadMessageHandler` | `src/net.cpp` | Processes incoming P2P messages |
+| `ThreadOpenConnections` | `src/net.cpp` | Manages outbound peer connections |
+| `ThreadDNSAddressSeed` | `src/net.cpp` | Resolves DNS seeds to bootstrap peer discovery |
+| `ThreadDumpAddress` | `src/net.cpp` | Periodically dumps known peer addresses to `peers.dat` |
+| RPC threads | `src/rpc/server.cpp` | Thread pool serving JSON-RPC requests |
+| Scheduler | `src/scheduler.cpp` | Runs deferred and periodic tasks |
 
 Ignoring IDE/editor files
 --------------------------
@@ -734,49 +795,39 @@ Threads and synchronization
     (lack of compile failure) at call sites between the two.
 
 ```C++
-// txmempool.h
-class CTxMemPool
-{
-public:
-    ...
-    mutable RecursiveMutex cs;
-    ...
-    void UpdateTransactionsFromBlock(...) EXCLUSIVE_LOCKS_REQUIRED(::cs_main, cs);
-    ...
-}
+// miner.h
+bool CreateGridcoinReward(CBlock& blocknew,
+                          CBlockIndex* pindexPrev,
+                          int64_t& nReward,
+                          GRC::Claim& claim) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
-// txmempool.cpp
-void CTxMemPool::UpdateTransactionsFromBlock(...)
+// miner.cpp
+bool CreateGridcoinReward(CBlock& blocknew,
+                          CBlockIndex* pindexPrev,
+                          int64_t& nReward,
+                          GRC::Claim& claim)
 {
-    AssertLockHeld(::cs_main);
-    AssertLockHeld(cs);
+    AssertLockHeld(cs_main);
     ...
 }
 ```
 
 ```C++
-// validation.h
-class ChainstateManager
-{
-public:
-    ...
-    bool ProcessNewBlock(...) LOCKS_EXCLUDED(::cs_main);
-    ...
-}
+// Example: a function that acquires cs_main internally
+// main.h
+bool GetTransaction(const uint256& hash, CTransaction& tx, uint256& hashBlock);
 
-// validation.cpp
-bool ChainstateManager::ProcessNewBlock(...)
+// main.cpp
+bool GetTransaction(const uint256& hash, CTransaction& tx, uint256& hashBlock)
 {
-    AssertLockNotHeld(::cs_main);
-    ...
-    LOCK(::cs_main);
+    LOCK(cs_main);
     ...
 }
 ```
 
 - Build and run tests with `-DDEBUG_LOCKORDER` to verify that no potential
-  deadlocks are introduced. As of 0.12, this is defined by default when
-  configuring with `--enable-debug`.
+  deadlocks are introduced. This is enabled by default when building with
+  `-DCMAKE_BUILD_TYPE=Debug`.
 
 - When using `LOCK`/`TRY_LOCK` be aware that the lock exists in the context of
   the current scope, so surround the statement and the code that needs the lock
@@ -875,14 +926,18 @@ namespace {
     source file into account. This allows quoted includes to stand out more when
     the location of the source file actually is relevant.
 
-- Use include guards to avoid the problem of double inclusion. The header file
-  `foo/bar.h` should use the include guard identifier `BITCOIN_FOO_BAR_H`, e.g.
+- Use include guards to avoid the problem of double inclusion. Two conventions
+  are in use:
+  - Bitcoin-inherited headers retain the `BITCOIN_` prefix for upstream
+    compatibility: `foo/bar.h` uses `BITCOIN_FOO_BAR_H`.
+  - Gridcoin-specific headers use the `GRIDCOIN_` prefix: `gridcoin/foo.h`
+    uses `GRIDCOIN_FOO_H`.
 
 ```c++
-#ifndef BITCOIN_FOO_BAR_H
-#define BITCOIN_FOO_BAR_H
+#ifndef GRIDCOIN_FOO_H
+#define GRIDCOIN_FOO_H
 ...
-#endif // BITCOIN_FOO_BAR_H
+#endif // GRIDCOIN_FOO_H
 ```
 
 GUI
@@ -895,10 +950,7 @@ GUI
     converse also holds: try to not directly access core data structures from
     Views.
 
-- Avoid adding slow or blocking code in the GUI thread. In particular, do not
-  add new `interfaces::Node` and `interfaces::Wallet` method calls, even if they
-  may be fast now, in case they are changed to lock or communicate across
-  processes in the future.
+- Avoid adding slow or blocking code in the GUI thread.
 
   Prefer to offload work from the GUI thread to worker threads (see
   `RPCExecutor` in console code as an example) or take other steps (see
@@ -1131,19 +1183,6 @@ A few guidelines for introducing and reviewing new RPC interfaces:
   - *Rationale*: If a RPC response is not a JSON object, then it is harder to avoid API breakage if
     new data in the response is needed.
 
-- Wallet RPCs call BlockUntilSyncedToCurrentChain to maintain consistency with
-  `getblockchaininfo`'s state immediately prior to the call's execution. Wallet
-  RPCs whose behavior does *not* depend on the current chainstate may omit this
-  call.
-
-  - *Rationale*: In previous versions of Gridcoin Core, the wallet was always
-    in-sync with the chainstate (by virtue of them all being updated in the
-    same cs_main lock). In order to maintain the behavior that wallet RPCs
-    return results as of at least the highest best-known block an RPC
-    client may be aware of prior to entering a wallet RPC call, we must block
-    until the wallet is caught up to the chainstate as of the RPC call's entry.
-    This also makes the API much easier for RPC clients to reason about.
-
 - Be aware of RPC method aliases and generally avoid registering the same
   callback function pointer for different RPCs.
 
@@ -1155,134 +1194,12 @@ A few guidelines for introducing and reviewing new RPC interfaces:
     new RPC is replacing a deprecated RPC, to avoid both RPCs confusingly
     showing up in the command list.
 
-- Use *invalid* bech32 addresses (e.g. in the constant array `EXAMPLE_ADDRESS`) for
-  `RPCExamples` help documentation.
+- Use clearly invalid Base58Check addresses for `RPCExamples` help
+  documentation.
 
-  - *Rationale*: Prevent accidental transactions by users and encourage the use
-    of bech32 addresses by default.
+  - *Rationale*: Prevent accidental transactions by users.
 
 - Use the `UNIX_EPOCH_TIME` constant when describing UNIX epoch time or
   timestamps in the documentation.
 
   - *Rationale*: User-facing consistency.
-
-Internal interface guidelines
------------------------------
-
-Internal interfaces between parts of the codebase that are meant to be
-independent (node, wallet, GUI), are defined in
-[`src/interfaces/`](../src/interfaces/). The main interface classes defined
-there are [`interfaces::Chain`](../src/interfaces/chain.h), used by wallet to
-access the node's latest chain state,
-[`interfaces::Node`](../src/interfaces/node.h), used by the GUI to control the
-node, and [`interfaces::Wallet`](../src/interfaces/wallet.h), used by the GUI
-to control an individual wallet. There are also more specialized interface
-types like [`interfaces::Handler`](../src/interfaces/handler.h)
-[`interfaces::ChainClient`](../src/interfaces/chain.h) passed to and from
-various interface methods.
-
-Interface classes are written in a particular style so node, wallet, and GUI
-code doesn't need to run in the same process, and so the class declarations
-work more easily with tools and libraries supporting interprocess
-communication:
-
-- Interface classes should be abstract and have methods that are [pure
-  virtual](https://en.cppreference.com/w/cpp/language/abstract_class). This
-  allows multiple implementations to inherit from the same interface class,
-  particularly so one implementation can execute functionality in the local
-  process, and other implementations can forward calls to remote processes.
-
-- Interface method definitions should wrap existing functionality instead of
-  implementing new functionality. Any substantial new node or wallet
-  functionality should be implemented in [`src/node/`](../src/node/) or
-  [`src/wallet/`](../src/wallet/) and just exposed in
-  [`src/interfaces/`](../src/interfaces/) instead of being implemented there,
-  so it can be more modular and accessible to unit tests.
-
-- Interface method parameter and return types should either be serializable or
-  be other interface classes. Interface methods shouldn't pass references to
-  objects that can't be serialized or accessed from another process.
-
-  Examples:
-
-  ```c++
-  // Good: takes string argument and returns interface class pointer
-  virtual unique_ptr<interfaces::Wallet> loadWallet(std::string filename) = 0;
-
-  // Bad: returns CWallet reference that can't be used from another process
-  virtual CWallet& loadWallet(std::string filename) = 0;
-  ```
-
-  ```c++
-  // Good: accepts and returns primitive types
-  virtual bool findBlock(const uint256& hash, int& out_height, int64_t& out_time) = 0;
-
-  // Bad: returns pointer to internal node in a linked list inaccessible to
-  // other processes
-  virtual const CBlockIndex* findBlock(const uint256& hash) = 0;
-  ```
-
-  ```c++
-  // Good: takes plain callback type and returns interface pointer
-  using TipChangedFn = std::function<void(int block_height, int64_t block_time)>;
-  virtual std::unique_ptr<interfaces::Handler> handleTipChanged(TipChangedFn fn) = 0;
-
-  // Bad: returns boost connection specific to local process
-  using TipChangedFn = std::function<void(int block_height, int64_t block_time)>;
-  virtual boost::signals2::scoped_connection connectTipChanged(TipChangedFn fn) = 0;
-  ```
-
-- For consistency and friendliness to code generation tools, interface method
-  input and inout parameters should be ordered first and output parameters
-  should come last.
-
-  Example:
-
-  ```c++
-  // Good: error output param is last
-  virtual bool broadcastTransaction(const CTransactionRef& tx, CAmount max_fee, std::string& error) = 0;
-
-  // Bad: error output param is between input params
-  virtual bool broadcastTransaction(const CTransactionRef& tx, std::string& error, CAmount max_fee) = 0;
-  ```
-
-- For friendliness to code generation tools, interface methods should not be
-  overloaded:
-
-  Example:
-
-  ```c++
-  // Good: method names are unique
-  virtual bool disconnectByAddress(const CNetAddr& net_addr) = 0;
-  virtual bool disconnectById(NodeId id) = 0;
-
-  // Bad: methods are overloaded by type
-  virtual bool disconnect(const CNetAddr& net_addr) = 0;
-  virtual bool disconnect(NodeId id) = 0;
-  ```
-
-- For consistency and friendliness to code generation tools, interface method
-  names should be `lowerCamelCase` and standalone function names should be
-  `UpperCamelCase`.
-
-  Examples:
-
-  ```c++
-  // Good: lowerCamelCase method name
-  virtual void blockConnected(const CBlock& block, int height) = 0;
-
-  // Bad: uppercase class method
-  virtual void BlockConnected(const CBlock& block, int height) = 0;
-  ```
-
-  ```c++
-  // Good: UpperCamelCase standalone function name
-  std::unique_ptr<Node> MakeNode(LocalInit& init);
-
-  // Bad: lowercase standalone function
-  std::unique_ptr<Node> makeNode(LocalInit& init);
-  ```
-
-  Note: This last convention isn't generally followed outside of
-  [`src/interfaces/`](../src/interfaces/), though it did come up for discussion
-  before in [#14635](https://github.com/bitcoin/bitcoin/pull/14635).
