@@ -16,6 +16,7 @@ Developer Notes
         - [`debug.log`](#debuglog)
         - [Testnet mode](#testnet-mode)
         - [DEBUG_LOCKORDER](#debug_lockorder)
+        - [Assertions and Checks](#assertions-and-checks)
         - [Valgrind suppressions file](#valgrind-suppressions-file)
         - [Compiling for test coverage](#compiling-for-test-coverage)
         - [Performance profiling with perf](#performance-profiling-with-perf)
@@ -240,7 +241,7 @@ Recommendations:
 - Avoid linking to external documentation; links can break.
 
 - Javadoc and all valid Doxygen comments are stripped from Doxygen source code
-  previews (`STRIP_CODE_COMMENTS = YES` in [Doxyfile.in](doc/Doxyfile.in)). If
+  previews (`STRIP_CODE_COMMENTS = YES` in [Doxyfile.in](Doxyfile.in)). If
   you want a comment to be preserved, it must instead use `//` or `/* */`.
 
 ### Generating Documentation
@@ -347,11 +348,10 @@ which includes known Valgrind warnings in our dependencies that cannot be fixed
 in-tree. Example use:
 
 ```shell
-$ valgrind --suppressions=contrib/valgrind.supp src/test/test_gridcoin
+$ valgrind --suppressions=contrib/valgrind.supp build/src/test/test_gridcoin
 $ valgrind --suppressions=contrib/valgrind.supp --leak-check=full \
-      --show-leak-kinds=all src/test/test_gridcoin --log_level=test_suite
-$ valgrind -v --leak-check=full src/gridcoind -printtoconsole
-$ ./test/functional/test_runner.py --valgrind
+      --show-leak-kinds=all build/src/test/test_gridcoin --log_level=test_suite
+$ valgrind -v --leak-check=full build/src/gridcoinresearchd -printtoconsole
 ```
 
 ### Compiling for test coverage
@@ -379,9 +379,8 @@ genhtml coverage.info --output-directory coverage_report
 
 Profiling is a good way to get a precise idea of where time is being spent in
 code. One tool for doing profiling on Linux platforms is called
-[`perf`](http://www.brendangregg.com/perf.html), and has been integrated into
-the functional test framework. Perf can observe a running process and sample
-(at some frequency) where its execution is.
+[`perf`](http://www.brendangregg.com/perf.html). Perf can observe a running
+process and sample (at some frequency) where its execution is.
 
 Perf installation is contingent on which kernel version you're running; see
 [this thread](https://askubuntu.com/questions/50145/how-to-install-perf-monitoring-tool)
@@ -416,7 +415,8 @@ perf report --stdio | c++filt | less
 
 or using a graphical tool like [Hotspot](https://github.com/KDAB/hotspot).
 
-See the functional test documentation for how to invoke perf within tests.
+To profile specific tests or other commands, run them under `perf record` using
+similar options to those shown above.
 
 ### Stopwatch timing with MilliTimer
 
@@ -548,7 +548,7 @@ as each waits for the other to release its lock) are a problem. Compile with
 
 Re-architecting the core code so there are better-defined interfaces
 between the various components is a goal, with any necessary locking
-done by the components (e.g. see the self-contained `FillableSigningProvider` class
+done by the components (e.g. see the self-contained `CKeyStore` class (in `src/keystore.h`)
 and its `cs_KeyStore` lock for example).
 
 Threads
@@ -558,9 +558,9 @@ Gridcoin is a multi-threaded application. Key threads include:
 
 | Thread | Source | Description |
 |--------|--------|-------------|
-| `ThreadStakeMiner` | `src/miner.cpp` | Proof-of-stake block creation |
-| `ThreadScraper` | `src/gridcoin/scraper/scraper.cpp` | Active scraper: downloads BOINC project stats and publishes signed manifests (mutually exclusive with subscriber) |
-| `ThreadScraperSubscriber` | `src/gridcoin/scraper/scraper.cpp` | Subscriber: receives scraper manifests and runs convergence to build superblocks (mutually exclusive with scraper) |
+| `ThreadStakeMiner` | `src/net.cpp` | Proof-of-stake block creation (calls `StakeMiner()` in `src/miner.cpp`) |
+| `ThreadScraper` | `src/gridcoin/gridcoin.cpp` | Active scraper: downloads BOINC project stats and publishes signed manifests (mutually exclusive with subscriber) |
+| `ThreadScraperSubscriber` | `src/gridcoin/gridcoin.cpp` | Subscriber: receives scraper manifests and runs convergence to build superblocks (mutually exclusive with scraper) |
 | `ThreadSocketHandler` | `src/net.cpp` | Low-level socket I/O for P2P connections |
 | `ThreadMessageHandler` | `src/net.cpp` | Processes incoming P2P messages |
 | `ThreadOpenConnections` | `src/net.cpp` | Manages outbound peer connections |
@@ -597,7 +597,7 @@ nbproject/
 Another option is to create a per-repository excludes file `.git/info/exclude`.
 These are not committed but apply only to one repository.
 
-If a set of tools is used by the build system or scripts the repository (for
+If a set of tools is used by the build system or scripts in the repository (for
 example, lcov) it is perfectly acceptable to add its files to `.gitignore`
 and commit them.
 
@@ -769,7 +769,7 @@ Strings and formatting
     buffer overflows, and surprises with `\0` characters. Also, some C string manipulations
     tend to act differently depending on platform, or even the user locale.
 
-- Use `ParseInt32`, `ParseInt64`, `ParseUInt32`, `ParseUInt64`, `ParseDouble` from `utilstrencodings.h` for number parsing.
+- Use `ParseInt32`, `ParseInt64`, `ParseUInt32`, `ParseUInt64`, `ParseDouble` from `util/strencodings.h` for number parsing.
 
   - *Rationale*: These functions do overflow checking and avoid pesky locale issues.
 
@@ -1083,9 +1083,6 @@ The `mem` value shows how many files are mmap'ed, and the `fd` value shows you
 many file descriptors these files are using. You should check that `fd` is a
 small number (usually 0 on 64-bit hosts).
 
-See the notes in the `SetMaxOpenFiles()` function in `dbwrapper.cc` for more
-details.
-
 ### Consensus Compatibility
 
 It is possible for LevelDB changes to inadvertently change consensus
@@ -1203,7 +1200,7 @@ A few guidelines for introducing and reviewing new RPC interfaces:
   default value, both cases should fail in the same way. The easiest way to follow this
   guideline is to detect unspecified arguments with `params[x].isNull()` instead of
   `params.size() <= x`. The former returns true if the argument is either null or missing,
-  while the latter returns true if is missing, and false if it is null.
+  while the latter returns true if it is missing, and false if it is null.
 
   - *Rationale*: Avoids surprises when switching to name-based arguments. Missing name-based arguments
   are passed as 'null'.
@@ -1227,7 +1224,7 @@ A few guidelines for introducing and reviewing new RPC interfaces:
     convert a plaintext command line to JSON. If the types don't match, the method can be unusable
     from there.
 
-- A RPC method must either be a wallet method or a non-wallet method. Do not
+- An RPC method must either be a wallet method or a non-wallet method. Do not
   introduce new methods that differ in behavior based on the presence of a wallet.
 
   - *Rationale*: As well as complicating the implementation and interfering
@@ -1236,7 +1233,7 @@ A few guidelines for introducing and reviewing new RPC interfaces:
 
 - Try to make the RPC response a JSON object.
 
-  - *Rationale*: If a RPC response is not a JSON object, then it is harder to avoid API breakage if
+  - *Rationale*: If an RPC response is not a JSON object, then it is harder to avoid API breakage if
     new data in the response is needed.
 
 - Be aware of RPC method aliases and generally avoid registering the same
