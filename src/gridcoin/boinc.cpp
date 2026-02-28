@@ -7,6 +7,25 @@
 
 #include <vector>
 
+fs::path GRC::ResolveBoincDataDir(const std::vector<fs::path>& candidates)
+{
+    // Pass 1: Prefer a directory with client_state.xml (active BOINC installation).
+    for (const auto& candidate : candidates) {
+        if (fs::exists(candidate / "client_state.xml")) {
+            return candidate;
+        }
+    }
+
+    // Pass 2: Fall back to any directory that exists (installed but not yet run).
+    for (const auto& candidate : candidates) {
+        if (fs::exists(candidate)) {
+            return candidate;
+        }
+    }
+
+    return "";
+}
+
 fs::path GRC::GetBoincDataDir()
 {
     std::string path = gArgs.GetArg("-boincdatadir", "");
@@ -57,7 +76,6 @@ fs::path GRC::GetBoincDataDir()
     #endif
 
     #ifdef __linux__
-    // Build the list of candidate BOINC data directories.
     std::vector<fs::path> linux_candidates = {
         "/var/lib/boinc-client/",
         "/var/lib/boinc/",
@@ -69,18 +87,10 @@ fs::path GRC::GetBoincDataDir()
         linux_candidates.push_back(fs::path(pszHome) / ".var/app/edu.berkeley.BOINC/");
     }
 
-    // Pass 1: Prefer a directory with client_state.xml (active BOINC installation).
-    for (const auto& candidate : linux_candidates) {
-        if (fs::exists(candidate / "client_state.xml")) {
-            return candidate;
-        }
-    }
+    fs::path linux_result = ResolveBoincDataDir(linux_candidates);
 
-    // Pass 2: Fall back to any directory that exists (installed but not yet run).
-    for (const auto& candidate : linux_candidates) {
-        if (fs::exists(candidate)) {
-            return candidate;
-        }
+    if (!linux_result.empty()) {
+        return linux_result;
     }
     #endif
 
