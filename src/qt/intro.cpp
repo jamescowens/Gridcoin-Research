@@ -176,9 +176,13 @@ bool Intro::showIfNeeded(bool& did_show_intro)
     // If the stored path does not exist (e.g. moved, deleted, or corrupted by a Unicode encoding issue),
     // fall through to the directory chooser dialog so the user can reselect.
     std::string datadir_arg = gArgs.GetArg("-datadir", "");
+    // Use the non-throwing fs::exists() overload. A path corrupted by the Unicode encoding bug
+    // (see #2736) may be ill-formed and cause boost::filesystem::filesystem_error. Treating
+    // errors as "does not exist" lets us fall through to the directory chooser safely.
+    boost::system::error_code ec;
     if (!datadir_arg.empty()
             && !gArgs.GetBoolArg("-choosedatadir", DEFAULT_CHOOSE_DATADIR)
-            && fs::exists(datadir_arg)) {
+            && fs::exists(datadir_arg, ec)) {
         return true;
     }
     /* 1) Default data directory for operating system */
