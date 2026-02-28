@@ -19,6 +19,7 @@ Developer Notes
         - [Valgrind suppressions file](#valgrind-suppressions-file)
         - [Compiling for test coverage](#compiling-for-test-coverage)
         - [Performance profiling with perf](#performance-profiling-with-perf)
+        - [Stopwatch timing with MilliTimer](#stopwatch-timing-with-millitimer)
         - [Sanitizers](#sanitizers)
     - [Locking/mutex usage notes](#lockingmutex-usage-notes)
     - [Threads](#threads)
@@ -415,6 +416,60 @@ or using a graphical tool like [Hotspot](https://github.com/KDAB/hotspot).
 
 See the functional test documentation for how to invoke perf within tests.
 
+### Stopwatch timing with MilliTimer
+
+For measuring elapsed time within the application itself, Gridcoin provides the
+`MilliTimer` class ([`src/util/time.h`](/src/util/time.h)). It implements a
+thread-safe stopwatch-style timer with "lap time" support, useful for profiling
+code paths that span multiple functions or stages. A global instance `g_timer`
+is available throughout the codebase.
+
+Key methods:
+
+- `InitTimer(label, log)` — Start a new named timer. If `log` is true, lap
+  times are written to `debug.log` automatically.
+- `GetTimes(log_string, label)` — Return a `timer` struct with `elapsed_time`
+  (since init) and `time_since_last_check` (since last call). If logging is
+  enabled, emits the times to `debug.log` prefixed with `log_string`.
+- `GetElapsedTime(log_string, label)` — Convenience wrapper returning only the
+  elapsed time.
+- `DeleteTimer(label)` — Remove a timer from the map.
+
+Example — timing stages of the miner loop:
+
+```c++
+#include <util/time.h>
+
+extern MilliTimer g_timer;
+
+void ThreadStakeMiner(...)
+{
+    std::string function = __func__ + std::string(": ");
+
+    // Init the "miner" timer; enable logging if MISC category is active
+    g_timer.InitTimer("miner", LogInstance().WillLogCategory(BCLog::LogFlags::MISC));
+
+    // ... do work ...
+    g_timer.GetTimes(function + "SelectCoinsForStaking", "miner");
+
+    // ... do more work ...
+    g_timer.GetTimes(function + "CreateCoinStake", "miner");
+
+    // ... etc ...
+    g_timer.GetTimes(function + "ProcessBlock", "miner");
+}
+```
+
+With logging enabled, each `GetTimes` call emits a line like:
+
+```
+INFO: GetTimes: timer miner: ThreadStakeMiner: CreateCoinStake: elapsed time: 1234 ms, time since last check: 56 ms.
+```
+
+The `g_timer` instance is also used during initialization
+([`src/init.cpp`](/src/init.cpp)) to measure startup phases. For simple
+single-point timings, using `GetTimeMillis()` directly is lighter weight than
+constructing a `MilliTimer`.
 
 ### Sanitizers
 
