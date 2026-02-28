@@ -5,6 +5,8 @@
 #include "gridcoin/boinc.h"
 #include "util.h"
 
+#include <vector>
+
 fs::path GRC::GetBoincDataDir()
 {
     std::string path = gArgs.GetArg("-boincdatadir", "");
@@ -55,23 +57,29 @@ fs::path GRC::GetBoincDataDir()
     #endif
 
     #ifdef __linux__
-    // For Linux, native first, then flatpack...
-    if (fs::exists("/var/lib/boinc-client/")) {
-        return "/var/lib/boinc-client/";
-    } else if (fs::exists("/var/lib/boinc/")) {
-        return "/var/lib/boinc/";
-    }
+    // Build the list of candidate BOINC data directories.
+    std::vector<fs::path> linux_candidates = {
+        "/var/lib/boinc-client/",
+        "/var/lib/boinc/",
+    };
 
-    // This is for flatpack path resolution
     char* pszHome = getenv("HOME");
 
-    // If there is a home path then try the flatpack path.
     if (pszHome && strlen(pszHome) > 0) {
+        linux_candidates.push_back(fs::path(pszHome) / ".var/app/edu.berkeley.BOINC/");
+    }
 
-        fs::path flatpack_path = fs::path(pszHome) / ".var/app/edu.berkeley.BOINC/";
+    // Pass 1: Prefer a directory with client_state.xml (active BOINC installation).
+    for (const auto& candidate : linux_candidates) {
+        if (fs::exists(candidate / "client_state.xml")) {
+            return candidate;
+        }
+    }
 
-        if (fs::exists(flatpack_path)) {
-            return flatpack_path;
+    // Pass 2: Fall back to any directory that exists (installed but not yet run).
+    for (const auto& candidate : linux_candidates) {
+        if (fs::exists(candidate)) {
+            return candidate;
         }
     }
     #endif
