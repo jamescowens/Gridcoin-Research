@@ -39,6 +39,8 @@ print_help() {
     echo "                      Default: number of cpu threads reported by OS"
     echo "  QT_PATH=<path>      Override path to Qt root (e.g. /usr/local/Qt/6.6.0/macos)."
     echo "                      Bypasses Homebrew detection if set."
+    echo "  DEBUG_LOCKORDER=<bool> Enable run-time lock-order checking. Options: true, false."
+    echo "                      Default: false"
     echo "  EXTRA_CMAKE_ARGS    Pass additional arguments to CMake (e.g. '-DBoost_USE_STATIC_LIBS=ON')"
     echo "  CC=<path>           Override C compiler."
     echo "  CXX=<path>          Override C++ compiler."
@@ -115,6 +117,7 @@ USE_QT6="true"
 CC_OVERRIDE=""
 CXX_OVERRIDE=""
 MANUAL_QT_PATH=""
+DEBUG_LOCKORDER="false"
 EXTRA_ARGS=""
 
 for arg in "$@"; do
@@ -157,6 +160,10 @@ for arg in "$@"; do
             ;;
         QT_PATH=*)
             MANUAL_QT_PATH="${arg#*=}"
+            shift
+            ;;
+        DEBUG_LOCKORDER=*)
+            DEBUG_LOCKORDER="${arg#*=}"
             shift
             ;;
         EXTRA_CMAKE_ARGS=*)
@@ -225,6 +232,13 @@ else
     DOCS_CMAKE_FLAG="-DENABLE_DOCS=OFF"
 fi
 
+# Lock-order checking logic
+if [ "$DEBUG_LOCKORDER" = "true" ]; then
+    LOCKORDER_CMAKE_FLAG="-DENABLE_DEBUG_LOCKORDER=ON"
+else
+    LOCKORDER_CMAKE_FLAG="-DENABLE_DEBUG_LOCKORDER=OFF"
+fi
+
 # Determine Concurrency
 if [ -n "$PARALLEL" ]; then
     CORES="$PARALLEL"
@@ -250,6 +264,7 @@ echo "Skip Deps:    $SKIP_DEPS"
 echo "Use Ccache:   $USE_CCACHE"
 echo "With GUI:     $WITH_GUI"
 echo "With Docs:    $WITH_DOCS"
+echo "Lock Order:   $DEBUG_LOCKORDER"
 echo "Qt6:          $USE_QT6"
 if [ -n "$MANUAL_QT_PATH" ]; then echo "Manual Qt:    $MANUAL_QT_PATH"; fi
 if [ -n "$EXTRA_ARGS" ]; then     echo "Extra Args:   $EXTRA_ARGS"; fi
@@ -307,6 +322,7 @@ if [[ "$TARGET" == "all" || "$TARGET" == "native" ]] && [[ "$(uname -s)" == "Lin
         cmake -B build \
             $GUI_CMAKE_FLAG \
             $DOCS_CMAKE_FLAG \
+            $LOCKORDER_CMAKE_FLAG \
             -DENABLE_QRENCODE=ON \
             -DUSE_DBUS=ON \
             -DENABLE_UPNP=ON \
@@ -393,6 +409,7 @@ if [[ "$TARGET" == "all" || "$TARGET" == "depends" ]] && [[ "$(uname -s)" == "Li
             --toolchain depends/x86_64-pc-linux-gnu/toolchain.cmake \
             $GUI_CMAKE_FLAG \
             $DOCS_CMAKE_FLAG \
+            $LOCKORDER_CMAKE_FLAG \
             -DUSE_QT6=ON \
             -DSTATIC_LIBS=ON \
             -DENABLE_UPNP=ON \
@@ -483,6 +500,7 @@ if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]] && [[ "$(uname -s)" == "Linu
             --toolchain depends/x86_64-w64-mingw32/toolchain.cmake \
             $GUI_CMAKE_FLAG \
             $DOCS_CMAKE_FLAG \
+            $LOCKORDER_CMAKE_FLAG \
             -DUSE_QT6=ON \
             -DENABLE_UPNP=ON \
             -DDEFAULT_UPNP=ON \
@@ -577,6 +595,7 @@ if [[ "$TARGET" == "all" || "$TARGET" == "macos" ]] && [[ "$(uname -s)" == "Darw
             -DCMAKE_PREFIX_PATH="$PREFIX_PATHS" \
             $GUI_CMAKE_FLAG \
             $DOCS_CMAKE_FLAG \
+            $LOCKORDER_CMAKE_FLAG \
             -DENABLE_QRENCODE=ON \
             -DENABLE_UPNP=ON \
             -DDEFAULT_UPNP=ON \
