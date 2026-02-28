@@ -112,6 +112,7 @@ option(USE_ASM          "Enable assembly routines" ON)
 
 # Optional functionality
 option(ENABLE_PIE       "Build position-independent executables" OFF)
+option(ENABLE_DEBUG_LOCKORDER "Enable run-time lock-order checking (DEBUG_LOCKORDER)" OFF)
 option(ENABLE_QRENCODE  "Enable generation of QR Codes for receiving payments" OFF)
 option(ENABLE_UPNP      "Enable UPnP port mapping support" OFF)
 option(DEFAULT_UPNP     "Turn UPnP on startup" OFF)

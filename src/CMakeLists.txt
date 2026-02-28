@@ -284,6 +284,10 @@ if(ENABLE_UPNP)
     target_link_libraries(gridcoin_util PUBLIC ${LIBMINIUPNPC})
 endif()
 
+if(ENABLE_DEBUG_LOCKORDER)
+    target_compile_definitions(gridcoin_util PUBLIC DEBUG_LOCKORDER)
+endif()
+
 # Daemon
 # ======
 

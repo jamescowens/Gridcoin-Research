@@ -12,6 +12,7 @@ This document details the CMake configuration options available for Gridcoin. Th
 | `ENABLE_DOCS` | `OFF` | Generates Doxygen documentation. |
 | `STATIC_LIBS` | `OFF` | Forces the build system to look for static libraries (`.a`) instead of shared libraries (`.so`). Required for `depends` builds. |
 | `ENABLE_PIE` | `OFF` | Enables Position Independent Executables (PIE) for hardening. Recommended for Linux production builds. |
+| `ENABLE_DEBUG_LOCKORDER` | `OFF` | Enables run-time lock-order checking (`DEBUG_LOCKORDER`). Detects potential deadlocks by tracking lock acquisition order and logging inconsistencies to `debug.log`. Recommended with `Debug` build type. |
 
 ---
 
