@@ -305,9 +305,11 @@ testnet so that your nodes can be identified.
 
 Gridcoin is a multi-threaded application, and deadlocks or other
 multi-threading bugs can be very difficult to track down. Building with
-`-DCMAKE_BUILD_TYPE=Debug` adds `-DDEBUG_LOCKORDER` to the compiler flags.
-This inserts run-time checks to keep track of which locks are held and adds
-warnings to the `debug.log` file if inconsistencies are detected.
+`-DENABLE_DEBUG_LOCKORDER=ON` adds `-DDEBUG_LOCKORDER` to the compiler
+flags. This inserts run-time checks to keep track of which locks are held
+and adds warnings to the `debug.log` file if inconsistencies are detected.
+This option is independent of `CMAKE_BUILD_TYPE` so it can be used with any
+build configuration.
 
 ### Assertions and Checks
 
@@ -541,8 +543,8 @@ The code is multi-threaded and uses mutexes and the
 Deadlocks due to inconsistent lock ordering (thread 1 locks `cs_main` and then
 `cs_wallet`, while thread 2 locks them in the opposite order: result, deadlock
 as each waits for the other to release its lock) are a problem. Compile with
-`-DDEBUG_LOCKORDER` (enabled by `-DCMAKE_BUILD_TYPE=Debug`) to get lock order
-inconsistencies reported in the `debug.log` file.
+`-DENABLE_DEBUG_LOCKORDER=ON` to get lock order inconsistencies reported in the
+`debug.log` file.
 
 Re-architecting the core code so there are better-defined interfaces
 between the various components is a goal, with any necessary locking
@@ -880,9 +882,8 @@ bool GetTransaction(const uint256& hash, CTransaction& tx, uint256& hashBlock)
 }
 ```
 
-- Build and run tests with `-DDEBUG_LOCKORDER` to verify that no potential
-  deadlocks are introduced. This is enabled by default when building with
-  `-DCMAKE_BUILD_TYPE=Debug`.
+- Build and run tests with `-DENABLE_DEBUG_LOCKORDER=ON` to verify that no
+  potential deadlocks are introduced.
 
 - When using `LOCK`/`TRY_LOCK` be aware that the lock exists in the context of
   the current scope, so surround the statement and the code that needs the lock
