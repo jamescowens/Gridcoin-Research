@@ -299,12 +299,20 @@ QList<QModelIndex> getEntryData(QAbstractItemView *view, int column)
 
 fs::path qstringToBoostPath(const QString &path)
 {
+#ifdef WIN32
+    return fs::path(path.toStdWString());
+#else
     return fs::path(path.toStdString());
+#endif
 }
 
 QString boostPathToQString(const fs::path &path)
 {
+#ifdef WIN32
+    return QString::fromStdWString(path.wstring());
+#else
     return QString::fromStdString(path.string());
+#endif
 }
 
 QString getDefaultDataDirectory()
@@ -388,7 +396,7 @@ void openDebugLogfile()
 
     /* Open debug.log with the associated application */
     if (fs::exists(pathDebug))
-        QDesktopServices::openUrl(QUrl::fromLocalFile(QString::fromStdString(pathDebug.string())));
+        QDesktopServices::openUrl(QUrl::fromLocalFile(boostPathToQString(pathDebug)));
 }
 
 ToolTipToRichTextFilter::ToolTipToRichTextFilter(int size_threshold, QObject *parent) :

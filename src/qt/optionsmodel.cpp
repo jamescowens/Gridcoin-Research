@@ -150,7 +150,7 @@ QVariant OptionsModel::data(const QModelIndex & index, int role) const
         case DisableUpdateCheck:
             return QVariant(gArgs.GetBoolArg("-disableupdatecheck", false));
         case DataDir:
-            return settings.value("dataDir", QString::fromStdString(gArgs.GetArg("-datadir", GetDataDir().string())));
+            return settings.value("dataDir", GUIUtil::boostPathToQString(GetDataDir()));
         case EnableStaking:
             // This comes from the core and is a read-write setting (see below).
             return QVariant(gArgs.GetBoolArg("-staking", true));
