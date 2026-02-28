@@ -490,6 +490,63 @@ jobs:
           retention-days: 5
 
   # ----------------------------------------------------------------------
+  # JOB 2d: Flatpak Build
+  # ----------------------------------------------------------------------
+  flatpak-build:
+    name: Flatpak Build (x86_64)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Flatpak and flatpak-builder
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+
+      - name: Add Flathub Remote
+        run: |
+          sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+      - name: Install KDE 6.9 SDK and Runtime
+        run: |
+          sudo flatpak install -y --noninteractive flathub org.kde.Platform//6.9 org.kde.Sdk//6.9
+
+      - name: Cache flatpak-builder
+        uses: actions/cache@v4
+        with:
+          path: .flatpak-builder
+          key: flatpak-builder-${{ hashFiles('contrib/flatpak/us.gridcoin.GridcoinResearch.yml') }}
+
+      - name: Build Flatpak
+        run: |
+          flatpak-builder \
+            --force-clean \
+            --repo=flatpak-repo \
+            flatpak-build \
+            contrib/flatpak/us.gridcoin.GridcoinResearch.yml
+
+      - name: Create Flatpak Bundle
+        run: |
+          VERSION=$(sed -n 's/^[[:space:]]*VERSION \([0-9.]*\)$/\1/p' CMakeLists.txt)
+          if [ -z "$VERSION" ]; then
+            echo "::error::Could not extract project version from CMakeLists.txt"
+            exit 1
+          fi
+          flatpak build-bundle \
+            flatpak-repo \
+            "gridcoin-${VERSION}-x86_64.flatpak" \
+            us.gridcoin.GridcoinResearch
+          echo "FLATPAK_BUNDLE=gridcoin-${VERSION}-x86_64.flatpak" >> $GITHUB_ENV
+
+      - name: Upload Artifact
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: gridcoin-flatpak-x86_64
+          path: ${{ env.FLATPAK_BUNDLE }}
+          retention-days: 5
+
+  # ----------------------------------------------------------------------
   # JOB 3: Publish Docker Images
   # ----------------------------------------------------------------------
   docker-publish:
@@ -578,7 +635,7 @@ jobs:
   # ----------------------------------------------------------------------
   deploy:
     name: Create Release
-    needs: [depends-builds, macos-native]
+    needs: [depends-builds, macos-native, flatpak-build]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
