@@ -309,6 +309,25 @@ if(UNIX AND NOT APPLE)
     install(FILES "${CMAKE_SOURCE_DIR}/doc/gridcoinresearch.1" COMPONENT gui
         DESTINATION "${CMAKE_INSTALL_MANDIR}/man1"
     )
+    execute_process(
+        COMMAND git log -1 --format=%cs
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        OUTPUT_VARIABLE GIT_COMMIT_DATE
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        RESULT_VARIABLE GIT_COMMIT_DATE_RESULT
+        ERROR_QUIET
+    )
+    if(NOT GIT_COMMIT_DATE_RESULT EQUAL 0 OR GIT_COMMIT_DATE STREQUAL "")
+        string(TIMESTAMP GIT_COMMIT_DATE "%Y-%m-%d")
+    endif()
+    configure_file(
+        "${CMAKE_SOURCE_DIR}/contrib/flatpak/us.gridcoin.GridcoinResearch.metainfo.xml.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/us.gridcoin.GridcoinResearch.metainfo.xml"
+        @ONLY
+    )
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/us.gridcoin.GridcoinResearch.metainfo.xml" COMPONENT gui
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/metainfo"
+    )
 else()
     install(TARGETS gridcoinresearch COMPONENT gui
         RUNTIME DESTINATION bin

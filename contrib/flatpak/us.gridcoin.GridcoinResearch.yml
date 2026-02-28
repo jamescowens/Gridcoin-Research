@@ -1,0 +1,117 @@
+app-id: us.gridcoin.GridcoinResearch
+runtime: org.kde.Platform
+runtime-version: '6.9'
+sdk: org.kde.Sdk
+command: gridcoinresearch
+
+rename-desktop-file: gridcoinresearch.desktop
+rename-icon: gridcoinresearch
+
+finish-args:
+  # X11 + Wayland
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  # GPU acceleration
+  - --device=dri
+  # Network access (P2P, RPC)
+  - --share=network
+  # System tray
+  - --talk-name=org.kde.StatusNotifierWatcher
+  # Desktop notifications
+  - --talk-name=org.freedesktop.Notifications
+  # BOINC data access (Flatpak BOINC)
+  - --filesystem=~/.var/app/edu.berkeley.BOINC:ro
+  # BOINC data access (native packages)
+  - --filesystem=/var/lib/boinc-client:ro
+  - --filesystem=/var/lib/boinc:ro
+
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - /lib/cmake
+  - /lib64/pkgconfig
+  - /lib64/cmake
+  - /share/man
+  - /lib/systemd
+  - '*.la'
+  - '*.a'
+
+modules:
+  # ------------------------------------------------------------------
+  # Boost 1.86.0 (filesystem, iostreams, thread, serialization, etc.)
+  # ------------------------------------------------------------------
+  - name: boost
+    buildsystem: simple
+    build-commands:
+      - ./bootstrap.sh --prefix=/app --with-libraries=filesystem,iostreams,thread,serialization,date_time,system,chrono
+      - ./b2 install --libdir=/app/lib variant=release link=shared threading=multi runtime-link=shared -j $FLATPAK_BUILDER_N_JOBS
+    sources:
+      - type: archive
+        url: https://archives.boost.io/release/1.86.0/source/boost_1_86_0.tar.bz2
+        sha256: 1bed88e40401b2cb7a1f76d4bab499e352fa4d0c5f31c0dbae64e24d34d7513b
+
+  # ------------------------------------------------------------------
+  # libzip 1.11.2
+  # ------------------------------------------------------------------
+  - name: libzip
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_LIBDIR=lib
+      - -DBUILD_TOOLS=OFF
+      - -DBUILD_REGRESS=OFF
+      - -DBUILD_EXAMPLES=OFF
+      - -DBUILD_DOC=OFF
+    sources:
+      - type: archive
+        url: https://libzip.org/download/libzip-1.11.2.tar.xz
+        sha256: 5d471308cef4c4752bbcf973d9cd37ba4cb53739116c30349d4764ba1410dfc1
+
+  # ------------------------------------------------------------------
+  # miniupnpc 2.2.8
+  # ------------------------------------------------------------------
+  - name: miniupnpc
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_LIBDIR=lib
+      - -DUPNPC_BUILD_TESTS=OFF
+      - -DUPNPC_BUILD_SAMPLE=OFF
+    sources:
+      - type: archive
+        url: https://miniupnp.tuxfamily.org/files/miniupnpc-2.2.8.tar.gz
+        sha256: 05b929679091b9921b6b6c1f25e39e4c8d1f4d46c8feb55a412aa697aee03a93
+
+  # ------------------------------------------------------------------
+  # libqrencode 4.1.1
+  # ------------------------------------------------------------------
+  - name: libqrencode
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_LIBDIR=lib
+      - -DWITH_TOOLS=OFF
+      - -DWITH_TESTS=OFF
+      - -DBUILD_SHARED_LIBS=ON
+    sources:
+      - type: archive
+        url: https://github.com/fukuchi/libqrencode/archive/refs/tags/v4.1.1.tar.gz
+        sha256: 5385bc1b8c2f20f3b91d258bf8ccc8cf62023935df2d2676b5b67049f31a049c
+
+  # ------------------------------------------------------------------
+  # Gridcoin Research
+  # ------------------------------------------------------------------
+  - name: gridcoin
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCMAKE_INSTALL_LIBDIR=lib
+      - -DENABLE_GUI=ON
+      - -DUSE_QT6=ON
+      - -DUSE_DBUS=ON
+      - -DENABLE_TESTS=OFF
+      - -DENABLE_UPNP=ON
+      - -DDEFAULT_UPNP=ON
+      - -DENABLE_QRENCODE=ON
+      - -DCMAKE_BUILD_TYPE=Release
+    sources:
+      - type: dir
+        path: ../..

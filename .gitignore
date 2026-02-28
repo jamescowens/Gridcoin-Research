@@ -82,3 +82,9 @@ doc/doxygen/
 src/test/data/*.bin.h
 src/test/data/*.json.h
 src/test/data/*.txt.h
+
+# Flatpak build artifacts
+flatpak-build/
+flatpak-repo/
+.flatpak-builder/
+*.flatpak
