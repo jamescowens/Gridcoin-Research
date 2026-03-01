@@ -296,6 +296,11 @@ jobs:
             echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
           fi
 
+      - name: Set up Python venv for DMG packaging
+        run: |
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install ds_store mac_alias
+
       - name: Configure CMake
         run: |
           export CC_LAUNCHER='-DCMAKE_C_COMPILER_LAUNCHER=ccache'
@@ -314,6 +319,7 @@ jobs:
             -DUSE_QT6=ON \
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
             -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT" \
+            -DPython3_EXECUTABLE="${RUNNER_TEMP}/venv/bin/python3" \
             $CC_LAUNCHER \
             $CXX_LAUNCHER
 
@@ -324,14 +330,14 @@ jobs:
         run: ctest --test-dir build --output-on-failure
 
       - name: Package (DMG)
-        run: cpack -G DragNDrop --config build/CPackConfig.cmake -B release_packages
+        run: cmake --build build --target deploy
 
       - name: Upload Artifacts
         if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v4
         with:
           name: gridcoin-macos-dmg
-          path: release_packages/*.dmg
+          path: build/Gridcoin.dmg
           retention-days: 5
 
   # ----------------------------------------------------------------------
