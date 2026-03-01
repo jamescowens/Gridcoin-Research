@@ -66,6 +66,10 @@ bool CDBEnv::Open(fs::path pathEnv_)
 
     pathEnv = pathEnv_;
     fs::path pathDataDir = pathEnv;
+    // BDB's DbEnv::open() only accepts narrow (const char*) paths. On Windows, fs::path::string()
+    // converts via the system code page, which corrupts characters outside that code page (e.g. Chinese
+    // on a Western locale). ShortPathString converts to 8.3 short names when needed, which are ASCII-safe.
+    // For codepage-safe paths, it returns path.string() unchanged. See #2736.
     strPath = fsbridge::ShortPathString(pathDataDir);
     fs::path pathLogDir = pathDataDir / "database";
     fs::create_directory(pathLogDir);

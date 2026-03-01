@@ -1050,29 +1050,35 @@ bool AppInit2(ThreadHandlerPtr threads)
     fs::path datadir = GetDataDir();
     fs::path walletFileName = gArgs.GetArg("-wallet", "wallet.dat");
 
-    LogPrintf("INFO %s: DataDir = %s.", __func__, datadir.string());
+    LogPrintf("INFO %s: DataDir = %s.", __func__, fsbridge::LongPathString(datadir));
 
     // WalletFileName must be a plain filename without a directory
     if (walletFileName != walletFileName.filename())
-        return InitError(strprintf(_("Wallet %s resides outside data directory %s."), walletFileName.string(), datadir.string()));
+        return InitError(strprintf(_("Wallet %s resides outside data directory %s."), walletFileName.string(), fsbridge::LongPathString(datadir)));
 
     // Make sure only a single Bitcoin process is using the data directory.
     if (!DirIsWritable(datadir)) {
-        return InitError(strprintf(_("Cannot write to data directory '%s'; check permissions."), datadir.string()));
+        return InitError(strprintf(_("Cannot write to data directory '%s'; check permissions."), fsbridge::LongPathString(datadir)));
     }
     if (!LockDirectory(datadir, ".lock", false)) {
-        return InitError(strprintf(_("Cannot obtain a lock on data directory %s. %s is probably already running."), datadir.string(), PACKAGE_NAME));
+        return InitError(strprintf(_("Cannot obtain a lock on data directory %s. %s is probably already running."), fsbridge::LongPathString(datadir), PACKAGE_NAME));
     }
 
     // Check early whether the data directory path can be used by legacy database libraries (BDB, LevelDB)
     // that only accept narrow (const char*) paths. On Windows, paths with characters outside the system
     // code page require conversion to 8.3 short names for BDB compatibility.
+    //
+    // Known limitation: if -datadir is passed on the command line with non-codepage characters, the path
+    // is already garbled by the time we see it — Windows main(argc, argv) delivers narrow strings in the
+    // system code page. The same applies to datadir= in gridcoin.conf saved as UTF-8. Fixing this would
+    // require switching to GetCommandLineW()/wmain at the argument parsing level. The Qt directory chooser
+    // path (which stays in UTF-16 via QString) is not affected.
     if (fsbridge::PathHasNonCodepageChars(datadir)) {
         if (fsbridge::ShortPathString(datadir).empty()) {
             return InitError(strprintf(_("The data directory path '%s' contains characters that cannot be "
                 "represented in the system code page, and Windows 8.3 short filename generation is not available "
                 "on this volume. Please choose a data directory path using only characters supported by your "
-                "system locale, or enable 8.3 filename generation."), datadir.string()));
+                "system locale, or enable 8.3 filename generation."), fsbridge::LongPathString(datadir)));
         }
     }
 
@@ -1115,7 +1121,7 @@ bool AppInit2(ThreadHandlerPtr threads)
     {
          string msg = strprintf(_("Error initializing database environment %s!"
                                  " To recover, BACKUP THAT DIRECTORY, then remove"
-                                 " everything from it except for wallet.dat."), datadir.string());
+                                 " everything from it except for wallet.dat."), fsbridge::LongPathString(datadir));
         return InitError(msg);
     }
 
@@ -1135,7 +1141,7 @@ bool AppInit2(ThreadHandlerPtr threads)
             string msg = strprintf(_("Warning: wallet.dat corrupt, data salvaged!"
                                      " Original wallet.dat saved as wallet.{timestamp}.bak in %s; if"
                                      " your balance or transactions are incorrect you should"
-                                     " restore from a backup."), datadir.string());
+                                     " restore from a backup."), fsbridge::LongPathString(datadir));
             InitWarning(msg);
         }
         if (r == CDBEnv::RECOVER_FAIL)
@@ -1264,7 +1270,7 @@ bool AppInit2(ThreadHandlerPtr threads)
     {
         string msg = strprintf(_("Error initializing database environment %s!"
                                  " To recover, BACKUP THAT DIRECTORY, then remove"
-                                 " everything from it except for wallet.dat."), datadir.string());
+                                 " everything from it except for wallet.dat."), fsbridge::LongPathString(datadir));
         return InitError(msg);
     }
 

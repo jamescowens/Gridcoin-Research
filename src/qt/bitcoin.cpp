@@ -441,11 +441,12 @@ int main(int argc, char *argv[])
     // Determine availability of data directory and parse gridcoinresearch.conf
     // Do not call GetDataDir(true) before this step finishes
     if (!CheckDataDirOption()) {
-        ThreadSafeMessageBox(strprintf("Specified data directory \"%s\" does not exist.\n", gArgs.GetArg("-datadir", "")),
+        std::string datadir_display = fsbridge::LongPathString(fs::path(gArgs.GetArg("-datadir", "")));
+        ThreadSafeMessageBox(strprintf("Specified data directory \"%s\" does not exist.\n", datadir_display),
                              "", CClientUIInterface::ICON_ERROR | CClientUIInterface::BTN_OK | CClientUIInterface::MODAL);
         QMessageBox::critical(nullptr, PACKAGE_NAME,
             QObject::tr("Error: Specified data directory \"%1\" does not exist.")
-                              .arg(QString::fromStdString(gArgs.GetArg("-datadir", ""))));
+                              .arg(QString::fromStdString(datadir_display)));
         return EXIT_FAILURE;
     }
 

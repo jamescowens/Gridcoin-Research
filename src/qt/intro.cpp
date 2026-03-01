@@ -242,7 +242,10 @@ bool Intro::showIfNeeded(bool& did_show_intro)
     if (dataDir != GUIUtil::getDefaultDataDirectory() || originally_not_default_datadir) {
         // This must be a ForceSetArg, because the optionsModel has already loaded the datadir argument if it exists in
         // the Qt settings file prior to this.
-        gArgs.ForceSetArg("-datadir", GUIUtil::qstringToBoostPath(dataDir).string()); // use OS locale for path setting
+        // Use ShortPathString to get an 8.3 short path on Windows when the path contains characters
+        // outside the system code page. gArgs is a narrow-string store and fs::path::string() would
+        // corrupt non-codepage characters via code page narrowing.
+        gArgs.ForceSetArg("-datadir", fsbridge::ShortPathString(GUIUtil::qstringToBoostPath(dataDir)));
     }
 
     return true;

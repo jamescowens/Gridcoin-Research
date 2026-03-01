@@ -121,13 +121,38 @@ bool PathHasNonCodepageChars(const fs::path& path)
 #ifdef WIN32
     std::wstring wide = path.wstring();
     BOOL used_default = FALSE;
+    // First call: determine the buffer size needed for the code page conversion.
     int needed = WideCharToMultiByte(CP_ACP, 0, wide.c_str(), (int)wide.size(), nullptr, 0, nullptr, nullptr);
     if (needed <= 0) return true;
+    // Second call: perform the actual conversion. WideCharToMultiByte sets used_default to TRUE if any
+    // character in the wide string could not be represented in the system code page and was replaced
+    // with a default substitution character.
     std::string narrow(needed, '\0');
     WideCharToMultiByte(CP_ACP, 0, wide.c_str(), (int)wide.size(), narrow.data(), needed, nullptr, &used_default);
     return used_default != FALSE;
 #else
     return false;
+#endif
+}
+
+std::string LongPathString(const fs::path& path)
+{
+#ifdef WIN32
+    std::wstring wpath = path.wstring();
+    wchar_t long_path[MAX_PATH];
+    DWORD result = GetLongPathNameW(wpath.c_str(), long_path, MAX_PATH);
+    if (result > 0 && result < MAX_PATH) {
+        // Return as UTF-8 so Qt (QString::fromStdString) and log output display correctly.
+        int needed = WideCharToMultiByte(CP_UTF8, 0, long_path, (int)result, nullptr, 0, nullptr, nullptr);
+        if (needed > 0) {
+            std::string utf8(needed, '\0');
+            WideCharToMultiByte(CP_UTF8, 0, long_path, (int)result, utf8.data(), needed, nullptr, nullptr);
+            return utf8;
+        }
+    }
+    return path.string();
+#else
+    return path.string();
 #endif
 }
 

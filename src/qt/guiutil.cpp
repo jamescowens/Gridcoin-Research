@@ -299,6 +299,10 @@ QList<QModelIndex> getEntryData(QAbstractItemView *view, int column)
 
 fs::path qstringToBoostPath(const QString &path)
 {
+    // On Windows, QString is UTF-16 and toStdString() produces UTF-8, but boost::filesystem::path
+    // interprets narrow strings as the system code page (e.g. CP-1252), not UTF-8. Using
+    // toStdWString() stays in UTF-16, which is the native Windows path encoding and is accepted
+    // directly by boost::filesystem::path. See #2736.
 #ifdef WIN32
     return fs::path(path.toStdWString());
 #else
@@ -308,6 +312,9 @@ fs::path qstringToBoostPath(const QString &path)
 
 QString boostPathToQString(const fs::path &path)
 {
+    // On Windows, path.string() converts to the system code page, but QString::fromStdString()
+    // expects UTF-8 — encoding mismatch corrupts non-ASCII characters. Using wstring() stays in
+    // UTF-16 which QString::fromStdWString() handles natively. See #2736.
 #ifdef WIN32
     return QString::fromStdWString(path.wstring());
 #else
