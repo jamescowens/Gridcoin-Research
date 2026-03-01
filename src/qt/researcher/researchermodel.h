@@ -6,8 +6,11 @@
 #define GRIDCOIN_QT_RESEARCHER_RESEARCHERMODEL_H
 
 #include <memory>
+#include <utility>
+#include <vector>
 #include "amount.h"
 #include <QObject>
+#include <QString>
 #include <optional>
 
 QT_BEGIN_NAMESPACE
@@ -37,6 +40,7 @@ enum class BeaconStatus
     ERROR_MISSING_KEY,
     ERROR_NOT_NEEDED,
     ERROR_TX_FAILED,
+    ERROR_INVALID_PROOF_XML,
     ERROR_WALLET_LOCKED,
     NO_BEACON,
     NO_CPID,
@@ -137,6 +141,14 @@ public:
 
     std::vector<ProjectRow> buildProjectTable(bool extended = true) const;
 
+    // V3 beacon ownership proof support
+    bool isV14Enabled() const;
+    bool hasV3CapableProjects() const;
+    std::vector<std::pair<QString, QString>> buildV3ProjectList() const;
+    QString generateBeaconKeyForV3();
+    BeaconStatus advertiseBeaconV3(const QString& ownership_proof_xml);
+    QString cachedBeaconPubKeyHex() const;
+
 private:
     GRC::ResearcherPtr m_researcher;
     std::unique_ptr<GRC::Beacon> m_beacon;
@@ -148,6 +160,7 @@ private:
     bool m_split_cpid;
     bool m_privacy_enabled;
     QString m_theme_suffix;
+    QString m_cached_beacon_pubkey_hex;
 
     void subscribeToCoreSignals();
     void unsubscribeFromCoreSignals();

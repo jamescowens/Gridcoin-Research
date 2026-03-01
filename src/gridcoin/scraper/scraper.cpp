@@ -1166,6 +1166,19 @@ std::vector<std::string> GetProjectsExternalAdapterRequired()
     return split(EXTERNAL_ADAPTER_PROJECTS, "|");
 }
 
+std::set<std::string> GetProjectsWithOwnershipProofSupport()
+{
+    LOCK(cs_ProjectPublicKeys);
+
+    std::set<std::string> urls;
+
+    for (const auto& entry : g_project_public_keys) {
+        urls.insert(entry.first);
+    }
+
+    return urls;
+}
+
 
 /** Username and password data utility class for accessing project stats that have implemented usernam and password
  * protection for stats downloads to satisfy GDPR requirements

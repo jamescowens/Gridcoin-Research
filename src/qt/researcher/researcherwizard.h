@@ -31,6 +31,7 @@ public:
         PageNoncruncher,
         PagePool,
         PagePoolSummary,
+        PageOwnershipProof,
     };
 
     //!

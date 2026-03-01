@@ -45,6 +45,7 @@ ResearcherWizard::ResearcherWizard(
     ui->NoncruncherPage->setModel(researcher_model);
     ui->poolPage->setModel(researcher_model, wallet_model);
     ui->poolSummaryPage->setModel(researcher_model);
+    ui->ownershipProofPage->setModel(researcher_model, wallet_model);
 
     // This enables the "help me choose" button on the modes page to switch the
     // current page to the details page. Because the modes page cannot navigate

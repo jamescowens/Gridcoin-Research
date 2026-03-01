@@ -9,6 +9,8 @@
 #include <cmath>
 #include <algorithm>
 #include <cctype>
+#include <set>
+#include <string>
 #include <vector>
 #include <map>
 
@@ -262,5 +264,8 @@ unsigned int NumScrapersForSupermajority(unsigned int nScraperCount);
 
 /** Gets a vector of projects that require an external adapter for the scrapers to pull statistics. */
 std::vector<std::string> GetProjectsExternalAdapterRequired();
+
+/** Returns the set of project master URLs for which ownership proof public keys are available. */
+std::set<std::string> GetProjectsWithOwnershipProofSupport();
 
 #endif // GRIDCOIN_SCRAPER_SCRAPER_H
