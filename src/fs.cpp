@@ -116,6 +116,58 @@ bool FileLock::TryLock()
 }
 #endif
 
+bool PathHasNonCodepageChars(const fs::path& path)
+{
+#ifdef WIN32
+    std::wstring wide = path.wstring();
+    BOOL used_default = FALSE;
+    int needed = WideCharToMultiByte(CP_ACP, 0, wide.c_str(), (int)wide.size(), nullptr, 0, nullptr, nullptr);
+    if (needed <= 0) return true;
+    std::string narrow(needed, '\0');
+    WideCharToMultiByte(CP_ACP, 0, wide.c_str(), (int)wide.size(), narrow.data(), needed, nullptr, &used_default);
+    return used_default != FALSE;
+#else
+    return false;
+#endif
+}
+
+std::string ShortPathString(const fs::path& path)
+{
+#ifdef WIN32
+    if (!PathHasNonCodepageChars(path)) {
+        return path.string();
+    }
+    std::wstring wpath = path.wstring();
+    wchar_t short_path[MAX_PATH];
+    DWORD result = GetShortPathNameW(wpath.c_str(), short_path, MAX_PATH);
+    if (result > 0 && result < MAX_PATH) {
+        // Short path names are ASCII-safe, so narrow conversion is lossless.
+        return std::string(short_path, short_path + result);
+    }
+    // 8.3 name generation is disabled on this volume.
+    return "";
+#else
+    return path.string();
+#endif
+}
+
+std::string Utf8PathString(const fs::path& path)
+{
+#ifdef WIN32
+    if (!PathHasNonCodepageChars(path)) {
+        return path.string();
+    }
+    std::wstring wide = path.wstring();
+    int needed = WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), (int)wide.size(), nullptr, 0, nullptr, nullptr);
+    if (needed <= 0) return path.string();
+    std::string utf8(needed, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), (int)wide.size(), utf8.data(), needed, nullptr, nullptr);
+    return utf8;
+#else
+    return path.string();
+#endif
+}
+
 std::string get_filesystem_error_message(const fs::filesystem_error& e)
 {
 #ifndef WIN32

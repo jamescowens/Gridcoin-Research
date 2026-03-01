@@ -1064,6 +1064,18 @@ bool AppInit2(ThreadHandlerPtr threads)
         return InitError(strprintf(_("Cannot obtain a lock on data directory %s. %s is probably already running."), datadir.string(), PACKAGE_NAME));
     }
 
+    // Check early whether the data directory path can be used by legacy database libraries (BDB, LevelDB)
+    // that only accept narrow (const char*) paths. On Windows, paths with characters outside the system
+    // code page require conversion to 8.3 short names for BDB compatibility.
+    if (fsbridge::PathHasNonCodepageChars(datadir)) {
+        if (fsbridge::ShortPathString(datadir).empty()) {
+            return InitError(strprintf(_("The data directory path '%s' contains characters that cannot be "
+                "represented in the system code page, and Windows 8.3 short filename generation is not available "
+                "on this volume. Please choose a data directory path using only characters supported by your "
+                "system locale, or enable 8.3 filename generation."), datadir.string()));
+        }
+    }
+
     #if (OPENSSL_VERSION_NUMBER < 0x10100000L)
         LogPrintf("Using OpenSSL version %s\n", SSLeay_version(SSLEAY_VERSION));
     #elif defined OPENSSL_VERSION

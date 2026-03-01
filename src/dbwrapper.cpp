@@ -62,7 +62,7 @@ void init_blockindex(leveldb::Options& options, bool fRemoveOld = false) {
 
     fs::create_directory(directory);
     LogPrintf("Opening LevelDB in %s", directory.string());
-    leveldb::Status status = leveldb::DB::Open(options, directory.string(), &txdb);
+    leveldb::Status status = leveldb::DB::Open(options, fsbridge::Utf8PathString(directory), &txdb);
     if (!status.ok()) {
         throw runtime_error(strprintf("init_blockindex(): error opening database environment %s", status.ToString()));
     }
