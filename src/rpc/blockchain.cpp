@@ -1672,20 +1672,24 @@ UniValue advertisebeaconv3(const UniValue& params, bool fHelp)
 
 UniValue revokebeacon(const UniValue& params, bool fHelp)
 {
-    if (fHelp || params.size() != 1)
+    if (fHelp || params.size() > 1)
         throw runtime_error(
-                "revokebeacon <cpid>\n"
+                "revokebeacon [cpid]\n"
                 "\n"
-                "<cpid> CPID associated with the beacon to revoke.\n"
+                "[cpid] CPID associated with the beacon to revoke. If omitted, uses the current CPID.\n"
                 "\n"
                 "Revoke a beacon (Requires wallet to be fully unlocked)\n");
 
     EnsureWalletIsUnlocked();
 
-    const GRC::CpidOption cpid = GRC::MiningId::Parse(params[0].get_str()).TryCpid();
+    const GRC::CpidOption cpid = params.size() == 1
+        ? GRC::MiningId::Parse(params[0].get_str()).TryCpid()
+        : GRC::Researcher::Get()->Id().TryCpid();
 
     if (!cpid) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid CPID.");
+        throw JSONRPCError(
+            params.size() == 1 ? RPC_INVALID_PARAMETER : RPC_INVALID_REQUEST,
+            params.size() == 1 ? "Invalid CPID." : "No CPID configured for this wallet.");
     }
 
     LOCK2(cs_main, pwalletMain->cs_wallet);
