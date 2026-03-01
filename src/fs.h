@@ -54,6 +54,35 @@ namespace fsbridge {
 
     std::string get_filesystem_error_message(const fs::filesystem_error& e);
 
+    /** Check if a path contains characters not representable in the system code page.
+     *
+     * On Windows, fs::path::string() converts to the system code page, which silently
+     * corrupts characters outside that code page. This function detects such paths so
+     * callers can engage appropriate workarounds.
+     *
+     * Always returns false on non-Windows platforms (UTF-8 is the native encoding).
+     */
+    bool PathHasNonCodepageChars(const fs::path& path);
+
+    /** Return a narrow string for BDB, which only accepts const char* paths.
+     *
+     * If the path is representable in the system code page, returns path.string() unchanged.
+     * Otherwise, converts to the Windows short (8.3) form via GetShortPathNameW(), which is
+     * ASCII-safe. Returns an empty string if conversion is needed but 8.3 names are unavailable.
+     *
+     * On non-Windows platforms, simply returns path.string().
+     */
+    std::string ShortPathString(const fs::path& path);
+
+    /** Return a narrow string for LevelDB, which internally converts from UTF-8 to UTF-16.
+     *
+     * If the path is representable in the system code page, returns path.string() unchanged.
+     * Otherwise, converts to UTF-8 encoding via WideCharToMultiByte(CP_UTF8).
+     *
+     * On non-Windows platforms, simply returns path.string() (already UTF-8).
+     */
+    std::string Utf8PathString(const fs::path& path);
+
     // GNU libstdc++ specific workaround for opening UTF-8 paths on Windows.
     //
     // On Windows, it is only possible to reliably access multibyte file paths through

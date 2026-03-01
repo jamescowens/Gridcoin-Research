@@ -66,7 +66,7 @@ bool CDBEnv::Open(fs::path pathEnv_)
 
     pathEnv = pathEnv_;
     fs::path pathDataDir = pathEnv;
-    strPath = pathDataDir.string();
+    strPath = fsbridge::ShortPathString(pathDataDir);
     fs::path pathLogDir = pathDataDir / "database";
     fs::create_directory(pathLogDir);
     fs::path pathErrorFile = pathDataDir / "db.log";
@@ -77,7 +77,7 @@ bool CDBEnv::Open(fs::path pathEnv_)
         nEnvFlags |= DB_PRIVATE;
 
     int nDbCache = std::clamp<int>(gArgs.GetArg("-dbcache", nDefaultDbCache), nMinDbCache, nMaxDbCache);
-    dbenv.set_lg_dir(pathLogDir.string().c_str());
+    dbenv.set_lg_dir(fsbridge::ShortPathString(pathLogDir).c_str());
     dbenv.set_cachesize(nDbCache / 1024, (nDbCache % 1024)*1048576, 1);
     dbenv.set_lg_bsize(1048576);
     dbenv.set_lg_max(10485760);
