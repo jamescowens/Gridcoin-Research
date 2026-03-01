@@ -77,7 +77,13 @@ void OptionsModel::Init()
         gArgs.SoftSetBoolArg("-disableupdatecheck", settings.value("fDisableUpdateCheck").toBool());
     }
     if (settings.contains("dataDir") && dataDir != GUIUtil::getDefaultDataDirectory()) {
-        gArgs.SoftSetArg("-datadir", GUIUtil::qstringToBoostPath(settings.value("dataDir").toString()).string());
+        // Use ShortPathString to get an 8.3 short path on Windows when the path contains characters
+        // outside the system code page. gArgs is a narrow-string store, and fs::path::string() would
+        // corrupt non-codepage characters via code page narrowing.
+        std::string datadir_narrow = fsbridge::ShortPathString(GUIUtil::qstringToBoostPath(settings.value("dataDir").toString()));
+        if (!datadir_narrow.empty()) {
+            gArgs.SoftSetArg("-datadir", datadir_narrow);
+        }
     }
 
     m_sidestake_model = new SideStakeTableModel(this);
@@ -150,7 +156,7 @@ QVariant OptionsModel::data(const QModelIndex & index, int role) const
         case DisableUpdateCheck:
             return QVariant(gArgs.GetBoolArg("-disableupdatecheck", false));
         case DataDir:
-            return settings.value("dataDir", QString::fromStdString(gArgs.GetArg("-datadir", GetDataDir().string())));
+            return settings.value("dataDir", GUIUtil::boostPathToQString(GetDataDir()));
         case EnableStaking:
             // This comes from the core and is a read-write setting (see below).
             return QVariant(gArgs.GetBoolArg("-staking", true));

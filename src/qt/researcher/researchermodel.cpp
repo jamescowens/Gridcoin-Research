@@ -419,7 +419,7 @@ QString ResearcherModel::formatStatus() const
 
 QString ResearcherModel::formatBoincPath() const
 {
-    return QString::fromStdString(GetBoincDataDir().string());
+    return GUIUtil::boostPathToQString(GetBoincDataDir());
 }
 
 BeaconStatus ResearcherModel::getBeaconStatus() const
