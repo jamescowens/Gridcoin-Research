@@ -546,6 +546,35 @@ as each waits for the other to release its lock) are a problem. Compile with
 `-DENABLE_DEBUG_LOCKORDER=ON` to get lock order inconsistencies reported in the
 `debug.log` file.
 
+### Reading DEBUG_LOCKORDER output
+
+When a lock ordering violation is detected, the output looks like this:
+
+```
+POTENTIAL DEADLOCK DETECTED
+Conflict: 'cs_main' and 'cs_poll_registry' acquired in inconsistent orders.
+  Current:    'cs_main' -> 'cs_poll_registry'
+  Historical: 'cs_poll_registry' -> 'cs_main'
+
+Historical lock stack (where the reverse order was first seen):
+  #1 'cs_main' in src/main.cpp:200 (in thread 'main')  <--
+  #2 'cs_poll_registry' in src/gridcoin/voting/registry.cpp:1057 (in thread 'main')  <--
+  #3 'cs_main' in src/main.cpp:736 (in thread 'main')  (re-entrant, already held above)
+
+Current lock stack (triggering this warning):
+  #1 'cs_main' in src/gridcoin/gridcoin.cpp:636 (in thread '')  <--
+  #2 'cs_poll_registry' in src/gridcoin/gridcoin.cpp:636 (in thread '')  <--
+```
+
+Key elements:
+- **Conflict summary**: Names both locks and shows the two orderings that conflict.
+- **Stack entries**: Numbered by acquisition order. `<--` marks the first occurrence of each conflicting lock.
+- **Re-entrant flag**: When a lock appears as "already held above", the apparent
+  inversion may be a false positive — the lock was already held higher in the stack,
+  so the re-acquisition is harmless. This is common with `CCriticalSection`
+  (recursive mutex) when a function that takes `LOCK(cs_main)` is called from code
+  that already holds `cs_main`.
+
 Re-architecting the core code so there are better-defined interfaces
 between the various components is a goal, with any necessary locking
 done by the components (e.g. see the self-contained `CKeyStore` class (in `src/keystore.h`)
