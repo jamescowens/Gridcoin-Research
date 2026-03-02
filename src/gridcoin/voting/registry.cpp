@@ -1110,7 +1110,7 @@ void PollRegistry::AddPoll(const ContractContext& ctx) EXCLUSIVE_LOCKS_REQUIRED(
         auto result_pair = m_polls_by_txid.emplace(ctx.m_tx.GetHash(), &poll_ref);
         poll_ref.m_txid = result_pair.first->first;
 
-        poll_ref.m_magnitude_weight_factor = payload->m_poll.ResolveMagnitudeWeightFactor(poll_ref.GetStartingBlockIndexPtr());
+        poll_ref.m_magnitude_weight_factor = payload->m_poll.ResolveMagnitudeWeightFactor(ctx.m_pindex);
 
         poll_ref.Notify(PollReference::PollNotificationType::POLL_ADD);
 

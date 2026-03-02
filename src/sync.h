@@ -243,6 +243,13 @@ template<typename MutexArg>
 using DebugLock = UniqueLock<typename std::remove_reference<typename std::remove_pointer<MutexArg>::type>::type>;
 
 #define LOCK(cs) DebugLock<decltype(cs)> PASTE2(criticalblock, __COUNTER__)(cs, #cs, __FILE__, __LINE__)
+
+// LOCK2 acquires two locks sequentially in ARGUMENT ORDER (cs1 first, then cs2).
+// Bitcoin Core later reimplemented LOCK2 using std::lock() to provide deadlock
+// avoidance regardless of argument order. This codebase does not use that approach;
+// LOCK2 simply constructs two DebugLock objects in sequence. Callers must ensure a
+// consistent ordering convention (e.g. cs_main before cs_wallet) across all call
+// sites to avoid deadlocks.
 #define LOCK2(cs1, cs2)                                               \
     DebugLock<decltype(cs1)> criticalblock1(cs1, #cs1, __FILE__, __LINE__); \
     DebugLock<decltype(cs2)> criticalblock2(cs2, #cs2, __FILE__, __LINE__);

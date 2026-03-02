@@ -546,6 +546,31 @@ as each waits for the other to release its lock) are a problem. Compile with
 `-DENABLE_DEBUG_LOCKORDER=ON` to get lock order inconsistencies reported in the
 `debug.log` file.
 
+### Lock macros
+
+- **`LOCK(cs)`** — Acquires a single lock.
+- **`LOCK2(cs1, cs2)`** — Acquires two locks **sequentially in argument order**
+  (cs1 first, then cs2). Bitcoin Core later reimplemented `LOCK2` using
+  `std::lock()` to provide deadlock avoidance regardless of argument order.
+  This codebase does not use that approach — `LOCK2` is simply two sequential
+  lock acquisitions. This means **argument order matters**: callers must list
+  locks in the canonical order to prevent deadlocks. For example, always write
+  `LOCK2(cs_main, cs_wallet)`, never `LOCK2(cs_wallet, cs_main)`.
+- **`TRY_LOCK(cs, name)`** — Non-blocking lock attempt.
+
+### Canonical lock ordering
+
+When multiple locks must be held simultaneously, acquire them in the following
+order to prevent deadlocks:
+
+1. `cs_main` (blockchain state)
+2. `cs_wallet` (wallet operations)
+3. Subsystem-specific locks (e.g. `cs_poll_registry`, `cs_ScraperGlobals`)
+
+This ordering applies regardless of whether you use `LOCK2` or separate `LOCK`
+statements. The `DEBUG_LOCKORDER` build flag will detect violations at runtime
+and report them in `debug.log`.
+
 ### Reading DEBUG_LOCKORDER output
 
 When a lock ordering violation is detected, the output looks like this:
