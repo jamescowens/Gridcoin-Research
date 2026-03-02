@@ -439,9 +439,16 @@ else()
 endif()
 
 if(CMAKE_C_COMPILER_TARGET)
-    # Naming: gridcoinresearch-5.x.x-x86_64-pc-linux-gnu.tar.gz
+    # Cross/depends builds: e.g. x86_64-pc-linux-gnu, x86_64-w64-mingw32
     set(CPACK_SYSTEM_NAME "${CMAKE_C_COMPILER_TARGET}")
+elseif(CMAKE_SYSTEM_PROCESSOR)
+    # Native builds: e.g. x86_64, aarch64
+    set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_PROCESSOR}")
 endif()
+
+# CPack constructs CPACK_PACKAGE_VERSION from MAJOR.MINOR.PATCH, excluding
+# TWEAK. Override it to use the full quad version (e.g. 5.4.9.10).
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 
 set(CPACK_NSIS_PACKAGE_NAME ${PROJECT_NAME})
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "gridcoinresearch-${PROJECT_VERSION}")

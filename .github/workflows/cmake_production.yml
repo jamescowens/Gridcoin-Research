@@ -337,7 +337,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: gridcoin-macos-dmg
-          path: build/Gridcoin.dmg
+          path: build/gridcoin-*.dmg
           retention-days: 5
 
   # ----------------------------------------------------------------------
@@ -396,7 +396,7 @@ jobs:
         if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v4
         with:
-          name: gridcoin-x86_64-linux-gnu
+          name: docker-gridcoin-x86_64-linux-gnu
           path: dist/
           retention-days: 5
 
@@ -491,7 +491,7 @@ jobs:
         if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v4
         with:
-          name: gridcoin-aarch64-linux-gnu
+          name: docker-gridcoin-aarch64-linux-gnu
           path: dist/
           retention-days: 5
 
@@ -569,13 +569,13 @@ jobs:
       - name: Download x86_64 Build Artifact
         uses: actions/download-artifact@v4
         with:
-          name: gridcoin-x86_64-linux-gnu
+          name: docker-gridcoin-x86_64-linux-gnu
           path: artifacts/amd64
 
       - name: Download ARM64 Build Artifact
         uses: actions/download-artifact@v4
         with:
-          name: gridcoin-aarch64-linux-gnu
+          name: docker-gridcoin-aarch64-linux-gnu
           path: artifacts/arm64
 
       - name: Stage Binaries

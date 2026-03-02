@@ -389,12 +389,14 @@ if(APPLE)
 
     set(_deploy_script "${CMAKE_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus")
     set(_app_bundle "$<TARGET_BUNDLE_DIR:gridcoinresearch>")
+    set(_dmg_name "gridcoin-${PROJECT_VERSION}-macos-${CMAKE_SYSTEM_PROCESSOR}")
 
-    # Build the macdeployqtplus command
+    # Build the macdeployqtplus command.
+    # appname ("Gridcoin") is the volume name; -dmg <basename> sets the output filename.
     set(_deploy_cmd
         ${Python3_EXECUTABLE} "${_deploy_script}"
         "${_app_bundle}" Gridcoin
-        -dmg
+        -dmg "${_dmg_name}"
     )
 
     # Only pass -translations-dir if the directory actually exists
@@ -405,7 +407,7 @@ if(APPLE)
     add_custom_target(deploy
         COMMAND ${CMAKE_COMMAND} -E env "QTDIR=${_qt_prefix_dir}" ${_deploy_cmd}
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-        COMMENT "Deploying Gridcoin.app into DMG via macdeployqtplus"
+        COMMENT "Deploying ${_dmg_name}.dmg via macdeployqtplus"
         DEPENDS gridcoinresearch
     )
 endif()
