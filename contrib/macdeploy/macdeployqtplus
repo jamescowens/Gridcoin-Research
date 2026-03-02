@@ -507,16 +507,21 @@ if not os.path.exists(app_bundle):
 
 # ------------------------------------------------
 
+# When -dmg is given with an explicit basename, use it for the output file;
+# otherwise fall back to appname.  The volume name always uses appname so that
+# the mounted disk appears as e.g. "Gridcoin" regardless of the .dmg filename.
+dmg_basename = config.dmg if (config.dmg is not None and config.dmg != "") else appname
+
 if os.path.exists("dist"):
     print("+ Removing existing dist folder +")
     shutil.rmtree("dist")
 
-if os.path.exists(appname + ".dmg"):
+if os.path.exists(dmg_basename + ".dmg"):
     print("+ Removing existing DMG +")
-    os.unlink(appname + ".dmg")
+    os.unlink(dmg_basename + ".dmg")
 
-if os.path.exists(appname + ".temp.dmg"):
-    os.unlink(appname + ".temp.dmg")
+if os.path.exists(dmg_basename + ".temp.dmg"):
+    os.unlink(dmg_basename + ".temp.dmg")
 
 # ------------------------------------------------
 
@@ -667,7 +672,7 @@ if config.dmg is not None:
     if verbose:
         print("Creating temp image for modification...")
 
-    tempname: str = appname + ".temp.dmg"
+    tempname: str = dmg_basename + ".temp.dmg"
 
     run(["hdiutil", "create", tempname, "-srcfolder", "dist", "-format", "UDRW", "-size", str(size), "-volname", appname], check=True, universal_newlines=True)
 
@@ -696,7 +701,7 @@ if config.dmg is not None:
 
     run(["hdiutil", "detach", f"/Volumes/{appname}"], universal_newlines=True)
 
-    run(["hdiutil", "convert", tempname, "-format", "UDZO", "-o", appname, "-imagekey", "zlib-level=9"], check=True, universal_newlines=True)
+    run(["hdiutil", "convert", tempname, "-format", "UDZO", "-o", dmg_basename, "-imagekey", "zlib-level=9"], check=True, universal_newlines=True)
 
     os.unlink(tempname)
 
