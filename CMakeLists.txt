@@ -62,6 +62,11 @@ else()
     add_compile_options(-UNDEBUG)
 endif()
 
+# Define DEBUG for Debug builds to match the old Autotools --enable-debug behavior.
+# Code in init.cpp and span.h uses #ifdef DEBUG to select debug-specific paths.
+# Uses a generator expression so it works with multi-config generators too.
+add_compile_definitions($<$<CONFIG:Debug>:DEBUG>)
+
 
 # Load CMake modules
 # ==================
