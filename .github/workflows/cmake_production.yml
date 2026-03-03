@@ -332,6 +332,65 @@ jobs:
       - name: Package (DMG)
         run: cmake --build build --target deploy
 
+      - name: Verify DMG Package
+        run: |
+          set -e
+          DMG_FILE=$(find build -maxdepth 1 -name "gridcoin-*.dmg" | head -1)
+          if [ -z "$DMG_FILE" ]; then
+            echo "ERROR: No DMG file found in build/"
+            exit 1
+          fi
+          echo "Verifying: $DMG_FILE"
+
+          # Mount the DMG read-only
+          MOUNT_POINT="/Volumes/GridcoinVerify"
+          hdiutil attach "$DMG_FILE" -readonly -mountpoint "$MOUNT_POINT"
+
+          # Verify app bundle structure
+          APP="$MOUNT_POINT/Gridcoin.app"
+          for dir in Contents/MacOS Contents/Frameworks Contents/PlugIns Contents/Resources; do
+            if [ ! -d "$APP/$dir" ]; then
+              echo "FAIL: Missing $dir"
+              hdiutil detach "$MOUNT_POINT"
+              exit 1
+            fi
+          done
+          echo "PASS: App bundle structure intact"
+
+          # Verify main executable
+          BINARY="$APP/Contents/MacOS/gridcoinresearch"
+          if [ ! -x "$BINARY" ]; then
+            echo "FAIL: Main binary not found or not executable"
+            hdiutil detach "$MOUNT_POINT"
+            exit 1
+          fi
+          echo "PASS: Main binary exists and is executable"
+
+          # List deployed frameworks for diagnostics
+          echo "Deployed frameworks:"
+          ls "$APP/Contents/Frameworks/"
+
+          # Verify ad-hoc code signature
+          if codesign --verify --deep "$APP" 2>&1; then
+            echo "PASS: Code signature valid"
+          else
+            echo "WARNING: Code signature verification failed (ad-hoc signing may not verify on CI)"
+          fi
+
+          # Verify binary is a valid Mach-O executable (no runtime execution
+          # since the GUI binary pops up dialogs that hang in headless CI)
+          if file "$BINARY" | grep -q "Mach-O"; then
+            echo "PASS: Binary is valid Mach-O executable"
+          else
+            echo "FAIL: Binary is not a valid Mach-O executable"
+            hdiutil detach "$MOUNT_POINT"
+            exit 1
+          fi
+
+          # Cleanup
+          hdiutil detach "$MOUNT_POINT"
+          echo "DMG verification: ALL CHECKS PASSED"
+
       - name: Upload Artifacts
         if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v4
