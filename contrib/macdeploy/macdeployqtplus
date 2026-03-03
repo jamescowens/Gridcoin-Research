@@ -177,9 +177,16 @@ class DeploymentInfo(object):
             self.qtPath = os.getenv("QTDIR", None)
 
         if self.qtPath is not None:
-            pluginPath = os.path.join(self.qtPath, "plugins")
-            if os.path.exists(pluginPath):
-                self.pluginPath = pluginPath
+            # Try common plugin directory layouts:
+            #   Classic Qt:   ${prefix}/plugins
+            #   Homebrew Qt6: ${prefix}/share/qt/plugins
+            for candidate in [
+                os.path.join(self.qtPath, "plugins"),
+                os.path.join(self.qtPath, "share", "qt", "plugins"),
+            ]:
+                if os.path.exists(candidate):
+                    self.pluginPath = candidate
+                    break
 
     def usesFramework(self, name: str) -> bool:
         for framework in self.deployedFrameworks:
@@ -482,6 +489,7 @@ ap.add_argument("-verbose", nargs="?", const=True, help="Output additional debug
 ap.add_argument("-no-plugins", dest="plugins", action="store_false", default=True, help="skip plugin deployment")
 ap.add_argument("-no-strip", dest="strip", action="store_false", default=True, help="don't run 'strip' on the binaries")
 ap.add_argument("-dmg", nargs="?", const="", metavar="basename", help="create a .dmg disk image")
+ap.add_argument("-plugin-dir", nargs=1, metavar="path", default=None, help="Path to Qt's plugins directory (e.g. from qtpaths --query QT_INSTALL_PLUGINS)")
 ap.add_argument("-translations-dir", nargs=1, metavar="path", default=None, help="Path to Qt's translations. Base translations will automatically be added to the bundle's resources.")
 
 config = ap.parse_args()
@@ -543,16 +551,27 @@ except RuntimeError as e:
     sys.stderr.write(f"Error: {str(e)}\n")
     sys.exit(1)
 
+# Override plugin path if explicitly provided via -plugin-dir
+if config.plugin_dir is not None:
+    explicit_plugin_dir = config.plugin_dir[0]
+    if os.path.isdir(explicit_plugin_dir):
+        deploymentInfo.pluginPath = explicit_plugin_dir
+    else:
+        sys.stderr.write(f"Warning: -plugin-dir path does not exist: {explicit_plugin_dir}\n")
+
 # ------------------------------------------------
 
 if config.plugins:
     print("+ Deploying plugins +")
 
-    try:
-        deployPlugins(applicationBundle, deploymentInfo, config.strip, verbose)
-    except RuntimeError as e:
-        sys.stderr.write(f"Error: {str(e)}\n")
-        sys.exit(1)
+    if deploymentInfo.pluginPath is None:
+        sys.stderr.write("Warning: Qt plugin path not found, skipping plugin deployment!\n")
+    else:
+        try:
+            deployPlugins(applicationBundle, deploymentInfo, config.strip, verbose)
+        except RuntimeError as e:
+            sys.stderr.write(f"Error: {str(e)}\n")
+            sys.exit(1)
 
 # ------------------------------------------------
 

@@ -369,6 +369,11 @@ if(APPLE)
             OUTPUT_VARIABLE _qt_prefix_dir
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
+        execute_process(
+            COMMAND "${QTPATHS_EXECUTABLE}" --query QT_INSTALL_PLUGINS
+            OUTPUT_VARIABLE _qt_plugins_dir
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
     endif()
 
     # Fallback: derive from Qt6::Core target location
@@ -398,6 +403,11 @@ if(APPLE)
         "${_app_bundle}" Gridcoin
         -dmg "${_dmg_name}"
     )
+
+    # Only pass -plugin-dir if the directory actually exists
+    if(_qt_plugins_dir AND EXISTS "${_qt_plugins_dir}")
+        list(APPEND _deploy_cmd -plugin-dir "${_qt_plugins_dir}")
+    endif()
 
     # Only pass -translations-dir if the directory actually exists
     if(_qt_translations_dir AND EXISTS "${_qt_translations_dir}")
