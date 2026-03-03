@@ -260,6 +260,11 @@ def getFrameworks(binaryPath: str, verbose: int) -> List[FrameworkInfo]:
 
     libraries = []
     for line in lines:
+        # Extract the raw install name before any token resolution.
+        # install_name_tool -change must match the exact string in the binary.
+        raw_match = FrameworkInfo.reOLine.match(line.strip())
+        raw_installname = raw_match.group(1) if raw_match else None
+
         line = line.replace("@loader_path", os.path.dirname(binaryPath))
         if "@rpath/" in line:
             resolved = resolveRpath(line, rpaths, binaryPath)
@@ -271,6 +276,11 @@ def getFrameworks(binaryPath: str, verbose: int) -> List[FrameworkInfo]:
                 continue
         info = FrameworkInfo.fromLibraryLine(line.strip())
         if info is not None:
+            # Restore the original install name so that install_name_tool -change
+            # can match the actual reference in the binary (e.g. @rpath/... or
+            # @loader_path/...) rather than the resolved absolute path.
+            if raw_installname and raw_installname != info.installName:
+                info.installName = raw_installname
             if verbose:
                 print("Found framework:")
                 print(info)
