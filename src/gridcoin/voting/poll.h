@@ -516,7 +516,7 @@ public:
     //!
     //! \return Fraction Magnitude factor expressed as a Fraction.
     //!
-    Fraction ResolveMagnitudeWeightFactor(CBlockIndex* index) const;
+    Fraction ResolveMagnitudeWeightFactor(const CBlockIndex* index) const;
 
     //!
     //! \brief Get the set of possible answers to the poll.

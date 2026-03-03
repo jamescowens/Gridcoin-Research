@@ -215,7 +215,7 @@ int64_t Poll::Expiration() const
     return m_timestamp + (m_duration_days * 86400);
 }
 
-Fraction Poll::ResolveMagnitudeWeightFactor(CBlockIndex *index) const
+Fraction Poll::ResolveMagnitudeWeightFactor(const CBlockIndex* index) const
 {
     if (index == nullptr) {
         return Fraction();
