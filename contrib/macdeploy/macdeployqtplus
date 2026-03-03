@@ -399,8 +399,14 @@ def deployFrameworks(frameworks: List[FrameworkInfo], bundlePath: str, binaryPat
 
         # install_name_tool it a new id.
         changeIdentification(framework.deployedInstallName, deployedBinaryPath, verbose)
-        # Check for framework dependencies
-        dependencies = getFrameworks(deployedBinaryPath, verbose)
+        # Check for framework dependencies.
+        # Scan the ORIGINAL binary so that @loader_path / @rpath tokens
+        # resolve relative to the Qt prefix (where sibling frameworks
+        # exist) rather than the bundle (where they may not yet be copied).
+        originalPath = framework.sourceFilePath
+        if originalPath.startswith("Qt"):
+            originalPath = f"/Library/Frameworks/{originalPath}"
+        dependencies = getFrameworks(originalPath, verbose)
 
         for dependency in dependencies:
             changeInstallName(dependency.installName, dependency.deployedInstallName, deployedBinaryPath, verbose)
