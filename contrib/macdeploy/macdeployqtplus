@@ -96,7 +96,9 @@ class FrameworkInfo(object):
         if m is None:
             raise RuntimeError(f"Line could not be parsed: {line}")
 
-        path = m.group(1)
+        # Normalize the path to collapse any '..' traversals that may arise
+        # from @rpath or @loader_path expansion in different directory layouts.
+        path = os.path.normpath(m.group(1))
 
         info = cls()
         info.sourceFilePath = path
@@ -119,13 +121,15 @@ class FrameworkInfo(object):
             info.destinationDirectory = cls.bundleFrameworkDirectory
         else:
             parts = path.split("/")
-            i = 0
-            # Search for the .framework directory
-            for part in parts:
+            # Search for the LAST .framework directory. When relative rpaths
+            # are expanded, the path may traverse through a sibling framework
+            # directory before reaching the actual dependency. Using the last
+            # match ensures we identify the correct dependency framework.
+            i = -1
+            for j, part in enumerate(parts):
                 if part.endswith(".framework"):
-                    break
-                i += 1
-            if i == len(parts):
+                    i = j
+            if i == -1:
                 raise RuntimeError(f"Could not find .framework or .dylib in line: {line}")
 
             info.frameworkName = parts[i]
@@ -224,20 +228,18 @@ def resolveRpath(line: str, rpaths: List[str], binaryPath: str) -> Optional[str]
         stripped = candidate.strip()
         m = FrameworkInfo.reOLine.match(stripped)
         if m:
-            path = m.group(1)
-            # For dylibs, check direct file existence
-            if path.endswith(".dylib"):
-                if os.path.exists(path):
-                    return candidate
-            else:
-                # For frameworks, check whether the .framework directory exists
-                for part in path.split("/"):
-                    if part.endswith(".framework"):
-                        idx = path.index(part)
-                        fw_path = path[:idx + len(part)]
-                        if os.path.exists(fw_path):
-                            return candidate
-                        break
+            # Normalize the path to collapse '..' traversals. Without this,
+            # relative rpaths expanded in a bundle context can produce paths
+            # that pass through a sibling .framework directory (e.g.
+            # .../QtGui.framework/Versions/A/../../QtCore.framework/...).
+            # The old first-match .framework check would then find the wrong
+            # framework and accept a bogus candidate.
+            path = os.path.normpath(m.group(1))
+            if os.path.exists(path):
+                # Reconstruct the line with the normalized path so downstream
+                # parsing sees a clean path without '..' components.
+                version_info = stripped[len(m.group(1)):]
+                return f"  {path}{version_info}"
     return None
 
 def getFrameworks(binaryPath: str, verbose: int) -> List[FrameworkInfo]:
