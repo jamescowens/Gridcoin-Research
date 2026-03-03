@@ -377,11 +377,14 @@ jobs:
             echo "WARNING: Code signature verification failed (ad-hoc signing may not verify on CI)"
           fi
 
-          # Smoke test: run binary with --version (exits quickly)
-          if "$BINARY" --version 2>/dev/null; then
-            echo "PASS: Binary executes successfully"
+          # Verify binary is a valid Mach-O executable (no runtime execution
+          # since the GUI binary pops up dialogs that hang in headless CI)
+          if file "$BINARY" | grep -q "Mach-O"; then
+            echo "PASS: Binary is valid Mach-O executable"
           else
-            echo "WARNING: Binary --version returned non-zero (may be expected without datadir)"
+            echo "FAIL: Binary is not a valid Mach-O executable"
+            hdiutil detach "$MOUNT_POINT"
+            exit 1
           fi
 
           # Cleanup
