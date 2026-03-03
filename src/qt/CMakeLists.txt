@@ -336,6 +336,90 @@ else()
     )
 endif()
 
+# macOS Deploy Target
+# ===================
+#
+# Creates a self-contained, ad-hoc signed DMG using macdeployqtplus.
+# Usage: cmake --build build --target deploy
+#
+if(APPLE)
+    # Use Python3_EXECUTABLE if explicitly set (e.g. -DPython3_EXECUTABLE=...),
+    # otherwise fall back to "python3" resolved via PATH at build time.
+    # This ensures the deploy target works with a venv activated at build time.
+    if(NOT Python3_EXECUTABLE)
+        find_program(Python3_EXECUTABLE NAMES python3)
+    endif()
+    if(NOT Python3_EXECUTABLE)
+        set(Python3_EXECUTABLE "python3")
+    endif()
+
+    # Locate Qt translations directory and QTDIR for plugin discovery.
+    # Try qtpaths first (the canonical Qt tool), then fall back to
+    # deriving paths from the Qt6::Core imported target location.
+    find_program(QTPATHS_EXECUTABLE NAMES qtpaths6 qtpaths)
+
+    if(QTPATHS_EXECUTABLE)
+        execute_process(
+            COMMAND "${QTPATHS_EXECUTABLE}" --query QT_INSTALL_TRANSLATIONS
+            OUTPUT_VARIABLE _qt_translations_dir
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        execute_process(
+            COMMAND "${QTPATHS_EXECUTABLE}" --query QT_INSTALL_PREFIX
+            OUTPUT_VARIABLE _qt_prefix_dir
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        execute_process(
+            COMMAND "${QTPATHS_EXECUTABLE}" --query QT_INSTALL_PLUGINS
+            OUTPUT_VARIABLE _qt_plugins_dir
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    endif()
+
+    # Fallback: derive from Qt6::Core target location
+    if(NOT _qt_translations_dir OR NOT _qt_prefix_dir)
+        get_target_property(_qt_core_loc ${QT}::Core LOCATION)
+        # e.g. /opt/homebrew/lib/QtCore.framework/Versions/A/QtCore
+        #   -> /opt/homebrew
+        get_filename_component(_qt_lib_dir "${_qt_core_loc}" DIRECTORY)
+        # Walk up from lib/ (or framework internals) to the prefix
+        string(REGEX REPLACE "/lib(/.*)?$" "" _qt_prefix_dir_fallback "${_qt_lib_dir}")
+        if(NOT _qt_prefix_dir)
+            set(_qt_prefix_dir "${_qt_prefix_dir_fallback}")
+        endif()
+        if(NOT _qt_translations_dir)
+            set(_qt_translations_dir "${_qt_prefix_dir}/translations")
+        endif()
+    endif()
+
+    set(_deploy_script "${CMAKE_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus")
+    set(_app_bundle "$<TARGET_BUNDLE_DIR:gridcoinresearch>")
+
+    # Build the macdeployqtplus command
+    set(_deploy_cmd
+        ${Python3_EXECUTABLE} "${_deploy_script}"
+        "${_app_bundle}" Gridcoin
+        -dmg
+    )
+
+    # Only pass -plugin-dir if the directory actually exists
+    if(_qt_plugins_dir AND EXISTS "${_qt_plugins_dir}")
+        list(APPEND _deploy_cmd -plugin-dir "${_qt_plugins_dir}")
+    endif()
+
+    # Only pass -translations-dir if the directory actually exists
+    if(_qt_translations_dir AND EXISTS "${_qt_translations_dir}")
+        list(APPEND _deploy_cmd -translations-dir "${_qt_translations_dir}")
+    endif()
+
+    add_custom_target(deploy
+        COMMAND ${CMAKE_COMMAND} -E env "QTDIR=${_qt_prefix_dir}" ${_deploy_cmd}
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+        COMMENT "Deploying Gridcoin.app into DMG via macdeployqtplus"
+        DEPENDS gridcoinresearch
+    )
+endif()
+
 # Tests
 # =====
 
