@@ -14,18 +14,18 @@ These dependencies are required:
  Library      | Purpose          | Description
  -------------|------------------|----------------------------------------------------------------
  cmake        | Build            | Build system
- pkgconf      | Build            | Learn library inter-dependencies
+ pkgconf      | Build            | Learn library inter-dependencies
  openssl      | Crypto           | Random Number Generation, Elliptic Curve Cryptography
  libboost     | Utility          | Library for threading, data structures, etc
  libcurl      | Utility          | URL client library
  libzip       | Utility          | Library for manipulating zip archives
  miniupnpc    | UPnP Support     | Firewall-jumping support (optional)
- qt5          | GUI              | GUI toolkit (optional)
+ qt5 or qt6   | GUI              | GUI toolkit (optional)
  libqrencode  | QR codes in GUI  | Library for encoding data in a QR Code symbol (optional, depends on GUI)
 
 To build, run:
 
-  `mkdir -p build && cd build && cmake .. && cmake --build .`
+  `cmake -B build && cmake --build build`
 
 For more detailed and platform-specific instructions, see [the doc folder.](doc/)
 
@@ -37,7 +37,7 @@ development branch when they think their feature or bug fix is ready.
 
 The patch will be accepted if there is broad consensus that it is a
 good thing. Developers should expect to rework and resubmit patches
-if they don't match the project's coding conventions (see [coding.txt](doc/coding.txt))
+if they don't match the project's coding conventions (see [developer-notes.md](doc/developer-notes.md))
 or are controversial.
 
 The master branch is regularly built and tested, but is not guaranteed
@@ -75,7 +75,7 @@ master if the staging branch is busy.
 Community
 =========
 
-For general questions, please visit our Discord server at https://discord.gg/UMWUnMjN4x, or Libera Chat in #gridcoin-help. We also have a Slack channel at [teamgridcoin.slack.com](https://join.slack.com/t/teamgridcoin/shared_invite/zt-3s81akww-GHt~_KvtxfhxUgi3yW3~Bg).
+For general questions, please visit our [Discord server](https://discord.gg/UMWUnMjN4x), [Matrix room](https://matrix.to/#/#gridcoin:matrix.org), or Libera Chat in #gridcoin-help.
 
 License
 -------
@@ -86,6 +86,8 @@ information.
 Build Status
 ============
 
-| Development                                                                                                                            | Staging                                                                                                                            | Master                                                                                                                            |
-|----------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
-| ![Build Status](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/ci.yml/badge.svg?branch=development) | ![Build Status](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/ci.yml/badge.svg?branch=staging) | ![Build Status](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/ci.yml/badge.svg?branch=master) |
+| Branch | Quality Gate | Production Builds | Compatibility | Distros |
+|--------|-------------|-------------------|---------------|---------|
+| Development | [![Quality Gate](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_quality.yml/badge.svg?branch=development)](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_quality.yml?query=branch%3Adevelopment) | [![Production Builds](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_production.yml/badge.svg?branch=development)](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_production.yml?query=branch%3Adevelopment) | [![Compatibility](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_compatibility.yml/badge.svg?branch=development)](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_compatibility.yml?query=branch%3Adevelopment) | [![Distros](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_distros.yml/badge.svg?branch=development)](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_distros.yml?query=branch%3Adevelopment) |
+| Staging | [![Quality Gate](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_quality.yml/badge.svg?branch=staging)](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_quality.yml?query=branch%3Astaging) | [![Production Builds](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_production.yml/badge.svg?branch=staging)](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_production.yml?query=branch%3Astaging) | [![Compatibility](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_compatibility.yml/badge.svg?branch=staging)](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_compatibility.yml?query=branch%3Astaging) | [![Distros](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_distros.yml/badge.svg?branch=staging)](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_distros.yml?query=branch%3Astaging) |
+| Master | [![Quality Gate](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_quality.yml/badge.svg?branch=master)](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_quality.yml?query=branch%3Amaster) | [![Production Builds](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_production.yml/badge.svg?branch=master)](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_production.yml?query=branch%3Amaster) | [![Compatibility](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_compatibility.yml/badge.svg?branch=master)](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_compatibility.yml?query=branch%3Amaster) | [![Distros](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_distros.yml/badge.svg?branch=master)](https://github.com/gridcoin-community/Gridcoin-Research/actions/workflows/cmake_distros.yml?query=branch%3Amaster) |
