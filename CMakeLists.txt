@@ -109,6 +109,17 @@ option(ENABLE_X86_SHANI "Build code that uses x86 SHA-NI intrinsics" ${HAS_X86_S
 option(ENABLE_ARM_SHANI "Build code that uses ARM SHA-NI intrinsics" ${HAS_ARM_SHANI})
 option(USE_ASM          "Enable assembly routines" ON)
 
+# Scrypt assembly uses GNU assembler syntax incompatible with Apple's
+# LLVM assembler, so default to OFF on Apple and ON elsewhere.
+if(NOT DEFINED USE_ASM_SCRYPT)
+    if(APPLE)
+        set(USE_ASM_SCRYPT OFF)
+    else()
+        set(USE_ASM_SCRYPT ${USE_ASM})
+    endif()
+endif()
+option(USE_ASM_SCRYPT   "Enable scrypt assembly routines (requires GNU assembler)" ${USE_ASM_SCRYPT})
+
 # Optional functionality
 option(ENABLE_PIE       "Build position-independent executables" OFF)
 option(ENABLE_DEBUG_LOCKORDER "Enable run-time lock-order checking (DEBUG_LOCKORDER)" OFF)

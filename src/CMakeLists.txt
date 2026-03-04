@@ -203,8 +203,6 @@ add_library(gridcoin_util STATIC
     rpc/voting.cpp
     scheduler.cpp
     script.cpp
-    scrypt-x86.S
-    scrypt-x86_64.S
     scrypt.cpp
     support/cleanse.cpp
     support/lockedpool.cpp
@@ -230,6 +228,10 @@ add_library(gridcoin_util STATIC
     wallet/walletdb.cpp
     wallet/walletutil.cpp
 )
+
+if(USE_ASM_SCRYPT)
+    target_sources(gridcoin_util PRIVATE scrypt-x86.S scrypt-x86_64.S)
+endif()
 
 target_include_directories(gridcoin_util PUBLIC
     ${CMAKE_SOURCE_DIR}/src

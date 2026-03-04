@@ -35,6 +35,7 @@
 #endif
 
 #cmakedefine USE_ASM
+#cmakedefine USE_ASM_SCRYPT
 
 #cmakedefine USE_DBUS
 #cmakedefine USE_QRCODE
