@@ -693,7 +693,12 @@ bool CScraperManifest::RecvManifest(CNode* pfrom, CDataStream& vRecv)
     const auto it = mapManifest.emplace(hash, manifest);
 
     {
-        LOCK(manifest->cs_manifest);
+        // Hold cs_mapParts together with cs_manifest in canonical order. UnserializeCheck() calls
+        // addPart() which acquires both locks via LOCK2. Without cs_mapParts held here, the recursive
+        // re-lock of cs_manifest inside addPart() establishes the reverse ordering cs_manifest ->
+        // cs_mapParts, conflicting with the canonical cs_mapParts -> cs_manifest lock ordering
+        // established by the LOCK2(cs_mapParts, manifest->cs_manifest) below.
+        LOCK2(cs_mapParts, manifest->cs_manifest);
 
         // The phash in the manifest points to the actual hash which is the index to the element in the map.
         manifest->phash = &it.first->first;
