@@ -1,10 +1,4 @@
-# CMake build system is intended to be used by maintainers to package Gridcoin
-# for software repositories. For that reason, only external dependencies are
-# supported.
-#
-# Use Autotools build system for all other needs.
-#
-# CMake support is experimental. Use with caution and report any bugs.
+# CMake is the official build system for Gridcoin.
 
 cmake_minimum_required(VERSION 3.18)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/build-aux/cmake")
