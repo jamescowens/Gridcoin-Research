@@ -344,8 +344,8 @@ endif()
 #
 if(APPLE)
     # Use Python3_EXECUTABLE if explicitly set (e.g. -DPython3_EXECUTABLE=...),
-    # otherwise fall back to "python3" resolved via PATH at build time.
-    # This ensures the deploy target works with a venv activated at build time.
+    # otherwise resolve via find_program at configure time, with a final
+    # fallback to the literal "python3" string resolved via PATH at build time.
     if(NOT Python3_EXECUTABLE)
         find_program(Python3_EXECUTABLE NAMES python3)
     endif()
