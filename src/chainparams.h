@@ -11,14 +11,9 @@
 #include "consensus/params.h"
 #include "protocol.h"
 
-// system.h and extern reference to cs_main included only for temporary V13 fork point overrides for testing.
-#include "util/system.h"
-
 #include <memory>
 #include <stdexcept>
 #include <vector>
-
-extern CCriticalSection cs_main;
 
 typedef std::map<int, uint256> MapCheckpoints;
 typedef std::map<int, std::vector<unsigned char>> MapMasterKeys;
