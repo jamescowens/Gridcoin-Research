@@ -109,6 +109,17 @@ option(ENABLE_X86_SHANI "Build code that uses x86 SHA-NI intrinsics" ${HAS_X86_S
 option(ENABLE_ARM_SHANI "Build code that uses ARM SHA-NI intrinsics" ${HAS_ARM_SHANI})
 option(USE_ASM          "Enable assembly routines" ON)
 
+# Scrypt assembly uses GNU assembler syntax incompatible with Apple's
+# LLVM assembler, so default to OFF on Apple and ON elsewhere.
+if(NOT DEFINED USE_ASM_SCRYPT)
+    if(APPLE)
+        set(USE_ASM_SCRYPT OFF)
+    else()
+        set(USE_ASM_SCRYPT ${USE_ASM})
+    endif()
+endif()
+option(USE_ASM_SCRYPT   "Enable scrypt assembly routines (requires GNU assembler)" ${USE_ASM_SCRYPT})
+
 # Optional functionality
 option(ENABLE_PIE       "Build position-independent executables" OFF)
 option(ENABLE_DEBUG_LOCKORDER "Enable run-time lock-order checking (DEBUG_LOCKORDER)" OFF)
@@ -438,9 +449,16 @@ else()
 endif()
 
 if(CMAKE_C_COMPILER_TARGET)
-    # Naming: gridcoinresearch-5.x.x-x86_64-pc-linux-gnu.tar.gz
+    # Cross/depends builds: e.g. x86_64-pc-linux-gnu, x86_64-w64-mingw32
     set(CPACK_SYSTEM_NAME "${CMAKE_C_COMPILER_TARGET}")
+elseif(CMAKE_SYSTEM_PROCESSOR)
+    # Native builds: e.g. x86_64, aarch64
+    set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_PROCESSOR}")
 endif()
+
+# CPack constructs CPACK_PACKAGE_VERSION from MAJOR.MINOR.PATCH, excluding
+# TWEAK. Override it to use the full quad version (e.g. 5.4.9.10).
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 
 set(CPACK_NSIS_PACKAGE_NAME ${PROJECT_NAME})
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "gridcoinresearch-${PROJECT_VERSION}")

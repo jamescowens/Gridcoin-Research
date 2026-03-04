@@ -30,6 +30,19 @@ These options toggle specific functionality within the Gridcoin client.
 
 ---
 
+## CPU & Assembly
+
+| Option | Default | Description |
+| :--- | :--- | :--- |
+| `USE_ASM` | `ON` | Enable assembly routines (SHA-256 SSE4, secp256k1). |
+| `USE_ASM_SCRYPT` | `USE_ASM` (non-Apple), `OFF` (Apple) | Enable scrypt x86/x86_64 assembly. Requires a GNU-compatible assembler; Apple's LLVM assembler is not compatible, so this defaults to `OFF` on macOS. The C++ fallback in `scrypt.cpp` is used when disabled. |
+| `ENABLE_SSE41` | Auto-detected | Build SHA-256 code that uses SSE4.1 intrinsics. |
+| `ENABLE_AVX2` | Auto-detected | Build SHA-256 code that uses AVX2 intrinsics. |
+| `ENABLE_X86_SHANI` | Auto-detected | Build SHA-256 code that uses x86 SHA-NI intrinsics. |
+| `ENABLE_ARM_SHANI` | Auto-detected | Build SHA-256 code that uses ARM SHA-NI intrinsics. |
+
+---
+
 ## Advanced / Cross-Compilation
 
 These options are primarily used by the `depends` system or advanced users.

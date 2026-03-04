@@ -18,8 +18,12 @@
 
 import sys, re, os, platform, shutil, stat, subprocess, os.path
 from argparse import ArgumentParser
-from ds_store import DSStore
-from mac_alias import Alias
+try:
+    from ds_store import DSStore
+    from mac_alias import Alias
+    HAS_DS_STORE = True
+except ImportError:
+    HAS_DS_STORE = False
 from pathlib import Path
 from subprocess import PIPE, run
 from typing import List, Optional
@@ -92,7 +96,9 @@ class FrameworkInfo(object):
         if m is None:
             raise RuntimeError(f"Line could not be parsed: {line}")
 
-        path = m.group(1)
+        # Normalize the path to collapse any '..' traversals that may arise
+        # from @rpath or @loader_path expansion in different directory layouts.
+        path = os.path.normpath(m.group(1))
 
         info = cls()
         info.sourceFilePath = path
@@ -115,13 +121,15 @@ class FrameworkInfo(object):
             info.destinationDirectory = cls.bundleFrameworkDirectory
         else:
             parts = path.split("/")
-            i = 0
-            # Search for the .framework directory
-            for part in parts:
+            # Search for the LAST .framework directory. When relative rpaths
+            # are expanded, the path may traverse through a sibling framework
+            # directory before reaching the actual dependency. Using the last
+            # match ensures we identify the correct dependency framework.
+            i = -1
+            for j, part in enumerate(parts):
                 if part.endswith(".framework"):
-                    break
-                i += 1
-            if i == len(parts):
+                    i = j
+            if i == -1:
                 raise RuntimeError(f"Could not find .framework or .dylib in line: {line}")
 
             info.frameworkName = parts[i]
@@ -169,9 +177,16 @@ class DeploymentInfo(object):
             self.qtPath = os.getenv("QTDIR", None)
 
         if self.qtPath is not None:
-            pluginPath = os.path.join(self.qtPath, "plugins")
-            if os.path.exists(pluginPath):
-                self.pluginPath = pluginPath
+            # Try common plugin directory layouts:
+            #   Classic Qt:   ${prefix}/plugins
+            #   Homebrew Qt6: ${prefix}/share/qt/plugins
+            for candidate in [
+                os.path.join(self.qtPath, "plugins"),
+                os.path.join(self.qtPath, "share", "qt", "plugins"),
+            ]:
+                if os.path.exists(candidate):
+                    self.pluginPath = candidate
+                    break
 
     def usesFramework(self, name: str) -> bool:
         for framework in self.deployedFrameworks:
@@ -182,6 +197,57 @@ class DeploymentInfo(object):
                 if framework.startswith(f"lib{name}."):
                     return True
         return False
+
+def getRpaths(binaryPath: str, verbose: int) -> List[str]:
+    """Extract LC_RPATH search paths from a Mach-O binary using otool."""
+    output = run(["otool", "-l", binaryPath], stdout=PIPE, stderr=PIPE, text=True)
+    if output.returncode != 0:
+        return []
+    rpaths = []
+    lines = output.stdout.split("\n")
+    for i, line in enumerate(lines):
+        if "cmd LC_RPATH" in line:
+            for j in range(i + 1, min(i + 4, len(lines))):
+                if "path " in lines[j]:
+                    rp = lines[j].strip().split("path ")[1].split(" (offset")[0].strip()
+                    rpaths.append(rp)
+                    break
+    if verbose and rpaths:
+        print(f"  rpaths for {binaryPath}: {rpaths}")
+    return rpaths
+
+def expandRpathTokens(rpath: str, binaryPath: str) -> str:
+    """Expand @loader_path and @executable_path tokens in an rpath entry."""
+    rpath = rpath.replace("@loader_path", os.path.dirname(binaryPath))
+    rpath = rpath.replace("@executable_path", os.path.dirname(binaryPath))
+    return rpath
+
+def resolveRpath(line: str, rpaths: List[str], binaryPath: str) -> Optional[str]:
+    """Try to resolve an @rpath reference using extracted rpaths.
+
+    Returns the line with @rpath replaced by the matching rpath,
+    or None if no rpath resolves to an existing path.
+    Expands @loader_path/@executable_path tokens within rpath entries.
+    """
+    for rp in rpaths:
+        rp = expandRpathTokens(rp, binaryPath)
+        candidate = line.replace("@rpath", rp)
+        stripped = candidate.strip()
+        m = FrameworkInfo.reOLine.match(stripped)
+        if m:
+            # Normalize the path to collapse '..' traversals. Without this,
+            # relative rpaths expanded in a bundle context can produce paths
+            # that pass through a sibling .framework directory (e.g.
+            # .../QtGui.framework/Versions/A/../../QtCore.framework/...).
+            # The old first-match .framework check would then find the wrong
+            # framework and accept a bogus candidate.
+            path = os.path.normpath(m.group(1))
+            if os.path.exists(path):
+                # Reconstruct the line with the normalized path so downstream
+                # parsing sees a clean path without '..' components.
+                version_info = stripped[len(m.group(1)):]
+                return f"  {path}{version_info}"
+    return None
 
 def getFrameworks(binaryPath: str, verbose: int) -> List[FrameworkInfo]:
     objdump = os.getenv("OBJDUMP", "objdump")
@@ -198,11 +264,32 @@ def getFrameworks(binaryPath: str, verbose: int) -> List[FrameworkInfo]:
     if ".framework" in binaryPath or binaryPath.endswith(".dylib"):
         lines.pop(0) # Frameworks and dylibs list themselves as a dependency.
 
+    # Extract rpaths for resolving @rpath references
+    rpaths = getRpaths(binaryPath, verbose)
+
     libraries = []
     for line in lines:
+        # Extract the raw install name before any token resolution.
+        # install_name_tool -change must match the exact string in the binary.
+        raw_match = FrameworkInfo.reOLine.match(line.strip())
+        raw_installname = raw_match.group(1) if raw_match else None
+
         line = line.replace("@loader_path", os.path.dirname(binaryPath))
+        if "@rpath/" in line:
+            resolved = resolveRpath(line, rpaths, binaryPath)
+            if resolved is not None:
+                line = resolved
+            else:
+                if verbose:
+                    print(f"  Skipping unresolvable @rpath reference: {line.strip()}")
+                continue
         info = FrameworkInfo.fromLibraryLine(line.strip())
         if info is not None:
+            # Restore the original install name so that install_name_tool -change
+            # can match the actual reference in the binary (e.g. @rpath/... or
+            # @loader_path/...) rather than the resolved absolute path.
+            if raw_installname and raw_installname != info.installName:
+                info.installName = raw_installname
             if verbose:
                 print("Found framework:")
                 print(info)
@@ -319,8 +406,14 @@ def deployFrameworks(frameworks: List[FrameworkInfo], bundlePath: str, binaryPat
 
         # install_name_tool it a new id.
         changeIdentification(framework.deployedInstallName, deployedBinaryPath, verbose)
-        # Check for framework dependencies
-        dependencies = getFrameworks(deployedBinaryPath, verbose)
+        # Check for framework dependencies.
+        # Scan the ORIGINAL binary so that @loader_path / @rpath tokens
+        # resolve relative to the Qt prefix (where sibling frameworks
+        # exist) rather than the bundle (where they may not yet be copied).
+        originalPath = framework.sourceFilePath
+        if originalPath.startswith("Qt"):
+            originalPath = f"/Library/Frameworks/{originalPath}"
+        dependencies = getFrameworks(originalPath, verbose)
 
         for dependency in dependencies:
             changeInstallName(dependency.installName, dependency.deployedInstallName, deployedBinaryPath, verbose)
@@ -396,6 +489,7 @@ ap.add_argument("-verbose", nargs="?", const=True, help="Output additional debug
 ap.add_argument("-no-plugins", dest="plugins", action="store_false", default=True, help="skip plugin deployment")
 ap.add_argument("-no-strip", dest="strip", action="store_false", default=True, help="don't run 'strip' on the binaries")
 ap.add_argument("-dmg", nargs="?", const="", metavar="basename", help="create a .dmg disk image")
+ap.add_argument("-plugin-dir", nargs=1, metavar="path", default=None, help="Path to Qt's plugins directory (e.g. from qtpaths --query QT_INSTALL_PLUGINS)")
 ap.add_argument("-translations-dir", nargs=1, metavar="path", default=None, help="Path to Qt's translations. Base translations will automatically be added to the bundle's resources.")
 
 config = ap.parse_args()
@@ -413,16 +507,21 @@ if not os.path.exists(app_bundle):
 
 # ------------------------------------------------
 
+# When -dmg is given with an explicit basename, use it for the output file;
+# otherwise fall back to appname.  The volume name always uses appname so that
+# the mounted disk appears as e.g. "Gridcoin" regardless of the .dmg filename.
+dmg_basename = config.dmg if (config.dmg is not None and config.dmg != "") else appname
+
 if os.path.exists("dist"):
     print("+ Removing existing dist folder +")
     shutil.rmtree("dist")
 
-if os.path.exists(appname + ".dmg"):
+if os.path.exists(dmg_basename + ".dmg"):
     print("+ Removing existing DMG +")
-    os.unlink(appname + ".dmg")
+    os.unlink(dmg_basename + ".dmg")
 
-if os.path.exists(appname + ".temp.dmg"):
-    os.unlink(appname + ".temp.dmg")
+if os.path.exists(dmg_basename + ".temp.dmg"):
+    os.unlink(dmg_basename + ".temp.dmg")
 
 # ------------------------------------------------
 
@@ -452,16 +551,27 @@ except RuntimeError as e:
     sys.stderr.write(f"Error: {str(e)}\n")
     sys.exit(1)
 
+# Override plugin path if explicitly provided via -plugin-dir
+if config.plugin_dir is not None:
+    explicit_plugin_dir = config.plugin_dir[0]
+    if os.path.isdir(explicit_plugin_dir):
+        deploymentInfo.pluginPath = explicit_plugin_dir
+    else:
+        sys.stderr.write(f"Warning: -plugin-dir path does not exist: {explicit_plugin_dir}\n")
+
 # ------------------------------------------------
 
 if config.plugins:
     print("+ Deploying plugins +")
 
-    try:
-        deployPlugins(applicationBundle, deploymentInfo, config.strip, verbose)
-    except RuntimeError as e:
-        sys.stderr.write(f"Error: {str(e)}\n")
-        sys.exit(1)
+    if deploymentInfo.pluginPath is None:
+        sys.stderr.write("Warning: Qt plugin path not found, skipping plugin deployment!\n")
+    else:
+        try:
+            deployPlugins(applicationBundle, deploymentInfo, config.strip, verbose)
+        except RuntimeError as e:
+            sys.stderr.write(f"Error: {str(e)}\n")
+            sys.exit(1)
 
 # ------------------------------------------------
 
@@ -470,18 +580,18 @@ if config.translations_dir:
         sys.stderr.write(f"Error: Could not find translation dir \"{config.translations_dir[0]}\"\n")
         sys.exit(1)
 
-print("+ Adding Qt translations +")
+    print("+ Adding Qt translations +")
 
-translations = Path(config.translations_dir[0])
+    translations = Path(config.translations_dir[0])
 
-regex = re.compile('qt_[a-z]*(.qm|_[A-Z]*.qm)')
+    regex = re.compile('qt_[a-z]*(.qm|_[A-Z]*.qm)')
 
-lang_files = [x for x in translations.iterdir() if regex.match(x.name)]
+    lang_files = [x for x in translations.iterdir() if regex.match(x.name)]
 
-for file in lang_files:
-    if verbose:
-        print(file.as_posix(), "->", os.path.join(applicationBundle.resourcesPath, file.name))
-    shutil.copy2(file.as_posix(), os.path.join(applicationBundle.resourcesPath, file.name))
+    for file in lang_files:
+        if verbose:
+            print(file.as_posix(), "->", os.path.join(applicationBundle.resourcesPath, file.name))
+        shutil.copy2(file.as_posix(), os.path.join(applicationBundle.resourcesPath, file.name))
 
 # ------------------------------------------------
 
@@ -497,47 +607,50 @@ with open(os.path.join(applicationBundle.resourcesPath, "qt.conf"), "wb") as f:
 
 # ------------------------------------------------
 
-print("+ Generating .DS_Store +")
+if HAS_DS_STORE:
+    print("+ Generating .DS_Store +")
 
-output_file = os.path.join("dist", ".DS_Store")
+    output_file = os.path.join("dist", ".DS_Store")
 
-ds = DSStore.open(output_file, 'w+')
+    ds = DSStore.open(output_file, 'w+')
 
-ds['.']['bwsp'] = {
-    'WindowBounds': '{{300, 280}, {500, 343}}',
-    'PreviewPaneVisibility': False,
-}
+    ds['.']['bwsp'] = {
+        'WindowBounds': '{{300, 280}, {500, 343}}',
+        'PreviewPaneVisibility': False,
+    }
 
-icvp = {
-    'gridOffsetX': 0.0,
-    'textSize': 12.0,
-    'viewOptionsVersion': 1,
-    'backgroundImageAlias': b'\x00\x00\x00\x00\x02\x1e\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xd1\x94\\\xb0H+\x00\x05\x00\x00\x00\x98\x0fbackground.tiff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x99\xd19\xb0\xf8\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xff\xff\x00\x00\r\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0b.background\x00\x00\x10\x00\x08\x00\x00\xd1\x94\\\xb0\x00\x00\x00\x11\x00\x08\x00\x00\xd19\xb0\xf8\x00\x00\x00\x01\x00\x04\x00\x00\x00\x98\x00\x0e\x00 \x00\x0f\x00b\x00a\x00c\x00k\x00g\x00r\x00o\x00u\x00n\x00d\x00.\x00t\x00i\x00f\x00f\x00\x0f\x00\x02\x00\x00\x00\x12\x00\x1c/.background/background.tiff\x00\x14\x01\x06\x00\x00\x00\x00\x01\x06\x00\x02\x00\x00\x0cMacintosh HD\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xce\x97\xab\xc3H+\x00\x00\x01\x88[\x88\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02u\xab\x8d\xd1\x94\\\xb0devrddsk\xff\xff\xff\xff\x00\x00\t \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x07bitcoin\x00\x00\x10\x00\x08\x00\x00\xce\x97\xab\xc3\x00\x00\x00\x11\x00\x08\x00\x00\xd1\x94\\\xb0\x00\x00\x00\x01\x00\x14\x01\x88[\x88\x00\x16\xa9\t\x00\x08\xfaR\x00\x08\xfaQ\x00\x02d\x8e\x00\x0e\x00\x02\x00\x00\x00\x0f\x00\x1a\x00\x0c\x00M\x00a\x00c\x00i\x00n\x00t\x00o\x00s\x00h\x00 \x00H\x00D\x00\x13\x00\x01/\x00\x00\x15\x00\x02\x00\x14\xff\xff\x00\x00\xff\xff\x00\x00',
-    'backgroundColorBlue': 1.0,
-    'iconSize': 96.0,
-    'backgroundColorGreen': 1.0,
-    'arrangeBy': 'none',
-    'showIconPreview': True,
-    'gridSpacing': 100.0,
-    'gridOffsetY': 0.0,
-    'showItemInfo': False,
-    'labelOnBottom': True,
-    'backgroundType': 2,
-    'backgroundColorRed': 1.0
-}
-alias = Alias().from_bytes(icvp['backgroundImageAlias'])
-alias.volume.name = appname
-alias.volume.posix_path = '/Volumes/' + appname
-icvp['backgroundImageAlias'] = alias.to_bytes()
-ds['.']['icvp'] = icvp
+    icvp = {
+        'gridOffsetX': 0.0,
+        'textSize': 12.0,
+        'viewOptionsVersion': 1,
+        'backgroundImageAlias': b'\x00\x00\x00\x00\x02\x1e\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xd1\x94\\\xb0H+\x00\x05\x00\x00\x00\x98\x0fbackground.tiff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x99\xd19\xb0\xf8\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xff\xff\x00\x00\r\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0b.background\x00\x00\x10\x00\x08\x00\x00\xd1\x94\\\xb0\x00\x00\x00\x11\x00\x08\x00\x00\xd19\xb0\xf8\x00\x00\x00\x01\x00\x04\x00\x00\x00\x98\x00\x0e\x00 \x00\x0f\x00b\x00a\x00c\x00k\x00g\x00r\x00o\x00u\x00n\x00d\x00.\x00t\x00i\x00f\x00f\x00\x0f\x00\x02\x00\x00\x00\x12\x00\x1c/.background/background.tiff\x00\x14\x01\x06\x00\x00\x00\x00\x01\x06\x00\x02\x00\x00\x0cMacintosh HD\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xce\x97\xab\xc3H+\x00\x00\x01\x88[\x88\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02u\xab\x8d\xd1\x94\\\xb0devrddsk\xff\xff\xff\xff\x00\x00\t \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x07bitcoin\x00\x00\x10\x00\x08\x00\x00\xce\x97\xab\xc3\x00\x00\x00\x11\x00\x08\x00\x00\xd1\x94\\\xb0\x00\x00\x00\x01\x00\x14\x01\x88[\x88\x00\x16\xa9\t\x00\x08\xfaR\x00\x08\xfaQ\x00\x02d\x8e\x00\x0e\x00\x02\x00\x00\x00\x0f\x00\x1a\x00\x0c\x00M\x00a\x00c\x00i\x00n\x00t\x00o\x00s\x00h\x00 \x00H\x00D\x00\x13\x00\x01/\x00\x00\x15\x00\x02\x00\x14\xff\xff\x00\x00\xff\xff\x00\x00',
+        'backgroundColorBlue': 1.0,
+        'iconSize': 96.0,
+        'backgroundColorGreen': 1.0,
+        'arrangeBy': 'none',
+        'showIconPreview': True,
+        'gridSpacing': 100.0,
+        'gridOffsetY': 0.0,
+        'showItemInfo': False,
+        'labelOnBottom': True,
+        'backgroundType': 2,
+        'backgroundColorRed': 1.0
+    }
+    alias = Alias().from_bytes(icvp['backgroundImageAlias'])
+    alias.volume.name = appname
+    alias.volume.posix_path = '/Volumes/' + appname
+    icvp['backgroundImageAlias'] = alias.to_bytes()
+    ds['.']['icvp'] = icvp
 
-ds['.']['vSrn'] = ('long', 1)
+    ds['.']['vSrn'] = ('long', 1)
 
-ds['Applications']['Iloc'] = (370, 156)
-ds['Gridcoin.app']['Iloc'] = (128, 156)
+    ds['Applications']['Iloc'] = (370, 156)
+    ds['Gridcoin.app']['Iloc'] = (128, 156)
 
-ds.flush()
-ds.close()
+    ds.flush()
+    ds.close()
+else:
+    print("+ Skipping .DS_Store generation (ds_store/mac_alias packages not installed) +")
 
 # ------------------------------------------------
 
@@ -559,7 +672,7 @@ if config.dmg is not None:
     if verbose:
         print("Creating temp image for modification...")
 
-    tempname: str = appname + ".temp.dmg"
+    tempname: str = dmg_basename + ".temp.dmg"
 
     run(["hdiutil", "create", tempname, "-srcfolder", "dist", "-format", "UDRW", "-size", str(size), "-volname", appname], check=True, universal_newlines=True)
 
@@ -572,11 +685,15 @@ if config.dmg is not None:
 
     print("+ Applying fancy settings +")
 
-    bg_path = os.path.join(disk_root, ".background", os.path.basename('background.tiff'))
-    os.mkdir(os.path.dirname(bg_path))
-    if verbose:
-        print('background.tiff', "->", bg_path)
-    shutil.copy2('background.tiff', bg_path)
+    bg_file = 'background.tiff'
+    if os.path.exists(bg_file):
+        bg_path = os.path.join(disk_root, ".background", os.path.basename(bg_file))
+        os.mkdir(os.path.dirname(bg_path))
+        if verbose:
+            print(bg_file, "->", bg_path)
+        shutil.copy2(bg_file, bg_path)
+    else:
+        print("  (Skipping background image: background.tiff not found)")
 
     os.symlink("/Applications", os.path.join(disk_root, "Applications"))
 
@@ -584,7 +701,7 @@ if config.dmg is not None:
 
     run(["hdiutil", "detach", f"/Volumes/{appname}"], universal_newlines=True)
 
-    run(["hdiutil", "convert", tempname, "-format", "UDZO", "-o", appname, "-imagekey", "zlib-level=9"], check=True, universal_newlines=True)
+    run(["hdiutil", "convert", tempname, "-format", "UDZO", "-o", dmg_basename, "-imagekey", "zlib-level=9"], check=True, universal_newlines=True)
 
     os.unlink(tempname)
 

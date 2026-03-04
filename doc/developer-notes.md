@@ -517,7 +517,8 @@ Suppression files for known issues in dependencies are located in
 
 Notes:
 - `-DUSE_ASM=OFF` is recommended when using ASan, as the hand-written assembly
-  in SHA-256 can produce false positives.
+  can produce false positives. This also disables `USE_ASM_SCRYPT` (scrypt
+  assembly). See `doc/cmake-options.md` for details on these flags.
 - If you are compiling with GCC you will typically need to install corresponding
   "san" libraries, e.g. `libasan` for ASan, `libtsan` for TSan, and `libubsan`
   for UBSan.
