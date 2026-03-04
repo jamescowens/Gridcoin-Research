@@ -196,6 +196,12 @@ if [[ ! "$TARGET" =~ ^(native|depends|win64|macos|all)$ ]]; then
     exit 1
 fi
 
+# Catch common mistake: using Linux-only targets on macOS
+if [[ "$(uname -s)" == "Darwin" ]] && [[ "$TARGET" =~ ^(native|depends|win64)$ ]]; then
+    echo "Error: TARGET='$TARGET' is a Linux-only target. Use TARGET=macos for native macOS builds."
+    exit 1
+fi
+
 # Prepare specific CMake arguments for Native/macOS
 NATIVE_CMAKE_ARGS=""
 
