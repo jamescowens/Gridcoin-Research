@@ -11,14 +11,9 @@
 #include "consensus/params.h"
 #include "protocol.h"
 
-// system.h and extern reference to cs_main included only for temporary V13 fork point overrides for testing.
-#include "util/system.h"
-
 #include <memory>
 #include <stdexcept>
 #include <vector>
-
-extern CCriticalSection cs_main;
 
 typedef std::map<int, uint256> MapCheckpoints;
 typedef std::map<int, std::vector<unsigned char>> MapMasterKeys;
@@ -156,9 +151,7 @@ inline bool IsV12Enabled(int nHeight)
 
 inline bool IsV13Enabled(int nHeight)
 {
-    // The argument driven override temporarily here to facilitate testing.
-
-    return nHeight >= gArgs.GetArg("-blockv13height", Params().GetConsensus().BlockV13Height);
+    return nHeight >= Params().GetConsensus().BlockV13Height;
 }
 
 inline bool IsPollV3Enabled(int nHeight)
@@ -173,29 +166,22 @@ inline bool IsProjectV2Enabled(int nHeight)
 
 inline bool IsAutoGreylistAuditEnabled(int nHeight)
 {
-    // The argument driven override temporarily here to facilitate testing.
-    return nHeight >= gArgs.GetArg("-autogreylistauditheight", Params().GetConsensus().AutoGreylistAuditHeight);
+    return nHeight >= Params().GetConsensus().AutoGreylistAuditHeight;
 }
 
 inline bool IsSuperblockV3Enabled(int nHeight)
 {
-    // The argument driven override temporarily here to facilitate testing.
-
-    return nHeight >= gArgs.GetArg("-superblockv3height", Params().GetConsensus().SuperblockV3Height);
+    return nHeight >= Params().GetConsensus().SuperblockV3Height;
 }
 
 inline bool IsV14Enabled(int nHeight)
 {
-    // The argument driven override temporarily here to facilitate testing.
-
-    return nHeight >= gArgs.GetArg("-blockv14height", Params().GetConsensus().BlockV14Height);
+    return nHeight >= Params().GetConsensus().BlockV14Height;
 }
 
 inline bool IsProjectV4Enabled(int nHeight)
 {
-    // The argument driven override temporarily here to facilitate testing.
-
-    return nHeight >= gArgs.GetArg("-projectv4height", Params().GetConsensus().ProjectV4Height);
+    return nHeight >= Params().GetConsensus().ProjectV4Height;
 }
 
 inline int GetSuperblockAgeSpacing(int nHeight)

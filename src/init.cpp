@@ -627,18 +627,6 @@ void SetupServerArgs()
     hidden_args.emplace_back("-daemonwait");
 #endif
 
-    // Temporary hidden option for block v13 height override to facilitate testing.
-    hidden_args.emplace_back("-blockv13height");
-
-    // Temporary hidden option for project v4 height override to facilitate testing.
-    hidden_args.emplace_back("-projectv4height");
-
-    // Temporary hidden option for superblock v3 height override to facilitate testing.
-    hidden_args.emplace_back("-superblockv3height");
-
-    // Temporary hidden option for block v14 height override to facilitate testing.
-    hidden_args.emplace_back("-blockv14height");
-
     // Additional hidden options
     hidden_args.emplace_back("-devbuild");
     hidden_args.emplace_back("-scrapersleep");
@@ -1044,8 +1032,9 @@ bool AppInit2(ThreadHandlerPtr threads)
         return InitError(_("Initialization sanity check failed. Gridcoin is shutting down."));
 
     LogPrintf("Block version 11 hard fork configured for block %d", Params().GetConsensus().BlockV11Height);
-    LogPrintf("Block version 12 hard fork configured for block %d",
-              gArgs.GetArg("-blockv12height", Params().GetConsensus().BlockV12Height));
+    LogPrintf("Block version 12 hard fork configured for block %d", Params().GetConsensus().BlockV12Height);
+    LogPrintf("Block version 13 hard fork configured for block %d", Params().GetConsensus().BlockV13Height);
+    LogPrintf("Block version 14 hard fork configured for block %d", Params().GetConsensus().BlockV14Height);
 
     fs::path datadir = GetDataDir();
     fs::path walletFileName = gArgs.GetArg("-wallet", "wallet.dat");

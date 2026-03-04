@@ -1462,7 +1462,7 @@ BOOST_AUTO_TEST_CASE(it_applies_benefit_of_doubt_correctly)
     // Head: nullopt -> sb_from_baseline==1: TC=1000 -> sb_from_baseline==2: TC=500
     // Expected: ZCD = 0 (benefit-of-doubt suppresses false ZCD at sb==1)
 
-    gArgs.ForceSetArg("-autogreylistauditheight", "0");
+    const_cast<Consensus::Params&>(Params().GetConsensus()).AutoGreylistAuditHeight = 0;
 
     auto_greylist->Reset();
 
@@ -1482,7 +1482,7 @@ BOOST_AUTO_TEST_CASE(it_applies_benefit_of_doubt_correctly)
     // ---- Scenario A': Same data, benefit-of-doubt OFF ----
     // Expected: ZCD = 1 (TC=1000 >= nullopt bookmark at sb==1 -> false ZCD counted)
 
-    gArgs.ForceSetArg("-autogreylistauditheight", ToString(std::numeric_limits<int>::max()));
+    const_cast<Consensus::Params&>(Params().GetConsensus()).AutoGreylistAuditHeight = std::numeric_limits<int>::max();
 
     auto_greylist->Reset();
 
@@ -1501,7 +1501,7 @@ BOOST_AUTO_TEST_CASE(it_applies_benefit_of_doubt_correctly)
     // Head: TC=2000 -> sb_from_baseline==1: nullopt -> sb_from_baseline==2: TC=1000 -> sb_from_baseline==3: TC=500
     // Expected: ZCD = 1 (nullopt at sb==1 correctly counted; benefit-of-doubt does NOT apply because head has data)
 
-    gArgs.ForceSetArg("-autogreylistauditheight", "0");
+    const_cast<Consensus::Params&>(Params().GetConsensus()).AutoGreylistAuditHeight = 0;
 
     auto_greylist->Reset();
 
@@ -1521,7 +1521,7 @@ BOOST_AUTO_TEST_CASE(it_applies_benefit_of_doubt_correctly)
     // ---- Cleanup ----
 
     // Restore default (disabled) state.
-    gArgs.ForceSetArg("-autogreylistauditheight", ToString(std::numeric_limits<int>::max()));
+    const_cast<Consensus::Params&>(Params().GetConsensus()).AutoGreylistAuditHeight = std::numeric_limits<int>::max();
 
     for (auto& iter : *unit_test_blocks) {
         delete iter.second.first;
