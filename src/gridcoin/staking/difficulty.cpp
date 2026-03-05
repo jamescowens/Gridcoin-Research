@@ -75,8 +75,8 @@ unsigned int GRC::GetNextTargetRequired(const CBlockIndex* pindexLast) EXCLUSIVE
         return PROOF_OF_STAKE_LIMIT.GetCompact();
     }
 
-    // Since TARGET_TIMESPAN is (16 * 60) or 16 mins and our TargetSpacing = 64,
-    // the nInterval = 15 min
+    // Since TARGET_TIMESPAN is (16 * 60) or 16 mins and our TargetSpacing = 90,
+    // nInterval = 960 / 90 = 10 (integer division)
 
     const int64_t nInterval = TARGET_TIMESPAN / nTargetSpacing;
     bnNew *= (nInterval - 1) * nTargetSpacing + nActualSpacing + nActualSpacing;
