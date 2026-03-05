@@ -338,6 +338,7 @@ public:
     {
         m_numerator = rhs.GetNumerator();
         m_denominator = rhs.GetDenominator();
+        m_simplified = rhs.IsSimplified();
 
         return *this;
     }
@@ -665,6 +666,16 @@ public:
         READWRITE(m_numerator);
         READWRITE(m_denominator);
         READWRITE(m_simplified);
+
+        if (ser_action.ForRead()) {
+            if (m_denominator == 0) {
+                throw std::ios_base::failure("deserialized Fraction has zero denominator");
+            }
+            if (m_numerator == std::numeric_limits<int64_t>::min()
+                || m_denominator == std::numeric_limits<int64_t>::min()) {
+                throw std::ios_base::failure("deserialized Fraction has INT64_MIN value");
+            }
+        }
     }
 
 private:
