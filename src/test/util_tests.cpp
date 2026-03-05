@@ -1328,7 +1328,7 @@ BOOST_AUTO_TEST_CASE(util_Fraction_Initialization_from_int64_t)
 
 BOOST_AUTO_TEST_CASE(util_Fraction_Initialization_from_string)
 {
-    Fraction fraction = Fraction().FromString("100/-567");
+    Fraction fraction = Fraction::FromString("100/-567");
 
     BOOST_CHECK_EQUAL(fraction.GetNumerator(), -100);
     BOOST_CHECK_EQUAL(fraction.GetDenominator(), 567);
@@ -1695,6 +1695,9 @@ BOOST_AUTO_TEST_CASE(util_Fraction_equal)
     BOOST_CHECK_EQUAL(Fraction(1, 2) == Fraction(2, 4), true);
     BOOST_CHECK_EQUAL(Fraction(-1, 2) == Fraction(1, -2), true);
     BOOST_CHECK_EQUAL(Fraction(-1, 2) == Fraction(1, 2), false);
+    // Same numerator, different denominator — must compare as not equal
+    BOOST_CHECK_EQUAL(Fraction(1, 2) == Fraction(1, 3), false);
+    BOOST_CHECK_EQUAL(Fraction(3, 5) == Fraction(3, 7), false);
 }
 
 BOOST_AUTO_TEST_CASE(util_Fraction_not_equal)
@@ -1749,22 +1752,22 @@ BOOST_AUTO_TEST_CASE(util_Fraction_ToString)
 
 BOOST_AUTO_TEST_CASE(util_Fraction_FromString)
 {
-    Fraction fraction = Fraction().FromString("100/567");
+    Fraction fraction = Fraction::FromString("100/567");
 
     BOOST_CHECK_EQUAL(fraction.IsSimplified(), true);
     BOOST_CHECK(fraction == Fraction(100, 567, true));
 
-    fraction = Fraction().FromString("-100/567");
+    fraction = Fraction::FromString("-100/567");
 
     BOOST_CHECK_EQUAL(fraction.IsSimplified(), true);
     BOOST_CHECK(fraction == Fraction(-100, 567, true));
 
-    fraction = Fraction().FromString("100/-567");
+    fraction = Fraction::FromString("100/-567");
 
     BOOST_CHECK_EQUAL(fraction.IsSimplified(), true);
     BOOST_CHECK(fraction == Fraction(-100, 567, true));
 
-    fraction = Fraction().FromString("5");
+    fraction = Fraction::FromString("5");
 
     BOOST_CHECK_EQUAL(fraction.IsSimplified(), true);
     BOOST_CHECK(fraction == Fraction(5, 1, true));
@@ -1773,7 +1776,7 @@ BOOST_AUTO_TEST_CASE(util_Fraction_FromString)
     std::string valid_err_message {"fraction input string cannot be parsed to fraction"};
 
     try {
-        Fraction fraction = Fraction().FromString("100/567/300");
+        Fraction fraction = Fraction::FromString("100/567/300");
     } catch (std::out_of_range& e) {
         err = e.what();
     }
@@ -1781,7 +1784,7 @@ BOOST_AUTO_TEST_CASE(util_Fraction_FromString)
     BOOST_CHECK_EQUAL(err, valid_err_message);
 
     try {
-        Fraction fraction = Fraction().FromString("100 / 567");
+        Fraction fraction = Fraction::FromString("100 / 567");
     } catch (std::out_of_range& e) {
         err = e.what();
     }
@@ -1789,7 +1792,7 @@ BOOST_AUTO_TEST_CASE(util_Fraction_FromString)
     BOOST_CHECK_EQUAL(err, valid_err_message);
 
     try {
-        Fraction fraction = Fraction().FromString("100.1");
+        Fraction fraction = Fraction::FromString("100.1");
     } catch (std::out_of_range& e) {
         err = e.what();
     }
@@ -1797,7 +1800,7 @@ BOOST_AUTO_TEST_CASE(util_Fraction_FromString)
     BOOST_CHECK_EQUAL(err, valid_err_message);
 
     try {
-        Fraction fraction = Fraction().FromString("");
+        Fraction fraction = Fraction::FromString("");
     } catch (std::out_of_range& e) {
         err = e.what();
     }

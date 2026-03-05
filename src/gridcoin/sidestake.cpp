@@ -106,44 +106,52 @@ Allocation Allocation::operator/(const int64_t& rhs) const
     return static_cast<Allocation>(Fraction::operator/(rhs));
 }
 
-Allocation Allocation::operator+=(const Allocation& rhs)
+Allocation& Allocation::operator+=(const Allocation& rhs)
 {
-    return static_cast<Allocation>(Fraction::operator+=(rhs));
+    Fraction::operator+=(rhs);
+    return *this;
 }
 
-Allocation Allocation::operator+=(const int64_t& rhs)
+Allocation& Allocation::operator+=(const int64_t& rhs)
 {
-    return static_cast<Allocation>(Fraction::operator+=(rhs));
+    Fraction::operator+=(rhs);
+    return *this;
 }
 
-Allocation Allocation::operator-=(const Allocation& rhs)
+Allocation& Allocation::operator-=(const Allocation& rhs)
 {
-    return static_cast<Allocation>(Fraction::operator-=(rhs));
+    Fraction::operator-=(rhs);
+    return *this;
 }
 
-Allocation Allocation::operator-=(const int64_t& rhs)
+Allocation& Allocation::operator-=(const int64_t& rhs)
 {
-    return static_cast<Allocation>(Fraction::operator-=(rhs));
+    Fraction::operator-=(rhs);
+    return *this;
 }
 
-Allocation Allocation::operator*=(const Allocation& rhs)
+Allocation& Allocation::operator*=(const Allocation& rhs)
 {
-    return static_cast<Allocation>(Fraction::operator*=(rhs));
+    Fraction::operator*=(rhs);
+    return *this;
 }
 
-Allocation Allocation::operator*=(const int64_t& rhs)
+Allocation& Allocation::operator*=(const int64_t& rhs)
 {
-    return static_cast<Allocation>(Fraction::operator*=(rhs));
+    Fraction::operator*=(rhs);
+    return *this;
 }
 
-Allocation Allocation::operator/=(const Allocation& rhs)
+Allocation& Allocation::operator/=(const Allocation& rhs)
 {
-    return static_cast<Allocation>(Fraction::operator/=(rhs));
+    Fraction::operator/=(rhs);
+    return *this;
 }
 
-Allocation Allocation::operator/=(const int64_t& rhs)
+Allocation& Allocation::operator/=(const int64_t& rhs)
 {
-    return static_cast<Allocation>(Fraction::operator/=(rhs));
+    Fraction::operator/=(rhs);
+    return *this;
 }
 
 bool Allocation::operator==(const Allocation& rhs) const
