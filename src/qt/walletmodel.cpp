@@ -216,12 +216,22 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(const QList<SendCoinsRecipie
     for (auto const& out : vCoins)
         nBalance += out.tx->vout[out.i].nValue;
 
+    bool fAnySubtractFeeFromAmount = false;
+    for (const SendCoinsRecipient& rcp : recipients)
+    {
+        if (rcp.fSubtractFeeFromAmount)
+        {
+            fAnySubtractFeeFromAmount = true;
+            break;
+        }
+    }
+
     if(total > nBalance)
     {
         return AmountExceedsBalance;
     }
 
-    if((total + nTransactionFee) > nBalance)
+    if(!fAnySubtractFeeFromAmount && (total + nTransactionFee) > nBalance)
     {
         return SendCoinsReturn(AmountWithFeeExceedsBalance, nTransactionFee);
     }
@@ -248,11 +258,43 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(const QList<SendCoinsRecipie
 
         CReserveKey keyChange(wallet);
         int64_t nFeeRequired = 0;
-		bool fCreated = wallet->CreateTransaction(vecSend, wtx, keyChange, nFeeRequired, coinControl);
+        bool fCreated = wallet->CreateTransaction(vecSend, wtx, keyChange, nFeeRequired, coinControl);
+
+        // If any recipient has "subtract fee from amount" enabled, rebuild the
+        // outputs with the fee deducted and create the transaction again.
+        if (fCreated && fAnySubtractFeeFromAmount)
+        {
+            int nSubtractRecipients = 0;
+            for (const SendCoinsRecipient& rcp : recipients)
+            {
+                if (rcp.fSubtractFeeFromAmount) ++nSubtractRecipients;
+            }
+
+            vecSend.clear();
+            for (const SendCoinsRecipient& rcp : recipients)
+            {
+                CScript scriptPubKey;
+                scriptPubKey.SetDestination(DecodeDestination(rcp.address.toStdString()));
+                int64_t nAmount = rcp.amount;
+
+                if (rcp.fSubtractFeeFromAmount)
+                {
+                    nAmount -= nFeeRequired / nSubtractRecipients;
+                    if (nAmount <= 0)
+                    {
+                        return SendCoinsReturn(AmountWithFeeExceedsBalance, nFeeRequired);
+                    }
+                }
+
+                vecSend.push_back(std::make_pair(scriptPubKey, nAmount));
+            }
+
+            fCreated = wallet->CreateTransaction(vecSend, wtx, keyChange, nFeeRequired, coinControl);
+        }
 
         if(!fCreated)
         {
-            if((total + nFeeRequired) > nBalance) // FIXME: could cause collisions in the future
+            if((total + nFeeRequired) > nBalance)
             {
                 return SendCoinsReturn(AmountWithFeeExceedsBalance, nFeeRequired);
             }

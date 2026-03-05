@@ -152,7 +152,12 @@ void SendCoinsDialog::on_sendButton_clicked()
     // Format confirmation message
     QStringList formatted;
     for (const SendCoinsRecipient& rcp : recipients) {
-        formatted.append(tr("<b>%1</b> to %2 (%3)").arg(BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, rcp.amount),
+        QString amountStr = BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, rcp.amount);
+        if (rcp.fSubtractFeeFromAmount)
+        {
+            amountStr += " " + tr("(minus fee)");
+        }
+        formatted.append(tr("<b>%1</b> to %2 (%3)").arg(amountStr,
               rcp.label.toHtmlEscaped(), rcp.address));
     }
 
@@ -580,16 +585,22 @@ void SendCoinsDialog::coinControlUpdateLabels()
 
     // set pay amounts
     payAmounts->clear();
+    bool fAnySubtractFeeFromAmount = false;
     for (int i = 0; i < ui->entries->count(); ++i)
     {
         SendCoinsEntry *entry = qobject_cast<SendCoinsEntry*>(ui->entries->itemAt(i)->widget());
-        if (entry) payAmounts->append(entry->getValue().amount);
+        if (entry)
+        {
+            SendCoinsRecipient val = entry->getValue();
+            payAmounts->append(val.amount);
+            if (val.fSubtractFeeFromAmount) fAnySubtractFeeFromAmount = true;
+        }
     }
 
     if (coinControl->HasSelected())
     {
         // actual coin control calculation
-        CoinControlDialog::updateLabels(model, coinControl, payAmounts, this);
+        CoinControlDialog::updateLabels(model, coinControl, payAmounts, this, fAnySubtractFeeFromAmount);
 
         // show coin control stats
         ui->coinControlAutomaticallySelectedLabel->hide();

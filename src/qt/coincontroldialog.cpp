@@ -619,7 +619,8 @@ void CoinControlDialog::viewItemChanged(QTreeWidgetItem* item, int column)
 void CoinControlDialog::updateLabels(WalletModel *model,
                                      CCoinControl *coinControl,
                                      QList<qint64>* payAmounts,
-                                     QDialog* dialog)
+                                     QDialog* dialog,
+                                     bool fSubtractFeeFromAmount)
 {
     if (!model) return;
 
@@ -695,7 +696,11 @@ void CoinControlDialog::updateLabels(WalletModel *model,
 
         if (nPayAmount > 0)
         {
-            nChange = nAmount - nPayFee - nPayAmount;
+            // When subtracting fee from amount, the fee is absorbed by the
+            // recipients rather than coming from the change output.
+            nChange = fSubtractFeeFromAmount
+                ? nAmount - nPayAmount
+                : nAmount - nPayFee - nPayAmount;
 
             // if sub-cent change is required, the fee must be raised to at least CTransaction::nMinTxFee
             if (nPayFee < CENT && nChange > 0 && nChange < CENT)

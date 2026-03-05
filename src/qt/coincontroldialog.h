@@ -32,7 +32,8 @@ public:
     void setModel(WalletModel *model);
 
     // static because also called from sendcoinsdialog
-    static void updateLabels(WalletModel*, CCoinControl*, QList<qint64>*, QDialog*);
+    static void updateLabels(WalletModel*, CCoinControl*, QList<qint64>*, QDialog*,
+                             bool fSubtractFeeFromAmount = false);
 
     // This is based on what will guarantee a successful transaction.
     const size_t m_inputSelectionLimit;

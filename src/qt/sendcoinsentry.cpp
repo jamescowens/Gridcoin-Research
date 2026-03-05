@@ -8,6 +8,7 @@
 #include "addresstablemodel.h"
 
 #include <QApplication>
+#include <QCheckBox>
 #include <QClipboard>
 
 SendCoinsEntry::SendCoinsEntry(QWidget* parent)
@@ -73,6 +74,7 @@ void SendCoinsEntry::setModel(WalletModel *model)
         updateIcons();
     }
     connect(ui->payAmount, &BitcoinAmountField::textChanged, this, &SendCoinsEntry::payAmountChanged);
+    connect(ui->subtractFee, &QCheckBox::toggled, this, &SendCoinsEntry::payAmountChanged);
 
     clear();
 }
@@ -99,6 +101,7 @@ void SendCoinsEntry::clear()
     ui->payAmount->clear();
     ui->payTo->setFocus();
     ui->messageText->clear();
+    ui->subtractFee->setChecked(false);
     // update the display unit, to not use the default ("BTC")
     updateDisplayUnit();
 }
@@ -144,7 +147,8 @@ SendCoinsRecipient SendCoinsEntry::getValue()
     rv.address = ui->payTo->text();
     rv.label = ui->addAsLabel->text();
     rv.amount = ui->payAmount->value();
-	rv.Message = ui->messageText->text();
+    rv.Message = ui->messageText->text();
+    rv.fSubtractFeeFromAmount = ui->subtractFee->isChecked();
     return rv;
 }
 
@@ -155,7 +159,9 @@ QWidget *SendCoinsEntry::setupTabChain(QWidget *prev)
     QWidget::setTabOrder(ui->addressBookButton, ui->pasteButton);
     QWidget::setTabOrder(ui->pasteButton, ui->deleteButton);
     QWidget::setTabOrder(ui->deleteButton, ui->addAsLabel);
-    return ui->payAmount->setupTabChain(ui->addAsLabel);
+    QWidget *w = ui->payAmount->setupTabChain(ui->addAsLabel);
+    QWidget::setTabOrder(w, ui->subtractFee);
+    return ui->subtractFee;
 }
 
 void SendCoinsEntry::setValue(const SendCoinsRecipient &value)
@@ -163,7 +169,8 @@ void SendCoinsEntry::setValue(const SendCoinsRecipient &value)
     ui->payTo->setText(value.address);
     ui->addAsLabel->setText(value.label);
     ui->payAmount->setValue(value.amount);
-	ui->messageText->setText(value.Message);
+    ui->messageText->setText(value.Message);
+    ui->subtractFee->setChecked(value.fSubtractFeeFromAmount);
 }
 
 bool SendCoinsEntry::isClear()
