@@ -212,6 +212,13 @@ void SendCoinsDialog::on_sendButton_clicked()
             arg(BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, sendstatus.fee)),
             QMessageBox::Ok, QMessageBox::Ok);
         break;
+    case WalletModel::FeeExceedsSubtractedAmount:
+        QMessageBox::warning(this, tr("Send Coins"),
+            tr("The transaction fee (%1) exceeds the amount being sent to a recipient "
+               "with 'Subtract fee from amount' enabled. Please enter a larger amount.")
+            .arg(BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, sendstatus.fee)),
+            QMessageBox::Ok, QMessageBox::Ok);
+        break;
     case WalletModel::DuplicateAddress:
         QMessageBox::warning(this, tr("Send Coins"),
             tr("Duplicate address found, can only send to each address once per send operation."),

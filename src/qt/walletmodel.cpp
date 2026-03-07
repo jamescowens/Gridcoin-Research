@@ -290,7 +290,7 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(const QList<SendCoinsRecipie
                     }
                     if (nAmount <= 0)
                     {
-                        return SendCoinsReturn(AmountWithFeeExceedsBalance, nFeeRequired);
+                        return SendCoinsReturn(FeeExceedsSubtractedAmount, nFeeRequired);
                     }
                 }
 

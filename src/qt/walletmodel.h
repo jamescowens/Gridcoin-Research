@@ -49,6 +49,7 @@ public:
         InvalidAddress,
         AmountExceedsBalance,
         AmountWithFeeExceedsBalance,
+        FeeExceedsSubtractedAmount,
         DuplicateAddress,
         TransactionCreationFailed, // Error returned when wallet is still locked
         TransactionCommitFailed,
