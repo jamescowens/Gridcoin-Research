@@ -213,7 +213,7 @@ target_link_libraries(gridcoinqt PUBLIC
 )
 
 if(USE_DBUS)
-    target_link_libraries(gridcoinqt PUBLIC Qt6::DBus)
+    target_link_libraries(gridcoinqt PUBLIC ${QT}::DBus)
 endif()
 
 if(APPLE)
@@ -259,7 +259,7 @@ endif()
 add_executable(gridcoinresearch bitcoin.cpp ${GRIDCOIN_RC})
 
 # macOS Bundle Resources
-set(MACOSX_BUNDLE_RESOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/res/icons/gridcoin.icns")
+set(MACOSX_BUNDLE_RESOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/res/icons/logos/gridcoin.icns")
 if(APPLE)
     target_sources(gridcoinresearch PRIVATE ${MACOSX_BUNDLE_RESOURCE_FILES})
 endif()
@@ -317,6 +317,7 @@ if(UNIX AND NOT APPLE AND DEFINED DEP_LIB)
 endif()
 
 set_target_properties(gridcoinresearch PROPERTIES
+    WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE_GUI_IDENTIFIER gridcoin.us
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
