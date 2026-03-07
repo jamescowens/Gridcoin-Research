@@ -117,7 +117,8 @@ void ResearcherWizardOwnershipProofPage::submitOwnershipProof()
         return;
     }
 
-    const WalletModel::UnlockContext unlock_context(m_wallet_model->requestUnlock());
+    QFuture<WalletModel::UnlockContext> unlockFuture = m_wallet_model->requestUnlock();
+    const WalletModel::UnlockContext unlock_context = unlockFuture.result();
 
     if (!unlock_context.isValid()) {
         return;
