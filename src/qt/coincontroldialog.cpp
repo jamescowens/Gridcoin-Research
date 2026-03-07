@@ -27,13 +27,15 @@
 
 using namespace std;
 
-CoinControlDialog::CoinControlDialog(QWidget* parent, CCoinControl* coinControl, QList<qint64>* payAmounts)
+CoinControlDialog::CoinControlDialog(QWidget* parent, CCoinControl* coinControl, QList<qint64>* payAmounts,
+                                     bool fSubtractFeeFromAmount)
                : QDialog(parent)
                , m_inputSelectionLimit(GetMaxInputsForConsolidationTxn())
                , ui(new Ui::CoinControlDialog)
                , coinControl(coinControl)
                , payAmounts(payAmounts)
                , model(nullptr)
+               , m_fSubtractFeeFromAmount(fSubtractFeeFromAmount)
 {
     assert(coinControl != nullptr && payAmounts != nullptr);
 
@@ -158,7 +160,7 @@ void CoinControlDialog::setModel(WalletModel *model)
     {
         updateView();
         //updateLabelLocked();
-        CoinControlDialog::updateLabels(model, coinControl, payAmounts, this);
+        CoinControlDialog::updateLabels(model, coinControl, payAmounts, this, m_fSubtractFeeFromAmount);
     }
 }
 
@@ -226,7 +228,7 @@ void CoinControlDialog::buttonSelectAllClicked()
        ui->selectAllPushButton->setText(tr("Select None"));
     }
 
-    CoinControlDialog::updateLabels(model, coinControl, payAmounts, this);
+    CoinControlDialog::updateLabels(model, coinControl, payAmounts, this, m_fSubtractFeeFromAmount);
     showHideConsolidationReadyToSend();
 }
 
@@ -353,7 +355,7 @@ bool CoinControlDialog::filterInputsByValue(const bool& less, const CAmount& inp
     // Re-enable update signals.
     ui->treeWidget->setEnabled(true);
 
-    CoinControlDialog::updateLabels(model, coinControl, payAmounts, this);
+    CoinControlDialog::updateLabels(model, coinControl, payAmounts, this, m_fSubtractFeeFromAmount);
 
     // If the number of inputs selected was limited, then true is returned.
     return culled_inputs;
@@ -596,7 +598,7 @@ void CoinControlDialog::viewItemChanged(QTreeWidgetItem* item, int column)
         // selection changed -> update labels
         if (ui->treeWidget->isEnabled()) // do not update on every click for (un)select all
         {
-            CoinControlDialog::updateLabels(model, coinControl, payAmounts, this);
+            CoinControlDialog::updateLabels(model, coinControl, payAmounts, this, m_fSubtractFeeFromAmount);
         }
     }
 

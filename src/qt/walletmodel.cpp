@@ -271,6 +271,8 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(const QList<SendCoinsRecipie
             }
 
             vecSend.clear();
+            int64_t nFeeRemainder = nFeeRequired % nSubtractRecipients;
+            bool fFirst = true;
             for (const SendCoinsRecipient& rcp : recipients)
             {
                 CScript scriptPubKey;
@@ -280,6 +282,12 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(const QList<SendCoinsRecipie
                 if (rcp.fSubtractFeeFromAmount)
                 {
                     nAmount -= nFeeRequired / nSubtractRecipients;
+                    // First opted-in recipient absorbs the truncation remainder
+                    if (fFirst)
+                    {
+                        nAmount -= nFeeRemainder;
+                        fFirst = false;
+                    }
                     if (nAmount <= 0)
                     {
                         return SendCoinsReturn(AmountWithFeeExceedsBalance, nFeeRequired);

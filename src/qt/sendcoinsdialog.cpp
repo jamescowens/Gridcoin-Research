@@ -462,7 +462,7 @@ void SendCoinsDialog::coinControlFeatureChanged(bool checked)
 // Coin Control: button inputs -> show actual coin control dialog
 void SendCoinsDialog::coinControlButtonClicked()
 {
-    CoinControlDialog dlg(this, coinControl, payAmounts);
+    CoinControlDialog dlg(this, coinControl, payAmounts, hasSubtractFeeRecipient());
     dlg.setModel(model);
 
     connect(&dlg, &CoinControlDialog::selectedConsolidationRecipientSignal,
@@ -480,7 +480,7 @@ void SendCoinsDialog::coinControlResetButtonClicked()
 
 void SendCoinsDialog::coinControlConsolidateWizardButtonClicked()
 {
-    CoinControlDialog dlg(this, coinControl, payAmounts);
+    CoinControlDialog dlg(this, coinControl, payAmounts, hasSubtractFeeRecipient());
     dlg.setModel(model);
 
     connect(&dlg, &CoinControlDialog::selectedConsolidationRecipientSignal,
@@ -575,6 +575,16 @@ void SendCoinsDialog::coinControlChangeEdited(const QString & text)
     }
 }
 
+bool SendCoinsDialog::hasSubtractFeeRecipient() const
+{
+    for (int i = 0; i < ui->entries->count(); ++i)
+    {
+        SendCoinsEntry *entry = qobject_cast<SendCoinsEntry*>(ui->entries->itemAt(i)->widget());
+        if (entry && entry->getValue().fSubtractFeeFromAmount) return true;
+    }
+    return false;
+}
+
 // Coin Control: update labels
 void SendCoinsDialog::coinControlUpdateLabels()
 {
@@ -585,22 +595,16 @@ void SendCoinsDialog::coinControlUpdateLabels()
 
     // set pay amounts
     payAmounts->clear();
-    bool fAnySubtractFeeFromAmount = false;
     for (int i = 0; i < ui->entries->count(); ++i)
     {
         SendCoinsEntry *entry = qobject_cast<SendCoinsEntry*>(ui->entries->itemAt(i)->widget());
-        if (entry)
-        {
-            SendCoinsRecipient val = entry->getValue();
-            payAmounts->append(val.amount);
-            if (val.fSubtractFeeFromAmount) fAnySubtractFeeFromAmount = true;
-        }
+        if (entry) payAmounts->append(entry->getValue().amount);
     }
 
     if (coinControl->HasSelected())
     {
         // actual coin control calculation
-        CoinControlDialog::updateLabels(model, coinControl, payAmounts, this, fAnySubtractFeeFromAmount);
+        CoinControlDialog::updateLabels(model, coinControl, payAmounts, this, hasSubtractFeeRecipient());
 
         // show coin control stats
         ui->coinControlAutomaticallySelectedLabel->hide();
