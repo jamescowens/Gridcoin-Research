@@ -127,6 +127,7 @@ option(ENABLE_QRENCODE  "Enable generation of QR Codes for receiving payments" O
 option(ENABLE_UPNP      "Enable UPnP port mapping support" OFF)
 option(DEFAULT_UPNP     "Turn UPnP on startup" OFF)
 option(USE_DBUS         "Enable DBus support" OFF)
+option(USE_QT6          "Use Qt 6 instead of Qt 5" ON)
 
 # Bundled packages
 option(SYSTEM_BDB       "Find system installation of Berkeley DB CXX 5.3" OFF)
@@ -148,24 +149,24 @@ option(BUNDLED_QT5      "Use the bundled version of Qt 5" ${HUNTER_ENABLED})
 
 set(MINIUPNPC_USE_STATIC_LIBS ${STATIC_LIBS})
 
-set(QT6_MINIMUM_VERSION 6.2)
-set(QT6_COMPONENTS 
-    Concurrent 
-    Core 
-    Gui 
-    LinguistTools 
-    Network 
+set(QT6_MINIMUM_VERSION 6.2.0)
+set(QT_COMPONENTS
+    Concurrent
+    Core
+    Gui
+    LinguistTools
+    Network
     Svg
-    Widgets 
-    Qml 
+    Widgets
+    Qml
     QuickControls2
 )
 set(QT6_HUNTER_COMPONENTS qtbase qttools)
 if(USE_DBUS)
-    list(APPEND QT6_COMPONENTS DBus)
+    list(APPEND QT_COMPONENTS DBus)
 endif()
 if(ENABLE_TESTS)
-    list(APPEND QT6_COMPONENTS Test)
+    list(APPEND QT_COMPONENTS Test)
 endif()
 
 set(BOOST_MINIMUM_VERSION 1.63.0)
@@ -246,10 +247,11 @@ if(USE_ASM)
 endif()
 
 if(ENABLE_GUI)
-    if(BUNDLED_QT)
-        hunter_add_package(Qt COMPONENTS ${QT6_HUNTER_COMPONENTS})
+    set(QT_MACOS_DISABLE_DARK_MODE False)
+    if(USE_QT6)
+        find_package(Qt6 ${QT6_MINIMUM_VERSION} COMPONENTS ${QT_COMPONENTS} REQUIRED)
+        set(QT Qt6)
     endif()
-    find_package(Qt6 ${QT6_MINIMUM_VERSION} COMPONENTS ${QT6_COMPONENTS} REQUIRED)
 
     if(ENABLE_QRENCODE)
         pkg_check_modules(QRENCODE REQUIRED IMPORTED_TARGET libqrencode)
