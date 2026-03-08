@@ -17,8 +17,8 @@ qt_details_qt5compat_sha256_hash := 8b6a68a3dfaa7e9d10a0dafccee594c72e8de061bc57
 qt_details_qtsvg_file_name := qtsvg-$(qt_details_suffix)
 qt_details_qtsvg_sha256_hash := 40142cb71fb1e07ad612bc361b67f5d54cd9367f9979ae6b86124a064deda06b
 
-qt_details_qtdeclarative_file_name=qtdeclarative-$(qt_details_suffix)
-qt_details_qtdeclarative_sha256_hash=ecd9e8453ebad8a5a07ddf62f4417bd8b25fff24a8cb71123a793a5448d2a9b7
+qt_details_qtdeclarative_file_name := qtdeclarative-$(qt_details_suffix)
+qt_details_qtdeclarative_sha256_hash := 937b70e441abf5bc4e50d44d26610e2714a28514acf3885cd36116cd610b9875
 
 qt_details_patches_path := $(PATCHES_PATH)/qt
 
