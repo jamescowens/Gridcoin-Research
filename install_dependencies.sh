@@ -296,7 +296,7 @@ install_deps() {
             append_base boost-dev openssl-dev libevent-dev miniupnpc-dev libqrencode-dev libzip-dev curl-dev
 
             # Qt6 Packages
-            append_qt qt6-qtbase-dev qt6-qttools-dev qt6-qtcharts-dev qt6-qtsvg-dev qt6-qtdeclarative-devel qt6-qt5compat-dev
+            append_qt qt6-qtbase-dev qt6-qttools-dev qt6-qtcharts-dev qt6-qtsvg-dev qt6-qtdeclarative-dev qt6-qt5compat-dev
             ;;
 
         *)
