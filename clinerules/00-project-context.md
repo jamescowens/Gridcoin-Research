@@ -116,7 +116,7 @@ This is the Gridcoin-Research cryptocurrency project - an open-source blockchain
 
 - **Qt 6.7.3** (Qt6 minimum 6.2.0, Qt5 minimum 5.9.5) - Cross-platform GUI framework
   - Location: External via depends/ or system
-  - Components: qtbase, qttools, qttranslations, qtsvg, qt5compat
+  - Components: qtbase, qttools, qttranslations, qtsvg, qt6-qtdeclarative-devel, qt5compat
   - Required modules: Core, Concurrent, Gui, LinguistTools, Network, Widgets, Svg, Charts
   - Build flag: ENABLE_GUI, USE_QT6
   - **Default**: Qt5 is used by default; Qt6 requires explicit `USE_QT6=ON` flag

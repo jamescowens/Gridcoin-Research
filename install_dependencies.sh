@@ -99,7 +99,7 @@ install_deps() {
             append_base libssl-dev libevent-dev libboost-all-dev libminiupnpc-dev libqrencode-dev libzip-dev libcurl4-openssl-dev zipcmp zipmerge ziptool
 
             # Qt6 Packages (Qt5 names are not defined here as most are EOL)
-            append_qt qt6-base-dev qt6-tools-dev qt6-l10n-tools qt6-tools-dev-tools libqt6charts6-dev libqt6svg6-dev libqt6core5compat6-dev qt6-declarative-dev
+            append_qt qt6-base-dev qt6-tools-dev qt6-l10n-tools qt6-tools-dev-tools libqt6charts6-dev libqt6svg6-dev libqt6core5compat6-dev qt6-declarative-dev qml6-module-qtquick-controls
 
             # Windows Cross-Compile Tools
             # NOTE: We only append NSIS here. The MinGW compiler (g++-mingw-w64-x86-64)
@@ -167,7 +167,7 @@ install_deps() {
             append_base libstdc++-static gcc-c++ libtool automake autoconf pkgconf-pkg-config python3 cmake git curl patch perl-FindBin bison flex ccache doxygen graphviz
             append_base openssl-devel libevent-devel boost-devel miniupnpc-devel qrencode-devel libzip-devel libcurl-devel libzip-tools
 
-            append_qt qt6-qtbase-devel qt6-qttools-devel qt6-qtcharts-devel qt6-qtsvg-devel qt6-qt5compat-devel
+            append_qt qt6-qtbase-devel qt6-qttools-devel qt6-qtcharts-devel qt6-qtsvg-devel qt6-qtdeclarative-devel qt6-qt5compat-devel
 
             append_mingw mingw64-gcc-c++ mingw64-nsis xxd
 
@@ -296,7 +296,7 @@ install_deps() {
             append_base boost-dev openssl-dev libevent-dev miniupnpc-dev libqrencode-dev libzip-dev curl-dev
 
             # Qt6 Packages
-            append_qt qt6-qtbase-dev qt6-qttools-dev qt6-qtcharts-dev qt6-qtsvg-dev qt6-qt5compat-dev
+            append_qt qt6-qtbase-dev qt6-qttools-dev qt6-qtcharts-dev qt6-qtsvg-dev qt6-qtdeclarative-devel qt6-qt5compat-dev
             ;;
 
         *)
