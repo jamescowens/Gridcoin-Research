@@ -152,7 +152,12 @@ void SendCoinsDialog::on_sendButton_clicked()
     // Format confirmation message
     QStringList formatted;
     for (const SendCoinsRecipient& rcp : recipients) {
-        formatted.append(tr("<b>%1</b> to %2 (%3)").arg(BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, rcp.amount),
+        QString amountStr = BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, rcp.amount);
+        if (rcp.fSubtractFeeFromAmount)
+        {
+            amountStr += " " + tr("(minus fee)");
+        }
+        formatted.append(tr("<b>%1</b> to %2 (%3)").arg(amountStr,
               rcp.label.toHtmlEscaped(), rcp.address));
     }
 
@@ -205,6 +210,13 @@ void SendCoinsDialog::on_sendButton_clicked()
         QMessageBox::warning(this, tr("Send Coins"),
             tr("The total exceeds your balance when the %1 transaction fee is included.").
             arg(BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, sendstatus.fee)),
+            QMessageBox::Ok, QMessageBox::Ok);
+        break;
+    case WalletModel::FeeExceedsSubtractedAmount:
+        QMessageBox::warning(this, tr("Send Coins"),
+            tr("The transaction fee (%1) exceeds the amount being sent to a recipient "
+               "with 'Subtract fee from amount' enabled. Please enter a larger amount.")
+            .arg(BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, sendstatus.fee)),
             QMessageBox::Ok, QMessageBox::Ok);
         break;
     case WalletModel::DuplicateAddress:
@@ -457,7 +469,7 @@ void SendCoinsDialog::coinControlFeatureChanged(bool checked)
 // Coin Control: button inputs -> show actual coin control dialog
 void SendCoinsDialog::coinControlButtonClicked()
 {
-    CoinControlDialog dlg(this, coinControl, payAmounts);
+    CoinControlDialog dlg(this, coinControl, payAmounts, hasSubtractFeeRecipient());
     dlg.setModel(model);
 
     connect(&dlg, &CoinControlDialog::selectedConsolidationRecipientSignal,
@@ -475,7 +487,7 @@ void SendCoinsDialog::coinControlResetButtonClicked()
 
 void SendCoinsDialog::coinControlConsolidateWizardButtonClicked()
 {
-    CoinControlDialog dlg(this, coinControl, payAmounts);
+    CoinControlDialog dlg(this, coinControl, payAmounts, hasSubtractFeeRecipient());
     dlg.setModel(model);
 
     connect(&dlg, &CoinControlDialog::selectedConsolidationRecipientSignal,
@@ -570,6 +582,16 @@ void SendCoinsDialog::coinControlChangeEdited(const QString & text)
     }
 }
 
+bool SendCoinsDialog::hasSubtractFeeRecipient() const
+{
+    for (int i = 0; i < ui->entries->count(); ++i)
+    {
+        SendCoinsEntry *entry = qobject_cast<SendCoinsEntry*>(ui->entries->itemAt(i)->widget());
+        if (entry && entry->getValue().fSubtractFeeFromAmount) return true;
+    }
+    return false;
+}
+
 // Coin Control: update labels
 void SendCoinsDialog::coinControlUpdateLabels()
 {
@@ -589,7 +611,7 @@ void SendCoinsDialog::coinControlUpdateLabels()
     if (coinControl->HasSelected())
     {
         // actual coin control calculation
-        CoinControlDialog::updateLabels(model, coinControl, payAmounts, this);
+        CoinControlDialog::updateLabels(model, coinControl, payAmounts, this, hasSubtractFeeRecipient());
 
         // show coin control stats
         ui->coinControlAutomaticallySelectedLabel->hide();

@@ -291,8 +291,10 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                 }
 
                 int64_t nValue = txout.nValue;
-                /* Add fee to first output */
-                if (nTxFee > 0)
+                /* Add fee to first output, unless subtract-fee-from-amount
+                 * was used — in that case the fee is already reflected in
+                 * the output values and should not be added again. */
+                if (nTxFee > 0 && !mapValue.count("subtractFeeFromAmount"))
                 {
                     nValue += nTxFee;
                     nTxFee = 0;

@@ -48,6 +48,8 @@ private:
     WalletModel *model;
     bool fNewRecipientAllowed;
 
+    bool hasSubtractFeeRecipient() const;
+
 private slots:
     void on_sendButton_clicked();
     void removeEntry(SendCoinsEntry* entry);
