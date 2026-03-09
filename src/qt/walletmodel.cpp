@@ -238,6 +238,11 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(const QList<SendCoinsRecipie
 
     CWalletTx wtx;
 
+    if (fAnySubtractFeeFromAmount)
+    {
+        wtx.mapValue["subtractFeeFromAmount"] = "1";
+    }
+
     if (!recipients[0].Message.isEmpty())
     {
         wtx.vContracts.emplace_back(GRC::MakeContract<GRC::TxMessage>(
