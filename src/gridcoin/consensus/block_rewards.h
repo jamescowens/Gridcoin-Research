@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+class CBlock;
 class CBlockIndex;
 class CTransaction;
 
@@ -45,10 +46,35 @@ class Cpid;
 class BlockRewardRules
 {
 public:
+    //! Construct/spec mode (miner) — lightweight, no block context needed.
     BlockRewardRules(
         const CBlockIndex* pindex_prev,
         int block_version,
         int64_t block_time);
+
+    //! Full validation mode — mirrors ClaimValidator constructor.
+    //! Enables Check() for complete claim validation.
+    BlockRewardRules(
+        const CBlock& block,
+        const CBlockIndex* pindex,
+        CAmount stake_value_in,
+        CAmount total_claimed,
+        CAmount fees,
+        uint64_t coin_age);
+
+    // --- Full claim validation (replaces ClaimValidator::Check()) ------------
+
+    //! Run the complete claim validation suite: research/non-research
+    //! branching, reward envelope, MRC outputs, beacon signature, mandatory
+    //! sidestakes, and all legacy version-specific checks.
+    //!
+    //! Returns true if the claim is valid. On failure, error_out contains a
+    //! descriptive error message. Unlike ClaimValidator, this method does NOT
+    //! call CBlock::DoS() — the caller decides on DoS scoring.
+    //!
+    //! Requires the full validation constructor.
+    //!
+    bool Check(std::string& error_out) const;
 
     // --- Shared spec types ---------------------------------------------------
 
@@ -154,6 +180,36 @@ private:
     const CBlockIndex* m_pindex_prev;
     int m_block_version;
     int64_t m_block_time;
+
+    // Full validation state (set by full validation constructor; null/zero otherwise).
+    const CBlock* m_block;
+    const CBlockIndex* m_pindex;
+    CAmount m_stake_value_in;
+    CAmount m_total_claimed;
+    CAmount m_fees;
+    uint64_t m_coin_age;
+
+    // --- Full validation sub-checks ------------------------------------------
+
+    bool CheckResearcherClaim(std::string& error_out) const;
+    bool CheckNoncruncherClaim(std::string& error_out) const;
+
+    bool CheckReward(CAmount research_owed, CAmount& out_stake_owed,
+                     CAmount mrc_staker_fees_owed, CAmount mrc_fees,
+                     CAmount mrc_rewards, unsigned int mrc_non_zero_outputs,
+                     std::string& error_out) const;
+
+    bool CheckMRCRewards(CAmount& mrc_rewards, CAmount& mrc_staker_fees,
+                         CAmount& mrc_fees, unsigned int& non_zero_outputs,
+                         std::string& error_out) const;
+
+    bool CheckResearchReward(std::string& error_out) const;
+    bool CheckBeaconSignature(std::string& error_out) const;
+
+    // Legacy v9-v10 checks
+    bool CheckResearchRewardLimit(std::string& error_out) const;
+    bool CheckResearchRewardDrift(std::string& error_out) const;
+    bool CheckClaimMagnitude(std::string& error_out) const;
 };
 
 } // namespace GRC
