@@ -138,6 +138,8 @@ add_library(gridcoin_util STATIC
     gridcoin/boinc.cpp
     gridcoin/crypto/rsaverify.cpp
     gridcoin/claim.cpp
+    gridcoin/consensus/block_rewards.cpp
+    gridcoin/consensus/shadow_validator.cpp
     gridcoin/contract/contract.cpp
     gridcoin/contract/message.cpp
     gridcoin/contract/registry.cpp
