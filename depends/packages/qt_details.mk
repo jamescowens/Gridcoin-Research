@@ -20,6 +20,9 @@ qt_details_qtsvg_sha256_hash := 40142cb71fb1e07ad612bc361b67f5d54cd9367f9979ae6b
 qt_details_qtdeclarative_file_name := qtdeclarative-$(qt_details_suffix)
 qt_details_qtdeclarative_sha256_hash := 937b70e441abf5bc4e50d44d26610e2714a28514acf3885cd36116cd610b9875
 
+qt_details_qtshadertools_file_name := qtshadertools-$(qt_details_suffix)
+qt_details_qtshadertools_sha256_hash := 74e512798c7ddbda354a2d8d975211454bbabb47afb7e598892067a5828c0995
+
 qt_details_patches_path := $(PATCHES_PATH)/qt
 
 qt_details_top_download_path := https://code.qt.io/cgit/qt/qt5.git/plain
