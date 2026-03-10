@@ -17,6 +17,7 @@
 #include "init.h"
 #include "node/ui_interface.h"
 #include "scheduler.h"
+#include "gridcoin/consensus/shadow_validator.h"
 #include "gridcoin/gridcoin.h"
 #include "gridcoin/upgrade.h"
 #include "gridcoin/contract/registry.h"
@@ -175,6 +176,7 @@ void Shutdown(void* parg)
         // This is necessary here to prevent a snapshot download from failing at the cleanup
         // step because of a write lock on accrual/registry.dat.
         GRC::CloseResearcherRegistryFile();
+        GRC::ShutdownShadowValidator();
 
         fs::remove(GetPidFile(gArgs));
         UnregisterWallet(pwalletMain);
@@ -297,6 +299,15 @@ void AddLoggingArgs(ArgsManager& argsman)
                    ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-org=<string>", "Set organization name for identification (default: not set). Required for use "
                                     "on testnet. Do not set this for a wallet on mainnet.",
+                   ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
+    argsman.AddArg("-consensusrulesimpl=<old|new>",
+                   "Select consensus rules implementation (default: old; dev only)",
+                   ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
+    argsman.AddArg("-consensusrulesshadow",
+                   "Run shadow implementation alongside authoritative for comparison (default: 0; dev only)",
+                   ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
+    argsman.AddArg("-consensusshadowlog=<path>",
+                   "Write structured JSON-lines shadow comparison log to file (dev only)",
                    ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
 }
 
@@ -1473,6 +1484,8 @@ bool AppInit2(ThreadHandlerPtr threads)
     // files from a reindex, bootstrap, or specified external file, the GRC code should already be initialized so that
     // ProcessBlock works properly. If the GRC code fails to initialize, return false (bail).
     if (!GRC::Initialize(threads, pindexBest)) return false;
+
+    GRC::InitShadowValidator();
 
     // ********************************************************* Step 10: import blocks
 

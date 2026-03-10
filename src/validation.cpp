@@ -11,6 +11,7 @@
 #include "gridcoin/beacon.h"
 #include "gridcoin/contract/registry.h"
 #include "gridcoin/claim.h"
+#include "gridcoin/consensus/shadow_validator.h"
 #include "gridcoin/mrc.h"
 #include "gridcoin/quorum.h"
 #include "gridcoin/researcher.h"
@@ -1563,6 +1564,12 @@ bool GridcoinConnectBlock(
         if (!ClaimValidator(block, pindex, stake_value_in, total_claimed, fees, out_coin_age).Check()) {
             return false;
         }
+
+        // Run shadow validation (if enabled via -consensusrulesshadow) after the
+        // authoritative ClaimValidator passes. This calls BlockRewardRules on the
+        // same block and compares results. Shadow never affects the authoritative
+        // outcome.
+        GRC::ValidateClaimWithShadow(block, pindex, stake_value_in, total_claimed, fees, out_coin_age);
 
         if (claim.ContainsSuperblock()) {
             if (!TryLoadSuperblock(block, pindex, claim)) {
