@@ -144,7 +144,7 @@ SendCoinsRecipient SendCoinsEntry::getValue()
     rv.address = ui->payTo->text();
     rv.label = ui->addAsLabel->text();
     rv.amount = ui->payAmount->value();
-	rv.Message = ui->messageText->text();
+    rv.Message = ui->messageText->text();
     return rv;
 }
 
@@ -163,7 +163,7 @@ void SendCoinsEntry::setValue(const SendCoinsRecipient &value)
     ui->payTo->setText(value.address);
     ui->addAsLabel->setText(value.label);
     ui->payAmount->setValue(value.amount);
-	ui->messageText->setText(value.Message);
+    ui->messageText->setText(value.Message);
 }
 
 bool SendCoinsEntry::isClear()
