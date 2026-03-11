@@ -348,6 +348,10 @@ if(ENABLE_DAEMON)
         install(FILES "${CMAKE_SOURCE_DIR}/contrib/init/gridcoinresearchd.service" COMPONENT daemon
             DESTINATION "lib/systemd/system"
         )
+        install(FILES "${CMAKE_SOURCE_DIR}/contrib/completions/bash/gridcoinresearchd.bash" COMPONENT daemon
+            DESTINATION "${CMAKE_INSTALL_DATADIR}/bash-completion/completions"
+            RENAME "gridcoinresearchd"
+        )
     else()
         install(TARGETS gridcoinresearchd COMPONENT daemon
             RUNTIME DESTINATION bin
