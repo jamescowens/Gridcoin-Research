@@ -16,12 +16,12 @@ _gridcoinresearchd() {
     _get_comp_words_by_ref -n = cur prev words cword
 
     case "$cur" in
-        -conf=*|-pid=*|-loadblock=*|-rpccookiefile=*|-wallet=*)
+        -conf=*|-pid=*|-loadblock=*|-wallet=*|-settings=*|-rpcsslcertificatechainfile=*|-rpcsslprivatekeyfile=*)
             cur="${cur#*=}"
             _filedir
             return 0
             ;;
-        -datadir=*)
+        -datadir=*|-boincdatadir=*|-backupdir=*)
             cur="${cur#*=}"
             _filedir -d
             return 0
