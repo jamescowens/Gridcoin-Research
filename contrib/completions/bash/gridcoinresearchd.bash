@@ -1,6 +1,6 @@
 # bash programmable completion for gridcoinresearchd(1)
 # Copyright (c) 2012-present The Bitcoin Core developers
-# Copyright (c) 2025 The Gridcoin developers
+# Copyright (c) 2026 The Gridcoin developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/licenses/MIT.
 
@@ -16,7 +16,7 @@ _gridcoinresearchd() {
     _get_comp_words_by_ref -n = cur prev words cword
 
     case "$cur" in
-        -conf=*|-pid=*|-loadblock=*|-wallet=*|-settings=*|-rpcsslcertificatechainfile=*|-rpcsslprivatekeyfile=*)
+        -conf=*|-pid=*|-loadblock=*|-wallet=*|-settings=*|-debuglogfile=*|-rpcsslcertificatechainfile=*|-rpcsslprivatekeyfile=*)
             cur="${cur#*=}"
             _filedir
             return 0
