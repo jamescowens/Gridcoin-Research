@@ -226,7 +226,7 @@ static std::string Translate(const char* psz)
 }
 
 /* qDebug() message handler --> debug.log */
-void DebugMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString &msg)
+static void DebugMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString &msg)
 {
     Q_UNUSED(context);
     if (type == QtDebugMsg) {
