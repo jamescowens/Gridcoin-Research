@@ -11,6 +11,7 @@
 #include "gridcoin/beacon.h"
 #include "gridcoin/contract/registry.h"
 #include "gridcoin/claim.h"
+#include "gridcoin/consensus/block_rewards.h"
 #include "gridcoin/consensus/shadow_validator.h"
 #include "gridcoin/mrc.h"
 #include "gridcoin/quorum.h"
@@ -27,6 +28,7 @@
 #include "policy/fees.h"
 #include "serialize.h"
 #include "util.h"
+#include "util/time.h"
 #include "validation.h"
 #include "wallet/wallet.h"
 
@@ -1561,15 +1563,69 @@ bool GridcoinConnectBlock(
             return false;
         }
 
-        if (!ClaimValidator(block, pindex, stake_value_in, total_claimed, fees, out_coin_age).Check()) {
-            return false;
-        }
+        // Claim validation dispatch. The -consensusrulesimpl flag selects the
+        // authoritative implementation: "old" (ClaimValidator, default) or "new"
+        // (BlockRewardRules). When -consensusrulesshadow=1, the alternate runs
+        // alongside and mismatches are logged without affecting the outcome.
+        {
+            bool auth_pass;
+            std::string auth_error;
+            int64_t auth_ms = 0;
 
-        // Run shadow validation (if enabled via -consensusrulesshadow) after the
-        // authoritative ClaimValidator passes. This calls BlockRewardRules on the
-        // same block and compares results. Shadow never affects the authoritative
-        // outcome.
-        GRC::ValidateClaimWithShadow(block, pindex, stake_value_in, total_claimed, fees, out_coin_age);
+            bool shadow_pass = true;
+            std::string shadow_error;
+            int64_t shadow_ms = 0;
+
+            if (GRC::IsNewImplAuthoritative()) {
+                // BlockRewardRules is authoritative.
+                MilliTimer auth_timer("auth_check", false);
+
+                GRC::BlockRewardRules rules(block, pindex, stake_value_in, total_claimed, fees, out_coin_age);
+                auth_pass = rules.Check(auth_error);
+                auth_ms = auth_timer.GetTimes("auth_check").elapsed_time;
+
+                if (!auth_pass) {
+                    block.DoS(10, error("%s: BlockRewardRules::Check FAILED at height %d: %s",
+                                        __func__, pindex->nHeight, auth_error));
+                }
+
+                // Shadow: run old ClaimValidator for comparison.
+                if (GRC::IsShadowValidationEnabled()) {
+                    MilliTimer shadow_timer("shadow_check", false);
+                    shadow_pass = ClaimValidator(block, pindex, stake_value_in, total_claimed, fees, out_coin_age).Check();
+                    shadow_ms = shadow_timer.GetTimes("shadow_check").elapsed_time;
+
+                    if (!shadow_pass) {
+                        shadow_error = "ClaimValidator::Check() failed (see debug log for details)";
+                    }
+                }
+            } else {
+                // ClaimValidator is authoritative (default).
+                MilliTimer auth_timer("auth_check", false);
+                auth_pass = ClaimValidator(block, pindex, stake_value_in, total_claimed, fees, out_coin_age).Check();
+                auth_ms = auth_timer.GetTimes("auth_check").elapsed_time;
+
+                // Shadow: run BlockRewardRules for comparison.
+                if (GRC::IsShadowValidationEnabled()) {
+                    MilliTimer shadow_timer("shadow_check", false);
+
+                    GRC::BlockRewardRules rules(block, pindex, stake_value_in, total_claimed, fees, out_coin_age);
+                    shadow_pass = rules.Check(shadow_error);
+                    shadow_ms = shadow_timer.GetTimes("shadow_check").elapsed_time;
+                }
+            }
+
+            if (GRC::IsShadowValidationEnabled()) {
+                GRC::LogShadowComparison(pindex->nHeight, pindex->GetBlockHash(),
+                                         auth_pass, shadow_pass,
+                                         auth_error, shadow_error,
+                                         auth_ms, shadow_ms);
+            }
+
+            if (!auth_pass) {
+                return false;
+            }
+        }
 
         if (claim.ContainsSuperblock()) {
             if (!TryLoadSuperblock(block, pindex, claim)) {

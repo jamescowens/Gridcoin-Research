@@ -234,6 +234,24 @@ bool BlockRewardRules::ValidateMandatorySidestakeOutputs(
         }
     }
 
+    // See the comments in SplitCoinStakeOutput regarding dust elimination in mandatory sidestake selection. Note
+    // that in the miner for mandatory sidestakes, the shuffle is done AFTER the dust elimination, if the number of
+    // residual elements is greater than the maximum allowed number of mandatory sidestakes. This leads to the
+    // following check.
+    //
+    // If the residual number of mandatory sidestakes after dust elimination is GREATER than or equal to the output
+    // limit, then the number of outputs matched to mandatory sidestakes should be equal to the output limit, because
+    // the shuffle in combination with the allocation lambda operating on non-dust outputs will result in exactly
+    // output_limit mandatory sidestakes, which means it will pass above, and also pass the check below. We do not
+    // have to worry about a cutoff above MaxMandatorySideStakeTotalAlloc because that is handled IN
+    // ActiveSideStakeEntries, which is used as the starting point in the miner (and of course here).
+    //
+    // If the residual number of mandatory sidestakes after dust elimination is less than the output limit, it should
+    // be equal in number to the eligible set size from above after the elimination of dust outputs and coinstake
+    // destination matches.
+    //
+    // The combination of these constraints means that the number of validated mandatory sidestakes MUST match
+    // the minimum of the output limit and the eligible set size.
     if (validated < expected) {
         error_out = strprintf(
             "Number of validated mandatory sidestakes (%u) is less than required (%u)",
@@ -271,6 +289,11 @@ bool BlockRewardRules::CheckNoncruncherClaim(std::string& error_out) const
     CAmount out_stake_owed;
     unsigned int mrc_non_zero_outputs = 0;
 
+    // Even if the block is staked by a non-cruncher, the claim can include MRC payments to researchers.
+    //
+    // If block version 12 or higher, this checks the MRC part of the claim, and also returns the total mrc_fees,
+    // which are needed because they are part of the total claimed. Note that the DoS and log output for MRC
+    // validation failure is handled by the caller.
     if (m_block_version >= 12
         && !CheckMRCRewards(mrc_rewards, mrc_staker_fees, mrc_fees,
                             mrc_non_zero_outputs, error_out))
@@ -298,6 +321,8 @@ bool BlockRewardRules::CheckNoncruncherClaim(std::string& error_out) const
 
 bool BlockRewardRules::CheckResearcherClaim(std::string& error_out) const
 {
+    // For version 11 blocks and higher, just validate the reward and check the signature. No need for the rest
+    // of these shenanigans.
     if (m_block_version >= 11) {
         return CheckResearchReward(error_out) && CheckBeaconSignature(error_out);
     }
@@ -328,6 +353,8 @@ bool BlockRewardRules::CheckReward(
     out_stake_owed = GetProofOfStakeReward(m_coin_age, m_block_time, m_pindex);
 
     if (m_block_version >= 11) {
+        // For block version 11, mrc_fees_owed and mrc_rewards are both zero, and there are no MRC outputs, so this
+        // is the only check necessary. For v12+, the MRC components are non-zero and additional checks follow below.
         if (m_total_claimed > research_owed + out_stake_owed + m_fees + mrc_fees + mrc_rewards) {
             error_out = strprintf(
                 "Claim too high: total_claimed %s > %s = research %s + stake %s + fees %s + mrc_fees %s + mrc_rewards %s",
@@ -342,18 +369,36 @@ bool BlockRewardRules::CheckReward(
         }
 
         if (m_block_version >= 12) {
+            // Check that the portion of the coinstake going to the staker and/or their sidestakes (i.e. the non-MRC
+            // part) is proper. The net of the non-MRC outputs and the input cannot exceed
+            // research_owed + out_stake_owed + m_fees + staker_fees_owed.
             const CTransaction& coinstake = m_block->vtx[1];
             const Claim& claim = m_block->GetClaim();
 
+            // Note this uses claim.m_mrc_tx_map.size() and not mrc_non_zero_outputs, because if mrcs are forced
+            // in the zero payout interval and the foundation side stake is active, there will be a foundation mrc
+            // sidestake even though there will not be a corresponding mrc rewards output. (Zero value outputs are
+            // suppressed because that is wasteful.)
             bool foundation_mrc_sidestake_present =
                 (claim.m_mrc_tx_map.size()
                  && FoundationSideStakeAllocation().IsNonZero()) ? true : false;
 
+            // If there is no mrc, then this is coinstake.vout.size() - 0 - 0, which is one beyond the last coinstake
+            // element.
+            // If there is one non-zero net reward mrc and the foundation sidestake is turned off, then this would be
+            // coinstake.vout.size() - 1 - 0.
+            // If there is one non-zero net reward mrc and the foundation sidestake is turned on, then this would be
+            // coinstake.vout.size() - 1 - 1.
+            // For a "full" coinstake, consisting of eight staker outputs (reward + sidestakes), the foundation
+            // sidestake, and the 4 MRC sidestakes (currently 14 total), this would be
+            // coinstake.vout.size() = 14 - 4 - 1 = 9, which correctly points to the foundation sidestake index.
             unsigned int mrc_start_index = coinstake.vout.size()
                 - mrc_non_zero_outputs
                 - (unsigned int) foundation_mrc_sidestake_present;
 
+            // Start with the coinstake input value as a negative (because we want the net).
             CAmount total_owed_to_staker = -m_stake_value_in;
+            // These are the non-MRC outputs.
             for (unsigned int i = 0; i < mrc_start_index; ++i) {
                 total_owed_to_staker += coinstake.vout[i].nValue;
             }
@@ -385,8 +430,10 @@ bool BlockRewardRules::CheckReward(
                 }
             }
 
-            // Foundation MRC sidestake validation.
+            // If the foundation mrc sidestake is present, we check the foundation sidestake specifically. The MRC
+            // outputs were already checked by CheckMRCRewards.
             if (foundation_mrc_sidestake_present) {
+                // The fee amount to the foundation must be correct.
                 if (coinstake.vout[mrc_start_index].nValue != mrc_fees - mrc_staker_fees_owed) {
                     error_out = strprintf(
                         "MRC Foundation sidestake amount incorrect: %s != mrc_fees %s - staker_fees %s",
@@ -397,6 +444,7 @@ bool BlockRewardRules::CheckReward(
                 }
 
                 CTxDestination foundation_dest;
+                // The foundation sidestake destination must be able to be extracted.
                 if (!ExtractDestination(coinstake.vout[mrc_start_index].scriptPubKey,
                                         foundation_dest))
                 {
@@ -404,6 +452,7 @@ bool BlockRewardRules::CheckReward(
                     return false;
                 }
 
+                // The sidestake destination must match that specified by FoundationSideStakeAddress().
                 if (foundation_dest != FoundationSideStakeAddress()) {
                     error_out = "MRC Foundation sidestake destination does not match protocol";
                     return false;
@@ -411,15 +460,18 @@ bool BlockRewardRules::CheckReward(
             }
         } // v12+
 
+        // If we get here, we are done with v11, v12, and v13 validation so return true.
         return true;
     } // v11+
 
-    // Blocks version 10 and below: floating-point with wiggle room.
+    // Blocks version 10 and below represented rewards as floating-point values and needed to accommodate
+    // floating-point errors so we'll do the same rounding on the floating-point representations:
     double subsidy = ((double)research_owed / COIN) * 1.25;
     subsidy += (double)out_stake_owed / COIN;
 
     CAmount max_owed = roundint64(subsidy * COIN) + m_fees;
 
+    // Block version 9 and below allowed a 1 GRC wiggle.
     if (m_block_version <= 9) {
         max_owed += 1 * COIN;
     }
@@ -555,6 +607,9 @@ bool BlockRewardRules::CheckResearchReward(std::string& error_out) const
         research_owed = Tally::GetAccrual(*cpid, m_block_time, m_pindex);
     }
 
+    // If block version 12 or higher, this checks the MRC part of the claim, and also returns the staker_fees,
+    // which are needed because they are added to the staker's payout. Note that the DoS and log output for MRC
+    // validation failure is handled by the caller.
     if (m_block_version >= 12
         && !CheckMRCRewards(mrc_rewards, mrc_staker_fees, mrc_fees,
                             mrc_non_zero_outputs, error_out))
@@ -569,7 +624,9 @@ bool BlockRewardRules::CheckResearchReward(std::string& error_out) const
         return true;
     }
 
-    // Newbie correction fallback — handles historical accrual snapshot bug.
+    // The below is required to deal with a conditional application in historical rewards for research newbies
+    // after the original newbie fix height that already made it into the chain. Please see the extensive
+    // commentary in GetNewbieSuperblockAccrualCorrection().
     if (m_pindex->nHeight >= GetOrigNewbieSnapshotFixHeight() && cpid) {
         CAmount newbie_correction = Tally::GetNewbieSuperblockAccrualCorrection(
             *cpid, Quorum::CurrentSuperblock());
@@ -615,7 +672,8 @@ bool BlockRewardRules::CheckBeaconSignature(std::string& error_out) const
         return false;
     }
 
-    // v11+ uses block time for beacon expiration; v10 and below uses prev block time.
+    // The legacy beacon functions determined beacon expiration by the time of the previous block. For block
+    // version 11+, compute the expiration threshold from the current block:
     const int64_t now = m_block_version >= 11 ? m_block_time : m_pindex->pprev->nTime;
 
     if (const BeaconOption beacon = GetBeaconRegistry().TryActive(*cpid, now)) {
@@ -633,7 +691,10 @@ bool BlockRewardRules::CheckBeaconSignature(std::string& error_out) const
         return true;
     }
 
-    // Testnet beaconalt range exception (historical bug, blocks 495352-600876).
+    // An old bug caused some nodes to sign research reward claims with a previous beacon key (beaconalt).
+    // Mainnet declares block exceptions for this problem. To avoid declaring exceptions for the 55 testnet
+    // blocks, the following check ignores beaconalt verification failure for the range of heights that include
+    // these blocks:
     if (fTestNet
         && (m_pindex->nHeight >= 495352 && m_pindex->nHeight <= 600876))
     {
@@ -668,6 +729,10 @@ bool BlockRewardRules::CheckResearchRewardLimit(std::string& error_out) const
 bool BlockRewardRules::CheckResearchRewardDrift(std::string& error_out) const
 {
     const Claim& claim = m_block->GetClaim();
+
+    // ResearchAge: Since the best block may increment before the RA is connected but after the RA is computed,
+    // the ResearchSubsidy can sometimes be slightly smaller than we calculate here due to the RA timespan
+    // increasing. So we will allow for time shift before rejecting the block.
     const CAmount reward_claimed = m_total_claimed - m_fees;
     CAmount drift_allowed = claim.m_research_subsidy * 0.15;
 

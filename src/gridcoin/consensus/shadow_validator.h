@@ -5,8 +5,9 @@
 #ifndef GRIDCOIN_CONSENSUS_SHADOW_VALIDATOR_H
 #define GRIDCOIN_CONSENSUS_SHADOW_VALIDATOR_H
 
-#include "amount.h"
+#include "uint256.h"
 
+#include <cstdint>
 #include <string>
 
 class CBlock;
@@ -14,11 +15,14 @@ class CBlockIndex;
 
 namespace GRC {
 
-//! Shadow-testing facade for consensus rules validation.
+//! Shadow-testing infrastructure for consensus rules validation.
 //!
-//! This provides a thin dispatch layer that can run both old (ClaimValidator)
-//! and new (BlockRewardRules) implementations side-by-side, comparing results
-//! at every block. Controlled by startup flags:
+//! Provides flag state queries and structured logging for running the old
+//! (ClaimValidator) and new (BlockRewardRules) implementations side-by-side.
+//! The actual dispatch logic lives in GridcoinConnectBlock (validation.cpp),
+//! which calls both implementations and reports results through this module.
+//!
+//! Controlled by startup flags:
 //!
 //!   -consensusrulesimpl=<old|new>   Which implementation is authoritative
 //!   -consensusrulesshadow=<0|1>     Whether to run the alternate for comparison
@@ -33,48 +37,37 @@ namespace GRC {
 //! \sa #2880 (consensus rules unification issue)
 //!
 
-//! Results from a single validation pass, capturing all output values
-//! for comparison between old and new implementations.
-struct ClaimValidationResult
-{
-    bool pass = false;
-
-    // CheckReward outputs
-    CAmount stake_owed = 0;
-
-    // CheckMRCRewards outputs
-    CAmount mrc_rewards = 0;
-    CAmount mrc_staker_fees = 0;
-    CAmount mrc_fees = 0;
-    unsigned int mrc_non_zero_outputs = 0;
-
-    // Mandatory sidestake outputs (v13+)
-    unsigned int mandatory_sidestakes_validated = 0;
-    unsigned int mandatory_sidestakes_expected = 0;
-
-    std::string error;
-};
-
 //! Initialize the shadow validator from startup arguments.
 //! Call once during init after argument parsing.
 void InitShadowValidator();
 
-//! Run the authoritative claim validation, optionally with shadow comparison.
+//! Returns true if -consensusrulesimpl=new (BlockRewardRules is authoritative).
+bool IsNewImplAuthoritative();
+
+//! Returns true if shadow validation is enabled (-consensusrulesshadow=1).
+bool IsShadowValidationEnabled();
+
+//! Log a shadow comparison result. Called from GridcoinConnectBlock after
+//! running the shadow implementation.
 //!
-//! This replaces the direct ClaimValidator construction in GridcoinConnectBlock.
-//! Internally constructs ClaimValidator (old path) and/or BlockRewardRules
-//! (new path) as needed based on the -consensusrulesimpl and
-//! -consensusrulesshadow flags.
+//! \param height        Block height.
+//! \param block_hash    Block hash.
+//! \param auth_pass     Whether the authoritative implementation passed.
+//! \param shadow_pass   Whether the shadow implementation passed.
+//! \param auth_error    Error string from the authoritative implementation.
+//! \param shadow_error  Error string from the shadow implementation.
+//! \param auth_ms       Elapsed time for authoritative check in milliseconds.
+//! \param shadow_ms     Elapsed time for shadow check in milliseconds.
 //!
-//! \return true if the authoritative implementation accepts the claim.
-//!
-bool ValidateClaimWithShadow(
-    CBlock& block,
-    const CBlockIndex* pindex,
-    CAmount stake_value_in,
-    CAmount total_claimed,
-    CAmount fees,
-    uint64_t coin_age);
+void LogShadowComparison(
+    int height,
+    const uint256& block_hash,
+    bool auth_pass,
+    bool shadow_pass,
+    const std::string& auth_error,
+    const std::string& shadow_error,
+    int64_t auth_ms,
+    int64_t shadow_ms);
 
 //! Shut down shadow validator (flush and close log file if open).
 void ShutdownShadowValidator();

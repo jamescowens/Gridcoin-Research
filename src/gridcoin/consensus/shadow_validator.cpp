@@ -3,10 +3,8 @@
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
 #include "gridcoin/consensus/shadow_validator.h"
-#include "gridcoin/consensus/block_rewards.h"
 #include "main.h"
 #include "util.h"
-#include "util/time.h"
 
 #include <fstream>
 #include <mutex>
@@ -108,43 +106,36 @@ void GRC::InitShadowValidator()
     }
 }
 
-bool GRC::ValidateClaimWithShadow(
-    CBlock& block,
-    const CBlockIndex* pindex,
-    CAmount stake_value_in,
-    CAmount total_claimed,
-    CAmount fees,
-    uint64_t coin_age)
+bool GRC::IsNewImplAuthoritative()
 {
-    if (!g_shadow_enabled || pindex->nHeight <= nGrandfather) {
-        return true;
-    }
+    return g_consensus_impl == "new";
+}
 
-    // Run the full new BlockRewardRules::Check() and compare against the
-    // old ClaimValidator result (which already passed — we are called after
-    // ClaimValidator::Check() succeeds in GridcoinConnectBlock).
-    MilliTimer timer("shadow_check", false);
+bool GRC::IsShadowValidationEnabled()
+{
+    return g_shadow_enabled;
+}
 
-    BlockRewardRules rules(block, pindex, stake_value_in, total_claimed, fees, coin_age);
-    std::string new_error;
-    bool new_pass = rules.Check(new_error);
-
-    auto times = timer.GetTimes("shadow_check");
-
+void GRC::LogShadowComparison(
+    int height,
+    const uint256& block_hash,
+    bool auth_pass,
+    bool shadow_pass,
+    const std::string& auth_error,
+    const std::string& shadow_error,
+    int64_t auth_ms,
+    int64_t shadow_ms)
+{
     LogShadowResult(
-        pindex->nHeight,
-        pindex->GetBlockHash(),
+        height,
+        block_hash,
         "full_claim",
-        true,           // auth_pass (old ClaimValidator already passed)
-        new_pass,       // shadow_pass (new BlockRewardRules result)
-        "",             // auth_error (none — old passed)
-        new_error,      // shadow_error
-        0,              // auth_ms (not timed — old ran inside ClaimValidator)
-        times.elapsed_time);
-
-    // The authoritative result is handled by the caller (GridcoinConnectBlock)
-    // which still calls ClaimValidator::Check() directly.
-    return true;
+        auth_pass,
+        shadow_pass,
+        auth_error,
+        shadow_error,
+        auth_ms,
+        shadow_ms);
 }
 
 void GRC::ShutdownShadowValidator()
