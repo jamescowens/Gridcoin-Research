@@ -58,13 +58,21 @@ elimination ordering relative to shuffle), and subtle distinctions
 (m_mrc_tx_map.size() vs mrc_non_zero_outputs). These comments represent
 hard-won domain knowledge and must be carried forward, not condensed away.
 
+## What does NOT fit the shared-spec pattern
+
+- **MRC binding** (mempool selection in `CreateNewBlock`): purely a miner-side
+  concern — selecting which MRC transactions to include based on priority,
+  CPID uniqueness, and output limits. The validator checks the resulting
+  outputs but has no role in the selection. No validator dual, no drift risk.
+
 ## Future Directions
 
 Areas where the shared-spec pattern could be extended (each as its own
 incremental step, motivated by concrete need):
 
-- **Foundation MRC sidestake**: currently computed independently in miner and
-  validator. Could become a shared spec entry.
+- **Foundation MRC sidestake output**: the fee split output to the foundation
+  address is computed independently in `CreateMRCRewards` (miner) and
+  `CheckReward` (validator). Could become a shared spec entry.
 - **MRC output layout**: the index arithmetic for mrc_start_index is replicated
   in both paths. A shared layout descriptor could eliminate this.
 - **Voluntary sidestake construction**: lower priority since voluntary

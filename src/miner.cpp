@@ -19,6 +19,7 @@
 #include "gridcoin/researcher.h"
 #include "gridcoin/staking/difficulty.h"
 #include "gridcoin/staking/kernel.h"
+#include "gridcoin/consensus/block_rewards.h"
 #include "gridcoin/staking/reward.h"
 #include "gridcoin/staking/status.h"
 #include "gridcoin/tally.h"
@@ -905,27 +906,41 @@ void SplitCoinStakeOutput(CBlock &blocknew, int64_t &nReward, bool &fEnableStake
     // Initialize nOutputUsed at 1, because one is already used for the empty coinstake flag output.
     unsigned int nOutputsUsed = 1;
 
-    // If the number of sidestaking allocation entries exceeds nMaxSideStakeOutputs, then shuffle the vSideStakeAlloc
-    // to support sidestaking with more than eight entries. This is a super simple solution but has some disadvantages.
-    // If the person made a mistake and has the entries in the config file add up to more than 100%, then those entries
-    // resulting a cumulative total over 100% will always be excluded, not just randomly excluded, because the cumulative
-    // check is done in the order of the entries in the config file. This is not regarded as a big issue, because
-    // all of the entries are supposed to add up to less than or equal to 100%. Also when there are more than
-    // mMaxSideStakeOutput entries, the residual returned to the coinstake will vary when the entries are shuffled,
-    // because the total percentage of the selected entries will be randomized. No attempt to renormalize
-    // the percentages is done.
-    SideStakeAlloc mandatory_sidestakes
-        = GRC::GetSideStakeRegistry().ActiveSideStakeEntries(GRC::SideStake::FilterFlag::MANDATORY, false);
+    // Compute the mandatory sidestake spec using BlockRewardRules — the shared invariant computation that
+    // both miner and validator consume. This replaces the separate ActiveSideStakeEntries() call and manual
+    // dust/address filtering that previously lived only here, eliminating the class of drift bugs where the
+    // miner and validator made different eligibility decisions (see #2848).
+    CTxDestination coinstake_dest;
+    ExtractDestination(CoinStakeScriptPubKey, coinstake_dest);
+
+    GRC::BlockRewardRules rules(pindexBest, blocknew.nVersion, blocknew.nTime);
+
+    auto mandatory_specs = GRC::BlockRewardRules::FilterEligible(
+        rules.ComputeEligibleMandatorySidestakes(coinstake_dest, nReward));
+
+    unsigned int nMandatoryOutputLimit = GetMandatorySideStakeOutputLimit(blocknew.nVersion);
+
+    // Shuffle when over the limit — non-deterministic selection. The validator cannot reproduce the shuffle
+    // and doesn't need to; it matches against the eligible set regardless of order.
+    if (mandatory_specs.size() > nMandatoryOutputLimit) {
+        Shuffle(mandatory_specs.begin(), mandatory_specs.end(), FastRandomContext());
+    }
+
+    // If the number of voluntary sidestaking allocation entries exceeds the remaining output capacity, then
+    // shuffle the list to support sidestaking with more than the available number of entries. This is a super
+    // simple solution but has some disadvantages. If the person made a mistake and has the entries in the config
+    // file add up to more than 100%, then those entries resulting in a cumulative total over 100% will always be
+    // excluded, not just randomly excluded, because the cumulative check is done in the order of the entries in
+    // the config file. This is not regarded as a big issue, because all of the entries are supposed to add up to
+    // less than or equal to 100%. Also when there are more than the available number of entries, the residual
+    // returned to the coinstake will vary when the entries are shuffled, because the total percentage of the
+    // selected entries will be randomized. No attempt to renormalize the percentages is done.
     SideStakeAlloc local_sidestakes
         = GRC::GetSideStakeRegistry().ActiveSideStakeEntries(GRC::SideStake::FilterFlag::LOCAL, false);
 
-    if (mandatory_sidestakes.size() > GetMandatorySideStakeOutputLimit(blocknew.nVersion)) {
-        Shuffle(mandatory_sidestakes.begin(), mandatory_sidestakes.end(), FastRandomContext());
-    }
-
     if (local_sidestakes.size() > nMaxSideStakeOutputs
-                                      - std::min<unsigned int>(GetMandatorySideStakeOutputLimit(blocknew.nVersion),
-                                                                                mandatory_sidestakes.size())) {
+                                      - std::min<unsigned int>(nMandatoryOutputLimit,
+                                                               mandatory_specs.size())) {
         Shuffle(local_sidestakes.begin(), local_sidestakes.end(), FastRandomContext());
     }
 
@@ -948,8 +963,9 @@ void SplitCoinStakeOutput(CBlock &blocknew, int64_t &nReward, bool &fEnableStake
     CScript SideStakeScriptPubKey;
     GRC::Allocation SumAllocation;
 
-    // Lambda for sidestake allocation. This iterates through the provided sidestake vector until either all elements processed,
-    // the maximum number of sidestake outputs is reached via the provided output_limit, or accumulated allocation will exceed 100%.
+    // Lambda for voluntary sidestake allocation. This iterates through the provided sidestake vector until either all
+    // elements are processed, the maximum number of sidestake outputs is reached via the provided output_limit, or
+    // accumulated allocation will exceed 100%. Mandatory sidestakes are allocated separately above via the shared spec.
     const auto allocate_sidestakes = [&](SideStakeAlloc sidestakes, unsigned int output_limit) {
         for (auto iterSideStake = sidestakes.begin();
              (iterSideStake != sidestakes.end())
@@ -967,13 +983,9 @@ void SplitCoinStakeOutput(CBlock &blocknew, int64_t &nReward, bool &fEnableStake
             }
 
             // Do not process a distribution that would result in an output less than 1 CENT. This will flow back into
-            // the coinstake below. Prevents dust build-up.
-            //
-            // This is extremely important for mandatory sidestakes when validating this on a receiving node.
-            // This allows the validator to retrace the dust elimination for the coinstake mandatory sidestakes, and
-            // verify that EITHER the residual number of mandatory outputs after dust elimination is less than or equal to the
-            // maximum, in which case they all must be present and valid, OR, the residual number of outputs is greater than the
-            // maximum, which means that the maximum number of mandatory outputs MUST be present and valid.
+            // the coinstake below. Prevents dust build-up. For mandatory sidestakes, dust elimination is handled by
+            // the shared spec (ComputeEligibleMandatorySidestakes) above — this check applies to voluntary sidestakes
+            // only.
             //
             // Note that nOutputsUsed is NOT incremented if the output is suppressed by this check.
             if (allocation * nReward < CENT)
@@ -1031,9 +1043,51 @@ void SplitCoinStakeOutput(CBlock &blocknew, int64_t &nReward, bool &fEnableStake
     };
 
     if (fEnableSideStaking) {
-        // Iterate through mandatory SideStake vector until either all elements processed, the maximum number of
-        // mandatory sidestake outputs is reached, or accumulated allocation will exceed 100%.
-        allocate_sidestakes(mandatory_sidestakes, GetMandatorySideStakeOutputLimit(blocknew.nVersion));
+        // Allocate mandatory sidestakes from the shared spec. The spec entries have pre-computed required_amount
+        // values from the same computation the validator uses, so miner and validator are guaranteed to agree on
+        // eligibility and amounts. The 100% allocation cap and output limit are still enforced here to integrate
+        // with the voluntary sidestake flow that follows.
+        {
+            unsigned int mandatory_count = 0;
+
+            for (const auto& spec : mandatory_specs) {
+                if (mandatory_count >= nMandatoryOutputLimit) break;
+
+                if (SumAllocation + spec.alloc > 1) {
+                    LogPrintf("WARN: SplitCoinStakeOutput: mandatory allocation percentage over 100 percent, "
+                              "ending mandatory sidestake allocations.");
+                    break;
+                }
+
+                CScript script;
+                script.SetDestination(spec.dest);
+
+                int64_t nSideStake = 0;
+
+                // For allocations ending less than 100% assign using the spec's pre-computed amount.
+                if (SumAllocation + spec.alloc < 1) {
+                    nSideStake = spec.required_amount;
+                }
+                // Handle the final sidestake differently when it brings total allocation to exactly 100%,
+                // because testing showed in corner cases the output return to the staking address could be
+                // off by one Halford.
+                else if (SumAllocation + spec.alloc == 1) {
+                    nSideStake = nRemainingStakeOutputValue - nInputValue;
+                }
+
+                blocknew.vtx[1].vout.push_back(CTxOut(nSideStake, script));
+
+                LogPrintf("SplitCoinStakeOutput: create mandatory sidestake UTXO %i value %f to address %s",
+                          nOutputsUsed,
+                          CoinToDouble(spec.required_amount),
+                          EncodeDestination(spec.dest));
+
+                SumAllocation += spec.alloc;
+                nRemainingStakeOutputValue -= nSideStake;
+                nOutputsUsed++;
+                ++mandatory_count;
+            }
+        }
 
         // Iterate through local SideStake vector until either all elements processed, the maximum number of
         // sidestake outputs is reached, or accumulated allocation will exceed 100%.
