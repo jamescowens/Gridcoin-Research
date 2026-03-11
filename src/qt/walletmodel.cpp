@@ -248,6 +248,16 @@ QFuture<WalletModel::SendCoinsReturn> WalletModel::sendCoins(const QList<SendCoi
     for (auto const& out : vCoins)
         nBalance += out.tx->vout[out.i].nValue;
 
+    bool fAnySubtractFeeFromAmount = false;
+    for (const SendCoinsRecipient& rcp : recipients)
+    {
+        if (rcp.fSubtractFeeFromAmount)
+        {
+            fAnySubtractFeeFromAmount = true;
+            break;
+        }
+    }
+
     if(total > nBalance)
     {
         promise.addResult(AmountExceedsBalance);
@@ -255,7 +265,7 @@ QFuture<WalletModel::SendCoinsReturn> WalletModel::sendCoins(const QList<SendCoi
         return promise.future();
     }
 
-    if((total + nTransactionFee) > nBalance)
+    if(!fAnySubtractFeeFromAmount && (total + nTransactionFee) > nBalance)
     {
         promise.addResult(SendCoinsReturn(AmountWithFeeExceedsBalance, nTransactionFee));
         promise.finish();
@@ -263,6 +273,11 @@ QFuture<WalletModel::SendCoinsReturn> WalletModel::sendCoins(const QList<SendCoi
     }
 
     CWalletTx wtx;
+
+    if (fAnySubtractFeeFromAmount)
+    {
+        wtx.mapValue["subtractFeeFromAmount"] = "1";
+    }
 
     if (!recipients[0].Message.isEmpty())
     {
@@ -284,11 +299,76 @@ QFuture<WalletModel::SendCoinsReturn> WalletModel::sendCoins(const QList<SendCoi
             vecSend.push_back(std::make_pair(scriptPubKey, rcp.amount));
         }
 
-		bool fCreated = wallet->CreateTransaction(vecSend, wtx, keyChange, nFeeRequired, coinControl);
+        CReserveKey keyChange(wallet);
+        int64_t nFeeRequired = 0;
+        bool fCreated = wallet->CreateTransaction(vecSend, wtx, keyChange, nFeeRequired, coinControl);
+
+        // If any recipient has "subtract fee from amount" enabled, rebuild the
+        // outputs with the fee deducted and create the transaction again.
+        // This runs even if the first pass failed (e.g. sending entire balance),
+        // since nFeeRequired is initialized to nTransactionFee and provides a
+        // reasonable starting estimate.
+        //
+        // The outer loop handles fee refinement: CreateTransaction may discover
+        // that the actual fee (based on transaction size) exceeds the initial
+        // estimate. When that happens, it updates nFeeRequired and fails because
+        // SelectCoins can't cover the higher total. We detect the fee increase,
+        // rebuild outputs with the new fee, and retry. This converges quickly
+        // since fees are monotonically non-decreasing and bounded by tx size.
+        if (fAnySubtractFeeFromAmount)
+        {
+            int nSubtractRecipients = 0;
+            for (const SendCoinsRecipient& rcp : recipients)
+            {
+                if (rcp.fSubtractFeeFromAmount) ++nSubtractRecipients;
+            }
+
+            // Retry limit prevents infinite loops in pathological cases
+            for (int nAttempt = 0; nAttempt < 10; ++nAttempt)
+            {
+                vecSend.clear();
+                int64_t nFeeRemainder = nFeeRequired % nSubtractRecipients;
+                bool fFirst = true;
+                for (const SendCoinsRecipient& rcp : recipients)
+                {
+                    CScript scriptPubKey;
+                    scriptPubKey.SetDestination(DecodeDestination(rcp.address.toStdString()));
+                    int64_t nAmount = rcp.amount;
+
+                    if (rcp.fSubtractFeeFromAmount)
+                    {
+                        nAmount -= nFeeRequired / nSubtractRecipients;
+                        // First opted-in recipient absorbs the truncation remainder
+                        if (fFirst)
+                        {
+                            nAmount -= nFeeRemainder;
+                            fFirst = false;
+                        }
+                        if (nAmount <= 0)
+                        {
+                            promise.addResult({FeeExceedsSubtractedAmount, nFeeRequired});
+                            promise.finish();
+                            return promise.future();
+                        }
+                    }
+
+                    vecSend.push_back(std::make_pair(scriptPubKey, nAmount));
+                }
+
+                int64_t nFeePrev = nFeeRequired;
+                fCreated = wallet->CreateTransaction(vecSend, wtx, keyChange, nFeeRequired, coinControl);
+
+                if (fCreated || nFeeRequired <= nFeePrev)
+                    break;
+
+                // Fee increased (tx was larger than estimated) — retry with
+                // the updated fee subtracted from recipient amounts.
+            }
+        }
 
         if(!fCreated)
         {
-            if((total + nFeeRequired) > nBalance) // FIXME: could cause collisions in the future
+            if(!fAnySubtractFeeFromAmount && (total + nFeeRequired) > nBalance)
             {
                 promise.addResult(SendCoinsReturn(AmountWithFeeExceedsBalance, nFeeRequired));
                 promise.finish();
