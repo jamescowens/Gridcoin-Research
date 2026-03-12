@@ -7,6 +7,8 @@
 
 #include "primitives/transaction.h"
 
+#include <vector>
+
 //! Scaffolding for CMutableTransaction — a mutable transaction builder type.
 //!
 //! This is a temporary stand-in that will be replaced by the real

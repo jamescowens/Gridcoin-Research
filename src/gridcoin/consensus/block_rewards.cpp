@@ -463,7 +463,10 @@ bool BlockRewardRules::CheckReward(
             // v13+ mandatory sidestake validation.
             if (m_block_version >= 13) {
                 CTxDestination coinstake_dest;
-                ExtractDestination(coinstake.vout[1].scriptPubKey, coinstake_dest);
+                if (!ExtractDestination(coinstake.vout[1].scriptPubKey, coinstake_dest)) {
+                    error_out = "Coinstake destination is invalid";
+                    return false;
+                }
 
                 std::string ss_error;
                 if (!ValidateMandatorySidestakeOutputs(
@@ -566,7 +569,13 @@ bool BlockRewardRules::CheckMRCRewards(
                         MRC mrc = contract.CopyPayloadAs<MRC>();
 
                         if (const CpidOption cpid = mrc.m_mining_id.TryCpid()) {
-                            CBlockIndex* mrc_index = mapBlockIndex[mrc.m_last_block_hash];
+                            const auto mrc_it = mapBlockIndex.find(mrc.m_last_block_hash);
+                            if (mrc_it == mapBlockIndex.end() || mrc_it->second == nullptr) {
+                                error_out = "MRC refers to unknown last-block hash";
+                                return false;
+                            }
+
+                            CBlockIndex* mrc_index = mrc_it->second;
 
                             const BeaconOption beacon = GetBeaconRegistry().TryActive(
                                 *cpid, mrc_index->nTime);

@@ -105,7 +105,17 @@ void LogShadowResult(
 
 void GRC::InitShadowValidator()
 {
-    g_consensus_impl = gArgs.GetArg("-consensusrulesimpl", "old");
+    std::string impl = gArgs.GetArg("-consensusrulesimpl", "old");
+
+    if (impl == "old" || impl.empty()) {
+        g_consensus_impl = "old";
+    } else if (impl == "new") {
+        g_consensus_impl = "new";
+    } else {
+        LogPrintf("ERROR: Invalid value for -consensusrulesimpl: '%s'. Defaulting to 'old'.", impl);
+        g_consensus_impl = "old";
+    }
+
     g_shadow_enabled = gArgs.GetBoolArg("-consensusrulesshadow", false);
 
     if (g_shadow_enabled) {
