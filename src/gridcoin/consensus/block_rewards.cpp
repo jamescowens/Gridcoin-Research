@@ -209,16 +209,45 @@ bool BlockRewardRules::ValidateMandatorySidestakeOutputs(
         }
 
         // Scan eligible specs for an unmatched entry matching this output by
-        // both destination AND exact amount. A voluntary sidestake to the same
-        // address will have a different amount; the mandatory output has the
-        // precisely computed value (allocation × total_owed_to_staker). This
-        // correlation by address + amount distinguishes mandatory from voluntary
-        // outputs to the same destination.
+        // destination and amount >= required_amount.
+        //
+        // Why >= instead of ==:
+        //
+        // The >= preserves compatibility with the original ClaimValidator and
+        // provides tolerance for the following edge case:
+        //
+        // Remainder true-up: When mandatory allocations sum to exactly 100%
+        // (theoretically possible if MaxMandatorySideStakeTotalAlloc is
+        // raised from the current 25%), the miner assigns the last mandatory
+        // output the remainder (nRemainingStakeOutputValue - nInputValue)
+        // rather than spec.required_amount, which may be a few Halfords
+        // larger due to integer rounding. An exact == match would reject
+        // these blocks, creating a consensus-breaking divergence.
+        //
+        // Why >= does not cause overcounting or false validation:
+        //
+        // The matched[] array ensures each spec matches at most one output,
+        // so validated is bounded by eligible.size() == expected. Overcounting
+        // is impossible. However, >= can cause a "match steal": if a voluntary
+        // sidestake to the same mandatory address appears before the actual
+        // mandatory output in vout, and its amount exceeds required_amount,
+        // the voluntary output claims the spec slot. The actual mandatory
+        // output then goes unmatched. This is harmless because:
+        //   - validated still equals expected (the spec was matched).
+        //   - The mandatory address received at least the required amount
+        //     (the "stealing" output paid MORE than required).
+        //   - The actual mandatory output also exists, so the address was
+        //     paid twice — once by mandatory, once by voluntary.
+        //
+        // In the coincidence case where mandatory and voluntary have identical
+        // allocations (same computed amount), whichever output appears first
+        // claims the spec. The second is unmatched. validated == expected,
+        // so validation passes regardless of output ordering.
         for (unsigned int j = 0; j < eligible.size(); ++j) {
             if (matched[j]) continue;
             if (eligible[j].dest != output_dest) continue;
 
-            if (coinstake.vout[i].nValue == eligible[j].required_amount) {
+            if (coinstake.vout[i].nValue >= eligible[j].required_amount) {
                 matched[j] = true;
                 ++validated;
                 break;
