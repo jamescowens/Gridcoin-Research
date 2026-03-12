@@ -615,8 +615,7 @@ bool BlockRewardRules::CheckMRCRewards(
                                 mrc_rewards += mrc_reward;
                                 mrc_fees += mrc.m_fee;
                                 mrc_staker_fees += mrc.m_fee
-                                    - mrc.m_fee * foundation_fee_fraction.GetNumerator()
-                                                / foundation_fee_fraction.GetDenominator();
+                                    - (static_cast<Allocation>(foundation_fee_fraction) * mrc.m_fee).ToCAmount();
 
                                 ++mrc_outputs;
                             } // beacon
