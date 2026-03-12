@@ -1493,10 +1493,9 @@ private:
         }
 
         // If we arrive here, the MRCRewards are valid.
-
-        // Signal MRCChanged because this method is called from ConnectBlock and the successful validation of an MRC
-        // indicates an MRC state change.
-        uiInterface.MRCChanged();
+        // NOTE: MRCChanged signal is emitted by GridcoinConnectBlock after
+        // the authoritative check passes, not here. This avoids duplicate
+        // signals when ClaimValidator runs as the shadow implementation.
 
         return true;
     }
@@ -1629,11 +1628,11 @@ bool GridcoinConnectBlock(
                 return false;
             }
 
-            // When BlockRewardRules is authoritative, signal MRCChanged here
-            // (ClaimValidator signals it internally in CheckMRCRewards, but
-            // BlockRewardRules intentionally avoids UI side effects so that
-            // shadow mode stays clean).
-            if (GRC::IsNewImplAuthoritative() && !claim.m_mrc_tx_map.empty()) {
+            // Signal MRCChanged after the authoritative check passes. This
+            // lives here rather than inside ClaimValidator/BlockRewardRules so
+            // it fires exactly once regardless of which implementation is
+            // authoritative and whether shadow mode is running the other.
+            if (!claim.m_mrc_tx_map.empty()) {
                 uiInterface.MRCChanged();
             }
         }
