@@ -176,6 +176,18 @@ public:
         unsigned int mrc_start_index,
         std::string& error_out) const;
 
+    //! Overload accepting an explicit list of active mandatory sidestakes
+    //! instead of querying the global registry. Enables direct unit testing
+    //! of the validation logic with controlled inputs.
+    //!
+    bool ValidateMandatorySidestakeOutputs(
+        const CTransaction& coinstake,
+        const CTxDestination& coinstake_dest,
+        CAmount total_owed_to_staker,
+        unsigned int mrc_start_index,
+        std::string& error_out,
+        const std::vector<SideStake_ptr>& active_sidestakes) const;
+
 private:
     const CBlockIndex* m_pindex_prev;
     int m_block_version;

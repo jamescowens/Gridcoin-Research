@@ -180,10 +180,11 @@ bool BlockRewardRules::ValidateMandatorySidestakeOutputs(
     const CTxDestination& coinstake_dest,
     CAmount total_owed_to_staker,
     unsigned int mrc_start_index,
-    std::string& error_out) const
+    std::string& error_out,
+    const std::vector<SideStake_ptr>& active_sidestakes) const
 {
     auto eligible = FilterEligible(
-        ComputeEligibleMandatorySidestakes(coinstake_dest, total_owed_to_staker));
+        ComputeEligibleMandatorySidestakes(coinstake_dest, total_owed_to_staker, active_sidestakes));
 
     unsigned int output_limit = GetMandatorySideStakeOutputLimit(m_block_version);
     unsigned int expected = std::min<unsigned int>(output_limit, eligible.size());
@@ -227,7 +228,7 @@ bool BlockRewardRules::ValidateMandatorySidestakeOutputs(
         // Why >= does not cause overcounting or false validation:
         //
         // The matched[] array ensures each spec matches at most one output,
-        // so validated is bounded by eligible.size() == expected. Overcounting
+        // so validated is bounded by expected (= min(output_limit, eligible.size())). Overcounting
         // is impossible. However, >= can cause a "match steal": if a voluntary
         // sidestake to the same mandatory address appears before the actual
         // mandatory output in vout, and its amount exceeds required_amount,
@@ -291,13 +292,28 @@ bool BlockRewardRules::ValidateMandatorySidestakeOutputs(
     return true;
 }
 
+bool BlockRewardRules::ValidateMandatorySidestakeOutputs(
+    const CTransaction& coinstake,
+    const CTxDestination& coinstake_dest,
+    CAmount total_owed_to_staker,
+    unsigned int mrc_start_index,
+    std::string& error_out) const
+{
+    auto active = GetSideStakeRegistry().ActiveSideStakeEntries(SideStake::FilterFlag::MANDATORY, false);
+    return ValidateMandatorySidestakeOutputs(
+        coinstake, coinstake_dest, total_owed_to_staker, mrc_start_index, error_out, active);
+}
+
 // =============================================================================
 // Full claim validation (replaces ClaimValidator::Check())
 // =============================================================================
 
 bool BlockRewardRules::Check(std::string& error_out) const
 {
-    assert(m_block != nullptr); // Full validation constructor required.
+    if (!m_block) {
+        error_out = "BlockRewardRules::Check() requires a block (constructed with full validation state)";
+        return false;
+    }
 
     const Claim& claim = m_block->GetClaim();
 

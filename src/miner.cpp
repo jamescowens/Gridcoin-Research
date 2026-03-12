@@ -911,15 +911,20 @@ void SplitCoinStakeOutput(CBlock &blocknew, int64_t &nReward, bool &fEnableStake
     // dust/address filtering that previously lived only here, eliminating the class of drift bugs where the
     // miner and validator made different eligibility decisions (see #2848).
     CTxDestination coinstake_dest;
-    if (!ExtractDestination(CoinStakeScriptPubKey, coinstake_dest)) {
+    bool have_coinstake_dest = ExtractDestination(CoinStakeScriptPubKey, coinstake_dest);
+    if (!have_coinstake_dest) {
         LogPrintf("WARN: SplitCoinStakeOutput: could not extract coinstake destination, "
                   "skipping mandatory sidestake spec computation.");
     }
 
     GRC::BlockRewardRules rules(pindexBest, blocknew.nVersion, blocknew.nTime);
 
-    auto mandatory_specs = GRC::BlockRewardRules::FilterEligible(
-        rules.ComputeEligibleMandatorySidestakes(coinstake_dest, nReward));
+    std::vector<GRC::BlockRewardRules::MandatorySidestakeSpec> mandatory_specs;
+
+    if (have_coinstake_dest) {
+        mandatory_specs = GRC::BlockRewardRules::FilterEligible(
+            rules.ComputeEligibleMandatorySidestakes(coinstake_dest, nReward));
+    }
 
     unsigned int nMandatoryOutputLimit = GetMandatorySideStakeOutputLimit(blocknew.nVersion);
 

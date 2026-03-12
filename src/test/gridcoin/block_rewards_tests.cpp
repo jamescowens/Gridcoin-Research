@@ -426,7 +426,7 @@ BOOST_AUTO_TEST_CASE(validate_voluntary_sidestake_to_mandatory_address)
     // pre-MRC in this test).
     std::string error;
     bool pass = rules.ValidateMandatorySidestakeOutputs(
-        coinstake, coinstake_dest, total_owed, 4, error);
+        coinstake, coinstake_dest, total_owed, 4, error, active);
 
     BOOST_CHECK_MESSAGE(pass, "Expected pass but got: " + error);
 }
@@ -459,7 +459,7 @@ BOOST_AUTO_TEST_CASE(validate_voluntary_sidestake_larger_than_mandatory)
 
     std::string error;
     bool pass = rules.ValidateMandatorySidestakeOutputs(
-        coinstake, coinstake_dest, total_owed, 4, error);
+        coinstake, coinstake_dest, total_owed, 4, error, active);
 
     BOOST_CHECK_MESSAGE(pass, "Expected pass but got: " + error);
 }
@@ -469,10 +469,6 @@ BOOST_AUTO_TEST_CASE(validate_fails_when_only_voluntary_present)
     // If only the voluntary output exists at less than the required amount,
     // the >= scan finds zero matches (voluntary_amount < required_amount).
     // With one eligible spec, expected=1 but validated=0 → fail.
-    //
-    // ValidateMandatorySidestakeOutputs queries the global registry internally,
-    // which is empty in unit tests. Verify the matching logic directly: scan
-    // the coinstake outputs against the computed spec and confirm no match.
     GRC::BlockRewardRules rules(nullptr, 13, 0);
 
     CTxDestination coinstake_dest = MakeTestDest(1);
@@ -490,34 +486,12 @@ BOOST_AUTO_TEST_CASE(validate_fails_when_only_voluntary_present)
         {ss_dest, voluntary_amount}  // vout[2]: voluntary only (wrong amount)
     });
 
-    auto specs = rules.ComputeEligibleMandatorySidestakes(coinstake_dest, total_owed, active);
-    auto eligible = GRC::BlockRewardRules::FilterEligible(specs);
+    std::string error;
+    bool pass = rules.ValidateMandatorySidestakeOutputs(
+        coinstake, coinstake_dest, total_owed, 3, error, active);
 
-    BOOST_REQUIRE_EQUAL(eligible.size(), 1u);
-
-    // Scan outputs the same way ValidateMandatorySidestakeOutputs does:
-    // exact amount match required. The voluntary output has the wrong amount.
-    unsigned int validated = 0;
-    for (unsigned int i = 1; i < coinstake.vout.size(); ++i) {
-        CTxDestination output_dest;
-        if (!ExtractDestination(coinstake.vout[i].scriptPubKey, output_dest)) continue;
-        if (output_dest == coinstake_dest) continue;
-
-        for (unsigned int j = 0; j < eligible.size(); ++j) {
-            if (eligible[j].dest == output_dest
-                && coinstake.vout[i].nValue == eligible[j].required_amount)
-            {
-                ++validated;
-                break;
-            }
-        }
-    }
-
-    unsigned int output_limit = GetMandatorySideStakeOutputLimit(13);
-    unsigned int expected = std::min<unsigned int>(output_limit, eligible.size());
-
-    BOOST_CHECK_EQUAL(validated, 0u);
-    BOOST_CHECK(validated < expected);
+    BOOST_CHECK(!pass);
+    BOOST_CHECK(!error.empty());
 }
 
 // =============================================================================
