@@ -1576,13 +1576,16 @@ bool GridcoinConnectBlock(
             std::string shadow_error;
             int64_t shadow_ms = 0;
 
+            const bool shadow_enabled = GRC::IsShadowValidationEnabled();
+
             if (GRC::IsNewImplAuthoritative()) {
                 // BlockRewardRules is authoritative.
-                MilliTimer auth_timer;
+                int64_t t_start = shadow_enabled ? GetTimeMillis() : 0;
 
                 GRC::BlockRewardRules rules(block, pindex, stake_value_in, total_claimed, fees, out_coin_age);
                 auth_pass = rules.Check(auth_error);
-                auth_ms = auth_timer.GetTimes("auth_check").elapsed_time;
+
+                if (shadow_enabled) auth_ms = GetTimeMillis() - t_start;
 
                 if (!auth_pass) {
                     block.DoS(10, error("%s: BlockRewardRules::Check FAILED at height %d: %s",
@@ -1590,10 +1593,10 @@ bool GridcoinConnectBlock(
                 }
 
                 // Shadow: run old ClaimValidator for comparison.
-                if (GRC::IsShadowValidationEnabled()) {
-                    MilliTimer shadow_timer;
+                if (shadow_enabled) {
+                    int64_t t_shadow = GetTimeMillis();
                     shadow_pass = ClaimValidator(block, pindex, stake_value_in, total_claimed, fees, out_coin_age).Check();
-                    shadow_ms = shadow_timer.GetTimes("shadow_check").elapsed_time;
+                    shadow_ms = GetTimeMillis() - t_shadow;
 
                     if (!shadow_pass) {
                         shadow_error = "ClaimValidator::Check() failed (see debug log for details)";
@@ -1601,21 +1604,21 @@ bool GridcoinConnectBlock(
                 }
             } else {
                 // ClaimValidator is authoritative (default).
-                MilliTimer auth_timer;
+                int64_t t_start = shadow_enabled ? GetTimeMillis() : 0;
                 auth_pass = ClaimValidator(block, pindex, stake_value_in, total_claimed, fees, out_coin_age).Check();
-                auth_ms = auth_timer.GetTimes("auth_check").elapsed_time;
+                if (shadow_enabled) auth_ms = GetTimeMillis() - t_start;
 
                 // Shadow: run BlockRewardRules for comparison.
-                if (GRC::IsShadowValidationEnabled()) {
-                    MilliTimer shadow_timer;
+                if (shadow_enabled) {
+                    int64_t t_shadow = GetTimeMillis();
 
                     GRC::BlockRewardRules rules(block, pindex, stake_value_in, total_claimed, fees, out_coin_age);
                     shadow_pass = rules.Check(shadow_error);
-                    shadow_ms = shadow_timer.GetTimes("shadow_check").elapsed_time;
+                    shadow_ms = GetTimeMillis() - t_shadow;
                 }
             }
 
-            if (GRC::IsShadowValidationEnabled()) {
+            if (shadow_enabled) {
                 GRC::LogShadowComparison(pindex->nHeight, pindex->GetBlockHash(),
                                          auth_pass, shadow_pass,
                                          auth_error, shadow_error,

@@ -70,30 +70,32 @@ void LogShadowResult(
     }
 
     // Write to structured log file if open.
-    if (g_shadow_log_file.is_open()) {
+    {
         std::lock_guard<std::mutex> lock(g_shadow_log_mutex);
 
-        g_shadow_log_file
-            << "{\"height\":" << height
-            << ",\"block_hash\":\"" << block_hash.ToString() << "\""
-            << ",\"component\":\"" << component << "\""
-            << ",\"auth_impl\":\"" << g_consensus_impl << "\""
-            << ",\"auth_pass\":" << (auth_pass ? "true" : "false")
-            << ",\"shadow_pass\":" << (shadow_pass ? "true" : "false");
+        if (g_shadow_log_file.is_open()) {
+            g_shadow_log_file
+                << "{\"height\":" << height
+                << ",\"block_hash\":\"" << block_hash.ToString() << "\""
+                << ",\"component\":\"" << component << "\""
+                << ",\"auth_impl\":\"" << g_consensus_impl << "\""
+                << ",\"auth_pass\":" << (auth_pass ? "true" : "false")
+                << ",\"shadow_pass\":" << (shadow_pass ? "true" : "false");
 
-        if (!auth_error.empty()) {
-            g_shadow_log_file << ",\"auth_error\":\"" << JsonEscape(auth_error) << "\"";
+            if (!auth_error.empty()) {
+                g_shadow_log_file << ",\"auth_error\":\"" << JsonEscape(auth_error) << "\"";
+            }
+            if (!shadow_error.empty()) {
+                g_shadow_log_file << ",\"shadow_error\":\"" << JsonEscape(shadow_error) << "\"";
+            }
+
+            g_shadow_log_file
+                << ",\"auth_ms\":" << auth_ms
+                << ",\"shadow_ms\":" << shadow_ms
+                << "}\n";
+
+            g_shadow_log_file.flush();
         }
-        if (!shadow_error.empty()) {
-            g_shadow_log_file << ",\"shadow_error\":\"" << JsonEscape(shadow_error) << "\"";
-        }
-
-        g_shadow_log_file
-            << ",\"auth_ms\":" << auth_ms
-            << ",\"shadow_ms\":" << shadow_ms
-            << "}\n";
-
-        g_shadow_log_file.flush();
     }
 }
 
@@ -168,6 +170,8 @@ void GRC::LogShadowComparison(
 
 void GRC::ShutdownShadowValidator()
 {
+    std::lock_guard<std::mutex> lock(g_shadow_log_mutex);
+
     if (g_shadow_log_file.is_open()) {
         g_shadow_log_file.close();
         LogPrintf("ShadowValidator: closed shadow log file");
