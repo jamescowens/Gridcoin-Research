@@ -395,6 +395,7 @@ static const CRPCCommand vRPCCommands[] =
     { "listprotocolentries",     &listprotocolentries,     cat_developer     },
     { "listresearcheraccounts",  &listresearcheraccounts,  cat_developer     },
     { "listscrapers",            &listscrapers,            cat_developer     },
+    { "listsidestakes",          &listsidestakes,           cat_developer     },
     { "listmandatorysidestakes", &listmandatorysidestakes, cat_developer     },
     { "listsettings",            &listsettings,            cat_developer     },
     { "logging",                 &logging,                 cat_developer     },
