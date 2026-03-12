@@ -1578,7 +1578,7 @@ bool GridcoinConnectBlock(
 
             if (GRC::IsNewImplAuthoritative()) {
                 // BlockRewardRules is authoritative.
-                MilliTimer auth_timer("auth_check", false);
+                MilliTimer auth_timer;
 
                 GRC::BlockRewardRules rules(block, pindex, stake_value_in, total_claimed, fees, out_coin_age);
                 auth_pass = rules.Check(auth_error);
@@ -1591,7 +1591,7 @@ bool GridcoinConnectBlock(
 
                 // Shadow: run old ClaimValidator for comparison.
                 if (GRC::IsShadowValidationEnabled()) {
-                    MilliTimer shadow_timer("shadow_check", false);
+                    MilliTimer shadow_timer;
                     shadow_pass = ClaimValidator(block, pindex, stake_value_in, total_claimed, fees, out_coin_age).Check();
                     shadow_ms = shadow_timer.GetTimes("shadow_check").elapsed_time;
 
@@ -1601,13 +1601,13 @@ bool GridcoinConnectBlock(
                 }
             } else {
                 // ClaimValidator is authoritative (default).
-                MilliTimer auth_timer("auth_check", false);
+                MilliTimer auth_timer;
                 auth_pass = ClaimValidator(block, pindex, stake_value_in, total_claimed, fees, out_coin_age).Check();
                 auth_ms = auth_timer.GetTimes("auth_check").elapsed_time;
 
                 // Shadow: run BlockRewardRules for comparison.
                 if (GRC::IsShadowValidationEnabled()) {
-                    MilliTimer shadow_timer("shadow_check", false);
+                    MilliTimer shadow_timer;
 
                     GRC::BlockRewardRules rules(block, pindex, stake_value_in, total_claimed, fees, out_coin_age);
                     shadow_pass = rules.Check(shadow_error);
@@ -1624,6 +1624,14 @@ bool GridcoinConnectBlock(
 
             if (!auth_pass) {
                 return false;
+            }
+
+            // When BlockRewardRules is authoritative, signal MRCChanged here
+            // (ClaimValidator signals it internally in CheckMRCRewards, but
+            // BlockRewardRules intentionally avoids UI side effects so that
+            // shadow mode stays clean).
+            if (GRC::IsNewImplAuthoritative() && !claim.m_mrc_tx_map.empty()) {
+                uiInterface.MRCChanged();
             }
         }
 

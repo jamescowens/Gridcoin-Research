@@ -301,7 +301,10 @@ BOOST_AUTO_TEST_CASE(validate_passes_with_correct_outputs)
 
 BOOST_AUTO_TEST_CASE(validate_passes_with_overpayment)
 {
-    // Validator uses >= not ==, so overpayment should pass.
+    // Validator uses >= not ==, so overpayment should pass. This verifies
+    // the spec amount relationship directly. The full ValidateMandatory-
+    // SidestakeOutputs call is exercised in the coincidence tests below,
+    // which pass an explicit active list to ComputeEligibleMandatorySidestakes.
     GRC::BlockRewardRules rules(nullptr, 13, 0);
 
     CTxDestination coinstake_dest = MakeTestDest(1);
@@ -327,6 +330,7 @@ BOOST_AUTO_TEST_CASE(validate_passes_with_overpayment)
 
 BOOST_AUTO_TEST_CASE(validate_fails_with_underpayment)
 {
+    // Verify that an underpayment does not satisfy the >= threshold.
     GRC::BlockRewardRules rules(nullptr, 13, 0);
 
     CTxDestination coinstake_dest = MakeTestDest(1);
@@ -417,8 +421,8 @@ BOOST_AUTO_TEST_CASE(validate_voluntary_sidestake_to_mandatory_address)
     BOOST_REQUIRE_EQUAL(eligible.size(), 1u);
     BOOST_CHECK_EQUAL(eligible[0].required_amount, mandatory_required);
 
-    // The validator should match vout[3] (exact amount) and skip vout[2]
-    // (voluntary — different amount). mrc_start_index = 4 (all outputs are
+    // The validator should match vout[3] (>= required amount) and skip vout[2]
+    // (voluntary — less than required). mrc_start_index = 4 (all outputs are
     // pre-MRC in this test).
     std::string error;
     bool pass = rules.ValidateMandatorySidestakeOutputs(
@@ -430,8 +434,10 @@ BOOST_AUTO_TEST_CASE(validate_voluntary_sidestake_to_mandatory_address)
 BOOST_AUTO_TEST_CASE(validate_voluntary_sidestake_larger_than_mandatory)
 {
     // The voluntary sidestake could also be LARGER than the mandatory amount.
-    // With exact-match correlation, it should still not be confused with the
-    // mandatory output.
+    // With >= matching the voluntary output may "steal" the spec match, but
+    // validation still passes because the mandatory address received at least
+    // the required amount. See the detailed comment in
+    // ValidateMandatorySidestakeOutputs.
     GRC::BlockRewardRules rules(nullptr, 13, 0);
 
     CTxDestination coinstake_dest = MakeTestDest(1);
@@ -460,8 +466,8 @@ BOOST_AUTO_TEST_CASE(validate_voluntary_sidestake_larger_than_mandatory)
 
 BOOST_AUTO_TEST_CASE(validate_fails_when_only_voluntary_present)
 {
-    // If only the voluntary output exists (wrong amount) and no output matches
-    // the mandatory required amount, the exact-match scan finds zero matches.
+    // If only the voluntary output exists at less than the required amount,
+    // the >= scan finds zero matches (voluntary_amount < required_amount).
     // With one eligible spec, expected=1 but validated=0 → fail.
     //
     // ValidateMandatorySidestakeOutputs queries the global registry internally,

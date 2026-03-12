@@ -13,6 +13,24 @@ using namespace GRC;
 
 namespace {
 
+//! Escape a string for safe inclusion in a JSON string value.
+std::string JsonEscape(const std::string& s)
+{
+    std::string out;
+    out.reserve(s.size());
+    for (char c : s) {
+        switch (c) {
+        case '"':  out += "\\\""; break;
+        case '\\': out += "\\\\"; break;
+        case '\n': out += "\\n";  break;
+        case '\r': out += "\\r";  break;
+        case '\t': out += "\\t";  break;
+        default:   out += c;      break;
+        }
+    }
+    return out;
+}
+
 //! Implementation selector: "old" or "new".
 std::string g_consensus_impl = "old";
 
@@ -40,14 +58,14 @@ void LogShadowResult(
     if (mismatch) {
         LogPrintf("ERROR: ShadowValidator: MISMATCH at height %d hash %s component=%s: "
                   "auth(impl=%s)=%d shadow=%d auth_error='%s' shadow_error='%s' "
-                  "auth_ms=%d shadow_ms=%d",
+                  "auth_ms=%" PRId64 " shadow_ms=%" PRId64,
                   height, block_hash.ToString(), component,
                   g_consensus_impl, auth_pass, shadow_pass,
                   auth_error, shadow_error,
                   auth_ms, shadow_ms);
     } else {
         LogPrint(BCLog::LogFlags::VERBOSE, "INFO: ShadowValidator: height %d component=%s match OK | "
-                  "auth_ms=%d shadow_ms=%d",
+                  "auth_ms=%" PRId64 " shadow_ms=%" PRId64,
                   height, component, auth_ms, shadow_ms);
     }
 
@@ -64,10 +82,10 @@ void LogShadowResult(
             << ",\"shadow_pass\":" << (shadow_pass ? "true" : "false");
 
         if (!auth_error.empty()) {
-            g_shadow_log_file << ",\"auth_error\":\"" << auth_error << "\"";
+            g_shadow_log_file << ",\"auth_error\":\"" << JsonEscape(auth_error) << "\"";
         }
         if (!shadow_error.empty()) {
-            g_shadow_log_file << ",\"shadow_error\":\"" << shadow_error << "\"";
+            g_shadow_log_file << ",\"shadow_error\":\"" << JsonEscape(shadow_error) << "\"";
         }
 
         g_shadow_log_file
