@@ -38,11 +38,13 @@ public:
         INVALID_ADDRESS,        /**< Unparseable address */
         DUPLICATE_ADDRESS,      /**< Address already in address book */
         WALLET_UNLOCK_FAILURE,  /**< Wallet could not be unlocked to create new receiving address */
-        KEY_GENERATION_FAILURE  /**< Generating a new public key for a receiving address failed */
+        KEY_GENERATION_FAILURE, /**< Generating a new public key for a receiving address failed */
+        NOT_MINE                /**< Address is not owned by this wallet */
     };
 
-    static const QString Send;      /**< Specifies send address */
-    static const QString Receive;   /**< Specifies receive address */
+    static const QString Send;              /**< Specifies send address */
+    static const QString Receive;           /**< Specifies receive address */
+    static const QString ReceiveExisting;   /**< Specifies existing receive address */
 
     /** @name Methods overridden from QAbstractTableModel
         @{*/
@@ -60,6 +62,10 @@ public:
        Returns the added address on success, and an empty string otherwise.
      */
     QString addRow(const QString &type, const QString &label, const QString &address);
+
+    /* Return list of owned addresses not yet in the address book.
+     */
+    QStringList unbookedReceiveAddresses() const;
 
     /* Look up label for address in address book, if not found return empty string.
      */

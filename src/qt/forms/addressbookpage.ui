@@ -136,6 +136,20 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="addExistingButton">
+        <property name="toolTip">
+         <string>Add an existing address owned by this wallet to the address book</string>
+        </property>
+        <property name="text">
+         <string>Add &amp;Existing</string>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>:/icons/add</normaloff>:/icons/add</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="copyToClipboardButton">
         <property name="toolTip">
          <string>Copy the currently selected address to the system clipboard</string>
