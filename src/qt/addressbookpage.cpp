@@ -61,11 +61,13 @@ AddressBookPage::AddressBookPage(Mode mode, Tabs tab, QWidget* parent)
         ui->explanationLabel->setVisible(false);
         ui->deleteButton->setVisible(true);
         ui->signMessageButton->setVisible(false);
+        ui->addExistingButton->setVisible(false);
         break;
     case ReceivingTab:
         ui->deleteButton->setVisible(false);
         ui->verifyMessageButton->setVisible(false);
         ui->signMessageButton->setVisible(true);
+        ui->addExistingButton->setVisible(true);
         break;
     }
 
@@ -232,6 +234,18 @@ void AddressBookPage::on_newAddressButton_clicked()
             tab == SendingTab ?
             EditAddressDialog::NewSendingAddress :
             EditAddressDialog::NewReceivingAddress, this);
+    dlg.setModel(model);
+    if(dlg.exec())
+    {
+        newAddressToSelect = dlg.getAddress();
+    }
+}
+
+void AddressBookPage::on_addExistingButton_clicked()
+{
+    if(!model)
+        return;
+    EditAddressDialog dlg(EditAddressDialog::AddExistingReceivingAddress, this);
     dlg.setModel(model);
     if(dlg.exec())
     {

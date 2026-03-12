@@ -4,6 +4,7 @@
 #include <QDialog>
 
 QT_BEGIN_NAMESPACE
+class QComboBox;
 class QDataWidgetMapper;
 QT_END_NAMESPACE
 
@@ -23,7 +24,8 @@ public:
         NewReceivingAddress,
         NewSendingAddress,
         EditReceivingAddress,
-        EditSendingAddress
+        EditSendingAddress,
+        AddExistingReceivingAddress
     };
 
     explicit EditAddressDialog(Mode mode, QWidget* parent = nullptr);
@@ -40,8 +42,10 @@ public slots:
 
 private:
     bool saveCurrentRow();
+    QString getDisplayAddress() const;
 
     Ui::EditAddressDialog *ui;
+    QComboBox *addressCombo;
     QDataWidgetMapper *mapper;
     Mode mode;
     AddressTableModel *model;

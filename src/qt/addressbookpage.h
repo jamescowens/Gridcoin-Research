@@ -71,6 +71,7 @@ private:
 private slots:
     void on_deleteButton_clicked();
     void on_newAddressButton_clicked();
+    void on_addExistingButton_clicked();
     /** Copy address of currently selected address entry to clipboard */
     void on_copyToClipboardButton_clicked();
     void on_signMessageButton_clicked();
