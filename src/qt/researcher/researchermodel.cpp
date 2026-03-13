@@ -23,6 +23,7 @@
 #include "qt/researcher/researchermodel.h"
 #include "qt/researcher/researcherwizard.h"
 
+#include <QApplication>
 #include <QIcon>
 #include <QMessageBox>
 #include <QTimer>
@@ -202,6 +203,15 @@ QIcon ResearcherModel::mapBeaconStatusIcon(const BeaconStatus status) const
 void ResearcherModel::showWizard(WalletModel* wallet_model)
 {
     if (m_wizard_open) {
+        return;
+    }
+
+    if (outOfSync()) {
+        QMessageBox::warning(QApplication::activeWindow(),
+            QObject::tr("Wallet Not In Sync"),
+            QObject::tr("The wallet must be in sync to manage beacons. Please wait "
+               "for synchronization to complete before using the researcher "
+               "and beacon configuration wizard."));
         return;
     }
 

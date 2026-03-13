@@ -1399,6 +1399,10 @@ UniValue advertisebeacon(const UniValue& params, bool fHelp)
                 "\n"
                 "Advertise a beacon (Requires wallet to be fully unlocked)\n");
 
+    if (OutOfSyncByAge()) {
+        throw JSONRPCError(RPC_MISC_ERROR, "The wallet must be in sync to advertise a beacon.");
+    }
+
     EnsureWalletIsUnlocked();
 
     const bool force = params.size() >= 1 ? params[0].get_bool() : false;
@@ -1538,6 +1542,10 @@ UniValue advertisebeaconv3(const UniValue& params, bool fHelp)
                 "  wallet with your original beacon keys but not necessary otherwise.\n"
                 "\n"
                 "Requires wallet to be fully unlocked.\n");
+
+    if (OutOfSyncByAge()) {
+        throw JSONRPCError(RPC_MISC_ERROR, "The wallet must be in sync to advertise a beacon.");
+    }
 
     EnsureWalletIsUnlocked();
 
@@ -1679,6 +1687,10 @@ UniValue revokebeacon(const UniValue& params, bool fHelp)
                 "[cpid] CPID associated with the beacon to revoke. If omitted, uses the current CPID.\n"
                 "\n"
                 "Revoke a beacon (Requires wallet to be fully unlocked)\n");
+
+    if (OutOfSyncByAge()) {
+        throw JSONRPCError(RPC_MISC_ERROR, "The wallet must be in sync to revoke a beacon.");
+    }
 
     EnsureWalletIsUnlocked();
 
