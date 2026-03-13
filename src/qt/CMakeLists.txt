@@ -312,6 +312,10 @@ if(UNIX AND NOT APPLE)
     install(FILES "${CMAKE_SOURCE_DIR}/doc/gridcoinresearch.1" COMPONENT gui
         DESTINATION "${CMAKE_INSTALL_MANDIR}/man1"
     )
+    install(FILES "${CMAKE_SOURCE_DIR}/contrib/completions/bash/gridcoinresearch.bash" COMPONENT gui
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/bash-completion/completions"
+        RENAME "gridcoinresearch"
+    )
     execute_process(
         COMMAND git log -1 --format=%cs
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
