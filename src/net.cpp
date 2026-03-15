@@ -536,6 +536,11 @@ bool CNode::Misbehaving(int howmuch)
 
 int CNode::GetMisbehavior() const
 {
+    return GetMisbehaviorAddr(addr);
+}
+
+int CNode::GetMisbehaviorAddr(const CAddress& addr)
+{
     int nMisbehavior = 0;
 
     LOCK(cs_mapMisbehavior);
@@ -561,6 +566,32 @@ int CNode::GetMisbehavior() const
     }
 
     return nMisbehavior;
+}
+
+bool CNode::MisbehavingAddr(const CAddress& addr, int howmuch)
+{
+    if (addr.IsLocal())
+    {
+        LogPrintf("Warning: Local address %s misbehaving (delta: %d)!", addr.ToString(), howmuch);
+        return false;
+    }
+
+    LOCK(cs_mapMisbehavior);
+
+    int nMisbehavior = GetMisbehaviorAddr(addr) + howmuch;
+
+    mapMisbehavior[addr] = std::make_pair(nMisbehavior, GetAdjustedTime());
+
+    if (nMisbehavior >= gArgs.GetArg("-banscore", 100))
+    {
+        LogPrint(BCLog::LogFlags::NET, "MisbehavingAddr: %s (%d -> %d) BANNING", addr.ToString(), nMisbehavior - howmuch, nMisbehavior);
+
+        g_banman->Ban(addr, BanReasonNodeMisbehaving);
+        return true;
+    }
+
+    LogPrint(BCLog::LogFlags::NET, "MisbehavingAddr: %s (%d -> %d)", addr.ToString(), nMisbehavior - howmuch, nMisbehavior);
+    return false;
 }
 
 void CNode::copyStats(CNodeStats &stats)
@@ -933,11 +964,17 @@ void ThreadSocketHandler2(void* parg)
                 if (!addr.SetSockAddr((const struct sockaddr*)&sockaddr))
                     LogPrintf("Warning: Unknown socket family");
 
+            std::set<CNetAddr> setActiveInbound;
             {
                 LOCK(cs_vNodes);
                 for (auto const& pnode : vNodes)
+                {
                     if (pnode->fInbound)
+                    {
                         nInbound++;
+                        setActiveInbound.insert(pnode->addr);
+                    }
+                }
             }
 
             if (hSocket == INVALID_SOCKET)
@@ -961,6 +998,37 @@ void ThreadSocketHandler2(void* parg)
             }
             else
             {
+                // Rate-limit inbound connections: at most one connection per
+                // 5 seconds from the same IP. Rapid reconnection scores
+                // misbehavior points (10 per violation) which accumulate
+                // toward a ban at the default banscore threshold.
+                {
+                    static std::map<CNetAddr, int64_t> mapInboundLastConnect;
+                    int64_t nNow = GetAdjustedTime();
+                    auto it = mapInboundLastConnect.find(addr);
+
+                    if (it != mapInboundLastConnect.end() && nNow - it->second < 5)
+                    {
+                        CNode::MisbehavingAddr(addr, 10);
+                        closesocket(hSocket);
+                        mapInboundLastConnect[addr] = nNow;
+                        continue;
+                    }
+
+                    mapInboundLastConnect[addr] = nNow;
+
+                    // Prune entries for IPs that have no active inbound
+                    // CNode and whose last connection attempt is older
+                    // than the rate-limit window.
+                    for (auto mit = mapInboundLastConnect.begin(); mit != mapInboundLastConnect.end(); )
+                    {
+                        if (nNow - mit->second >= 5 && !setActiveInbound.count(mit->first))
+                            mit = mapInboundLastConnect.erase(mit);
+                        else
+                            ++mit;
+                    }
+                }
+
                 LogPrint(BCLog::LogFlags::NET, "accepted connection %s", addr.ToString());
                 CNode* pnode = new CNode(hSocket, addr, "", true);
                 pnode->AddRef();
