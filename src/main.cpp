@@ -2058,6 +2058,10 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         if (!vRecv.empty()) {
             vRecv >> pfrom->strSubVer;
 
+            if (pfrom->strSubVer.size() > 256) {
+                pfrom->strSubVer.resize(256);
+            }
+
             // This handles the special disconnect for clients between the mandatory 5.4.0.0 and the 5.4.5.0 since
             // 5.4.6.0 effectively became a mandatory due to the contract version error in TxMessage. The protocol version
             // was not incremented since 5.4.6.0 was originally a leisure and so this is the only reasonable way to distinguish
