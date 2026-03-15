@@ -45,6 +45,7 @@
 #include "upgradeqt.h"
 #include "voting/votingmodel.h"
 #include "voting/polltablemodel.h"
+#include "syncoverlay.h"
 #include "updatedialog.h"
 
 #ifdef Q_OS_MAC
@@ -110,6 +111,8 @@ BitcoinGUI::BitcoinGUI(QWidget* parent)
         , trayIcon(nullptr)
         , notificator(nullptr)
         , rpcConsole(nullptr)
+        , m_sync_overlay(nullptr)
+        , m_in_sync(false)
         , nWeight(0)
 {
     QSettings settings;
@@ -215,6 +218,11 @@ BitcoinGUI::BitcoinGUI(QWidget* parent)
     centralWidget->addWidget(votingPage);
 
     setCentralWidget(centralWidget);
+
+    // Create sync overlay — sits on top of the central widget and blocks
+    // interaction until the wallet is in sync (or the user dismisses it).
+    m_sync_overlay = new SyncOverlay(centralWidget);
+    m_sync_overlay->setVisible(true);
 
     // Create status bar
     statusBar();
@@ -1078,13 +1086,14 @@ void BitcoinGUI::setNumBlocks(int count, int nTotalBlocks)
     // Note: It is a really good question why the GUI uses a different standard than the core for determining whether
     // the client is in sync.
     // TODO: Review this and decide whether to converge the sync standards.
-    bool in_sync = false;
 
     // return if we have no connection to the network
     if (!clientModel || clientModel->getNumConnections() == 0)
     {
         labelBlocksIcon->setPixmap(GRC::ScaleStatusIcon(this, ":/icons/status_sync_stalled_" + sSheet));
         labelBlocksIcon->setToolTip(tr("Sync: no connections."));
+        m_in_sync = false;
+        m_sync_overlay->setSyncState(true, 0, 0);
         return;
     }
 
@@ -1123,7 +1132,7 @@ void BitcoinGUI::setNumBlocks(int count, int nTotalBlocks)
         labelBlocksIcon->setPixmap(GRC::ScaleStatusIcon(this, ":/icons/status_sync_done_" + sSheet));
 
         overviewPage->showOutOfSyncWarning(false);
-        in_sync = true;
+        m_in_sync = true;
         statusbarAlertsLabel->setText(clientModel->getStatusBarWarnings());
     }
     else
@@ -1132,8 +1141,10 @@ void BitcoinGUI::setNumBlocks(int count, int nTotalBlocks)
         tooltip = tr("Catching up...") + QString("<br>") + tooltip;
 
         overviewPage->showOutOfSyncWarning(true);
-        in_sync = false;
+        m_in_sync = false;
     }
+
+    m_sync_overlay->setSyncState(!m_in_sync, count, nTotalBlocks);
 
     if(!text.isEmpty())
     {
@@ -1145,7 +1156,7 @@ void BitcoinGUI::setNumBlocks(int count, int nTotalBlocks)
     tooltip = QString("<nobr>") + tooltip + QString("</nobr>");
 
     labelBlocksIcon->setToolTip(tooltip);
-    overviewPage->setHeight(count, nTotalBlocks, in_sync);
+    overviewPage->setHeight(count, nTotalBlocks, m_in_sync);
 }
 
 void BitcoinGUI::setDifficulty(double difficulty)
@@ -1471,6 +1482,18 @@ void BitcoinGUI::peersClicked()
         rpcConsole->showPeersTab();
 }
 
+void BitcoinGUI::recheckCurrentTabAction()
+{
+    QWidget* current = centralWidget->currentWidget();
+
+    if (current == overviewPage)        overviewAction->setChecked(true);
+    else if (current == sendCoinsPage)  sendCoinsAction->setChecked(true);
+    else if (current == receiveCoinsPage) receiveCoinsAction->setChecked(true);
+    else if (current == transactionView) historyAction->setChecked(true);
+    else if (current == addressBookPage) addressBookAction->setChecked(true);
+    else if (current == votingPage)     votingAction->setChecked(true);
+}
+
 void BitcoinGUI::gotoOverviewPage()
 {
     overviewAction->setChecked(true);
@@ -1519,6 +1542,22 @@ void BitcoinGUI::gotoReceiveCoinsPage()
 
 void BitcoinGUI::gotoSendCoinsPage()
 {
+    if (!m_in_sync) {
+        QMessageBox::StandardButton reply = QMessageBox::warning(this,
+            tr("Wallet Not In Sync"),
+            tr("The wallet is not yet in sync with the network. Your balance "
+               "may be inaccurate, and transactions created while out of sync "
+               "may not confirm properly.\n\n"
+               "Are you sure you want to proceed?"),
+            QMessageBox::Yes | QMessageBox::No,
+            QMessageBox::No);
+
+        if (reply != QMessageBox::Yes) {
+            recheckCurrentTabAction();
+            return;
+        }
+    }
+
     sendCoinsAction->setChecked(true);
     centralWidget->setCurrentWidget(sendCoinsPage);
 
@@ -1528,6 +1567,15 @@ void BitcoinGUI::gotoSendCoinsPage()
 
 void BitcoinGUI::gotoVotingPage()
 {
+    if (!m_in_sync) {
+        QMessageBox::warning(this,
+            tr("Wallet Not In Sync"),
+            tr("The wallet must be in sync to access the voting system. "
+               "Please wait for synchronization to complete."));
+        recheckCurrentTabAction();
+        return;
+    }
+
     votingAction->setChecked(true);
     centralWidget->setCurrentWidget(votingPage);
 

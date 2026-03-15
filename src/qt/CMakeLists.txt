@@ -78,6 +78,7 @@ add_library(gridcoinqt STATIC
     researcher/researcherwizardsummarypage.cpp
     rpcconsole.cpp
     sendcoinsdialog.cpp
+    syncoverlay.cpp
     sendcoinsentry.cpp
     sidestaketablemodel.cpp
     signverifymessagedialog.cpp
