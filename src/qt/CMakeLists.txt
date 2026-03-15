@@ -78,6 +78,7 @@ add_library(gridcoinqt STATIC
     researcher/researcherwizardsummarypage.cpp
     rpcconsole.cpp
     sendcoinsdialog.cpp
+    syncoverlay.cpp
     sendcoinsentry.cpp
     sidestaketablemodel.cpp
     signverifymessagedialog.cpp
@@ -232,6 +233,8 @@ target_link_libraries(gridcoinresearch PRIVATE
 
 # Linux Static Math Lib Workaround
 if(UNIX AND NOT APPLE AND DEFINED DEP_LIB)
+    # Ensure DEP_LIB is absolute so the link command works from any directory.
+    get_filename_component(DEP_LIB "${DEP_LIB}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
     # 1. The "Imposter" Math Target
     # We must link against the system's SHARED libm to avoid static linking issues.
 
@@ -309,6 +312,10 @@ if(UNIX AND NOT APPLE)
     )
     install(FILES "${CMAKE_SOURCE_DIR}/doc/gridcoinresearch.1" COMPONENT gui
         DESTINATION "${CMAKE_INSTALL_MANDIR}/man1"
+    )
+    install(FILES "${CMAKE_SOURCE_DIR}/contrib/completions/bash/gridcoinresearch.bash" COMPONENT gui
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/bash-completion/completions"
+        RENAME "gridcoinresearch"
     )
     execute_process(
         COMMAND git log -1 --format=%cs

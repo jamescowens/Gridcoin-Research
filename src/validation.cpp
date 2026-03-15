@@ -897,6 +897,21 @@ private:
                         // what is required by the mandatory sidestake. Note that the test uses the GRC::Allocation class, which
                         // extends the Fraction class, and provides comparison operators. This is now a precise calculation as it
                         // is integer arithmetic.
+                        //
+                        // IMPORTANT: An output to a mandatory sidestake address that does NOT meet the >= threshold is not
+                        // necessarily an error. This happens legitimately when a staker configures a voluntary sidestake to
+                        // the same address as an active mandatory sidestake. The miner produces two outputs to that address:
+                        //   - A voluntary output (e.g. 5% of total_owed) which is smaller than required.
+                        //   - A mandatory output (e.g. 10% of total_owed) which meets the >= threshold.
+                        //
+                        // Because this loop scans all non-MRC outputs, the voluntary output is encountered first (or second,
+                        // depending on the vout layout after stake splitting reorders outputs). It matches the mandatory
+                        // sidestake destination but fails the amount check. This is expected — the actual mandatory output
+                        // elsewhere in the vout array will satisfy the threshold and increment validated_mandatory_sidestakes.
+                        //
+                        // Therefore, a per-output amount mismatch is logged at VERBOSE level only. The definitive validation
+                        // is the final count check below (validated_mandatory_sidestakes vs expected), which correctly handles
+                        // the coincidence case because the mandatory output's amount will pass the >= check.
                         if (!mandatory_sidestake.empty()) {
                             CAmount actual_output = coinstake.vout[i].nValue;
 
@@ -904,18 +919,17 @@ private:
                                                        * total_owed_to_staker).ToCAmount();
 
                             if (actual_output >= required_output) {
-
                                 ++validated_mandatory_sidestakes;
                             } else {
-                                error_out = "Mandatory sidestake failed validation";
-
-                                error("%s: vout[%u] is mandatory sidestake destination %s, but failed validation: "
-                                      "actual_output = %" PRId64 ", required_output = %" PRId64,
-                                          __func__,
-                                          i,
-                                          EncodeDestination(output_destination),
-                                          actual_output,
-                                          required_output);
+                                LogPrint(BCLog::LogFlags::VERBOSE,
+                                         "INFO: %s: vout[%u] destination %s matches mandatory sidestake but "
+                                         "amount is below threshold (actual = %" PRId64 ", required = %" PRId64 "). "
+                                         "This is expected when a voluntary sidestake shares the same address.",
+                                         __func__,
+                                         i,
+                                         EncodeDestination(output_destination),
+                                         actual_output,
+                                         required_output);
                             }
                         }
 

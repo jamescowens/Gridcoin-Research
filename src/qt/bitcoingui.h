@@ -32,6 +32,7 @@ class Notificator;
 class RPCConsole;
 class DiagnosticsDialog;
 class ClickLabel;
+class SyncOverlay;
 class UpdateDialog;
 
 QT_BEGIN_NAMESPACE
@@ -113,6 +114,9 @@ private:
     SignVerifyMessageDialog *signVerifyMessageDialog;
     std::unique_ptr<UpdateDialog> updateMessageDialog;
 
+    SyncOverlay *m_sync_overlay;
+    bool m_in_sync;
+
     QLabel *statusbarAlertsLabel;
     QLabel *labelEncryptionIcon;
     QLabel *labelStakingIcon;
@@ -191,6 +195,8 @@ private:
     void createTrayIconMenu();
     /** Set Icons */
     void setIcons();
+    /** Re-check the toolbar action that matches the currently displayed page. */
+    void recheckCurrentTabAction();
 
 
 public slots:

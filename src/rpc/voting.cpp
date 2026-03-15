@@ -653,6 +653,10 @@ UniValue vote(const UniValue& params, bool fHelp)
             "This RPC function is deprecated and may be removed in the future. "
             "Use \"votebyid\" instead.");
 
+    if (OutOfSyncByAge()) {
+        throw JSONRPCError(RPC_MISC_ERROR, "The wallet must be in sync to vote.");
+    }
+
     EnsureWalletIsUnlocked();
 
     const std::string title = boost::to_lower_copy(params[0].get_str());
@@ -691,6 +695,10 @@ UniValue votebyid(const UniValue& params, bool fHelp)
             "<choice_ids...> --> Numeric IDs of the choices to vote for.\n"
             "\n"
             "Cast a vote for a poll.\n");
+
+    if (OutOfSyncByAge()) {
+        throw JSONRPCError(RPC_MISC_ERROR, "The wallet must be in sync to vote.");
+    }
 
     EnsureWalletIsUnlocked();
 

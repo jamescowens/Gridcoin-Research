@@ -26,13 +26,15 @@ class CoinControlDialog : public QDialog
 public:
     explicit CoinControlDialog(QWidget* parent = nullptr,
                                CCoinControl* coinControl = nullptr,
-                               QList<qint64>* payAmounts = nullptr);
+                               QList<qint64>* payAmounts = nullptr,
+                               bool fSubtractFeeFromAmount = false);
     ~CoinControlDialog();
 
     void setModel(WalletModel *model);
 
     // static because also called from sendcoinsdialog
-    static void updateLabels(WalletModel*, CCoinControl*, QList<qint64>*, QDialog*);
+    static void updateLabels(WalletModel*, CCoinControl*, QList<qint64>*, QDialog*,
+                             bool fSubtractFeeFromAmount = false);
 
     // This is based on what will guarantee a successful transaction.
     const size_t m_inputSelectionLimit;
@@ -60,6 +62,7 @@ private:
     std::pair<QString, QString> m_consolidationAddress;
     Qt::CheckState m_ToState = Qt::Checked;
     bool m_FilterMode = true;
+    bool m_fSubtractFeeFromAmount = false;
 
     QString strPad(QString, int, QString);
     void sortView(int, Qt::SortOrder);

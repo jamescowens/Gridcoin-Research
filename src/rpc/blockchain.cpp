@@ -1399,6 +1399,10 @@ UniValue advertisebeacon(const UniValue& params, bool fHelp)
                 "\n"
                 "Advertise a beacon (Requires wallet to be fully unlocked)\n");
 
+    if (OutOfSyncByAge()) {
+        throw JSONRPCError(RPC_MISC_ERROR, "The wallet must be in sync to advertise a beacon.");
+    }
+
     EnsureWalletIsUnlocked();
 
     const bool force = params.size() >= 1 ? params[0].get_bool() : false;
@@ -1538,6 +1542,10 @@ UniValue advertisebeaconv3(const UniValue& params, bool fHelp)
                 "  wallet with your original beacon keys but not necessary otherwise.\n"
                 "\n"
                 "Requires wallet to be fully unlocked.\n");
+
+    if (OutOfSyncByAge()) {
+        throw JSONRPCError(RPC_MISC_ERROR, "The wallet must be in sync to advertise a beacon.");
+    }
 
     EnsureWalletIsUnlocked();
 
@@ -1679,6 +1687,10 @@ UniValue revokebeacon(const UniValue& params, bool fHelp)
                 "[cpid] CPID associated with the beacon to revoke. If omitted, uses the current CPID.\n"
                 "\n"
                 "Revoke a beacon (Requires wallet to be fully unlocked)\n");
+
+    if (OutOfSyncByAge()) {
+        throw JSONRPCError(RPC_MISC_ERROR, "The wallet must be in sync to revoke a beacon.");
+    }
 
     EnsureWalletIsUnlocked();
 
@@ -3126,39 +3138,77 @@ UniValue listprotocolentries(const UniValue& params, bool fHelp)
     return res;
 }
 
+UniValue listsidestakes(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() > 1)
+        throw runtime_error(
+            "listsidestakes [type]\n"
+            "\n"
+            "Displays all active sidestakes (mandatory and local/voluntary).\n"
+            "\n"
+            "Arguments:\n"
+            "  type    (string, optional) Filter by type: \"mandatory\", \"local\", or \"all\" (default: \"all\")\n");
+
+    std::string type_filter = "all";
+    if (params.size() == 1) {
+        type_filter = params[0].get_str();
+        if (type_filter != "all" && type_filter != "mandatory" && type_filter != "local") {
+            throw runtime_error("Invalid type filter. Must be \"all\", \"mandatory\", or \"local\".");
+        }
+    }
+
+    GRC::SideStake::FilterFlag filter = GRC::SideStake::FilterFlag::ALL;
+    if (type_filter == "mandatory") {
+        filter = GRC::SideStake::FilterFlag::MANDATORY;
+    } else if (type_filter == "local") {
+        filter = GRC::SideStake::FilterFlag::LOCAL;
+    }
+
+    UniValue res(UniValue::VOBJ);
+    UniValue entries(UniValue::VARR);
+
+    for (const auto& sidestake : GRC::GetSideStakeRegistry().ActiveSideStakeEntries(filter, false)) {
+        UniValue entry(UniValue::VOBJ);
+
+        entry.pushKV("address", EncodeDestination(sidestake->GetDestination()));
+        entry.pushKV("allocation_pct", sidestake->GetAllocation().ToPercent());
+        entry.pushKV("type", sidestake->IsMandatory() ? "mandatory" : "local");
+        entry.pushKV("description", sidestake->GetDescription());
+        entry.pushKV("status", sidestake->StatusToString());
+
+        if (sidestake->IsMandatory()) {
+            entry.pushKV("tx_hash", sidestake->GetHash().ToString());
+            if (sidestake->GetPreviousHash().IsNull()) {
+                entry.pushKV("previous_tx_hash", "null");
+            } else {
+                entry.pushKV("previous_tx_hash", sidestake->GetPreviousHash().ToString());
+            }
+            entry.pushKV("timestamp", sidestake->GetTimeStamp());
+            entry.pushKV("time", DateTimeStrFormat(sidestake->GetTimeStamp()));
+        }
+
+        entries.push_back(entry);
+    }
+
+    res.pushKV("sidestake_entries", entries);
+
+    return res;
+}
+
 UniValue listmandatorysidestakes(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
         throw runtime_error(
-            "listprotocolentries\n"
+            "listmandatorysidestakes\n"
             "\n"
-            "Displays the mandatory sidestakes on the network.\n");
+            "Displays the mandatory sidestakes on the network.\n"
+            "\n"
+            "This is equivalent to listsidestakes \"mandatory\".\n");
 
-    UniValue res(UniValue::VOBJ);
-    UniValue scraper_entries(UniValue::VARR);
+    UniValue filter_params(UniValue::VARR);
+    filter_params.push_back("mandatory");
 
-    for (const auto& sidestake : GRC::GetSideStakeRegistry().ActiveSideStakeEntries(GRC::SideStake::FilterFlag::MANDATORY, false)) {
-        UniValue entry(UniValue::VOBJ);
-
-        entry.pushKV("mandatory_sidestake_entry_address", EncodeDestination(sidestake->GetDestination()));
-        entry.pushKV("mandatory_sidestake_entry_allocation", sidestake->GetAllocation().ToPercent());
-        entry.pushKV("mandatory_sidestake_entry_tx_hash", sidestake->GetHash().ToString());
-        if (sidestake->GetPreviousHash().IsNull()) {
-            entry.pushKV("previous_mandatory_sidestake_entry_tx_hash", "null");
-        } else {
-            entry.pushKV("previous_mandatory_sidestake_entry_tx_hash", sidestake->GetPreviousHash().ToString());
-        }
-
-        entry.pushKV("mandatory_sidestake_entry_timestamp", sidestake->GetTimeStamp());
-        entry.pushKV("mandatory_sidestake_entry_time", DateTimeStrFormat(sidestake->GetTimeStamp()));
-        entry.pushKV("mandatory_sidestake_entry_status", sidestake->StatusToString());
-
-        scraper_entries.push_back(entry);
-    }
-
-    res.pushKV("current_mandatory_sidestake_entries", scraper_entries);
-
-    return res;
+    return listsidestakes(filter_params, false);
 }
 
 UniValue network(const UniValue& params, bool fHelp)

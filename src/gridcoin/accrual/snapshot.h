@@ -77,7 +77,7 @@ public:
         // If their is an entry prior or equal in timestamp to the superblock and it is active then set the magnitude unit
         // to that value. If the last entry is not active (i.e. deleted), then leave at the default.
         if (protocol_entry != nullptr && protocol_entry->m_status == ProtocolEntryStatus::ACTIVE) {
-            magnitude_unit = Fraction().FromString(protocol_entry->m_value);
+            magnitude_unit = Fraction::FromString(protocol_entry->m_value);
         }
 
         // Clamp to MaxMagnitudeUnit if necessary
@@ -117,7 +117,7 @@ public:
         // If their is an entry prior or equal in timestamp to the superblock and it is active then set the magnitude unit
         // to that value. If the last entry is not active (i.e. deleted), then leave at the default.
         if (protocol_entry != nullptr && protocol_entry->m_status == ProtocolEntryStatus::ACTIVE) {
-            magnitude_unit = Fraction().FromString(protocol_entry->m_value);
+            magnitude_unit = Fraction::FromString(protocol_entry->m_value);
         }
 
         // Clamp to MaxMagnitudeUnit if necessary
