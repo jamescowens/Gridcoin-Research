@@ -36,6 +36,9 @@ bool OrphanBlockManager::Add(const uint256& hash, const CBlock& block, int64_t n
     m_orphans.emplace(hash, std::move(entry));
     m_by_prev.emplace(prev_hash, hash);
 
+    LogPrint(BCLog::LogFlags::VERBOSE, "OrphanBlockManager: added orphan %s (prev=%s, map size %u)",
+             hash.ToString(), prev_hash.ToString(), m_orphans.size());
+
     return true;
 }
 
@@ -108,6 +111,10 @@ size_t OrphanBlockManager::EraseExpired(int64_t now)
     for (auto it = m_orphans.begin(); it != m_orphans.end(); ) {
         if (now - it->second.time_received > MAX_ORPHAN_AGE_SECONDS) {
             const uint256 hash = it->first;
+            const int64_t age = now - it->second.time_received;
+
+            LogPrint(BCLog::LogFlags::VERBOSE, "OrphanBlockManager: expiring orphan %s (age %" PRId64 "s, map size %u)",
+                     hash.ToString(), age, m_orphans.size());
 
             // Clean up SeenStakes before erasing.
             if (it->second.block->IsProofOfStake()) {
@@ -121,6 +128,11 @@ size_t OrphanBlockManager::EraseExpired(int64_t now)
         } else {
             ++it;
         }
+    }
+
+    if (count > 0) {
+        LogPrint(BCLog::LogFlags::VERBOSE, "OrphanBlockManager: expired %u orphans, %u remaining",
+                 count, m_orphans.size());
     }
 
     return count;
