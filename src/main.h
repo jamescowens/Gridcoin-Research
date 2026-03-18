@@ -87,8 +87,7 @@ extern std::atomic<bool> g_reorg_in_progress;
 extern const std::string strMessageMagic;
 extern CCriticalSection cs_setpwalletRegistered;
 extern std::set<CWallet*> setpwalletRegistered;
-extern std::map<uint256, CBlock*> mapOrphanBlocks;
-extern std::multimap<uint256, CBlock*> mapOrphanBlocksByPrev;
+// Orphan block storage is managed by g_orphan_blocks in node/orphan_blocks.h
 
 // Settings
 extern int64_t nTransactionFee;
