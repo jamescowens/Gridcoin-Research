@@ -145,6 +145,12 @@ size_t OrphanBlockManager::Size() const
 
 void OrphanBlockManager::Clear()
 {
+    for (auto& [hash, entry] : m_orphans) {
+        if (entry.block->IsProofOfStake()) {
+            g_seen_stakes.ForgetOrphan(entry.block->vtx[1]);
+        }
+    }
+
     m_orphans.clear();
     m_by_prev.clear();
 }

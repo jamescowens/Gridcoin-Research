@@ -6,13 +6,11 @@
 #define GRIDCOIN_NODE_ORPHAN_BLOCKS_H
 
 #include "main.h"
-#include "serialize.h"
 #include "uint256.h"
 
 #include <functional>
 #include <memory>
 #include <unordered_map>
-#include <unordered_set>
 
 class CBlock;
 
@@ -31,8 +29,8 @@ public:
     //! Maximum age in seconds before an orphan is eligible for eviction.
     static constexpr int64_t MAX_ORPHAN_AGE_SECONDS = 20 * 60;
 
-    //! Add an orphan block. Returns false if the block is a duplicate or the
-    //! map is full after expiry/eviction. The caller must hold cs_main.
+    //! Add an orphan block. Returns false if the block is a duplicate.
+    //! The caller must hold cs_main.
     bool Add(const uint256& hash, const CBlock& block, int64_t now);
 
     //! Process the orphan chain rooted at \p accepted_hash using breadth-first
@@ -61,7 +59,7 @@ public:
     //! Current number of stored orphans.
     size_t Size() const;
 
-    //! Remove all orphans.
+    //! Remove all orphans and clean up associated SeenStakes entries.
     void Clear();
 
 private:
@@ -78,8 +76,8 @@ private:
     //! claim it as their previous block.
     std::unordered_multimap<uint256, uint256, BlockHasher> m_by_prev;
 
-    //! Remove an orphan from all internal indices. Returns the coinstake
-    //! transaction (moved out) so the caller can clean up SeenStakes.
+    //! Remove an orphan from all internal indices. Returns the block
+    //! (moved out) so the caller can inspect it if needed.
     //! Returns nullptr if not found.
     std::unique_ptr<CBlock> EraseInternal(const uint256& hash);
 
