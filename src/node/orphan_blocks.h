@@ -23,8 +23,10 @@ class CBlock;
 class OrphanBlockManager
 {
 public:
-    //! Maximum number of orphan blocks to hold in memory.
-    static constexpr size_t MAX_ORPHAN_BLOCKS = 750;
+    //! Maximum number of orphan blocks to hold in memory. Set above the
+    //! superblock interval (~960 blocks) to avoid evicting orphans from a
+    //! legitimate missing-block chain before it can be resolved.
+    static constexpr size_t MAX_ORPHAN_BLOCKS = 1000;
 
     //! Maximum age in seconds before an orphan is eligible for eviction.
     static constexpr int64_t MAX_ORPHAN_AGE_SECONDS = 20 * 60;
