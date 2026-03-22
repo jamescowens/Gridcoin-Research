@@ -214,8 +214,7 @@ bool BlockRewardRules::ValidateMandatorySidestakeOutputs(
         //
         // Why >= instead of ==:
         //
-        // The >= preserves compatibility with the original ClaimValidator and
-        // provides tolerance for the following edge case:
+        // The >= provides tolerance for the following edge case:
         //
         // Remainder true-up: When mandatory allocations sum to exactly 100%
         // (theoretically possible if MaxMandatorySideStakeTotalAlloc is
@@ -305,7 +304,7 @@ bool BlockRewardRules::ValidateMandatorySidestakeOutputs(
 }
 
 // =============================================================================
-// Full claim validation (replaces ClaimValidator::Check())
+// Full claim validation
 // =============================================================================
 
 bool BlockRewardRules::Check(std::string& error_out) const

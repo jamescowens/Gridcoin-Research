@@ -33,7 +33,7 @@ consume it.
 
 ### Validation-only logic stays validation-only
 
-The `Check()` path (formerly `ClaimValidator`) is pure validation with no miner
+The `Check()` path (which replaced the former `ClaimValidator` class) is pure validation with no miner
 counterpart. MRC output matching, beacon signature checking, reward envelope
 checks, legacy fallbacks — none of these have a construction dual. Forcing them
 into a unified framework would be over-abstraction for no structural benefit.
@@ -51,7 +51,7 @@ Each step should:
 
 ### Comment preservation
 
-The original `ClaimValidator` contained extensive inline comments explaining
+The original `ClaimValidator` class (now removed) contained extensive inline comments explaining
 *why* validation steps exist — historical context (beaconalt bug, newbie
 snapshot fix), structural invariants (mrc_start_index arithmetic, dust
 elimination ordering relative to shuffle), and subtle distinctions

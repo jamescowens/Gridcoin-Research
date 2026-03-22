@@ -52,8 +52,7 @@ public:
         int block_version,
         int64_t block_time);
 
-    //! Full validation mode — mirrors ClaimValidator constructor.
-    //! Enables Check() for complete claim validation.
+    //! Full validation mode. Enables Check() for complete claim validation.
     BlockRewardRules(
         const CBlock& block,
         const CBlockIndex* pindex,
@@ -62,15 +61,15 @@ public:
         CAmount fees,
         uint64_t coin_age);
 
-    // --- Full claim validation (replaces ClaimValidator::Check()) ------------
+    // --- Full claim validation ------------------------------------------------
 
     //! Run the complete claim validation suite: research/non-research
     //! branching, reward envelope, MRC outputs, beacon signature, mandatory
     //! sidestakes, and all legacy version-specific checks.
     //!
     //! Returns true if the claim is valid. On failure, error_out contains a
-    //! descriptive error message. Unlike ClaimValidator, this method does NOT
-    //! call CBlock::DoS() — the caller decides on DoS scoring.
+    //! descriptive error message. This method does NOT call CBlock::DoS() —
+    //! the caller decides on DoS scoring.
     //!
     //! Requires the full validation constructor.
     //!
