@@ -22,6 +22,7 @@
 #include "gridcoin/staking/spam.h"
 #include "gridcoin/tally.h"
 #include "node/blockstorage.h"
+#include "node/orphan_blocks.h"
 #include "policy/fees.h"
 #include "serialize.h"
 #include "util.h"
@@ -2194,7 +2195,7 @@ bool AcceptBlock(CBlock& block, bool generated_by_me) EXCLUSIVE_LOCKS_REQUIRED(c
         }
 
         if (g_seen_stakes.ContainsProof(hashProof)
-            && mapOrphanBlocksByPrev.find(hash) == mapOrphanBlocksByPrev.end())
+            && !g_orphan_blocks.HasChildrenOf(hash))
         {
             return error(
                 "%s: ignored duplicate proof-of-stake (%s) for block %s",

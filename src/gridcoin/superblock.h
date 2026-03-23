@@ -509,7 +509,13 @@ public:
             m_magnitudes.clear();
 
             const uint64_t size = ReadCompactSize(stream);
-            m_magnitudes.reserve(size);
+
+            // Cap reserve to the maximum plausible entry count within the
+            // superblock size limit to prevent memory amplification from a
+            // malicious size field. Minimum serialized entry size is
+            // sizeof(Cpid) + 1 byte for the magnitude.
+            constexpr uint64_t max_entries = Superblock::MAX_SIZE / (sizeof(Cpid) + 1);
+            m_magnitudes.reserve(std::min(size, max_entries));
 
             for (size_t i = 0; i < size; i++) {
                 Cpid cpid;
@@ -1164,7 +1170,14 @@ public:
             stream >> m_converged_by_project;
 
             const uint64_t project_count = ReadCompactSize(stream);
-            m_projects.reserve(project_count);
+
+            // Cap reserve to prevent memory amplification from a malicious
+            // size field. The minimum serialized project entry is ~5 bytes
+            // (empty name + 3 single-byte VARINTs) so this bounds the
+            // reserve to a plausible entry count within the superblock size
+            // limit.
+            constexpr uint64_t max_projects = Superblock::MAX_SIZE / 5;
+            m_projects.reserve(std::min(project_count, max_projects));
 
             for (uint64_t i = 0; i < project_count; i++) {
                 ProjectPair project_pair;
