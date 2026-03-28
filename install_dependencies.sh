@@ -275,7 +275,7 @@ install_deps() {
             sudo pacman -Syu --noconfirm
 
             append_base base-devel python cmake git ccache doxygen graphviz
-            append_base boost libevent miniupnpc libzip qrencode curl icu
+            append_base boost boost-libs libevent miniupnpc libzip qrencode curl icu
 
             append_qt qt6-base qt6-tools qt6-charts qt6-svg qt6-5compat
 
