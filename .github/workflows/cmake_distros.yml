@@ -39,7 +39,10 @@ jobs:
 
           - distro: Arch Linux
             image: archlinux:latest
-            prep_cmd: "pacman -Sy --noconfirm sudo which git base-devel"
+            # Initialize keyring (fresh containers lack signing keys) and
+            # force-refresh + reinstall base-devel to ensure .so files match
+            # package metadata (Docker layer caching can leave stale libs).
+            prep_cmd: "pacman-key --init && pacman-key --populate archlinux && pacman -Syyu --noconfirm && pacman -S --noconfirm sudo which git base-devel"
             build_args: ""
 
           - distro: Debian Unstable (Sid)
@@ -59,7 +62,7 @@ jobs:
             build_args: ""
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Test Full Build on Distro
         run: |
