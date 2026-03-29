@@ -38,6 +38,11 @@ struct Params {
     int BlockV13Height;
     /** Block height at which v14 blocks are created (CLTV + CSV + BIP68) */
     int BlockV14Height;
+    /** Grace period in blocks after BlockV14Height before peers on the old
+      * protocol version are disconnected. Network-specific to allow testnet
+      * a longer window when the fork has already passed before deployment.
+      */
+    int ProtocolVersionGracePeriod;
     /** Block height at which poll v3 contract payloads are valid */
     int PollV3Height;
     /** Block height at which project v2 contracts are allowed */

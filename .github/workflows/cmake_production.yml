@@ -55,7 +55,7 @@ jobs:
             cpack_generator: NSIS64
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # 1. Install Host Tools
       - name: Install System Dependencies
@@ -84,7 +84,7 @@ jobs:
       # 3. Cache Depends
       - name: Cache Depends
         id: cache-depends
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             depends/built
@@ -253,7 +253,7 @@ jobs:
       # 11. Upload Artifacts
       - name: Upload Artifacts
         if: ${{ !env.ACT }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: gridcoin-${{ matrix.host }}
           path: |
@@ -268,7 +268,7 @@ jobs:
     name: macOS ARM64 (Homebrew Qt6)
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Dependencies
         run: |
@@ -276,7 +276,7 @@ jobs:
           brew install qt boost openssl libevent miniupnpc qrencode libzip ccache cmake
 
       - name: Configure Ccache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /Users/runner/Library/Caches/ccache
           key: ccache-macos-arm64-${{ github.sha }}
@@ -393,7 +393,7 @@ jobs:
 
       - name: Upload Artifacts
         if: ${{ !env.ACT }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: gridcoin-macos-arm64-dmg
           path: build/gridcoin-*.dmg
@@ -403,7 +403,7 @@ jobs:
     name: macOS Intel (Homebrew Qt6)
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install x86_64 Homebrew and Dependencies
         run: |
@@ -414,7 +414,7 @@ jobs:
           arch -x86_64 /usr/local/bin/brew install qt boost openssl libevent miniupnpc qrencode libzip ccache cmake
 
       - name: Configure Ccache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /Users/runner/Library/Caches/ccache
           key: ccache-macos-intel-${{ github.sha }}
@@ -529,7 +529,7 @@ jobs:
 
       - name: Upload Artifacts
         if: ${{ !env.ACT }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: gridcoin-macos-intel-dmg
           path: build/gridcoin-*.dmg
@@ -542,7 +542,7 @@ jobs:
     name: Linux AMD64 Native Build
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Dependencies
         run: |
@@ -560,7 +560,7 @@ jobs:
           fi
 
       - name: Configure Ccache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.ccache
           key: ccache-prod-amd64-native-${{ github.sha }}
@@ -589,7 +589,7 @@ jobs:
 
       - name: Upload Artifacts
         if: ${{ !env.ACT }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: docker-gridcoin-x86_64-linux-gnu
           path: dist/
@@ -602,15 +602,31 @@ jobs:
     name: Linux ARM64 Cross-Build
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Add ARM64 Architecture
         run: |
           sudo dpkg --add-architecture arm64
-          sudo add-apt-repository -y universe
-          sudo add-apt-repository -y multiverse
-          sudo sed -i 's/^Types: deb$/Types: deb\nArchitectures: amd64/' /etc/apt/sources.list.d/ubuntu.sources
-          cat <<EOF | sudo tee /etc/apt/sources.list.d/arm64.list
+          # Remove all existing sources and write clean amd64-only + arm64 config.
+          # The runner image adds sources (microsoft-prod, azure-cli, ubuntu) with
+          # varying formats that break when arm64 is added as an architecture.
+          sudo rm -f /etc/apt/sources.list.d/*.sources /etc/apt/sources.list.d/*.list
+          cat <<'EOF' | sudo tee /etc/apt/sources.list.d/ubuntu-amd64.sources
+          Types: deb
+          URIs: http://azure.archive.ubuntu.com/ubuntu
+          Suites: noble noble-updates noble-backports
+          Components: main universe multiverse restricted
+          Architectures: amd64
+          Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+
+          Types: deb
+          URIs: http://security.ubuntu.com/ubuntu
+          Suites: noble-security
+          Components: main universe multiverse restricted
+          Architectures: amd64
+          Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+          EOF
+          cat <<'EOF' | sudo tee /etc/apt/sources.list.d/arm64.list
           deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble main universe multiverse restricted
           deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-updates main universe multiverse restricted
           deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-security main universe multiverse restricted
@@ -625,7 +641,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             build-essential cmake ninja-build zipcmp zipmerge ziptool qemu-user-static \
             g++-aarch64-linux-gnu qt6-base-dev:arm64 qt6-charts-dev:arm64 qt6-svg-dev:arm64 \
-            qt6-l10n-tools:arm64 qt6-tools-dev:arm64 qt6-tools-dev-tools:arm64 \
+            qt6-l10n-tools qt6-tools-dev:arm64 qt6-tools-dev-tools:arm64 \
             libqt6core5compat6-dev:arm64 libssl-dev:arm64 libzip-dev:arm64 \
             libcurl4-openssl-dev:arm64 libboost-system-dev:arm64 libboost-filesystem-dev:arm64 \
             libboost-thread-dev:arm64 libboost-iostreams-dev:arm64 libboost-program-options-dev:arm64 \
@@ -645,7 +661,7 @@ jobs:
           fi
 
       - name: Configure Ccache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.ccache
           key: ccache-prod-arm64-${{ github.sha }}
@@ -684,7 +700,7 @@ jobs:
 
       - name: Upload Artifacts
         if: ${{ !env.ACT }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: docker-gridcoin-aarch64-linux-gnu
           path: dist/
@@ -697,7 +713,7 @@ jobs:
     name: Flatpak Build (x86_64)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Flatpak and flatpak-builder
         run: |
@@ -713,7 +729,7 @@ jobs:
           sudo flatpak install -y --noninteractive flathub org.kde.Platform//6.9 org.kde.Sdk//6.9
 
       - name: Cache flatpak-builder
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .flatpak-builder
           key: flatpak-builder-${{ hashFiles('contrib/flatpak/us.gridcoin.GridcoinResearch.yml') }}
@@ -741,7 +757,7 @@ jobs:
 
       - name: Upload Artifact
         if: ${{ !env.ACT }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: gridcoin-flatpak-x86_64
           path: ${{ env.FLATPAK_BUNDLE }}
@@ -764,16 +780,16 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Download x86_64 Build Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: docker-gridcoin-x86_64-linux-gnu
           path: artifacts/amd64
 
       - name: Download ARM64 Build Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: docker-gridcoin-aarch64-linux-gnu
           path: artifacts/arm64
@@ -848,7 +864,7 @@ jobs:
       contents: write
     steps:
       - name: Download All Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: gridcoin-*
           merge-multiple: true

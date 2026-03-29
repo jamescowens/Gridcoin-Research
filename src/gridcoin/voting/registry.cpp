@@ -1194,9 +1194,11 @@ void PollRegistry::DeletePoll(const ContractContext& ctx) EXCLUSIVE_LOCKS_REQUIR
 
     PollReference* poll_ref = TryBy(payload->m_poll.m_title);
 
-    // Note this reference will effectively disappear once this function exits, but this is ok, because there will
-    // be no need to further reference it after this point for purposes of notification.
-    poll_ref->Notify(PollReference::PollNotificationType::POLL_DELETE);
+    if (poll_ref) {
+        // Note this reference will effectively disappear once this function exits, but this is ok, because there will
+        // be no need to further reference it after this point for purposes of notification.
+        poll_ref->Notify(PollReference::PollNotificationType::POLL_DELETE);
+    }
 
     m_polls.erase(ToLower(payload->m_poll.m_title));
 

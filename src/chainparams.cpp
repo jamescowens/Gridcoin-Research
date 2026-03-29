@@ -70,6 +70,7 @@ public:
         consensus.BlockV12Height = 2671700;
         consensus.BlockV13Height = std::numeric_limits<int>::max();
         consensus.BlockV14Height = std::numeric_limits<int>::max();
+        consensus.ProtocolVersionGracePeriod = 900 * 7; // ~6.5 days
         consensus.PollV3Height = 2671700;
         consensus.ProjectV2Height = 2671700;
         consensus.AutoGreylistAuditHeight = std::numeric_limits<int>::max();
@@ -193,6 +194,7 @@ public:
         consensus.BlockV12Height = 1871830;
         consensus.BlockV13Height = 2870000;
         consensus.BlockV14Height = 3126500;
+        consensus.ProtocolVersionGracePeriod = 900 * 21; // ~19.6 days — extended because v14 fork preceded deployment
         consensus.PollV3Height = 1944820;
         consensus.ProjectV2Height = 1944820;
         consensus.AutoGreylistAuditHeight = 3111000;
