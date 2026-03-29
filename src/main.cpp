@@ -2035,13 +2035,15 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             return false;
         }
 
-        // Note the std::max is there to deal with the rollover of BlockV12Height + DISCONNECT_GRACE_PERIOD if
-        // BlockV12Height is set to std::numeric_limits<int>::max() which is the case during testing.
+        // Disconnect peers on old protocol versions after a grace period past the
+        // BlockV14Height activation height. Skip entirely if that fork is not yet
+        // activated (height == INT_MAX) to avoid signed integer overflow UB in the addition.
         if (pfrom->nVersion < MIN_PEER_PROTO_VERSION
             || (DISCONNECT_OLD_VERSION_AFTER_GRACE_PERIOD
                 && pfrom->nVersion < PROTOCOL_VERSION
-                && pindexBest->nHeight > std::max(Params().GetConsensus().BlockV13Height,
-                                                  Params().GetConsensus().BlockV13Height + DISCONNECT_GRACE_PERIOD)
+                && Params().GetConsensus().BlockV14Height != std::numeric_limits<int>::max()
+                && pindexBest->nHeight > Params().GetConsensus().BlockV14Height
+                                             + Params().GetConsensus().ProtocolVersionGracePeriod
                 )
             ) {
             // disconnect from peers older than this proto version
