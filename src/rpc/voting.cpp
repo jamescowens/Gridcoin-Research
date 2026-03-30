@@ -11,6 +11,7 @@
 #include "gridcoin/voting/result.h"
 #include "protocol.h"
 #include "server.h"
+#include "util/time.h"
 
 using namespace GRC;
 
@@ -166,6 +167,8 @@ UniValue PollResultToJson(const PollResult& result, const PollReference& poll_re
 
 UniValue PollResultToJson(const PollReference& poll_ref)
 {
+    g_timer.InitTimer("buildPollTable", LogInstance().WillLogCategory(BCLog::LogFlags::VOTE));
+
     GetPollRegistry().registry_traversal_in_progress = true;
 
     try {
