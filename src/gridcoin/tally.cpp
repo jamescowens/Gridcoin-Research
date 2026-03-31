@@ -1107,7 +1107,7 @@ CAmount Tally::AccrualNearLimit(
 CAmount Tally::GetNewbieSuperblockAccrualCorrection(const Cpid& cpid, const SuperblockPtr& current_superblock)
 {
     // This function was moved from the anonymous namespace and private, to public and made static, because it has
-    // to be called from ClaimValidator::CheckResearchReward() directly too. Why?
+    // to be called from BlockRewardRules::Check() directly too. Why?
 
     // The broken original newbie fix was CONDITIONAL. The initialization in Tally::Initialize was broken and would
     // never activate, yet the alternate path through AcceptBlock AddToBlockIndex could actually set the original
@@ -1131,7 +1131,7 @@ CAmount Tally::GetNewbieSuperblockAccrualCorrection(const Cpid& cpid, const Supe
     //    included. This is activated at GetNewbieSnapshotFixHeight(), and will cause this function to be used to apply
     //    the corrections to any CPID's that do not have an accrual account at that height.
     //
-    // 2. It is used in ConnectBlock (the ClaimValidator::CheckResearchReward()) to conditionally apply the accrual
+    // 2. It is used in ConnectBlock (via BlockRewardRules::Check()) to conditionally apply the accrual
     //    correction if the claimed value by the block fails the original CheckReward. If the original computed reward
     //    plus the correction equals the claimed reward, then the block is passed with a warning. This enables any
     //    node to conditionally validate a block that was staked with the accrual correction active, even if the
