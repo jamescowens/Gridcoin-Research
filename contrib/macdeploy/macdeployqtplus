@@ -514,6 +514,16 @@ ap.add_argument("-entitlements", nargs=1, default=None, metavar="path",
 
 config = ap.parse_args()
 
+# The signing identity may come from the APPLE_SIGNING_IDENTITY environment
+# variable instead of the -sign flag, because the identity string often
+# contains parentheses that break shell command-line expansion in CMake.
+# Priority: -sign <value> > APPLE_SIGNING_IDENTITY env var > ad-hoc on macOS.
+env_identity = os.getenv("APPLE_SIGNING_IDENTITY")
+if config.sign is None and env_identity:
+    config.sign = env_identity
+elif config.sign is None and platform.system() == "Darwin":
+    config.sign = "-"
+
 verbose = config.verbose
 
 # ------------------------------------------------
