@@ -302,11 +302,15 @@ jobs:
           "${RUNNER_TEMP}/venv/bin/pip" install ds_store mac_alias
 
       - name: Import Code Signing Certificate
-        if: ${{ env.APPLE_CERTIFICATE_P12 != '' }}
         env:
           APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
         run: |
+          if [ -z "$APPLE_CERTIFICATE_P12" ]; then
+            echo "No signing certificate configured, skipping import."
+            exit 0
+          fi
+
           KEYCHAIN_PATH="${RUNNER_TEMP}/build.keychain-db"
           KEYCHAIN_PASSWORD="$(openssl rand -hex 32)"
 
@@ -330,8 +334,15 @@ jobs:
           echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
 
       - name: Set Signing Identity
-        if: ${{ secrets.APPLE_SIGNING_IDENTITY != '' }}
-        run: echo "APPLE_SIGNING_IDENTITY=${{ secrets.APPLE_SIGNING_IDENTITY }}" >> $GITHUB_ENV
+        run: |
+          if [ -n "$IDENTITY" ]; then
+            echo "APPLE_SIGNING_IDENTITY=$IDENTITY" >> $GITHUB_ENV
+            echo "Signing identity configured."
+          else
+            echo "No signing identity configured, will use ad-hoc signing."
+          fi
+        env:
+          IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
 
       - name: Configure CMake
         run: |
@@ -503,11 +514,15 @@ jobs:
           "${RUNNER_TEMP}/venv/bin/pip" install ds_store mac_alias
 
       - name: Import Code Signing Certificate
-        if: ${{ env.APPLE_CERTIFICATE_P12 != '' }}
         env:
           APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
         run: |
+          if [ -z "$APPLE_CERTIFICATE_P12" ]; then
+            echo "No signing certificate configured, skipping import."
+            exit 0
+          fi
+
           KEYCHAIN_PATH="${RUNNER_TEMP}/build.keychain-db"
           KEYCHAIN_PASSWORD="$(openssl rand -hex 32)"
 
@@ -531,8 +546,15 @@ jobs:
           echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
 
       - name: Set Signing Identity
-        if: ${{ secrets.APPLE_SIGNING_IDENTITY != '' }}
-        run: echo "APPLE_SIGNING_IDENTITY=${{ secrets.APPLE_SIGNING_IDENTITY }}" >> $GITHUB_ENV
+        run: |
+          if [ -n "$IDENTITY" ]; then
+            echo "APPLE_SIGNING_IDENTITY=$IDENTITY" >> $GITHUB_ENV
+            echo "Signing identity configured."
+          else
+            echo "No signing identity configured, will use ad-hoc signing."
+          fi
+        env:
+          IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
 
       - name: Configure CMake
         run: |
