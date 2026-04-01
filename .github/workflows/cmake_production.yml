@@ -451,6 +451,24 @@ jobs:
             exit 1
           fi
 
+          # Diagnostic: verify credentials are populated (lengths only)
+          echo "Diagnostics:"
+          echo "  APPLE_NOTARY_APPLE_ID length: ${#APPLE_NOTARY_APPLE_ID}"
+          echo "  APPLE_NOTARY_PASSWORD length: ${#APPLE_NOTARY_PASSWORD}"
+          echo "  APPLE_TEAM_ID length: ${#APPLE_TEAM_ID}"
+          echo "  DMG file: $DMG_FILE ($(stat -f%z "$DMG_FILE") bytes)"
+
+          # Probe: test credentials with a history query before submitting
+          echo "Testing credentials with notarytool history..."
+          if xcrun notarytool history \
+            --apple-id "$APPLE_NOTARY_APPLE_ID" \
+            --password "$APPLE_NOTARY_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" 2>&1; then
+            echo "Credential check passed."
+          else
+            echo "WARNING: Credential check failed."
+          fi
+
           MAX_ATTEMPTS=3
           ATTEMPT=1
           while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
@@ -675,6 +693,24 @@ jobs:
           if [ -z "$DMG_FILE" ]; then
             echo "ERROR: No DMG file found"
             exit 1
+          fi
+
+          # Diagnostic: verify credentials are populated (lengths only)
+          echo "Diagnostics:"
+          echo "  APPLE_NOTARY_APPLE_ID length: ${#APPLE_NOTARY_APPLE_ID}"
+          echo "  APPLE_NOTARY_PASSWORD length: ${#APPLE_NOTARY_PASSWORD}"
+          echo "  APPLE_TEAM_ID length: ${#APPLE_TEAM_ID}"
+          echo "  DMG file: $DMG_FILE ($(stat -f%z "$DMG_FILE") bytes)"
+
+          # Probe: test credentials with a history query before submitting
+          echo "Testing credentials with notarytool history..."
+          if xcrun notarytool history \
+            --apple-id "$APPLE_NOTARY_APPLE_ID" \
+            --password "$APPLE_NOTARY_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" 2>&1; then
+            echo "Credential check passed."
+          else
+            echo "WARNING: Credential check failed."
           fi
 
           MAX_ATTEMPTS=3
