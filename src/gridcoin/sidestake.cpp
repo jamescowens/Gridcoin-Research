@@ -1104,7 +1104,7 @@ void SideStakeRegistry::LoadLocalSideStakesFromConfig()
 
     // If we get here and dSumAllocation is zero then the enablesidestaking flag was set, but no VALID distribution
     // was provided in the config file, so warn in the debug log.
-    if (!sum_allocation)
+    if (gArgs.GetBoolArg("-enablesidestaking") && !sum_allocation)
         LogPrintf("WARN: %s: enablesidestaking was set in config but nothing has been allocated for"
                   " distribution!", __func__);
 }
