@@ -421,6 +421,18 @@ if(APPLE)
         list(APPEND _deploy_cmd -translations-dir "${_qt_translations_dir}")
     endif()
 
+    # Pass signing identity if available via environment variable.
+    # When not set, default to ad-hoc signing for local dev builds.
+    if(DEFINED ENV{APPLE_SIGNING_IDENTITY})
+        list(APPEND _deploy_cmd -sign "$ENV{APPLE_SIGNING_IDENTITY}")
+        set(_entitlements "${CMAKE_SOURCE_DIR}/contrib/macdeploy/entitlements.plist")
+        if(EXISTS "${_entitlements}")
+            list(APPEND _deploy_cmd -entitlements "${_entitlements}")
+        endif()
+    else()
+        list(APPEND _deploy_cmd -sign)
+    endif()
+
     add_custom_target(deploy
         COMMAND ${CMAKE_COMMAND} -E env "QTDIR=${_qt_prefix_dir}" ${_deploy_cmd}
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"

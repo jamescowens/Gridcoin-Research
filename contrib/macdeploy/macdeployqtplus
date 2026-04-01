@@ -323,6 +323,21 @@ def runStrip(binaryPath: str, verbose: int):
         print(" stripped", binaryPath)
     run([stripbin, "-x", binaryPath], check=True)
 
+def codesignItem(path: str, identity: str, entitlements: Optional[str],
+                  hardened: bool, verbose: int):
+    """Sign a single binary, dylib, framework, or bundle."""
+    if platform.system() != "Darwin":
+        return
+    cmd = ["codesign", "--force", "--sign", identity, "--timestamp"]
+    if hardened:
+        cmd.append("--options=runtime")
+    if entitlements:
+        cmd.extend(["--entitlements", entitlements])
+    cmd.append(path)
+    if verbose:
+        print("  codesign:", " ".join(cmd))
+    subprocess.check_call(cmd)
+
 def copyFramework(framework: FrameworkInfo, path: str, verbose: int) -> Optional[str]:
     if framework.sourceFilePath.startswith("Qt"):
         #standard place for Nokia Qt installer's frameworks
@@ -491,6 +506,11 @@ ap.add_argument("-no-strip", dest="strip", action="store_false", default=True, h
 ap.add_argument("-dmg", nargs="?", const="", metavar="basename", help="create a .dmg disk image")
 ap.add_argument("-plugin-dir", nargs=1, metavar="path", default=None, help="Path to Qt's plugins directory (e.g. from qtpaths --query QT_INSTALL_PLUGINS)")
 ap.add_argument("-translations-dir", nargs=1, metavar="path", default=None, help="Path to Qt's translations. Base translations will automatically be added to the bundle's resources.")
+ap.add_argument("-sign", nargs="?", const="-", default=None, metavar="identity",
+    help="Code signing identity. Omit flag to skip signing. "
+         "Use without value for ad-hoc ('-').")
+ap.add_argument("-entitlements", nargs=1, default=None, metavar="path",
+    help="Path to entitlements plist for hardened runtime signing")
 
 config = ap.parse_args()
 
@@ -654,8 +674,47 @@ else:
 
 # ------------------------------------------------
 
-if platform.system() == "Darwin":
-    subprocess.check_call(f"codesign --deep --force --sign - {target}", shell=True)
+if config.sign is not None and platform.system() == "Darwin":
+    identity = config.sign
+    entitlements_path = config.entitlements[0] if config.entitlements else None
+    # Use hardened runtime only for real identities (not ad-hoc).
+    hardened = (identity != "-") and (entitlements_path is not None)
+
+    print("+ Code signing (inside-out) +")
+    print(f"  Identity: {identity}")
+    print(f"  Hardened runtime: {hardened}")
+    if entitlements_path:
+        print(f"  Entitlements: {entitlements_path}")
+
+    # 1. Sign all dylibs and frameworks in Contents/Frameworks/
+    frameworks_dir = os.path.join(target, "Contents", "Frameworks")
+    if os.path.exists(frameworks_dir):
+        for item in sorted(os.listdir(frameworks_dir)):
+            item_path = os.path.join(frameworks_dir, item)
+            if item.endswith(".dylib"):
+                codesignItem(item_path, identity, None, hardened, verbose)
+            elif item.endswith(".framework"):
+                codesignItem(item_path, identity, None, hardened, verbose)
+
+    # 2. Sign all plugins in Contents/PlugIns/
+    plugins_dir = os.path.join(target, "Contents", "PlugIns")
+    if os.path.exists(plugins_dir):
+        for dirpath, dirnames, filenames in os.walk(plugins_dir):
+            for filename in sorted(filenames):
+                if filename.endswith(".dylib"):
+                    codesignItem(os.path.join(dirpath, filename),
+                                 identity, None, hardened, verbose)
+
+    # 3. Sign the main executable (with entitlements)
+    main_binary = os.path.join(target, "Contents", "MacOS", "gridcoinresearch")
+    codesignItem(main_binary, identity, entitlements_path, hardened, verbose)
+
+    # 4. Sign the top-level app bundle (with entitlements)
+    codesignItem(target, identity, entitlements_path, hardened, verbose)
+
+    # 5. Verify
+    print("+ Verifying code signature +")
+    subprocess.check_call(["codesign", "--verify", "--strict", "--verbose=2", target])
 
 if config.dmg is not None:
 
