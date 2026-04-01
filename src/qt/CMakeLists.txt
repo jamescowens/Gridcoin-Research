@@ -421,15 +421,12 @@ if(APPLE)
         list(APPEND _deploy_cmd -translations-dir "${_qt_translations_dir}")
     endif()
 
-    # The signing identity string often contains spaces and parentheses
-    # (e.g. "Developer ID Application: Name (TEAMID)") that break shell
-    # expansion when CMake passes them on the command line.  Instead,
-    # forward the identity via an environment variable and let
-    # macdeployqtplus read APPLE_SIGNING_IDENTITY from os.environ.
-    # When the env var is not set, macdeployqtplus falls back to ad-hoc.
-    set(_env_vars "QTDIR=${_qt_prefix_dir}")
+    # Code signing: macdeployqtplus reads APPLE_SIGNING_IDENTITY directly
+    # from the environment (inherited from the CI step or shell).  We do
+    # NOT pass it through cmake -E env because the identity string
+    # contains parentheses that /bin/sh cannot handle.  When the env var
+    # is not set, macdeployqtplus falls back to ad-hoc signing on macOS.
     if(DEFINED ENV{APPLE_SIGNING_IDENTITY})
-        list(APPEND _env_vars "APPLE_SIGNING_IDENTITY=$ENV{APPLE_SIGNING_IDENTITY}")
         set(_entitlements "${CMAKE_SOURCE_DIR}/contrib/macdeploy/entitlements.plist")
         if(EXISTS "${_entitlements}")
             list(APPEND _deploy_cmd -entitlements "${_entitlements}")
@@ -437,7 +434,7 @@ if(APPLE)
     endif()
 
     add_custom_target(deploy
-        COMMAND ${CMAKE_COMMAND} -E env ${_env_vars} ${_deploy_cmd}
+        COMMAND ${CMAKE_COMMAND} -E env "QTDIR=${_qt_prefix_dir}" ${_deploy_cmd}
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
         COMMENT "Deploying ${_dmg_name}.dmg via macdeployqtplus"
         DEPENDS gridcoinresearch
