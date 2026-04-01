@@ -450,19 +450,32 @@ jobs:
             echo "ERROR: No DMG file found"
             exit 1
           fi
-          echo "Submitting for notarization: $DMG_FILE"
 
-          xcrun notarytool submit "$DMG_FILE" \
-            --apple-id "$APPLE_NOTARY_APPLE_ID" \
-            --password "$APPLE_NOTARY_PASSWORD" \
-            --team-id "$APPLE_TEAM_ID" \
-            --wait \
-            --timeout 30m
-
-          echo "Stapling notarization ticket..."
-          xcrun stapler staple "$DMG_FILE"
-          xcrun stapler validate "$DMG_FILE"
-          echo "Notarization and stapling complete."
+          MAX_ATTEMPTS=3
+          ATTEMPT=1
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            echo "Notarization attempt $ATTEMPT of $MAX_ATTEMPTS: $DMG_FILE"
+            if xcrun notarytool submit "$DMG_FILE" \
+              --apple-id "$APPLE_NOTARY_APPLE_ID" \
+              --password "$APPLE_NOTARY_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" \
+              --wait \
+              --timeout 30m; then
+              echo "Stapling notarization ticket..."
+              xcrun stapler staple "$DMG_FILE"
+              xcrun stapler validate "$DMG_FILE"
+              echo "Notarization and stapling complete."
+              exit 0
+            fi
+            echo "Attempt $ATTEMPT failed."
+            ATTEMPT=$((ATTEMPT + 1))
+            if [ $ATTEMPT -le $MAX_ATTEMPTS ]; then
+              echo "Retrying in 30 seconds..."
+              sleep 30
+            fi
+          done
+          echo "ERROR: Notarization failed after $MAX_ATTEMPTS attempts."
+          exit 1
 
       - name: Upload Artifacts
         if: ${{ !env.ACT }}
@@ -663,19 +676,32 @@ jobs:
             echo "ERROR: No DMG file found"
             exit 1
           fi
-          echo "Submitting for notarization: $DMG_FILE"
 
-          xcrun notarytool submit "$DMG_FILE" \
-            --apple-id "$APPLE_NOTARY_APPLE_ID" \
-            --password "$APPLE_NOTARY_PASSWORD" \
-            --team-id "$APPLE_TEAM_ID" \
-            --wait \
-            --timeout 30m
-
-          echo "Stapling notarization ticket..."
-          xcrun stapler staple "$DMG_FILE"
-          xcrun stapler validate "$DMG_FILE"
-          echo "Notarization and stapling complete."
+          MAX_ATTEMPTS=3
+          ATTEMPT=1
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            echo "Notarization attempt $ATTEMPT of $MAX_ATTEMPTS: $DMG_FILE"
+            if xcrun notarytool submit "$DMG_FILE" \
+              --apple-id "$APPLE_NOTARY_APPLE_ID" \
+              --password "$APPLE_NOTARY_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" \
+              --wait \
+              --timeout 30m; then
+              echo "Stapling notarization ticket..."
+              xcrun stapler staple "$DMG_FILE"
+              xcrun stapler validate "$DMG_FILE"
+              echo "Notarization and stapling complete."
+              exit 0
+            fi
+            echo "Attempt $ATTEMPT failed."
+            ATTEMPT=$((ATTEMPT + 1))
+            if [ $ATTEMPT -le $MAX_ATTEMPTS ]; then
+              echo "Retrying in 30 seconds..."
+              sleep 30
+            fi
+          done
+          echo "ERROR: Notarization failed after $MAX_ATTEMPTS attempts."
+          exit 1
 
       - name: Upload Artifacts
         if: ${{ !env.ACT }}
