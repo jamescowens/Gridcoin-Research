@@ -438,7 +438,7 @@ jobs:
           echo "DMG verification: ALL CHECKS PASSED"
 
       - name: Notarize DMG
-        if: ${{ env.APPLE_SIGNING_IDENTITY != '' && env.APPLE_SIGNING_IDENTITY != '-' }}
+        if: ${{ env.APPLE_SIGNING_IDENTITY != '' && env.APPLE_SIGNING_IDENTITY != '-' && startsWith(github.ref, 'refs/tags/') }}
         env:
           APPLE_NOTARY_APPLE_ID: ${{ secrets.APPLE_NOTARY_APPLE_ID }}
           APPLE_NOTARY_PASSWORD: ${{ secrets.APPLE_NOTARY_PASSWORD }}
@@ -682,7 +682,7 @@ jobs:
           echo "DMG verification: ALL CHECKS PASSED"
 
       - name: Notarize DMG
-        if: ${{ env.APPLE_SIGNING_IDENTITY != '' && env.APPLE_SIGNING_IDENTITY != '-' }}
+        if: ${{ env.APPLE_SIGNING_IDENTITY != '' && env.APPLE_SIGNING_IDENTITY != '-' && startsWith(github.ref, 'refs/tags/') }}
         env:
           APPLE_NOTARY_APPLE_ID: ${{ secrets.APPLE_NOTARY_APPLE_ID }}
           APPLE_NOTARY_PASSWORD: ${{ secrets.APPLE_NOTARY_PASSWORD }}
