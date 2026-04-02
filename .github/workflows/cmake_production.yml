@@ -437,64 +437,6 @@ jobs:
           hdiutil detach "$MOUNT_POINT"
           echo "DMG verification: ALL CHECKS PASSED"
 
-      - name: Notarize DMG
-        if: ${{ env.APPLE_SIGNING_IDENTITY != '' && env.APPLE_SIGNING_IDENTITY != '-' && startsWith(github.ref, 'refs/tags/') }}
-        env:
-          APPLE_NOTARY_APPLE_ID: ${{ secrets.APPLE_NOTARY_APPLE_ID }}
-          APPLE_NOTARY_PASSWORD: ${{ secrets.APPLE_NOTARY_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          set -e
-          DMG_FILE=$(find build -maxdepth 1 -name "gridcoin-*.dmg" | head -1)
-          if [ -z "$DMG_FILE" ]; then
-            echo "ERROR: No DMG file found"
-            exit 1
-          fi
-
-          # Diagnostic: verify credentials are populated (lengths only)
-          echo "Diagnostics:"
-          echo "  APPLE_NOTARY_APPLE_ID length: ${#APPLE_NOTARY_APPLE_ID}"
-          echo "  APPLE_NOTARY_PASSWORD length: ${#APPLE_NOTARY_PASSWORD}"
-          echo "  APPLE_TEAM_ID length: ${#APPLE_TEAM_ID}"
-          echo "  DMG file: $DMG_FILE ($(stat -f%z "$DMG_FILE") bytes)"
-
-          # Probe: test credentials with a history query before submitting
-          echo "Testing credentials with notarytool history..."
-          if xcrun notarytool history \
-            --apple-id "$APPLE_NOTARY_APPLE_ID" \
-            --password "$APPLE_NOTARY_PASSWORD" \
-            --team-id "$APPLE_TEAM_ID" 2>&1; then
-            echo "Credential check passed."
-          else
-            echo "WARNING: Credential check failed."
-          fi
-
-          MAX_ATTEMPTS=3
-          ATTEMPT=1
-          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-            echo "Notarization attempt $ATTEMPT of $MAX_ATTEMPTS: $DMG_FILE"
-            if xcrun notarytool submit "$DMG_FILE" \
-              --apple-id "$APPLE_NOTARY_APPLE_ID" \
-              --password "$APPLE_NOTARY_PASSWORD" \
-              --team-id "$APPLE_TEAM_ID" \
-              --wait \
-              --timeout 60m; then
-              echo "Stapling notarization ticket..."
-              xcrun stapler staple "$DMG_FILE"
-              xcrun stapler validate "$DMG_FILE"
-              echo "Notarization and stapling complete."
-              exit 0
-            fi
-            echo "Attempt $ATTEMPT failed."
-            ATTEMPT=$((ATTEMPT + 1))
-            if [ $ATTEMPT -le $MAX_ATTEMPTS ]; then
-              echo "Retrying in 30 seconds..."
-              sleep 30
-            fi
-          done
-          echo "ERROR: Notarization failed after $MAX_ATTEMPTS attempts."
-          exit 1
-
       - name: Upload Artifacts
         if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v5
@@ -680,64 +622,6 @@ jobs:
           # Cleanup
           hdiutil detach "$MOUNT_POINT"
           echo "DMG verification: ALL CHECKS PASSED"
-
-      - name: Notarize DMG
-        if: ${{ env.APPLE_SIGNING_IDENTITY != '' && env.APPLE_SIGNING_IDENTITY != '-' && startsWith(github.ref, 'refs/tags/') }}
-        env:
-          APPLE_NOTARY_APPLE_ID: ${{ secrets.APPLE_NOTARY_APPLE_ID }}
-          APPLE_NOTARY_PASSWORD: ${{ secrets.APPLE_NOTARY_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          set -e
-          DMG_FILE=$(find build -maxdepth 1 -name "gridcoin-*.dmg" | head -1)
-          if [ -z "$DMG_FILE" ]; then
-            echo "ERROR: No DMG file found"
-            exit 1
-          fi
-
-          # Diagnostic: verify credentials are populated (lengths only)
-          echo "Diagnostics:"
-          echo "  APPLE_NOTARY_APPLE_ID length: ${#APPLE_NOTARY_APPLE_ID}"
-          echo "  APPLE_NOTARY_PASSWORD length: ${#APPLE_NOTARY_PASSWORD}"
-          echo "  APPLE_TEAM_ID length: ${#APPLE_TEAM_ID}"
-          echo "  DMG file: $DMG_FILE ($(stat -f%z "$DMG_FILE") bytes)"
-
-          # Probe: test credentials with a history query before submitting
-          echo "Testing credentials with notarytool history..."
-          if xcrun notarytool history \
-            --apple-id "$APPLE_NOTARY_APPLE_ID" \
-            --password "$APPLE_NOTARY_PASSWORD" \
-            --team-id "$APPLE_TEAM_ID" 2>&1; then
-            echo "Credential check passed."
-          else
-            echo "WARNING: Credential check failed."
-          fi
-
-          MAX_ATTEMPTS=3
-          ATTEMPT=1
-          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-            echo "Notarization attempt $ATTEMPT of $MAX_ATTEMPTS: $DMG_FILE"
-            if xcrun notarytool submit "$DMG_FILE" \
-              --apple-id "$APPLE_NOTARY_APPLE_ID" \
-              --password "$APPLE_NOTARY_PASSWORD" \
-              --team-id "$APPLE_TEAM_ID" \
-              --wait \
-              --timeout 60m; then
-              echo "Stapling notarization ticket..."
-              xcrun stapler staple "$DMG_FILE"
-              xcrun stapler validate "$DMG_FILE"
-              echo "Notarization and stapling complete."
-              exit 0
-            fi
-            echo "Attempt $ATTEMPT failed."
-            ATTEMPT=$((ATTEMPT + 1))
-            if [ $ATTEMPT -le $MAX_ATTEMPTS ]; then
-              echo "Retrying in 30 seconds..."
-              sleep 30
-            fi
-          done
-          echo "ERROR: Notarization failed after $MAX_ATTEMPTS attempts."
-          exit 1
 
       - name: Upload Artifacts
         if: ${{ !env.ACT }}
@@ -1069,11 +953,78 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/gridcoinresearch:latest
 
   # ----------------------------------------------------------------------
-  # JOB 4: Deploy (GitHub Release)
+  # JOB 4: Notarize macOS DMGs (tag pushes only)
+  # ----------------------------------------------------------------------
+  notarize-macos:
+    name: Notarize and Staple macOS DMGs
+    needs: [macos-native-arm64, macos-native-intel]
+    runs-on: macos-14
+    if: startsWith(github.ref, 'refs/tags/')
+    env:
+      APPLE_NOTARY_APPLE_ID: ${{ secrets.APPLE_NOTARY_APPLE_ID }}
+      APPLE_NOTARY_PASSWORD: ${{ secrets.APPLE_NOTARY_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    steps:
+      - name: Download ARM64 DMG
+        uses: actions/download-artifact@v5
+        with:
+          name: gridcoin-macos-arm64-dmg
+          path: dmgs
+
+      - name: Download Intel DMG
+        uses: actions/download-artifact@v5
+        with:
+          name: gridcoin-macos-intel-dmg
+          path: dmgs
+
+      - name: Submit, Wait, and Staple
+        run: |
+          set -e
+          cd dmgs
+
+          for DMG in *.dmg; do
+            echo "=== Submitting: $DMG ==="
+            SUBMIT_OUTPUT=$(xcrun notarytool submit "$DMG" \
+              --apple-id "$APPLE_NOTARY_APPLE_ID" \
+              --password "$APPLE_NOTARY_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" \
+              --output-format json)
+            SUBMISSION_ID=$(echo "$SUBMIT_OUTPUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+            echo "  Submission ID: $SUBMISSION_ID"
+
+            echo "=== Waiting for notarization ==="
+            xcrun notarytool wait "$SUBMISSION_ID" \
+              --apple-id "$APPLE_NOTARY_APPLE_ID" \
+              --password "$APPLE_NOTARY_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" \
+              --timeout 120m
+
+            echo "=== Stapling: $DMG ==="
+            xcrun stapler staple "$DMG"
+            xcrun stapler validate "$DMG"
+            echo "=== Done: $DMG ==="
+          done
+
+      - name: Upload Notarized ARM64 DMG
+        uses: actions/upload-artifact@v5
+        with:
+          name: gridcoin-macos-arm64-dmg-notarized
+          path: dmgs/*arm64*.dmg
+          retention-days: 5
+
+      - name: Upload Notarized Intel DMG
+        uses: actions/upload-artifact@v5
+        with:
+          name: gridcoin-macos-intel-dmg-notarized
+          path: dmgs/*x86_64*.dmg
+          retention-days: 5
+
+  # ----------------------------------------------------------------------
+  # JOB 5: Deploy (GitHub Release)
   # ----------------------------------------------------------------------
   deploy:
     name: Create Release
-    needs: [depends-builds, macos-native-arm64, macos-native-intel, flatpak-build]
+    needs: [depends-builds, notarize-macos, flatpak-build]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
@@ -1082,20 +1033,26 @@ jobs:
       - name: Download All Artifacts
         uses: actions/download-artifact@v5
         with:
-          pattern: gridcoin-*
-          merge-multiple: true
-          path: release_assets
+          path: artifacts
 
-      - name: Flatten and Checksum
-        working-directory: release_assets
+      - name: Assemble Release Assets
         run: |
-          # Move any nested files to the current directory
-          find . -mindepth 2 -type f -exec mv {} . \; || true
+          mkdir -p release_assets
 
-          # Clean up empty directories
-          find . -type d -empty -delete || true
+          # Copy non-macOS artifacts
+          for dir in artifacts/gridcoin-*/; do
+            case "$dir" in
+              *macos-arm64-dmg/|*macos-intel-dmg/) continue ;;  # skip non-notarized DMGs
+              *) cp "$dir"* release_assets/ 2>/dev/null || true ;;
+            esac
+          done
 
-          # Generate checksums for the now-flattened files
+          # Copy notarized macOS DMGs (preferred over originals)
+          for dir in artifacts/gridcoin-macos-*-notarized/; do
+            [ -d "$dir" ] && cp "$dir"* release_assets/ 2>/dev/null || true
+          done
+
+          cd release_assets
           sha256sum * > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
