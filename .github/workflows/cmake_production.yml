@@ -478,7 +478,7 @@ jobs:
               --password "$APPLE_NOTARY_PASSWORD" \
               --team-id "$APPLE_TEAM_ID" \
               --wait \
-              --timeout 30m; then
+              --timeout 60m; then
               echo "Stapling notarization ticket..."
               xcrun stapler staple "$DMG_FILE"
               xcrun stapler validate "$DMG_FILE"
@@ -722,7 +722,7 @@ jobs:
               --password "$APPLE_NOTARY_PASSWORD" \
               --team-id "$APPLE_TEAM_ID" \
               --wait \
-              --timeout 30m; then
+              --timeout 60m; then
               echo "Stapling notarization ticket..."
               xcrun stapler staple "$DMG_FILE"
               xcrun stapler validate "$DMG_FILE"
