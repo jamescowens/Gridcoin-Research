@@ -155,7 +155,7 @@ endif
 $(package)_config_opts_freebsd := $$($(package)_config_opts_linux)
 
 $(package)_config_opts_mingw32 := -no-dbus
-$(package)_config_opts_mingw32 += -no-freetype
+$(package)_config_opts_mingw32 += -qt-freetype
 $(package)_config_opts_mingw32 += -no-pkg-config
 
 $(package)_config_opts += $($(package)_config_opts_$(host_os))
