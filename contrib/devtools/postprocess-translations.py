@@ -28,8 +28,10 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
-# Regexp to check for Bitcoin/Gridcoin addresses
-ADDRESS_REGEXP = re.compile('([13]|bc1)[a-zA-Z0-9]{30,}')
+# Regexp to check for Bitcoin/Gridcoin addresses.
+# Bitcoin: 1/3 (P2PKH/P2SH), bc1 (bech32)
+# Gridcoin mainnet: S (base58 prefix 62), testnet: m/n (prefix 111)
+ADDRESS_REGEXP = re.compile('([13Smn]|bc1)[a-zA-Z0-9]{30,}')
 # Original content file suffix
 ORIGINAL_SUFFIX = '.orig'
 # Native Qt translation file (TS) format

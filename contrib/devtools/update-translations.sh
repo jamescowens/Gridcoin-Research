@@ -240,15 +240,19 @@ do_tx_push() {
 
     # Use the REST API directly because 'tx push --source' fails when
     # .tx/config specifies .xlf format but the resource type is QT (.ts).
-    local upload_id
-    upload_id=$(curl -s -X POST \
+    local response
+    response=$(curl -sS --fail-with-body -X POST \
         -H "Authorization: Bearer ${token}" \
         -F "resource=${TX_RESOURCE}" \
         -F "content=@${source_file}" \
-        "https://rest.api.transifex.com/resource_strings_async_uploads" \
+        "https://rest.api.transifex.com/resource_strings_async_uploads") \
+        || err "Transifex upload request failed. Response: ${response}"
+
+    local upload_id
+    upload_id=$(echo "${response}" \
         | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['id'])")
 
-    [ -n "${upload_id}" ] || err "Failed to initiate Transifex upload."
+    [ -n "${upload_id}" ] || err "Failed to parse Transifex upload response."
     echo "    Upload initiated (id: ${upload_id}). Waiting for completion..."
 
     # Poll until the async upload completes (typically < 30s).
@@ -260,9 +264,10 @@ do_tx_push() {
         [ ${attempts} -le 12 ] || err "Transifex upload timed out after 60s."
 
         local result
-        result=$(curl -s \
+        result=$(curl -sS --fail-with-body \
             -H "Authorization: Bearer ${token}" \
-            "https://rest.api.transifex.com/resource_strings_async_uploads/${upload_id}")
+            "https://rest.api.transifex.com/resource_strings_async_uploads/${upload_id}") \
+            || err "Transifex status poll failed. Response: ${result}"
 
         status=$(echo "${result}" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['attributes']['status'])")
     done
