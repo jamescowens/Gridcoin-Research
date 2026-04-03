@@ -6392,22 +6392,23 @@ Operations such as beacon management, voting, and sending transactions should no
         <translation>Ett fel uppstod vid upprättandet av RPC port %u för att lyssna på IPv4: %s</translation>
     </message>
     <message>
-        <location line="+434"/>
+        <location line="+457"/>
         <source>Usage:</source>
         <translation>Användning:</translation>
     </message>
     <message>
-        <location line="-97"/>
+        <location line="-109"/>
         <source>List commands</source>
         <translation>Lista kommandon</translation>
     </message>
     <message>
-        <location line="-356"/>
+        <location line="-367"/>
+        <location line="+344"/>
         <source>Gridcoin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-343"/>
         <source>The %s developers</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6438,6 +6439,11 @@ for example: alertnotify=echo %%s | mail -s &quot;Gridcoin Alert&quot; admin@foo
     </message>
     <message>
         <location line="+8"/>
+        <source>Cannot obtain a lock on data directory %s. %s is probably already running and using that directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Cannot obtain a lock on data directory %s. %s is probably already running.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6577,6 +6583,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+4"/>
+        <source>The wallet will now shutdown. Please start your wallet to begin sync from zero</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>There is a new leisure version available and you should upgrade as soon as practical.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6717,6 +6728,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+1"/>
+        <source>Are you sure you want to cancel the snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Authorized</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6773,6 +6789,16 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     <message>
         <location line="+1"/>
         <source>CPID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6871,6 +6897,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Failed to download snapshot.zip; See debug.log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
         <source>Failed to rename bootstrap file to .old for backup purposes.</source>
         <translation type="unfinished"></translation>
@@ -6931,7 +6962,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Importing blockchain data file(s).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7277,6 +7308,16 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+2"/>
+        <source>Reset Blockchain Data: Blockchain data removal failed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset Blockchain Data: Blockchain data removal was a success</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Resetting block chain index to prepare for reindexing...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7297,7 +7338,37 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+1"/>
+        <source>Snapshot extraction failed! Cleaning up any extracted data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation canceled due to an invalid snapshot zip.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation canceled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation successful!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Stage (1/4): Downloading snapshot.zip:         </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (1/4): Downloading snapshot.zip: Speed </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (2/4): Verify SHA256SUM of snapshot.zip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7307,7 +7378,17 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+1"/>
+        <source>Stage (3/4): Cleanup blockchain data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Stage (3/4): Cleanup blockchain data:          </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (4/4): Extracting snapshot.zip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7363,6 +7444,16 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     <message>
         <location line="+1"/>
         <source>The latest release is </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The wallet is now shutting down. Please restart your wallet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The wallet will now shutdown.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7521,7 +7612,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>okänd</translation>
     </message>
     <message>
-        <location line="-208"/>
+        <location line="-224"/>
         <source>Balance</source>
         <translation>Saldo</translation>
     </message>
@@ -7531,7 +7622,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>BOINC-belöning</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+11"/>
         <source>Client Version</source>
         <translation>Klientversion</translation>
     </message>
@@ -7546,7 +7637,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>FEL</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+33"/>
         <source>Height</source>
         <translation>Höjd</translation>
     </message>
@@ -7571,7 +7662,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Organisation</translation>
     </message>
     <message>
-        <location line="-218"/>
+        <location line="-223"/>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
         <translation>Varning: -paytxfee är satt väldigt hög! Detta är avgiften du kommer betala för varje transaktion.</translation>
     </message>
@@ -7586,32 +7677,32 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Varning: fel vid läsning av wallet.dat! Alla nycklar lästes korrekt, men transaktionsdatan eller adressbokens poster kanske saknas eller är felaktiga.</translation>
     </message>
     <message>
-        <location line="+127"/>
+        <location line="+130"/>
         <source>Error: Transaction creation failed  </source>
         <translation>Fel: Skapandet av transaktion misslyckades  </translation>
     </message>
     <message>
-        <location line="-256"/>
+        <location line="-262"/>
         <source>Error: The transaction was rejected.  This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.</source>
         <translation>Fel: Transaktionen nekades. Detta kan hända om vissa av mynten i din plånbok redan är använda, t.ex om du använder en kopia av wallet.dat och mynten redan var använda i kopia men inte markerade som använda här.</translation>
     </message>
     <message>
-        <location line="+265"/>
+        <location line="+272"/>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
         <translation>Misslyckades att lyssna på någon port. Använd -listen=0 om du vill detta.</translation>
     </message>
     <message>
-        <location line="+104"/>
+        <location line="+107"/>
         <source>Single Choice</source>
         <translation>Ett alternativ</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+28"/>
         <source>To use the %s option</source>
         <translation>Att använda %s alternativet</translation>
     </message>
     <message>
-        <location line="-246"/>
+        <location line="-263"/>
         <source>You must set rpcpassword=&lt;password&gt; in the configuration file:
 %s
 If the file does not exist, create it with owner-readable-only file permissions.</source>
@@ -7620,7 +7711,7 @@ If the file does not exist, create it with owner-readable-only file permissions.
 Om filen inte existerar, skapa den med filrättigheten endast läsbar för ägaren.</translation>
     </message>
     <message>
-        <location line="+249"/>
+        <location line="+266"/>
         <source>Unknown error</source>
         <translation>Okänt fel</translation>
     </message>
@@ -7635,7 +7726,7 @@ Om filen inte existerar, skapa den med filrättigheten endast läsbar för ägar
         <translation>Den här uppdateringen är</translation>
     </message>
     <message>
-        <location line="-64"/>
+        <location line="-76"/>
         <source>No current polls</source>
         <translation>Inga pågående omröstningar</translation>
     </message>
@@ -7650,7 +7741,7 @@ Om filen inte existerar, skapa den med filrättigheten endast läsbar för ägar
         <translation>Fel mängd för  -mininput=&lt;amount&gt;: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="+110"/>
+        <location line="+122"/>
         <source>Wallet %s resides outside data directory %s.</source>
         <translation>Plånbok %s ligger utanför datamappen %s.</translation>
     </message>
@@ -7660,12 +7751,12 @@ Om filen inte existerar, skapa den med filrättigheten endast läsbar för ägar
         <translation>Verifierar integriteten i databasen...</translation>
     </message>
     <message>
-        <location line="-408"/>
+        <location line="-428"/>
         <source>Error initializing database environment %s! To recover, BACKUP THAT DIRECTORY, then remove everything from it except for wallet.dat.</source>
         <translation>Ett fel uppstod vid initialiseringen av databasen %s! För att återställa, SÄKERHETSKOPIERA MAPPEN, radera sedan allt från mappen förutom wallet.dat.</translation>
     </message>
     <message>
-        <location line="+437"/>
+        <location line="+457"/>
         <source>vote</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7675,7 +7766,7 @@ Om filen inte existerar, skapa den med filrättigheten endast läsbar för ägar
         <translation>wallet.dat korrupt, räddning misslyckades</translation>
     </message>
     <message>
-        <location line="-140"/>
+        <location line="-152"/>
         <source>Invalid -proxy address: &apos;%s&apos;</source>
         <translation>Ogiltig -proxy adress: &apos;%s&apos;</translation>
     </message>
@@ -7685,7 +7776,7 @@ Om filen inte existerar, skapa den med filrättigheten endast läsbar för ägar
         <translation>Fel -tor adress: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-60"/>
+        <location line="-62"/>
         <source>Cannot resolve -bind address: &apos;%s&apos;</source>
         <translation>Kan inte matcha -bind adress: &apos;%s&apos;</translation>
     </message>
@@ -7695,12 +7786,12 @@ Om filen inte existerar, skapa den med filrättigheten endast läsbar för ägar
         <translation>Kan inte matcha -externalip adress: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+65"/>
         <source>Invalid amount for -reservebalance=&lt;amount&gt;</source>
         <translation>Fel mängd för -reservebalance=&lt;amount&gt;</translation>
     </message>
     <message>
-        <location line="-43"/>
+        <location line="-45"/>
         <source>Error loading blkindex.dat</source>
         <translation>Fel vid laddande av blkindex.dat</translation>
     </message>
@@ -7715,17 +7806,17 @@ Om filen inte existerar, skapa den med filrättigheten endast läsbar för ägar
         <translation>Kunde inte ladda wallet.dat: En nyare version av Gridcoin krävs</translation>
     </message>
     <message>
-        <location line="+149"/>
+        <location line="+163"/>
         <source>Wallet needed to be rewritten: restart Gridcoin to complete</source>
         <translation>Plånboken måste skrivas om: Starta om Gridcoin för att slutföra</translation>
     </message>
     <message>
-        <location line="-151"/>
+        <location line="-165"/>
         <source>Error loading wallet.dat</source>
         <translation>Fel vid inläsning av plånboksfilen wallet.dat</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+30"/>
         <source>Importing bootstrap blockchain data file.</source>
         <translation>Importerar bootstrap blockchain data fil.</translation>
     </message>
@@ -7735,22 +7826,22 @@ Om filen inte existerar, skapa den med filrättigheten endast läsbar för ägar
         <translation>Laddar adresser...</translation>
     </message>
     <message>
-        <location line="-41"/>
+        <location line="-43"/>
         <source>Error: could not start node</source>
         <translation>Fel: kunde inte starta noden</translation>
     </message>
     <message>
-        <location line="-172"/>
+        <location line="-175"/>
         <source>Unable to bind to %s on this computer. Gridcoin is probably already running.</source>
         <translation>Kan inte binda till %s på denna dator. Gridcoin är sannolikt redan startad.</translation>
     </message>
     <message>
-        <location line="+299"/>
+        <location line="+316"/>
         <source>Unable to bind to %s on this computer (bind returned error %d, %s)</source>
         <translation>Det går inte att binda till %s på den här datorn (bind returnerade felmeddelande %d, %s)</translation>
     </message>
     <message>
-        <location line="-130"/>
+        <location line="-144"/>
         <source>Error: Wallet locked, unable to create transaction  </source>
         <translation>Fel: Plånboken låst, kan inte utföra transaktion  </translation>
     </message>
@@ -7760,27 +7851,27 @@ Om filen inte existerar, skapa den med filrättigheten endast läsbar för ägar
         <translation>Fel: Plånboken öppnad endast för stake-process, kan inte skapa transaktion.</translation>
     </message>
     <message>
-        <location line="-252"/>
+        <location line="-258"/>
         <source>Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds  </source>
         <translation>Fel: Transaktionen kräver en transaktionsavgift på min %s på grund av dess storlek, komplexitet eller användning av nyligen mottagna kapital  </translation>
     </message>
     <message>
-        <location line="+360"/>
+        <location line="+370"/>
         <source>Sending...</source>
         <translation>Skickar...</translation>
     </message>
     <message>
-        <location line="-73"/>
+        <location line="-75"/>
         <source>Invalid amount</source>
         <translation>Ogiltig mängd</translation>
     </message>
     <message>
-        <location line="-169"/>
+        <location line="-174"/>
         <source>Warning: Please check that your computer&apos;s date and time are correct! If your clock is wrong Gridcoin will not work properly.</source>
         <translation>Varning: Kolla att din dators tid och datum är rätt. Gridcoin kan inte fungera ordentligt om tiden i datorn är fel.</translation>
     </message>
     <message>
-        <location line="+283"/>
+        <location line="+300"/>
         <source>Warning: Disk space is low!</source>
         <translation>Varning: Lågt skivutrymme!</translation>
     </message>
@@ -7790,7 +7881,7 @@ Om filen inte existerar, skapa den med filrättigheten endast läsbar för ägar
         <translation>Okänt nätverk som anges i -onlynet: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-105"/>
+        <location line="-117"/>
         <source>Insufficient funds</source>
         <translation>Otillräckligt med bitcoins</translation>
     </message>
@@ -7805,17 +7896,17 @@ Om filen inte existerar, skapa den med filrättigheten endast läsbar för ägar
         <translation>Laddar plånbok...</translation>
     </message>
     <message>
-        <location line="-75"/>
+        <location line="-77"/>
         <source>Cannot write default address</source>
         <translation>Kan inte skriva standardadress</translation>
     </message>
     <message>
-        <location line="+133"/>
+        <location line="+135"/>
         <source>Rescanning...</source>
         <translation>Söker igen...</translation>
     </message>
     <message>
-        <location line="-122"/>
+        <location line="-124"/>
         <source>Done loading</source>
         <translation>Klar med laddning</translation>
     </message>

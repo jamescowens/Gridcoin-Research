@@ -6442,22 +6442,23 @@ Operations such as beacon management, voting, and sending transactions should no
         <translation>Произошла ошибка при открытии RPC-порта %u для прослушивания на IPv4: %s</translation>
     </message>
     <message>
-        <location line="+434"/>
+        <location line="+457"/>
         <source>Usage:</source>
         <translation>Использование:</translation>
     </message>
     <message>
-        <location line="-97"/>
+        <location line="-109"/>
         <source>List commands</source>
         <translation>Список команд</translation>
     </message>
     <message>
-        <location line="-356"/>
+        <location line="-367"/>
+        <location line="+344"/>
         <source>Gridcoin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="-342"/>
         <source>The Gridcoin developers</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6468,6 +6469,11 @@ Operations such as beacon management, voting, and sending transactions should no
     </message>
     <message>
         <location line="+8"/>
+        <source>Cannot obtain a lock on data directory %s. %s is probably already running and using that directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Cannot obtain a lock on data directory %s. %s is probably already running.</source>
         <translation>Не удается заблокировать каталог данных %s. Вероятно %s уже используется.</translation>
     </message>
@@ -6587,6 +6593,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+4"/>
+        <source>The wallet will now shutdown. Please start your wallet to begin sync from zero</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>There is a new leisure version available and you should upgrade as soon as practical.</source>
         <translation>Доступна новая версия, и вам следует обновить её, как только у вас появится на это время.</translation>
     </message>
@@ -6722,6 +6733,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+1"/>
+        <source>Are you sure you want to cancel the snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Authorized</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6748,6 +6764,16 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     <message>
         <location line="+1"/>
         <source>CPID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6821,6 +6847,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Failed to download snapshot.zip; See debug.log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
         <source>Failed to rename bootstrap file to .old for backup purposes.</source>
         <translation>Не удалось переименовать файл начальной загрузки в .old для резервного копирования.</translation>
@@ -6871,7 +6902,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Доступно Обновление Gridcoin</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Inactive</source>
         <translation type="unfinished">Неактивно</translation>
     </message>
@@ -7166,12 +7197,62 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
+        <source>Reset Blockchain Data: Blockchain data removal failed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset Blockchain Data: Blockchain data removal was a success</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Send command to -server or gridcoinresearchd</source>
         <translation>Отправьте команду -server или gridcoinresearchd</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+5"/>
+        <source>Snapshot extraction failed! Cleaning up any extracted data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation canceled due to an invalid snapshot zip.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation canceled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation successful!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Stage (1/4): Downloading snapshot.zip: Speed </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (2/4): Verify SHA256SUM of snapshot.zip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Stage (3/4): Cleanup blockchain data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Stage (4/4): Extracting snapshot.zip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Staking Only - Non-cruncher Mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7193,6 +7274,16 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     <message>
         <location line="+1"/>
         <source>The latest release is </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The wallet is now shutting down. Please restart your wallet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The wallet will now shutdown.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7321,22 +7412,22 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>неизвестный</translation>
     </message>
     <message>
-        <location line="-208"/>
+        <location line="-224"/>
         <source>Balance</source>
         <translation>Баланс</translation>
     </message>
     <message>
-        <location line="-274"/>
+        <location line="-281"/>
         <source>The %s developers</source>
         <translation>Разработчики %s</translation>
     </message>
     <message>
-        <location line="+69"/>
+        <location line="+72"/>
         <source>Error: Unsupported argument -socks found. Setting SOCKS version isn&apos;t possible anymore, only SOCKS5 proxies are supported.</source>
         <translation>Ошибка: найден неподдерживаемый аргумент -socks. Установка версии SOCKS больше невозможна, поддерживаются только SOCKS5 прокси.</translation>
     </message>
     <message>
-        <location line="+206"/>
+        <location line="+210"/>
         <source>Block Version</source>
         <translation>Версия Блока</translation>
     </message>
@@ -7371,7 +7462,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Награда BOINC</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+11"/>
         <source>Client Version</source>
         <translation>Версия Клиента</translation>
     </message>
@@ -7411,12 +7502,12 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Ошибка: Кошелёк заблокирован, невозможно создать транзакцию.</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+16"/>
         <source>GitHub version: </source>
         <translation>Версия на GitHub: </translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Height</source>
         <translation>Высота</translation>
     </message>
@@ -7481,7 +7572,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Несоответствие электронной почты проекта</translation>
     </message>
     <message>
-        <location line="-246"/>
+        <location line="-251"/>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
         <translation>Внимание: установлено очень большое значение -paytxfee. Это комиссия, которую вы заплатите при проведении транзакции.</translation>
     </message>
@@ -7496,22 +7587,22 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Внимание: ошибка чтения wallet.dat! Все ключи прочитаны верно, но данные транзакций или записи адресной книги могут отсутствовать или быть неправильными.</translation>
     </message>
     <message>
-        <location line="+127"/>
+        <location line="+130"/>
         <source>Error: Transaction creation failed  </source>
         <translation>Ошибка: Не удалось создать транзакцию  </translation>
     </message>
     <message>
-        <location line="-256"/>
+        <location line="-262"/>
         <source>Error: The transaction was rejected.  This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.</source>
         <translation>Ошибка: транзакция была отклонена! Это могло произойти в случае, если некоторые монеты в вашем кошельке уже были потрачены, например, если вы используете копию wallet.dat, и монеты были использованы в копии, но не отмечены как потраченные здесь.</translation>
     </message>
     <message>
-        <location line="+265"/>
+        <location line="+272"/>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
         <translation>Не удалось начать прослушивание на порту. Используйте -listen=0 если вас это устраивает.</translation>
     </message>
     <message>
-        <location line="+104"/>
+        <location line="+107"/>
         <source>Single Choice</source>
         <translation>Единственный Выбор</translation>
     </message>
@@ -7526,12 +7617,12 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Процесс создания Снимка Начался.</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+26"/>
         <source>To use the %s option</source>
         <translation>Чтобы использовать опцию %s</translation>
     </message>
     <message>
-        <location line="-440"/>
+        <location line="-463"/>
         <source>%s, you must set a rpcpassword in the configuration file:
  %s
 It is recommended you use the following random password:
@@ -7556,7 +7647,7 @@ rpcpassword=%s
 </translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+29"/>
         <source>Due to the failure to delete the blockchain data you will be required to manually delete the data before starting your wallet.</source>
         <translation>Из-за невозможности удалить данные блокчейна вам потребуется вручную удалить данные перед запуском кошелька.</translation>
     </message>
@@ -7571,7 +7662,7 @@ rpcpassword=%s
         <translation>Невыполнение этого требования приведет к неопределенному поведению или невозможности запуска кошелька.</translation>
     </message>
     <message>
-        <location line="+69"/>
+        <location line="+72"/>
         <source>Unable to download a snapshot, as the wallet has detected that a new mandatory version is available for install. The mandatory upgrade must be installed before the snapshot can be downloaded and applied.</source>
         <translation>Не удалось загрузить снимок, так как кошелек обнаружил, что доступна новая обязательная версия для установки . Обязательное обновление должно быть установлено до загрузки и применения снимка.</translation>
     </message>
@@ -7585,32 +7676,32 @@ If the file does not exist, create it with owner-readable-only file permissions.
 Если файл не существует, создайте его и установите права доступа только для владельца.</translation>
     </message>
     <message>
-        <location line="+136"/>
+        <location line="+140"/>
         <source>Gridcoin version</source>
         <translation>Gridcoin версия</translation>
     </message>
     <message>
-        <location line="+89"/>
+        <location line="+92"/>
         <source>Resetting block chain index to prepare for reindexing...</source>
         <translation>Сброс индекса цепочки блоков для подготовки к переиндексации...</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+10"/>
         <source>Stage (1/4): Downloading snapshot.zip:         </source>
         <translation>Этап (1/4): Загрузка snapshot.zip: </translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Stage (2/4): Verify SHA256SUM of snapshot.zip: </source>
         <translation>Этап (2/4): Проверка SHA256SUM snapshot.zip: </translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Stage (3/4): Cleanup blockchain data:          </source>
         <translation>Стадия (3/4): Очистка данных блокчейна: </translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Stage (4/4): Extracting snapshot.zip:          </source>
         <translation>Этап (4/4): Распаковка snapshot.zip: </translation>
     </message>
@@ -7625,7 +7716,7 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Версия только для тестовой сети</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+10"/>
         <source>Unknown error</source>
         <translation>Неизвестная ошибка</translation>
     </message>
@@ -7635,7 +7726,7 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Неизвестный</translation>
     </message>
     <message>
-        <location line="-19"/>
+        <location line="-21"/>
         <source>Staking Only - No active beacon</source>
         <translation>Только Стейкинг — Нет активного маяка</translation>
     </message>
@@ -7650,7 +7741,7 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Двоичный Размер Суперблока</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+8"/>
         <source>This update is </source>
         <translation>Это обновление </translation>
     </message>
@@ -7670,7 +7761,7 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Неизвестный тип веса опроса.</translation>
     </message>
     <message>
-        <location line="-73"/>
+        <location line="-85"/>
         <source>No current polls</source>
         <translation>Нет текущих опросов</translation>
     </message>
@@ -7690,7 +7781,7 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Инициализация проверки работоспособности не удалась. Gridcoin закрывается.</translation>
     </message>
     <message>
-        <location line="+119"/>
+        <location line="+131"/>
         <source>Wallet %s resides outside data directory %s.</source>
         <translation>Кошелёк %s располагается вне каталога %s.</translation>
     </message>
@@ -7700,12 +7791,12 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Проверка целостности базы данных...</translation>
     </message>
     <message>
-        <location line="-408"/>
+        <location line="-428"/>
         <source>Error initializing database environment %s! To recover, BACKUP THAT DIRECTORY, then remove everything from it except for wallet.dat.</source>
         <translation>Ошибка инициализации среды базы данных %s! Чтобы восстановить, СДЕЛАЙТЕ БЕКАП ДАННОЙ ДИРЕКТОРИИ, затем удалите все, кроме него, за исключением wallet.dat.</translation>
     </message>
     <message>
-        <location line="+437"/>
+        <location line="+457"/>
         <source>vote</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7715,7 +7806,7 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>wallet.dat повреждён, восстановление не удалось</translation>
     </message>
     <message>
-        <location line="-140"/>
+        <location line="-152"/>
         <source>Invalid -proxy address: &apos;%s&apos;</source>
         <translation>Неверный адрес -proxy: &apos;%s&apos;</translation>
     </message>
@@ -7725,7 +7816,7 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Недопустимый адрес -tor: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-60"/>
+        <location line="-62"/>
         <source>Cannot resolve -bind address: &apos;%s&apos;</source>
         <translation>Не удаётся разрешить адрес в параметре -bind: &apos;%s&apos;</translation>
     </message>
@@ -7735,12 +7826,12 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Не удаётся разрешить адрес в параметре -externalip: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+65"/>
         <source>Invalid amount for -reservebalance=&lt;amount&gt;</source>
         <translation>Недопустимая сумма для -reservebalance = &lt;amount&gt;</translation>
     </message>
     <message>
-        <location line="-43"/>
+        <location line="-45"/>
         <source>Error loading blkindex.dat</source>
         <translation>Ошибка при загрузке blkindex.dat</translation>
     </message>
@@ -7755,12 +7846,12 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Ошибка загрузки wallet.dat: Кошелёк требует более новой версии Gridcoin</translation>
     </message>
     <message>
-        <location line="+73"/>
+        <location line="+75"/>
         <source>Offline</source>
         <translation>Не в сети</translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+83"/>
         <source>Verifying checkpoints...</source>
         <translation>Проверка контрольных точек...</translation>
     </message>
@@ -7775,12 +7866,12 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Необходимо перезаписать кошелёк: перезапустите Gridcoin для завершения операции</translation>
     </message>
     <message>
-        <location line="-151"/>
+        <location line="-165"/>
         <source>Error loading wallet.dat</source>
         <translation>Ошибка при загрузке wallet.dat</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+30"/>
         <source>Importing bootstrap blockchain data file.</source>
         <translation>Импорт файла данных блокировки bootstrap.</translation>
     </message>
@@ -7790,22 +7881,22 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Загрузка адресов...</translation>
     </message>
     <message>
-        <location line="-41"/>
+        <location line="-43"/>
         <source>Error: could not start node</source>
         <translation>Ошибка: не удалось запустить узел</translation>
     </message>
     <message>
-        <location line="-172"/>
+        <location line="-175"/>
         <source>Unable to bind to %s on this computer. Gridcoin is probably already running.</source>
         <translation>Невозможно забиндиться %s на этом компьютере. Gridcoin вероятно уже запущен.</translation>
     </message>
     <message>
-        <location line="+299"/>
+        <location line="+316"/>
         <source>Unable to bind to %s on this computer (bind returned error %d, %s)</source>
         <translation>Невозможно привязаться к %s на этом компьютере (bind вернул ошибку %d, %s)</translation>
     </message>
     <message>
-        <location line="-130"/>
+        <location line="-144"/>
         <source>Error: Wallet locked, unable to create transaction  </source>
         <translation>Ошибка: кошелёк заблокирован, невозможно создать транзакцию  </translation>
     </message>
@@ -7815,27 +7906,27 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Ошибка: Кошелёк разблокирован только для стейкинга, невозможно создать транзакцию.</translation>
     </message>
     <message>
-        <location line="-252"/>
+        <location line="-258"/>
         <source>Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds  </source>
         <translation>Ошибка: эта транзакция требует комиссию как минимум %s из-за суммы, сложности или использования недавно полученных средств  </translation>
     </message>
     <message>
-        <location line="+360"/>
+        <location line="+370"/>
         <source>Sending...</source>
         <translation>Отправка...</translation>
     </message>
     <message>
-        <location line="-73"/>
+        <location line="-75"/>
         <source>Invalid amount</source>
         <translation>Неверная сумма</translation>
     </message>
     <message>
-        <location line="-169"/>
+        <location line="-174"/>
         <source>Warning: Please check that your computer&apos;s date and time are correct! If your clock is wrong Gridcoin will not work properly.</source>
         <translation>Внимание: убедитесь, что дата и время на Вашем компьютере выставлены верно. Если Ваши часы идут неправильно, Gridcoin будет работать некорректно.</translation>
     </message>
     <message>
-        <location line="+274"/>
+        <location line="+291"/>
         <source>Vote signature failed. See debug.log.</source>
         <translation>Не удалось подписать голос. Смотрите debug.log.</translation>
     </message>
@@ -7850,7 +7941,7 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>В параметре -onlynet указана неизвестная сеть: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-105"/>
+        <location line="-117"/>
         <source>Insufficient funds</source>
         <translation>Недостаточно монет</translation>
     </message>
@@ -7865,17 +7956,17 @@ If the file does not exist, create it with owner-readable-only file permissions.
         <translation>Загрузка кошелька...</translation>
     </message>
     <message>
-        <location line="-75"/>
+        <location line="-77"/>
         <source>Cannot write default address</source>
         <translation>Не удаётся записать адрес по умолчанию</translation>
     </message>
     <message>
-        <location line="+133"/>
+        <location line="+135"/>
         <source>Rescanning...</source>
         <translation>Сканирование...</translation>
     </message>
     <message>
-        <location line="-122"/>
+        <location line="-124"/>
         <source>Done loading</source>
         <translation>Загрузка завершена</translation>
     </message>

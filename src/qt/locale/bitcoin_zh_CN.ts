@@ -6369,29 +6369,30 @@ Operations such as beacon management, voting, and sending transactions should no
         <translation>设置RPC端口%u以监听IPv4:%s时出现错误</translation>
     </message>
     <message>
-        <location line="+434"/>
+        <location line="+457"/>
         <source>Usage:</source>
         <translation>使用：</translation>
     </message>
     <message>
-        <location line="-97"/>
+        <location line="-109"/>
         <source>List commands</source>
         <translation>命令列表
 </translation>
     </message>
     <message>
-        <location line="-27"/>
+        <location line="-28"/>
         <source>Get help for a command</source>
         <translation>得到关于某个命令的帮助
 </translation>
     </message>
     <message>
-        <location line="-329"/>
+        <location line="-339"/>
+        <location line="+344"/>
         <source>Gridcoin</source>
         <translation>格雷德币</translation>
     </message>
     <message>
-        <location line="+166"/>
+        <location line="-172"/>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
         <translation>警告：-paytxfee 被设置得非常高！若您发送一个转账，这是您将支付的转账费。</translation>
     </message>
@@ -6406,27 +6407,27 @@ Operations such as beacon management, voting, and sending transactions should no
         <translation>警告： 读取wallet.dat时出现错误！所有密钥均已正确解读，但转账数据或地址簿条目可能缺失或不正确。</translation>
     </message>
     <message>
-        <location line="+127"/>
+        <location line="+130"/>
         <source>Error: Transaction creation failed  </source>
         <translation>错误：交易创建失败 </translation>
     </message>
     <message>
-        <location line="-256"/>
+        <location line="-262"/>
         <source>Error: The transaction was rejected.  This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.</source>
         <translation>交易被拒绝。您钱包中的钱币可能已经被花费，例如当您使用wallet.dat文件的副本，钱币在该副本中被花费但未在这里标记为已花费时。</translation>
     </message>
     <message>
-        <location line="+265"/>
+        <location line="+272"/>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
         <translation>监听任意端口失败。 若您希望如此，使用 -listen=0.</translation>
     </message>
     <message>
-        <location line="+122"/>
+        <location line="+135"/>
         <source>To use the %s option</source>
         <translation>使用 %s 选项</translation>
     </message>
     <message>
-        <location line="-440"/>
+        <location line="-463"/>
         <source>%s, you must set a rpcpassword in the configuration file:
  %s
 It is recommended you use the following random password:
@@ -6467,6 +6468,11 @@ rpcpassword=%s
     </message>
     <message>
         <location line="+8"/>
+        <source>Cannot obtain a lock on data directory %s. %s is probably already running and using that directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Cannot obtain a lock on data directory %s. %s is probably already running.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6606,6 +6612,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+4"/>
+        <source>The wallet will now shutdown. Please start your wallet to begin sync from zero</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>There is a new leisure version available and you should upgrade as soon as practical.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6757,6 +6768,11 @@ rpcpassword=&lt;password&gt;
     </message>
     <message>
         <location line="+1"/>
+        <source>Are you sure you want to cancel the snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Authorized</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6823,6 +6839,16 @@ rpcpassword=&lt;password&gt;
     <message>
         <location line="+1"/>
         <source>CPID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6936,6 +6962,11 @@ rpcpassword=&lt;password&gt;
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Failed to download snapshot.zip; See debug.log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
         <source>Failed to rename bootstrap file to .old for backup purposes.</source>
         <translation type="unfinished"></translation>
@@ -6991,7 +7022,7 @@ rpcpassword=&lt;password&gt;
         <translation>格雷德币版本</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Height</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7046,7 +7077,7 @@ rpcpassword=&lt;password&gt;
         <translation>初始化完整性检查失败。格雷德币正在停止运行。</translation>
     </message>
     <message>
-        <location line="+119"/>
+        <location line="+131"/>
         <source>Wallet %s resides outside data directory %s.</source>
         <translation>钱包%s位于数据目录%s之外。</translation>
     </message>
@@ -7056,12 +7087,12 @@ rpcpassword=&lt;password&gt;
         <translation>检查数据库完整性...</translation>
     </message>
     <message>
-        <location line="-408"/>
+        <location line="-428"/>
         <source>Error initializing database environment %s! To recover, BACKUP THAT DIRECTORY, then remove everything from it except for wallet.dat.</source>
         <translation>初始化数据库环境 %s 时出错！为恢复，备份该目录，然后删除除wallet.dat之外的全部文件</translation>
     </message>
     <message>
-        <location line="+413"/>
+        <location line="+433"/>
         <source>Warning: 45 days &lt; ETTS = %1 &lt;= 90 days</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7186,7 +7217,7 @@ rpcpassword=&lt;password&gt;
         <translation>wallet.dat损坏，抢救失败</translation>
     </message>
     <message>
-        <location line="-140"/>
+        <location line="-152"/>
         <source>Invalid -proxy address: &apos;%s&apos;</source>
         <translation>无效的代理地址: &apos;%s&apos;</translation>
     </message>
@@ -7196,7 +7227,7 @@ rpcpassword=&lt;password&gt;
         <translation>无效的 -tor 地址: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-60"/>
+        <location line="-62"/>
         <source>Cannot resolve -bind address: &apos;%s&apos;</source>
         <translation>无法解析 -bind 端口地址: &apos;%s&apos;</translation>
     </message>
@@ -7206,12 +7237,12 @@ rpcpassword=&lt;password&gt;
         <translation>无法解析 -externalip 地址: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+65"/>
         <source>Invalid amount for -reservebalance=&lt;amount&gt;</source>
         <translation>对-reservebalance=&lt;amount&gt; 无效的金额</translation>
     </message>
     <message>
-        <location line="-43"/>
+        <location line="-45"/>
         <source>Error loading blkindex.dat</source>
         <translation>blkindex.dat文件加载错误</translation>
     </message>
@@ -7226,7 +7257,7 @@ rpcpassword=&lt;password&gt;
         <translation>wallet.dat钱包文件加载错误：请升级到最新格雷德币客户端</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+41"/>
         <source>Invalid amount for -peertimeout=&lt;amount&gt;: &apos;%s&apos;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7557,6 +7588,16 @@ rpcpassword=&lt;password&gt;
     </message>
     <message>
         <location line="+2"/>
+        <source>Reset Blockchain Data: Blockchain data removal failed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset Blockchain Data: Blockchain data removal was a success</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Resetting block chain index to prepare for reindexing...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7582,7 +7623,37 @@ rpcpassword=&lt;password&gt;
     </message>
     <message>
         <location line="+1"/>
+        <source>Snapshot extraction failed! Cleaning up any extracted data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation canceled due to an invalid snapshot zip.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation canceled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation successful!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Stage (1/4): Downloading snapshot.zip:         </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (1/4): Downloading snapshot.zip: Speed </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (2/4): Verify SHA256SUM of snapshot.zip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7592,7 +7663,17 @@ rpcpassword=&lt;password&gt;
     </message>
     <message>
         <location line="+1"/>
+        <source>Stage (3/4): Cleanup blockchain data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Stage (3/4): Cleanup blockchain data:          </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (4/4): Extracting snapshot.zip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7648,6 +7729,16 @@ rpcpassword=&lt;password&gt;
     <message>
         <location line="+1"/>
         <source>The latest release is </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The wallet is now shutting down. Please restart your wallet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The wallet will now shutdown.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7711,12 +7802,12 @@ rpcpassword=&lt;password&gt;
         <translation>钱包文件需要重写：请退出并重新启动格雷德币客户端</translation>
     </message>
     <message>
-        <location line="-151"/>
+        <location line="-165"/>
         <source>Error loading wallet.dat</source>
         <translation>wallet.dat钱包文件加载错误</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+30"/>
         <source>Importing bootstrap blockchain data file.</source>
         <translation>导入引导程序区块链数据文件。</translation>
     </message>
@@ -7726,22 +7817,22 @@ rpcpassword=&lt;password&gt;
         <translation>正在加载地址...</translation>
     </message>
     <message>
-        <location line="-41"/>
+        <location line="-43"/>
         <source>Error: could not start node</source>
         <translation>错误: 无法启动节点</translation>
     </message>
     <message>
-        <location line="-172"/>
+        <location line="-175"/>
         <source>Unable to bind to %s on this computer. Gridcoin is probably already running.</source>
         <translation>无法在本机绑定 %s 端口。比特币客户端软件可能已经在运行。</translation>
     </message>
     <message>
-        <location line="+299"/>
+        <location line="+316"/>
         <source>Unable to bind to %s on this computer (bind returned error %d, %s)</source>
         <translation>无法绑定本机端口 %s  (返回错误消息 %d, %s)</translation>
     </message>
     <message>
-        <location line="-130"/>
+        <location line="-144"/>
         <source>Error: Wallet locked, unable to create transaction  </source>
         <translation>错误：钱包已锁定，不能创建交易</translation>
     </message>
@@ -7751,27 +7842,27 @@ rpcpassword=&lt;password&gt;
         <translation>错误：钱包解锁仅用于权益增值，无法创建交易。</translation>
     </message>
     <message>
-        <location line="-252"/>
+        <location line="-258"/>
         <source>Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds  </source>
         <translation>错误：转账需要至少 %s 的转账费，因为其数额，复杂度或使用了近期收到的存款  </translation>
     </message>
     <message>
-        <location line="+360"/>
+        <location line="+370"/>
         <source>Sending...</source>
         <translation>发送中...</translation>
     </message>
     <message>
-        <location line="-73"/>
+        <location line="-75"/>
         <source>Invalid amount</source>
         <translation>无效金额</translation>
     </message>
     <message>
-        <location line="-169"/>
+        <location line="-174"/>
         <source>Warning: Please check that your computer&apos;s date and time are correct! If your clock is wrong Gridcoin will not work properly.</source>
         <translation>警告：请确定您当前计算机的日期和时间是正确的！格雷德币将无法在错误的时间下正常工作。</translation>
     </message>
     <message>
-        <location line="+283"/>
+        <location line="+300"/>
         <source>Warning: Disk space is low!</source>
         <translation>警告：磁盘剩余空间低!</translation>
     </message>
@@ -7781,7 +7872,7 @@ rpcpassword=&lt;password&gt;
         <translation>被指定的是未知网络 -onlynet: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-105"/>
+        <location line="-117"/>
         <source>Insufficient funds</source>
         <translation>存款不足</translation>
     </message>
@@ -7796,17 +7887,17 @@ rpcpassword=&lt;password&gt;
         <translation>正在加载钱包...</translation>
     </message>
     <message>
-        <location line="-75"/>
+        <location line="-77"/>
         <source>Cannot write default address</source>
         <translation>无法写入缺省地址</translation>
     </message>
     <message>
-        <location line="+133"/>
+        <location line="+135"/>
         <source>Rescanning...</source>
         <translation>正在重新扫描...</translation>
     </message>
     <message>
-        <location line="-122"/>
+        <location line="-124"/>
         <source>Done loading</source>
         <translation>加载完成</translation>
     </message>

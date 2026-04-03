@@ -6379,22 +6379,22 @@ Operations such as beacon management, voting, and sending transactions should no
         <translation>RPC pordi %u kuulamiseks seadistamisel ilmnes viga IPv4&apos;l: %s</translation>
     </message>
     <message>
-        <location line="+434"/>
+        <location line="+457"/>
         <source>Usage:</source>
         <translation>Kasutus:</translation>
     </message>
     <message>
-        <location line="-97"/>
+        <location line="-109"/>
         <source>List commands</source>
         <translation>Käskluste loetelu</translation>
     </message>
     <message>
-        <location line="-27"/>
+        <location line="-28"/>
         <source>Get help for a command</source>
         <translation>Käskluste abiinfo</translation>
     </message>
     <message>
-        <location line="-163"/>
+        <location line="-167"/>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
         <translation>Hoiatus: -paytxfee on seatud väga kõrgeks! See on sinu poolt makstav tehingu lisatasu.</translation>
     </message>
@@ -6409,17 +6409,17 @@ Operations such as beacon management, voting, and sending transactions should no
         <translation>Hoiatus: ilmnes tõrge wallet.dat faili lugemisel! Võtmed on terved, kuid tehingu andmed või aadressiraamatu kirjed võivad olla kadunud või vigased.</translation>
     </message>
     <message>
-        <location line="+136"/>
+        <location line="+140"/>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
         <translation>Pordi kuulamine nurjus. Soovikorral kasuta -listen=0.</translation>
     </message>
     <message>
-        <location line="+122"/>
+        <location line="+135"/>
         <source>To use the %s option</source>
         <translation>%s valiku kasutamine</translation>
     </message>
     <message>
-        <location line="-246"/>
+        <location line="-263"/>
         <source>You must set rpcpassword=&lt;password&gt; in the configuration file:
 %s
 If the file does not exist, create it with owner-readable-only file permissions.</source>
@@ -6428,12 +6428,12 @@ If the file does not exist, create it with owner-readable-only file permissions.
 Kui seda faili ei ole, loo see ainult-omanikule-lugemiseks faili õigustes.</translation>
     </message>
     <message>
-        <location line="+151"/>
+        <location line="+156"/>
         <source>Invalid amount for -paytxfee=&lt;amount&gt;: &apos;%s&apos;</source>
         <translation>-paytxfee=&lt;amount&gt; jaoks vigane kogus: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="+109"/>
+        <location line="+121"/>
         <source>Wallet %s resides outside data directory %s.</source>
         <translation>Rahakott %s paikenb väljaspool kataloogi %s.</translation>
     </message>
@@ -6568,17 +6568,18 @@ Kui seda faili ei ole, loo see ainult-omanikule-lugemiseks faili õigustes.</tra
         <translation>wallet.dat fail on katki, päästmine ebaõnnestus</translation>
     </message>
     <message>
-        <location line="-140"/>
+        <location line="-152"/>
         <source>Invalid -proxy address: &apos;%s&apos;</source>
         <translation>Vigane -proxi aadress: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-345"/>
+        <location line="-356"/>
+        <location line="+344"/>
         <source>Gridcoin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-343"/>
         <source>The %s developers</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6609,6 +6610,11 @@ for example: alertnotify=echo %%s | mail -s &quot;Gridcoin Alert&quot; admin@foo
     </message>
     <message>
         <location line="+8"/>
+        <source>Cannot obtain a lock on data directory %s. %s is probably already running and using that directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Cannot obtain a lock on data directory %s. %s is probably already running.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6763,6 +6769,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+4"/>
+        <source>The wallet will now shutdown. Please start your wallet to begin sync from zero</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>There is a new leisure version available and you should upgrade as soon as practical.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6913,6 +6924,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+1"/>
+        <source>Are you sure you want to cancel the snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Authorized</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6979,6 +6995,16 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     <message>
         <location line="+1"/>
         <source>CPID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7137,6 +7163,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Failed to download snapshot.zip; See debug.log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
         <source>Failed to rename bootstrap file to .old for backup purposes.</source>
         <translation type="unfinished"></translation>
@@ -7192,7 +7223,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Height</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7588,6 +7619,16 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+2"/>
+        <source>Reset Blockchain Data: Blockchain data removal failed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset Blockchain Data: Blockchain data removal was a success</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Resetting block chain index to prepare for reindexing...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7613,7 +7654,37 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+1"/>
+        <source>Snapshot extraction failed! Cleaning up any extracted data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation canceled due to an invalid snapshot zip.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation canceled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation successful!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Stage (1/4): Downloading snapshot.zip:         </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (1/4): Downloading snapshot.zip: Speed </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (2/4): Verify SHA256SUM of snapshot.zip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7623,7 +7694,17 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+1"/>
+        <source>Stage (3/4): Cleanup blockchain data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Stage (3/4): Cleanup blockchain data:          </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (4/4): Extracting snapshot.zip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7679,6 +7760,16 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     <message>
         <location line="+1"/>
         <source>The latest release is </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The wallet is now shutting down. Please restart your wallet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The wallet will now shutdown.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7747,37 +7838,37 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Rahakott on vaja üle kirjutada: käivita Gridcoin uuesti toimingu lõpetamiseks</translation>
     </message>
     <message>
-        <location line="-151"/>
+        <location line="-165"/>
         <source>Error loading wallet.dat</source>
         <translation>Viga wallet.dat käivitamisel</translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="+52"/>
         <source>Loading addresses...</source>
         <translation>Aadresside laadimine...</translation>
     </message>
     <message>
-        <location line="+86"/>
+        <location line="+98"/>
         <source>Unable to bind to %s on this computer (bind returned error %d, %s)</source>
         <translation>Selle arvutiga ei ole võimalik siduda %s külge (katse nurjus %d, %s tõttu)</translation>
     </message>
     <message>
-        <location line="-20"/>
+        <location line="-30"/>
         <source>Sending...</source>
         <translation>Saatmine...</translation>
     </message>
     <message>
-        <location line="-73"/>
+        <location line="-75"/>
         <source>Invalid amount</source>
         <translation>Kehtetu summa</translation>
     </message>
     <message>
-        <location line="+96"/>
+        <location line="+108"/>
         <source>Unknown network specified in -onlynet: &apos;%s&apos;</source>
         <translation>Kirjeldatud tundmatu võrgustik -onlynet&apos;is: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-105"/>
+        <location line="-117"/>
         <source>Insufficient funds</source>
         <translation>Liiga suur summa</translation>
     </message>
@@ -7792,17 +7883,17 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Rahakoti laadimine...</translation>
     </message>
     <message>
-        <location line="-75"/>
+        <location line="-77"/>
         <source>Cannot write default address</source>
         <translation>Tõrge vaikimisi aadressi kirjutamisel</translation>
     </message>
     <message>
-        <location line="+133"/>
+        <location line="+135"/>
         <source>Rescanning...</source>
         <translation>Üleskaneerimine...</translation>
     </message>
     <message>
-        <location line="-122"/>
+        <location line="-124"/>
         <source>Done loading</source>
         <translation>Laetud</translation>
     </message>

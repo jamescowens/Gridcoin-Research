@@ -6413,22 +6413,22 @@ Operations such as beacon management, voting, and sending transactions should no
         <translation>Wystąpił błąd podczas ustawiania portu RPC %u w tryb nasłuchu: %s</translation>
     </message>
     <message>
-        <location line="+434"/>
+        <location line="+457"/>
         <source>Usage:</source>
         <translation>Użycie:</translation>
     </message>
     <message>
-        <location line="-97"/>
+        <location line="-109"/>
         <source>List commands</source>
         <translation>Lista poleceń</translation>
     </message>
     <message>
-        <location line="-27"/>
+        <location line="-28"/>
         <source>Get help for a command</source>
         <translation>Uzyskaj pomoc do polecenia</translation>
     </message>
     <message>
-        <location line="-163"/>
+        <location line="-167"/>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
         <translation>Ostrzeżenie: -paytxfee jest bardzo duży. To jest prowizja za transakcje, którą płacisz, gdy wysyłasz monety.</translation>
     </message>
@@ -6443,27 +6443,27 @@ Operations such as beacon management, voting, and sending transactions should no
         <translation>Ostrzeżenie: błąd odczytu wallet.dat! Wszystkie klucze zostały odczytane, ale może brakować pewnych danych transakcji lub wpisów w książce adresowej lub mogą one być nieprawidłowe.</translation>
     </message>
     <message>
-        <location line="+127"/>
+        <location line="+130"/>
         <source>Error: Transaction creation failed  </source>
         <translation>Bład: Utworzenie transakcji nie powiodło się  </translation>
     </message>
     <message>
-        <location line="-256"/>
+        <location line="-262"/>
         <source>Error: The transaction was rejected.  This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.</source>
         <translation>Błąd: Transakcja odrzucona.  Może się tak zdarzyć jeśli niektóre z monet w twoich portfelu zostały już wydane, czyli jeśli użyłeś kopii zapasowej wallet.dat i monety zostały wydany w kopii ale nie zostały oznaczone jako wydane tutaj.</translation>
     </message>
     <message>
-        <location line="+265"/>
+        <location line="+272"/>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
         <translation>Próba nasłuchiwania na jakimkolwiek porcie nie powiodła się. Użyj -listen=0 jeśli tego chcesz.</translation>
     </message>
     <message>
-        <location line="+122"/>
+        <location line="+135"/>
         <source>To use the %s option</source>
         <translation>Aby użyć opcji %s</translation>
     </message>
     <message>
-        <location line="-440"/>
+        <location line="-463"/>
         <source>%s, you must set a rpcpassword in the configuration file:
  %s
 It is recommended you use the following random password:
@@ -6489,11 +6489,12 @@ na przykład: alertnotify=echo %%s | mail -s &quot;Alarm Gridcoin&quot; admin@fo
     </message>
     <message>
         <location line="-3"/>
+        <location line="+344"/>
         <source>Gridcoin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-343"/>
         <source>The %s developers</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6509,6 +6510,11 @@ na przykład: alertnotify=echo %%s | mail -s &quot;Alarm Gridcoin&quot; admin@fo
     </message>
     <message>
         <location line="+8"/>
+        <source>Cannot obtain a lock on data directory %s. %s is probably already running and using that directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Cannot obtain a lock on data directory %s. %s is probably already running.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6648,6 +6654,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+4"/>
+        <source>The wallet will now shutdown. Please start your wallet to begin sync from zero</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>There is a new leisure version available and you should upgrade as soon as practical.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6797,6 +6808,11 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
     </message>
     <message>
         <location line="+1"/>
+        <source>Are you sure you want to cancel the snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Authorized</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6863,6 +6879,16 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
     <message>
         <location line="+1"/>
         <source>CPID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6976,6 +7002,11 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Failed to download snapshot.zip; See debug.log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
         <source>Failed to rename bootstrap file to .old for backup purposes.</source>
         <translation type="unfinished"></translation>
@@ -7031,7 +7062,7 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
         <translation>Wersja Gridcoin</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Height</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7086,7 +7117,7 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
         <translation>Inicjalizacja poprawności działa nie udała się. Aplikacja gridcoin wyłączy się.</translation>
     </message>
     <message>
-        <location line="+119"/>
+        <location line="+131"/>
         <source>Wallet %s resides outside data directory %s.</source>
         <translation>Portfel %s znajduje się poza folderem z danymi %s.</translation>
     </message>
@@ -7096,12 +7127,12 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
         <translation>Sprawdzanie integralności bazy danych...</translation>
     </message>
     <message>
-        <location line="-408"/>
+        <location line="-428"/>
         <source>Error initializing database environment %s! To recover, BACKUP THAT DIRECTORY, then remove everything from it except for wallet.dat.</source>
         <translation>Bład inicjalizacji bazy danych %s! Aby odzyskać, ZRÓB KOPIĘ ZAPASOWĄ FOLDERU, dopiero usuń z niego wszystko POMIJAJĄC wallet.dat.</translation>
     </message>
     <message>
-        <location line="+413"/>
+        <location line="+433"/>
         <source>Warning: 45 days &lt; ETTS = %1 &lt;= 90 days</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7226,7 +7257,7 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
         <translation>wallet.dat uszkodzony, odtworzenie się nie powiodło</translation>
     </message>
     <message>
-        <location line="-140"/>
+        <location line="-152"/>
         <source>Invalid -proxy address: &apos;%s&apos;</source>
         <translation>Nieprawidłowy adres -proxy: &apos;%s&apos;</translation>
     </message>
@@ -7236,7 +7267,7 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
         <translation>Nieprawidłowy adres -tor: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-60"/>
+        <location line="-62"/>
         <source>Cannot resolve -bind address: &apos;%s&apos;</source>
         <translation>Nie można uzyskać adresu -bind: &apos;%s&apos;</translation>
     </message>
@@ -7246,12 +7277,12 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
         <translation>Nie można uzyskać adresu -externalip: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+65"/>
         <source>Invalid amount for -reservebalance=&lt;amount&gt;</source>
         <translation>Nieprawidłowa kwota dla -reservebalance=&lt;amount&gt;</translation>
     </message>
     <message>
-        <location line="-43"/>
+        <location line="-45"/>
         <source>Error loading blkindex.dat</source>
         <translation>Bład ładowania blkindex.dat</translation>
     </message>
@@ -7266,7 +7297,7 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
         <translation>Błąd ładowania wallet.dat: Portfel wymaga nowej wersji aplikacji Gridcoin</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+41"/>
         <source>Invalid amount for -peertimeout=&lt;amount&gt;: &apos;%s&apos;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7597,6 +7628,16 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
     </message>
     <message>
         <location line="+2"/>
+        <source>Reset Blockchain Data: Blockchain data removal failed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset Blockchain Data: Blockchain data removal was a success</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Resetting block chain index to prepare for reindexing...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7622,7 +7663,37 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
     </message>
     <message>
         <location line="+1"/>
+        <source>Snapshot extraction failed! Cleaning up any extracted data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation canceled due to an invalid snapshot zip.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation canceled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation successful!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Stage (1/4): Downloading snapshot.zip:         </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (1/4): Downloading snapshot.zip: Speed </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (2/4): Verify SHA256SUM of snapshot.zip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7632,7 +7703,17 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
     </message>
     <message>
         <location line="+1"/>
+        <source>Stage (3/4): Cleanup blockchain data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Stage (3/4): Cleanup blockchain data:          </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (4/4): Extracting snapshot.zip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7688,6 +7769,16 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
     <message>
         <location line="+1"/>
         <source>The latest release is </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The wallet is now shutting down. Please restart your wallet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The wallet will now shutdown.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7751,12 +7842,12 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
         <translation>Portfel potrzebuje być zapisany: uruchom ponownie aplikację Gridcoin aby zakończyć</translation>
     </message>
     <message>
-        <location line="-151"/>
+        <location line="-165"/>
         <source>Error loading wallet.dat</source>
         <translation>Błąd ładowania wallet.dat</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+30"/>
         <source>Importing bootstrap blockchain data file.</source>
         <translation>Importowanie pliku startera z łańcuchem bloków.</translation>
     </message>
@@ -7766,22 +7857,22 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
         <translation>Wczytywanie adresów...</translation>
     </message>
     <message>
-        <location line="-41"/>
+        <location line="-43"/>
         <source>Error: could not start node</source>
         <translation>Błąd: nie udało się wystartować gałęzi</translation>
     </message>
     <message>
-        <location line="-172"/>
+        <location line="-175"/>
         <source>Unable to bind to %s on this computer. Gridcoin is probably already running.</source>
         <translation>Nie można przywiązać %s na tym komputerze. Aplikacja Gridcoin jest już prawdopodobnie uruchomiona.</translation>
     </message>
     <message>
-        <location line="+299"/>
+        <location line="+316"/>
         <source>Unable to bind to %s on this computer (bind returned error %d, %s)</source>
         <translation>Nie można przywiązać %s na tym komputerze (bind returned error %d, %s)</translation>
     </message>
     <message>
-        <location line="-130"/>
+        <location line="-144"/>
         <source>Error: Wallet locked, unable to create transaction  </source>
         <translation>Błąd: Portfel zablokowany, nie mozna utworzyć transakcji  </translation>
     </message>
@@ -7791,27 +7882,27 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
         <translation>Błąd: Portfel odblokowany tylko do gromadzenia (staking), nie można utworzyć transakcji.</translation>
     </message>
     <message>
-        <location line="-252"/>
+        <location line="-258"/>
         <source>Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds  </source>
         <translation>Bład: Ta transakcja wymaga opłaty transakcyjnej wysokości conajmniej %s z powodu jej rozmiaru, kompleksowości lub użycia dopiero otrzymanych środków  </translation>
     </message>
     <message>
-        <location line="+360"/>
+        <location line="+370"/>
         <source>Sending...</source>
         <translation>Wysyłanie...</translation>
     </message>
     <message>
-        <location line="-73"/>
+        <location line="-75"/>
         <source>Invalid amount</source>
         <translation>Nieprawidłowa kwota</translation>
     </message>
     <message>
-        <location line="-169"/>
+        <location line="-174"/>
         <source>Warning: Please check that your computer&apos;s date and time are correct! If your clock is wrong Gridcoin will not work properly.</source>
         <translation>Ostrzeżenie: Proszę sprawdzić czy data i czas twojego komputera są prawidłowe! Jeśli twój zegar jest źle ustawiony, aplikacja Gridcoin nie będzie prawidłowo pracować.</translation>
     </message>
     <message>
-        <location line="+283"/>
+        <location line="+300"/>
         <source>Warning: Disk space is low!</source>
         <translation>Ostrzeżenie: Mało miejsca na dysku!</translation>
     </message>
@@ -7821,7 +7912,7 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
         <translation>Nieznana sieć w -onlynet: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-105"/>
+        <location line="-117"/>
         <source>Insufficient funds</source>
         <translation>Niewystarczające środki</translation>
     </message>
@@ -7836,17 +7927,17 @@ Jeżeli plik nie istnieje, utwórz go z uprawnieniami właćciciela-tylko-do-odc
         <translation>Wczytywanie portfela...</translation>
     </message>
     <message>
-        <location line="-75"/>
+        <location line="-77"/>
         <source>Cannot write default address</source>
         <translation>Nie można zapisać domyślnego adresu</translation>
     </message>
     <message>
-        <location line="+133"/>
+        <location line="+135"/>
         <source>Rescanning...</source>
         <translation>Ponowne skanowanie...</translation>
     </message>
     <message>
-        <location line="-122"/>
+        <location line="-124"/>
         <source>Done loading</source>
         <translation>Wczytywanie zakończone</translation>
     </message>

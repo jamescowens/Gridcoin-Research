@@ -96,12 +96,14 @@ do_extract() {
     check_prereq python3 "python3"
     check_prereq xgettext "gettext"
 
-    echo "==> Step 1: Extracting non-Qt translatable strings..."
+    echo "==> Step 1: Extracting _() translatable strings..."
 
-    # Collect non-Qt, non-test, non-vendored .cpp and .h files under src/.
+    # Collect .cpp and .h files under src/, excluding vendored libraries,
+    # test code, and generated translation files. Qt sources ARE included
+    # because some use the _() macro (e.g. upgradeqt.cpp, bitcoin.cpp).
     local files
     files=$(find "${REPO_ROOT}/src" \( -name '*.cpp' -o -name '*.h' \) \
-        | grep -v '/qt/' \
+        | grep -v '/qt/locale/' \
         | grep -v '/test/' \
         | grep -v '/secp256k1/' \
         | grep -v '/leveldb/' \

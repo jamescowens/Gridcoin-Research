@@ -6421,22 +6421,23 @@ Operations such as beacon management, voting, and sending transactions should no
         <translation>Ocorreu um erro ao definir a porta %u do serviço RPC ao escutar em IPv4: %s</translation>
     </message>
     <message>
-        <location line="+434"/>
+        <location line="+457"/>
         <source>Usage:</source>
         <translation>Utilização:</translation>
     </message>
     <message>
-        <location line="-97"/>
+        <location line="-109"/>
         <source>List commands</source>
         <translation>Listar comandos</translation>
     </message>
     <message>
-        <location line="-356"/>
+        <location line="-367"/>
+        <location line="+344"/>
         <source>Gridcoin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="-342"/>
         <source>The Gridcoin developers</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6447,6 +6448,11 @@ Operations such as beacon management, voting, and sending transactions should no
     </message>
     <message>
         <location line="+8"/>
+        <source>Cannot obtain a lock on data directory %s. %s is probably already running and using that directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Cannot obtain a lock on data directory %s. %s is probably already running.</source>
         <translation>Não foi possivel cadear a diretoria de dados %s. %s já está provavelmente em execução.</translation>
     </message>
@@ -6566,6 +6572,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+4"/>
+        <source>The wallet will now shutdown. Please start your wallet to begin sync from zero</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>There is a new leisure version available and you should upgrade as soon as practical.</source>
         <translation>Existe uma nova versão de lazer disponível e deve ser atualizada assim que possível.</translation>
     </message>
@@ -6701,6 +6712,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+1"/>
+        <source>Are you sure you want to cancel the snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Authorized</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6727,6 +6743,16 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     <message>
         <location line="+1"/>
         <source>CPID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6800,6 +6826,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Failed to download snapshot.zip; See debug.log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
         <source>Failed to rename bootstrap file to .old for backup purposes.</source>
         <translation>Falhou a alteração de nome por motivos de backups no ficheiro bootstrap para .old.</translation>
@@ -6850,7 +6881,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Atualização do Gridcoin Disponível</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Inactive</source>
         <translation type="unfinished">Inativo</translation>
     </message>
@@ -7155,12 +7186,62 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
+        <source>Reset Blockchain Data: Blockchain data removal failed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset Blockchain Data: Blockchain data removal was a success</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Send command to -server or gridcoinresearchd</source>
         <translation>Enviar comando para -server ou gridcoinresearchd</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+5"/>
+        <source>Snapshot extraction failed! Cleaning up any extracted data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation canceled due to an invalid snapshot zip.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation canceled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation successful!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Stage (1/4): Downloading snapshot.zip: Speed </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (2/4): Verify SHA256SUM of snapshot.zip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Stage (3/4): Cleanup blockchain data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Stage (4/4): Extracting snapshot.zip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Staking Only - Non-cruncher Mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7182,6 +7263,16 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     <message>
         <location line="+1"/>
         <source>The latest release is </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The wallet is now shutting down. Please restart your wallet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The wallet will now shutdown.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7310,22 +7401,22 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>desconhecido</translation>
     </message>
     <message>
-        <location line="-208"/>
+        <location line="-224"/>
         <source>Balance</source>
         <translation>Balanço</translation>
     </message>
     <message>
-        <location line="-274"/>
+        <location line="-281"/>
         <source>The %s developers</source>
         <translation>Os %s desenvolvedores</translation>
     </message>
     <message>
-        <location line="+69"/>
+        <location line="+72"/>
         <source>Error: Unsupported argument -socks found. Setting SOCKS version isn&apos;t possible anymore, only SOCKS5 proxies are supported.</source>
         <translation>Erro: Argumento não suportado -socks encontrado. Definir a versão SOCKS não é mais possível, são apenas suportadas proxies SOCKS5.</translation>
     </message>
     <message>
-        <location line="+206"/>
+        <location line="+210"/>
         <source>Block Version</source>
         <translation>Versão do Bloco</translation>
     </message>
@@ -7360,7 +7451,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Recompensa do BOINC</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+11"/>
         <source>Client Version</source>
         <translation>Versão do Cliente</translation>
     </message>
@@ -7400,12 +7491,12 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Erro: Carteira bloqueada, não foi possível criar transação</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+16"/>
         <source>GitHub version: </source>
         <translation>Versão GitHub:</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Height</source>
         <translation>Tamanho</translation>
     </message>
@@ -7465,7 +7556,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Email de projeto incompatível</translation>
     </message>
     <message>
-        <location line="-246"/>
+        <location line="-251"/>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
         <translation>Atenção: -paytxfee está definida com um valor muito elevado! Esta é a taxa que irá pagar se enviar uma transação.</translation>
     </message>
@@ -7480,22 +7571,22 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Atenção: erro ao ler wallet.dat! Todas as chaves foram lidas correctamente, mas os dados de transação ou  entradas do livro de endereços podem estar em falta ou incorretos.</translation>
     </message>
     <message>
-        <location line="+127"/>
+        <location line="+130"/>
         <source>Error: Transaction creation failed  </source>
         <translation>Erro: Criação de transação falhou</translation>
     </message>
     <message>
-        <location line="-256"/>
+        <location line="-262"/>
         <source>Error: The transaction was rejected.  This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.</source>
         <translation>Erro: A transação foi rejeitada. Isto pode acontecer se algumas das moedas na sua carteira já tiverem sido gastas, por exemplo se as usou na cópia da sua wallet.dat, mas não foram marcadas como gastas aqui.</translation>
     </message>
     <message>
-        <location line="+265"/>
+        <location line="+272"/>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
         <translation>Falhou a escutar em qualquer porta. Use -listen=0 se quiser isto.</translation>
     </message>
     <message>
-        <location line="+104"/>
+        <location line="+107"/>
         <source>Single Choice</source>
         <translation>Escolha Única</translation>
     </message>
@@ -7510,12 +7601,12 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Processo de Snapshot Iniciou.</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+26"/>
         <source>To use the %s option</source>
         <translation>Para utilizar as opções %s</translation>
     </message>
     <message>
-        <location line="-440"/>
+        <location line="-463"/>
         <source>%s, you must set a rpcpassword in the configuration file:
  %s
 It is recommended you use the following random password:
@@ -7540,7 +7631,7 @@ por exemplo: alertnotify=echo %%s | mail -s &quot;Gridcoin Alert&quot; admin@foo
 </translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+29"/>
         <source>Due to the failure to delete the blockchain data you will be required to manually delete the data before starting your wallet.</source>
         <translation>Devido à falha na eliminação dos dados da cadeia de blocos, ser-lhe-á solicitado que elimine manualmente os dados antes de iniciar a sua carteira.</translation>
     </message>
@@ -7555,7 +7646,7 @@ por exemplo: alertnotify=echo %%s | mail -s &quot;Gridcoin Alert&quot; admin@foo
         <translation>Se não o fizer, o resultado será um comportamento indefinido ou uma falha no arranque da carteira.</translation>
     </message>
     <message>
-        <location line="+69"/>
+        <location line="+72"/>
         <source>Unable to download a snapshot, as the wallet has detected that a new mandatory version is available for install. The mandatory upgrade must be installed before the snapshot can be downloaded and applied.</source>
         <translation>Não foi possível transferir o snapshot, porque a carteira detetou que uma versão obrigatória mais recente, está disponível para instalar. A atualização obrigatória deve ser instalada antes que o snapshot possa ser transferido e aplicado.</translation>
     </message>
@@ -7569,32 +7660,32 @@ If the file does not exist, create it with owner-readable-only file permissions.
 Se o ficheiro não existir, crie-o com permissões de leitura.</translation>
     </message>
     <message>
-        <location line="+136"/>
+        <location line="+140"/>
         <source>Gridcoin version</source>
         <translation>Versão do Gridcoin</translation>
     </message>
     <message>
-        <location line="+89"/>
+        <location line="+92"/>
         <source>Resetting block chain index to prepare for reindexing...</source>
         <translation>Repondo o índice da block chain para preparar a reindexação...</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+10"/>
         <source>Stage (1/4): Downloading snapshot.zip:         </source>
         <translation>Etapa (1/4): Transferindo o snapshot.zip:</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Stage (2/4): Verify SHA256SUM of snapshot.zip: </source>
         <translation>Etapa (2/4): Verificando SHA256SUM do snapshot.zip:</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Stage (3/4): Cleanup blockchain data:          </source>
         <translation>Etapa (3/4): Limpar dados da cadeia de blocos:</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Stage (4/4): Extracting snapshot.zip:          </source>
         <translation>Etapa (4/4): Extraindo o snapshot.zip:</translation>
     </message>
@@ -7609,7 +7700,7 @@ Se o ficheiro não existir, crie-o com permissões de leitura.</translation>
         <translation>Versão de rede de testes apenas</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+10"/>
         <source>Unknown error</source>
         <translation>Erro desconhecido</translation>
     </message>
@@ -7619,7 +7710,7 @@ Se o ficheiro não existir, crie-o com permissões de leitura.</translation>
         <translation>Desconhecido</translation>
     </message>
     <message>
-        <location line="-19"/>
+        <location line="-21"/>
         <source>Staking Only - No active beacon</source>
         <translation>A Realizar Stake Apenas - Beacon Inativo</translation>
     </message>
@@ -7634,7 +7725,7 @@ Se o ficheiro não existir, crie-o com permissões de leitura.</translation>
         <translation>Super Bloco de Tamanho Binário</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+8"/>
         <source>This update is </source>
         <translation>A atualização está</translation>
     </message>
@@ -7654,7 +7745,7 @@ Se o ficheiro não existir, crie-o com permissões de leitura.</translation>
         <translation>Tipo de peso da sondagem desconhecido.</translation>
     </message>
     <message>
-        <location line="-73"/>
+        <location line="-85"/>
         <source>No current polls</source>
         <translation>Sem sondagens</translation>
     </message>
@@ -7674,7 +7765,7 @@ Se o ficheiro não existir, crie-o com permissões de leitura.</translation>
         <translation>Inicialização de verificação de sanidade falhou. O Gridcoin está a encerrar.</translation>
     </message>
     <message>
-        <location line="+119"/>
+        <location line="+131"/>
         <source>Wallet %s resides outside data directory %s.</source>
         <translation>A carteira %s reside fora da diretoria de dados %s.</translation>
     </message>
@@ -7684,12 +7775,12 @@ Se o ficheiro não existir, crie-o com permissões de leitura.</translation>
         <translation>Verificando integridade da base de dados...</translation>
     </message>
     <message>
-        <location line="-408"/>
+        <location line="-428"/>
         <source>Error initializing database environment %s! To recover, BACKUP THAT DIRECTORY, then remove everything from it except for wallet.dat.</source>
         <translation>Erro ao iniciar o ambiente da base de dados %s! Para recuperar, FAÇA UMA CÓPIA DE SEGURANÇA DESSA DIRETORIA, depois remova tudo, exceto o wallet.dat.</translation>
     </message>
     <message>
-        <location line="+437"/>
+        <location line="+457"/>
         <source>vote</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7699,7 +7790,7 @@ Se o ficheiro não existir, crie-o com permissões de leitura.</translation>
         <translation>wallet.dat corrupto, recuperação falhou</translation>
     </message>
     <message>
-        <location line="-140"/>
+        <location line="-152"/>
         <source>Invalid -proxy address: &apos;%s&apos;</source>
         <translation>Endereço -proxy inválido: &apos;%s&apos;</translation>
     </message>
@@ -7709,7 +7800,7 @@ Se o ficheiro não existir, crie-o com permissões de leitura.</translation>
         <translation>Endereço -tor inválido: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-60"/>
+        <location line="-62"/>
         <source>Cannot resolve -bind address: &apos;%s&apos;</source>
         <translation>Não foi possível resolver o endereço -bind: &apos;%s&apos;</translation>
     </message>
@@ -7719,12 +7810,12 @@ Se o ficheiro não existir, crie-o com permissões de leitura.</translation>
         <translation>Não foi possível resolver o endereço -externalip: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+65"/>
         <source>Invalid amount for -reservebalance=&lt;amount&gt;</source>
         <translation>Quantia inválida para - reservebalance=&lt;amount&gt;</translation>
     </message>
     <message>
-        <location line="-43"/>
+        <location line="-45"/>
         <source>Error loading blkindex.dat</source>
         <translation>Erro ao carregar blkindex.dat</translation>
     </message>
@@ -7739,7 +7830,7 @@ Se o ficheiro não existir, crie-o com permissões de leitura.</translation>
         <translation>Erro ao carregar wallet.dat: A carteira necessita de uma versão mais recente do Gridcoin</translation>
     </message>
     <message>
-        <location line="+144"/>
+        <location line="+158"/>
         <source>Verifying checkpoints...</source>
         <translation>Verificando checkpoints...</translation>
     </message>
@@ -7754,12 +7845,12 @@ Se o ficheiro não existir, crie-o com permissões de leitura.</translation>
         <translation>A carteira precisa de ser reescrita: reinicie o Gridcoin para concluir</translation>
     </message>
     <message>
-        <location line="-151"/>
+        <location line="-165"/>
         <source>Error loading wallet.dat</source>
         <translation>Erro ao carregar wallet.dat</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+30"/>
         <source>Importing bootstrap blockchain data file.</source>
         <translation>Importação do ficheiro de dados da cadeia de blocos bootstrap.</translation>
     </message>
@@ -7769,22 +7860,22 @@ Se o ficheiro não existir, crie-o com permissões de leitura.</translation>
         <translation>A carregar os endereços...</translation>
     </message>
     <message>
-        <location line="-41"/>
+        <location line="-43"/>
         <source>Error: could not start node</source>
         <translation>Erro: Não foi possível iniciar o nó</translation>
     </message>
     <message>
-        <location line="-172"/>
+        <location line="-175"/>
         <source>Unable to bind to %s on this computer. Gridcoin is probably already running.</source>
         <translation>Não foi possível ligar ao %s neste computador. O Gridcoin já está possivelmente a ser executado.</translation>
     </message>
     <message>
-        <location line="+299"/>
+        <location line="+316"/>
         <source>Unable to bind to %s on this computer (bind returned error %d, %s)</source>
         <translation>Não foi possível vincular a %s neste computador (ligação retornou erro %d, %s)</translation>
     </message>
     <message>
-        <location line="-130"/>
+        <location line="-144"/>
         <source>Error: Wallet locked, unable to create transaction  </source>
         <translation>Erro: Carteira bloqueada, não foi possível criar transação</translation>
     </message>
@@ -7794,27 +7885,27 @@ Se o ficheiro não existir, crie-o com permissões de leitura.</translation>
         <translation>Erro: Carteira desbloqueada para realizar stake apenas, não foi possível criar transação.</translation>
     </message>
     <message>
-        <location line="-252"/>
+        <location line="-258"/>
         <source>Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds  </source>
         <translation>Erro: Esta transação devido à sua quantia, complexidade ou utilização de fundos recebidos recentemente, necessita de uma taxa de transação de pelo menos %s </translation>
     </message>
     <message>
-        <location line="+360"/>
+        <location line="+370"/>
         <source>Sending...</source>
         <translation>Enviando...</translation>
     </message>
     <message>
-        <location line="-73"/>
+        <location line="-75"/>
         <source>Invalid amount</source>
         <translation>Quantia inválida</translation>
     </message>
     <message>
-        <location line="-169"/>
+        <location line="-174"/>
         <source>Warning: Please check that your computer&apos;s date and time are correct! If your clock is wrong Gridcoin will not work properly.</source>
         <translation>Aviso: Por favor verifique que a data e hora do seu computador estão corretos! Se o seu relógio estiver incorreto, o Gridcoin não funcionará bem.</translation>
     </message>
     <message>
-        <location line="+274"/>
+        <location line="+291"/>
         <source>Vote signature failed. See debug.log.</source>
         <translation>Assinatura da votação falhou. Ver debug.log.</translation>
     </message>
@@ -7829,7 +7920,7 @@ Se o ficheiro não existir, crie-o com permissões de leitura.</translation>
         <translation>Rede desconhecida especificada em -onlynet: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-105"/>
+        <location line="-117"/>
         <source>Insufficient funds</source>
         <translation>Fundos insuficientes</translation>
     </message>
@@ -7844,17 +7935,17 @@ Se o ficheiro não existir, crie-o com permissões de leitura.</translation>
         <translation>A carregar a carteira...</translation>
     </message>
     <message>
-        <location line="-75"/>
+        <location line="-77"/>
         <source>Cannot write default address</source>
         <translation>Impossível escrever endereço por defeito</translation>
     </message>
     <message>
-        <location line="+133"/>
+        <location line="+135"/>
         <source>Rescanning...</source>
         <translation>Reexaminando...</translation>
     </message>
     <message>
-        <location line="-122"/>
+        <location line="-124"/>
         <source>Done loading</source>
         <translation>Carregamento concluído</translation>
     </message>

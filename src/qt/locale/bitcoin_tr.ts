@@ -6399,22 +6399,23 @@ Operations such as beacon management, voting, and sending transactions should no
         <translation>IPv4 üzerinde dinlemek için %u numaral? RPC portunun kurulumu sırasında hata meydana geldi: %s</translation>
     </message>
     <message>
-        <location line="+434"/>
+        <location line="+457"/>
         <source>Usage:</source>
         <translation>Kullanım:</translation>
     </message>
     <message>
-        <location line="-97"/>
+        <location line="-109"/>
         <source>List commands</source>
         <translation>Komutları Listele</translation>
     </message>
     <message>
-        <location line="-356"/>
+        <location line="-367"/>
+        <location line="+344"/>
         <source>Gridcoin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-343"/>
         <source>The %s developers</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6445,6 +6446,11 @@ for example: alertnotify=echo %%s | mail -s &quot;Gridcoin Alert&quot; admin@foo
     </message>
     <message>
         <location line="+8"/>
+        <source>Cannot obtain a lock on data directory %s. %s is probably already running and using that directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Cannot obtain a lock on data directory %s. %s is probably already running.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6584,6 +6590,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+4"/>
+        <source>The wallet will now shutdown. Please start your wallet to begin sync from zero</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>There is a new leisure version available and you should upgrade as soon as practical.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6729,6 +6740,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+1"/>
+        <source>Are you sure you want to cancel the snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Authorized</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6785,6 +6801,16 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     <message>
         <location line="+1"/>
         <source>CPID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6888,6 +6914,11 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Failed to download snapshot.zip; See debug.log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
         <source>Failed to rename bootstrap file to .old for backup purposes.</source>
         <translation type="unfinished"></translation>
@@ -6943,7 +6974,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Height</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7314,6 +7345,16 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+2"/>
+        <source>Reset Blockchain Data: Blockchain data removal failed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset Blockchain Data: Blockchain data removal was a success</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Resetting block chain index to prepare for reindexing...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7334,7 +7375,37 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+1"/>
+        <source>Snapshot extraction failed! Cleaning up any extracted data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation canceled due to an invalid snapshot zip.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation canceled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation successful!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Stage (1/4): Downloading snapshot.zip:         </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (1/4): Downloading snapshot.zip: Speed </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (2/4): Verify SHA256SUM of snapshot.zip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7344,7 +7415,17 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     </message>
     <message>
         <location line="+1"/>
+        <source>Stage (3/4): Cleanup blockchain data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Stage (3/4): Cleanup blockchain data:          </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (4/4): Extracting snapshot.zip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7400,6 +7481,16 @@ Gridcoin detected bad index entries. This may occur because of a late software u
     <message>
         <location line="+1"/>
         <source>The latest release is </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The wallet is now shutting down. Please restart your wallet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The wallet will now shutdown.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7493,7 +7584,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Evet/Hayır/Kararsız</translation>
     </message>
     <message>
-        <location line="-192"/>
+        <location line="-208"/>
         <source>Balance</source>
         <translation>Bakiye</translation>
     </message>
@@ -7503,7 +7594,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Blok Sürümü</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+17"/>
         <source>Client Version</source>
         <translation>İstemci Sürümü</translation>
     </message>
@@ -7518,12 +7609,12 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>HATA</translation>
     </message>
     <message>
-        <location line="+81"/>
+        <location line="+83"/>
         <source>Organization</source>
         <translation>Organizasyon</translation>
     </message>
     <message>
-        <location line="-218"/>
+        <location line="-223"/>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
         <translation>Uyarı: -paytxfee çok yüksek bir değere ayarlanmış! Bu, coin gönderirseniz ödeyeceğiniz işlem ücretidir.</translation>
     </message>
@@ -7538,32 +7629,32 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Uyarı: wallet.dat dosyasının okunması sırasında bir hata meydana geldi! Tüm anahtarlar doğru bir şekilde okundu, ancak işlem verileri ya da adres defteri unsurları hatalı veya eksik olabilir.</translation>
     </message>
     <message>
-        <location line="+127"/>
+        <location line="+130"/>
         <source>Error: Transaction creation failed  </source>
         <translation>Hata: İşlem yaratma başarısız oldu</translation>
     </message>
     <message>
-        <location line="-256"/>
+        <location line="-262"/>
         <source>Error: The transaction was rejected.  This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.</source>
         <translation>Hata: İşlem reddedildi. Bu durum, wallet.dat dosyasının bir kopyasını kullandıysanız ve coinler, kopyada harcanmış ve burada harcanmış olarak işaretlenmemesinden kaynaklanabilir. </translation>
     </message>
     <message>
-        <location line="+265"/>
+        <location line="+272"/>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
         <translation>Herhangi bir portun dinlenmesi başarısız oldu. Bunu istiyorsanız -listen=0 seçeneğini kullanınız.</translation>
     </message>
     <message>
-        <location line="+104"/>
+        <location line="+107"/>
         <source>Single Choice</source>
         <translation>Tek Seçim</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+28"/>
         <source>To use the %s option</source>
         <translation>%s seçeneğini kullanmak için</translation>
     </message>
     <message>
-        <location line="-246"/>
+        <location line="-263"/>
         <source>You must set rpcpassword=&lt;password&gt; in the configuration file:
 %s
 If the file does not exist, create it with owner-readable-only file permissions.</source>
@@ -7572,12 +7663,12 @@ If the file does not exist, create it with owner-readable-only file permissions.
 Dosya mevcut deilse, sadece sahibi için okumayla sınırlı izin ile oluşturunuz.</translation>
     </message>
     <message>
-        <location line="+136"/>
+        <location line="+140"/>
         <source>Gridcoin version</source>
         <translation>Gridcoin Versiyonu</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+16"/>
         <source>Invalid amount for -paytxfee=&lt;amount&gt;: &apos;%s&apos;</source>
         <translation>-paytxfee=&lt;meblağ&gt; için geçersiz meblağ: &apos;%s&apos;</translation>
     </message>
@@ -7587,17 +7678,17 @@ Dosya mevcut deilse, sadece sahibi için okumayla sınırlı izin ile oluşturun
         <translation>Başlatma kontrolü başarışız oldu. Gridcoin kapanıyor.</translation>
     </message>
     <message>
-        <location line="+117"/>
+        <location line="+129"/>
         <source>Verifying database integrity...</source>
         <translation>Veritabanı bütünlüğü doğrulanıyor...</translation>
     </message>
     <message>
-        <location line="-408"/>
+        <location line="-428"/>
         <source>Error initializing database environment %s! To recover, BACKUP THAT DIRECTORY, then remove everything from it except for wallet.dat.</source>
         <translation>Veritabanı ortamı %s başlatılırken hata oluştu! Kurtarmak için, İLGİLİ KLASÖRÜ YEDEKLEYİN, ardından wallet.dat dışındaki herşeyi silin.</translation>
     </message>
     <message>
-        <location line="+421"/>
+        <location line="+441"/>
         <source>You are running the latest release.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7687,7 +7778,7 @@ Dosya mevcut deilse, sadece sahibi için okumayla sınırlı izin ile oluşturun
         <translation>wallet.dat bozuk, geri kazanım başarısız oldu</translation>
     </message>
     <message>
-        <location line="-140"/>
+        <location line="-152"/>
         <source>Invalid -proxy address: &apos;%s&apos;</source>
         <translation>Geçersiz -proxy adresi: &apos;%s&apos;</translation>
     </message>
@@ -7697,7 +7788,7 @@ Dosya mevcut deilse, sadece sahibi için okumayla sınırlı izin ile oluşturun
         <translation>Geçersiz -tor adresi: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-60"/>
+        <location line="-62"/>
         <source>Cannot resolve -bind address: &apos;%s&apos;</source>
         <translation>-bind adresi çözümlenemedi: &apos;%s&apos;</translation>
     </message>
@@ -7707,12 +7798,12 @@ Dosya mevcut deilse, sadece sahibi için okumayla sınırlı izin ile oluşturun
         <translation>-externalip adresi çözümlenemedi: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+65"/>
         <source>Invalid amount for -reservebalance=&lt;amount&gt;</source>
         <translation>-reservebalance=&lt;amount&gt; için geçersiz miktar</translation>
     </message>
     <message>
-        <location line="-41"/>
+        <location line="-43"/>
         <source>Error loading wallet.dat: Wallet corrupted</source>
         <translation>wallet.dat dosyasının yüklenmesinde hata oluştu: bozuk cüzdan</translation>
     </message>
@@ -7722,17 +7813,17 @@ Dosya mevcut deilse, sadece sahibi için okumayla sınırlı izin ile oluşturun
         <translation>HATA: wallet.dat yüklenemedi, wallet.dat daha yeni bir Gridcoin istemcisine ihtiyaç duyuyor.</translation>
     </message>
     <message>
-        <location line="+149"/>
+        <location line="+163"/>
         <source>Wallet needed to be rewritten: restart Gridcoin to complete</source>
         <translation>Cüzdanın tekrardan oluşturulması gerekiyor: Gridcoin istemcisini yeniden başlatın</translation>
     </message>
     <message>
-        <location line="-151"/>
+        <location line="-165"/>
         <source>Error loading wallet.dat</source>
         <translation>wallet.dat dosyasının yüklenmesinde hata oluştu</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+30"/>
         <source>Importing bootstrap blockchain data file.</source>
         <translation>Önyükleme blok zinciri veri dosyası içeri aktarılıyor.</translation>
     </message>
@@ -7742,17 +7833,17 @@ Dosya mevcut deilse, sadece sahibi için okumayla sınırlı izin ile oluşturun
         <translation>Adresler yükleniyor...</translation>
     </message>
     <message>
-        <location line="-41"/>
+        <location line="-43"/>
         <source>Error: could not start node</source>
         <translation>Ağ Noktası Başlatılamadı</translation>
     </message>
     <message>
-        <location line="+127"/>
+        <location line="+141"/>
         <source>Unable to bind to %s on this computer (bind returned error %d, %s)</source>
         <translation>Bu bilgisayarda %s unsuruna bağlanılamadı. (bind şu hatayı iletti: %d, %s)</translation>
     </message>
     <message>
-        <location line="-130"/>
+        <location line="-144"/>
         <source>Error: Wallet locked, unable to create transaction  </source>
         <translation>Hata: Cüzdan kilitli, işlem yapılamıyor.</translation>
     </message>
@@ -7762,27 +7853,27 @@ Dosya mevcut deilse, sadece sahibi için okumayla sınırlı izin ile oluşturun
         <translation>Hata: Cüzdan sadece pay almak için açık, coin gönderilemez.</translation>
     </message>
     <message>
-        <location line="-252"/>
+        <location line="-258"/>
         <source>Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds  </source>
         <translation>Hata: Bu işlem; miktarı, karmaşıklığı veya son alınan miktarın kullanımı nedeniyle en az %s işlem ücreti gerektirir</translation>
     </message>
     <message>
-        <location line="+360"/>
+        <location line="+370"/>
         <source>Sending...</source>
         <translation>Gönderiliyor...</translation>
     </message>
     <message>
-        <location line="-73"/>
+        <location line="-75"/>
         <source>Invalid amount</source>
         <translation>Geçersiz meblağ</translation>
     </message>
     <message>
-        <location line="-169"/>
+        <location line="-174"/>
         <source>Warning: Please check that your computer&apos;s date and time are correct! If your clock is wrong Gridcoin will not work properly.</source>
         <translation>Uyarı: Lütfen bilgisayarınızın tarih ve saatinin doğruluğunu kontrol ediniz! Saatiniz yanlış ise, Gridcoin düzgün çalışmayacaktır.</translation>
     </message>
     <message>
-        <location line="+274"/>
+        <location line="+291"/>
         <source>Vote signature failed. See debug.log.</source>
         <translation>Oy imzası başarısız. Daha fazla bilgi için debug.log dosyasına bakınız.</translation>
     </message>
@@ -7797,7 +7888,7 @@ Dosya mevcut deilse, sadece sahibi için okumayla sınırlı izin ile oluşturun
         <translation>-onlynet için bilinmeyen bir ağ belirtildi: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-105"/>
+        <location line="-117"/>
         <source>Insufficient funds</source>
         <translation>Yetersiz Bakiye</translation>
     </message>
@@ -7812,17 +7903,17 @@ Dosya mevcut deilse, sadece sahibi için okumayla sınırlı izin ile oluşturun
         <translation>Cüzdan yükleniyor...</translation>
     </message>
     <message>
-        <location line="-75"/>
+        <location line="-77"/>
         <source>Cannot write default address</source>
         <translation>Varsayılan adres yazılamadı</translation>
     </message>
     <message>
-        <location line="+133"/>
+        <location line="+135"/>
         <source>Rescanning...</source>
         <translation>Yeniden taranıyor...</translation>
     </message>
     <message>
-        <location line="-122"/>
+        <location line="-124"/>
         <source>Done loading</source>
         <translation>Yükleme Tamamlandı</translation>
     </message>

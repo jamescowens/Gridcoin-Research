@@ -6398,22 +6398,22 @@ Operations such as beacon management, voting, and sending transactions should no
         <translation>P?i nastavování naslouchacího RPC portu %u pro IPv4 nastala chyba: %s</translation>
     </message>
     <message>
-        <location line="+434"/>
+        <location line="+457"/>
         <source>Usage:</source>
         <translation>Užití:</translation>
     </message>
     <message>
-        <location line="-97"/>
+        <location line="-109"/>
         <source>List commands</source>
         <translation>Výpis p?íkaz?</translation>
     </message>
     <message>
-        <location line="-27"/>
+        <location line="-28"/>
         <source>Get help for a command</source>
         <translation>Získat nápov?du pro p?íkaz</translation>
     </message>
     <message>
-        <location line="-163"/>
+        <location line="-167"/>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
         <translation>Upozorn?ní: -paytxfee je nastaveno velmi vysoko! Toto je transak?ní poplatek, který zaplatíš za každou poslanou transakci.</translation>
     </message>
@@ -6428,7 +6428,32 @@ Operations such as beacon management, voting, and sending transactions should no
         <translation>Upozorn?ní: nastala chyba p?i ?tení souboru wallet.dat! Všechny klí?e se p?e?etly správn?, ale data o transakcích nebo záznamy v adresá?i mohou chyb?t ?i být nesprávné.</translation>
     </message>
     <message>
-        <location line="+125"/>
+        <location line="-167"/>
+        <source>Cannot obtain a lock on data directory %s. %s is probably already running and using that directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+118"/>
+        <source>The wallet will now shutdown. Please start your wallet to begin sync from zero</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+136"/>
+        <source>Are you sure you want to cancel the snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Cancel snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
         <source>Error loading wallet.dat: Wallet requires newer version of Gridcoin</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6475,6 +6500,11 @@ Operations such as beacon management, voting, and sending transactions should no
     <message>
         <location line="+1"/>
         <source>Explorer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Failed to download snapshot.zip; See debug.log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6538,7 +6568,7 @@ Operations such as beacon management, voting, and sending transactions should no
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Height</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6934,6 +6964,16 @@ Operations such as beacon management, voting, and sending transactions should no
     </message>
     <message>
         <location line="+2"/>
+        <source>Reset Blockchain Data: Blockchain data removal failed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset Blockchain Data: Blockchain data removal was a success</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Resetting block chain index to prepare for reindexing...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6964,7 +7004,37 @@ Operations such as beacon management, voting, and sending transactions should no
     </message>
     <message>
         <location line="+1"/>
+        <source>Snapshot extraction failed! Cleaning up any extracted data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation canceled due to an invalid snapshot zip.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation canceled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Snapshot operation successful!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Stage (1/4): Downloading snapshot.zip:         </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (1/4): Downloading snapshot.zip: Speed </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (2/4): Verify SHA256SUM of snapshot.zip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6974,7 +7044,17 @@ Operations such as beacon management, voting, and sending transactions should no
     </message>
     <message>
         <location line="+1"/>
+        <source>Stage (3/4): Cleanup blockchain data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Stage (3/4): Cleanup blockchain data:          </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stage (4/4): Extracting snapshot.zip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7034,6 +7114,16 @@ Operations such as beacon management, voting, and sending transactions should no
     </message>
     <message>
         <location line="+1"/>
+        <source>The wallet is now shutting down. Please restart your wallet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The wallet will now shutdown.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>This update is </source>
         <translation type="unfinished"></translation>
     </message>
@@ -7043,7 +7133,7 @@ Operations such as beacon management, voting, and sending transactions should no
         <translation>K použití volby %s</translation>
     </message>
     <message>
-        <location line="-246"/>
+        <location line="-263"/>
         <source>You must set rpcpassword=&lt;password&gt; in the configuration file:
 %s
 If the file does not exist, create it with owner-readable-only file permissions.</source>
@@ -7052,12 +7142,12 @@ If the file does not exist, create it with owner-readable-only file permissions.
 Pokud konfigura?ní soubor ješt? neexistuje, vytvo? ho tak, aby ho mohl ?íst pouze vlastník.</translation>
     </message>
     <message>
-        <location line="+151"/>
+        <location line="+156"/>
         <source>Invalid amount for -paytxfee=&lt;amount&gt;: &apos;%s&apos;</source>
         <translation>Neplatná ?ástka pro -paytxfee=&lt;?ástka&gt;: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="+97"/>
+        <location line="+109"/>
         <source>Unable to create the PID file &apos;%s&apos;: %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7252,17 +7342,18 @@ Pokud konfigura?ní soubor ješt? neexistuje, vytvo? ho tak, aby ho mohl ?íst p
         <translation>Soubor wallet.dat je poškozen, jeho záchrana se nezda?ila</translation>
     </message>
     <message>
-        <location line="-140"/>
+        <location line="-152"/>
         <source>Invalid -proxy address: &apos;%s&apos;</source>
         <translation>Neplatná -proxy adresa: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-345"/>
+        <location line="-356"/>
+        <location line="+344"/>
         <source>Gridcoin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-343"/>
         <source>The %s developers</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7292,7 +7383,7 @@ for example: alertnotify=echo %%s | mail -s &quot;Gridcoin Alert&quot; admin@foo
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+11"/>
         <source>Cannot obtain a lock on data directory %s. %s is probably already running.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7446,7 +7537,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+7"/>
         <source>There is a new leisure version available and you should upgrade as soon as practical.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7596,7 +7687,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Authorized</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7666,7 +7757,7 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Cannot resolve -bind address: &apos;%s&apos;</source>
         <translation>Nemohu p?eložit -bind adresu: &apos;%s&apos;</translation>
     </message>
@@ -7776,27 +7867,27 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Chyba p?i na?ítání wallet.dat</translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="+52"/>
         <source>Loading addresses...</source>
         <translation>Načítám adresy...</translation>
     </message>
     <message>
-        <location line="+86"/>
+        <location line="+98"/>
         <source>Unable to bind to %s on this computer (bind returned error %d, %s)</source>
         <translation>Neda?í se mi p?ipojit na %s na tomhle po?íta?i (operace bind vrátila chybu %d, %s)</translation>
     </message>
     <message>
-        <location line="-93"/>
+        <location line="-105"/>
         <source>Invalid amount</source>
         <translation>Neplatná ?ástka</translation>
     </message>
     <message>
-        <location line="+96"/>
+        <location line="+108"/>
         <source>Unknown network specified in -onlynet: &apos;%s&apos;</source>
         <translation>V -onlynet byla uvedena neznámá síť: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-105"/>
+        <location line="-117"/>
         <source>Insufficient funds</source>
         <translation>Nedostatek prostředků</translation>
     </message>
@@ -7811,17 +7902,17 @@ Gridcoin detected bad index entries. This may occur because of a late software u
         <translation>Načítám peněženku...</translation>
     </message>
     <message>
-        <location line="-75"/>
+        <location line="-77"/>
         <source>Cannot write default address</source>
         <translation>Nemohu napsat výchozí adresu</translation>
     </message>
     <message>
-        <location line="+133"/>
+        <location line="+135"/>
         <source>Rescanning...</source>
         <translation>Přeskenovávám…</translation>
     </message>
     <message>
-        <location line="-122"/>
+        <location line="-124"/>
         <source>Done loading</source>
         <translation>Načítání dokončeno</translation>
     </message>
