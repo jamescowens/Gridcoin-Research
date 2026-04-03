@@ -1,4 +1,4 @@
-<TS language="pam" version="2.0">
+<TS language="pam" version="2.1">
 <context>
     <name>AddressBookPage</name>
     <message>
@@ -315,7 +315,7 @@
         <source>New key generation failed.</source>
         <translation>Memali ya ing pamangaua king key</translation>
     </message>
-</context>
+    </context>
 <context>
     <name>Intro</name>
     <message numerus="yes">
@@ -904,26 +904,6 @@
     <message>
         <source>Range...</source>
         <translation>Angganan...</translation>
-    </message>
-    <message>
-        <source>Received with</source>
-        <translation>Atanggap kayabe ning</translation>
-    </message>
-    <message>
-        <source>Sent to</source>
-        <translation>Mipadala kang</translation>
-    </message>
-    <message>
-        <source>To yourself</source>
-        <translation>Keng sarili mu</translation>
-    </message>
-    <message>
-        <source>Mined</source>
-        <translation>Me-mina</translation>
-    </message>
-    <message>
-        <source>Other</source>
-        <translation>Aliwa</translation>
     </message>
     <message>
         <source>Min amount</source>

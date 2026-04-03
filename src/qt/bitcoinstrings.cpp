@@ -9,8 +9,9 @@
 #define UNUSED
 #endif
 static const char UNUSED *bitcoin_strings[] = {
-QT_TRANSLATE_NOOP("bitcoin-core", "None"),
+QT_TRANSLATE_NOOP("bitcoin-core", "Gridcoin"),
 QT_TRANSLATE_NOOP("bitcoin-core", "The %s developers"),
+QT_TRANSLATE_NOOP("bitcoin-core", "The Gridcoin developers"),
 QT_TRANSLATE_NOOP("bitcoin-core", ""
 "%s, you must set a rpcpassword in the configuration file:\n"
 " %s\n"
@@ -32,9 +33,6 @@ QT_TRANSLATE_NOOP("bitcoin-core", ""
 QT_TRANSLATE_NOOP("bitcoin-core", ""
 "An error occurred while setting up the RPC port %u for listening on IPv6, "
 "falling back to IPv4: %s"),
-QT_TRANSLATE_NOOP("bitcoin-core", ""
-"Cannot obtain a lock on data directory %s. %s is probably already running "
-"and using that directory."),
 QT_TRANSLATE_NOOP("bitcoin-core", ""
 "Cannot obtain a lock on data directory %s. %s is probably already running."),
 QT_TRANSLATE_NOOP("bitcoin-core", ""
@@ -128,6 +126,12 @@ QT_TRANSLATE_NOOP("bitcoin-core", ""
 "firewall. If you are also failing the connection test, your firewall is most "
 "likely blocking network communications from the Gridcoin client."),
 QT_TRANSLATE_NOOP("bitcoin-core", ""
+"The data directory path '%s' contains characters that cannot be represented "
+"in the system code page, and Windows 8.3 short filename generation is not "
+"available on this volume. Please choose a data directory path using only "
+"characters supported by your system locale, or enable 8.3 filename "
+"generation."),
+QT_TRANSLATE_NOOP("bitcoin-core", ""
 "The network has experienced a low-level error and this probably means your "
 "IP address or other network connection parameters are not configured "
 "correctly. Please check your network configuration on your computer."),
@@ -144,9 +148,6 @@ QT_TRANSLATE_NOOP("bitcoin-core", ""
 "The wallet has less than five connections to the network and is unable to "
 "connect to an NTP server to check your computer clock. This is not "
 "necessarily a problem. You can wait a few minutes and try the test again."),
-QT_TRANSLATE_NOOP("bitcoin-core", ""
-"The wallet will now shutdown. Please start your wallet to begin sync from "
-"zero"),
 QT_TRANSLATE_NOOP("bitcoin-core", ""
 "There is a new leisure version available and you should upgrade as soon as "
 "practical."),
@@ -280,7 +281,6 @@ QT_TRANSLATE_NOOP("bitcoin-core", ""
 QT_TRANSLATE_NOOP("bitcoin-core", "A poll choice cannot be empty."),
 QT_TRANSLATE_NOOP("bitcoin-core", "Active by Greylist Override"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Active"),
-QT_TRANSLATE_NOOP("bitcoin-core", "Are you sure you want to cancel the snapshot operation?"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Authorized"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Automatically Greylisted"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Balance too low to create a contract."),
@@ -295,8 +295,6 @@ QT_TRANSLATE_NOOP("bitcoin-core", "Boinc Reward"),
 QT_TRANSLATE_NOOP("bitcoin-core", "CPID Count"),
 QT_TRANSLATE_NOOP("bitcoin-core", "CPID count polls are not supported."),
 QT_TRANSLATE_NOOP("bitcoin-core", "CPID"),
-QT_TRANSLATE_NOOP("bitcoin-core", "Cancel snapshot operation?"),
-QT_TRANSLATE_NOOP("bitcoin-core", "Cancel"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Cannot resolve -bind address: '%s'"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Cannot resolve -externalip address: '%s'"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Cannot write default address"),
@@ -332,7 +330,6 @@ QT_TRANSLATE_NOOP("bitcoin-core", "Error: could not start node"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Exceeded the number of choices in the poll: %s"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Expired while pending"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Explorer"),
-QT_TRANSLATE_NOOP("bitcoin-core", "Failed to download snapshot.zip; See debug.log"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Failed to listen on any port. Use -listen=0 if you want this."),
 QT_TRANSLATE_NOOP("bitcoin-core", "Failed to rename bootstrap file to .old for backup purposes."),
 QT_TRANSLATE_NOOP("bitcoin-core", "Failed: Count = %1"),
@@ -346,7 +343,6 @@ QT_TRANSLATE_NOOP("bitcoin-core", "GitHub version: "),
 QT_TRANSLATE_NOOP("bitcoin-core", "Governance"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Gridcoin Update Available"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Gridcoin version"),
-QT_TRANSLATE_NOOP("bitcoin-core", "Gridcoin"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Height"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Importing blockchain data file(s)."),
 QT_TRANSLATE_NOOP("bitcoin-core", "Importing bootstrap blockchain data file."),
@@ -435,25 +431,15 @@ QT_TRANSLATE_NOOP("bitcoin-core", "Renewal"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Replaying contracts..."),
 QT_TRANSLATE_NOOP("bitcoin-core", "Rescanning for MRC requests..."),
 QT_TRANSLATE_NOOP("bitcoin-core", "Rescanning..."),
-QT_TRANSLATE_NOOP("bitcoin-core", "Reset Blockchain Data: Blockchain data removal failed."),
-QT_TRANSLATE_NOOP("bitcoin-core", "Reset Blockchain Data: Blockchain data removal was a success"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Resetting block chain index to prepare for reindexing..."),
 QT_TRANSLATE_NOOP("bitcoin-core", "Send command to -server or gridcoinresearchd"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Sending..."),
 QT_TRANSLATE_NOOP("bitcoin-core", "Single Choice"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Snapshot Process Complete!"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Snapshot Process Has Begun."),
-QT_TRANSLATE_NOOP("bitcoin-core", "Snapshot extraction failed! Cleaning up any extracted data"),
-QT_TRANSLATE_NOOP("bitcoin-core", "Snapshot operation canceled due to an invalid snapshot zip."),
-QT_TRANSLATE_NOOP("bitcoin-core", "Snapshot operation canceled."),
-QT_TRANSLATE_NOOP("bitcoin-core", "Snapshot operation successful!"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Stage (1/4): Downloading snapshot.zip:         "),
-QT_TRANSLATE_NOOP("bitcoin-core", "Stage (1/4): Downloading snapshot.zip: Speed "),
-QT_TRANSLATE_NOOP("bitcoin-core", "Stage (2/4): Verify SHA256SUM of snapshot.zip"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Stage (2/4): Verify SHA256SUM of snapshot.zip: "),
-QT_TRANSLATE_NOOP("bitcoin-core", "Stage (3/4): Cleanup blockchain data"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Stage (3/4): Cleanup blockchain data:          "),
-QT_TRANSLATE_NOOP("bitcoin-core", "Stage (4/4): Extracting snapshot.zip"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Stage (4/4): Extracting snapshot.zip:          "),
 QT_TRANSLATE_NOOP("bitcoin-core", "Staking Only - No Eligible Research Projects"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Staking Only - No active beacon"),
@@ -465,8 +451,6 @@ QT_TRANSLATE_NOOP("bitcoin-core", "Testnet-only version"),
 QT_TRANSLATE_NOOP("bitcoin-core", "The field is not well-formed."),
 QT_TRANSLATE_NOOP("bitcoin-core", "The field list is not well-formed."),
 QT_TRANSLATE_NOOP("bitcoin-core", "The latest release is "),
-QT_TRANSLATE_NOOP("bitcoin-core", "The wallet is now shutting down. Please restart your wallet."),
-QT_TRANSLATE_NOOP("bitcoin-core", "The wallet will now shutdown."),
 QT_TRANSLATE_NOOP("bitcoin-core", "This update is "),
 QT_TRANSLATE_NOOP("bitcoin-core", "To use the %s option"),
 QT_TRANSLATE_NOOP("bitcoin-core", "Unable to bind to %s on this computer (bind returned error %d, %s)"),
