@@ -35,12 +35,15 @@ private:
     Ui::ResearcherWizardBeaconPage *ui;
     ResearcherModel *m_researcher_model;
     WalletModel *m_wallet_model;
+    bool m_v3_selected;
+    bool m_v3_key_generated;
 
 private slots:
     void refresh();
     void advertiseBeacon();
     void updateBeaconStatus(const QString& status);
     void updateBeaconIcon(const QIcon& icon);
+    void onVerificationMethodToggled();
 };
 
 #endif // GRIDCOIN_QT_RESEARCHER_RESEARCHERWIZARDBEACONPAGE_H

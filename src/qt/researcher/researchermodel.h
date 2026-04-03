@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2021 The Gridcoin developers
+// Copyright (c) 2014-2025 The Gridcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -6,8 +6,11 @@
 #define GRIDCOIN_QT_RESEARCHER_RESEARCHERMODEL_H
 
 #include <memory>
+#include <utility>
+#include <vector>
 #include "amount.h"
 #include <QObject>
+#include <QString>
 #include <optional>
 
 QT_BEGIN_NAMESPACE
@@ -37,6 +40,7 @@ enum class BeaconStatus
     ERROR_MISSING_KEY,
     ERROR_NOT_NEEDED,
     ERROR_TX_FAILED,
+    ERROR_INVALID_PROOF_XML,
     ERROR_WALLET_LOCKED,
     NO_BEACON,
     NO_CPID,
@@ -63,7 +67,9 @@ public:
     enum WhiteListStatus
     {
         False,
-        Greylisted,
+        Excluded,
+        Manually_Greylisted,
+        Automatically_Greylisted,
         True
     };
 
@@ -94,7 +100,7 @@ public:
     void setTheme(const QString& theme_name);
     void setMaskCpidMagnitudeAccrual(bool privacy);
 
-    bool configuredForInvestorMode() const;
+    bool configuredForNoncruncherMode() const;
     bool outOfSync() const;
     bool detectedPoolMode() const;
     bool actionNeeded() const;
@@ -135,17 +141,26 @@ public:
 
     std::vector<ProjectRow> buildProjectTable(bool extended = true) const;
 
+    // V3 beacon ownership proof support
+    bool isV14Enabled() const;
+    bool hasV3CapableProjects() const;
+    std::vector<std::pair<QString, QString>> buildV3ProjectList() const;
+    QString generateBeaconKeyForV3();
+    BeaconStatus advertiseBeaconV3(const QString& ownership_proof_xml);
+    QString cachedBeaconPubKeyHex() const;
+
 private:
     GRC::ResearcherPtr m_researcher;
     std::unique_ptr<GRC::Beacon> m_beacon;
     std::unique_ptr<GRC::Beacon> m_pending_beacon;
     BeaconStatus m_beacon_status;
-    bool m_configured_for_investor_mode;
+    bool m_configured_for_noncruncher_mode;
     bool m_wizard_open;
     bool m_out_of_sync;
     bool m_split_cpid;
     bool m_privacy_enabled;
     QString m_theme_suffix;
+    QString m_cached_beacon_pubkey_hex;
 
     void subscribeToCoreSignals();
     void unsubscribeFromCoreSignals();
@@ -167,7 +182,7 @@ public slots:
     void resetResearcher(GRC::ResearcherPtr researcher);
     bool switchToSolo(const QString& email);
     bool switchToPool();
-    bool switchToInvestor();
+    bool switchToNoncruncher();
     void updateBeacon();
     BeaconStatus advertiseBeacon();
     void onWizardClose();

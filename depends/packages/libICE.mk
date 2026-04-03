@@ -7,12 +7,13 @@ $(package)_sha256_hash=8f7032f2c1c64352b5423f6b48a8ebdc339cc63064af34d66a6c9aa79
 $(package)_dependencies=xtrans xproto
 
 define $(package)_set_vars
-  $(package)_config_opts=--disable-static --disable-docs --disable-specs --without-xsltproc
+  $(package)_config_opts=--disable-shared --enable-static --disable-docs --disable-specs --without-xsltproc
   $(package)_config_opts_linux=--with-pic
   $(package)_cxxflags_aarch64_linux = $(GCCFLAGS)
   $(package)_cflags_aarch64_linux = $(GCCFLAGS)
   $(package)_cxxflags_arm_linux = $(GCCFLAGS)
   $(package)_cflags_arm_linux = $(GCCFLAGS)
+  $(package)_config_opts +=--libdir=$($($(package)_type)_prefix)/lib
 endef
 
 define $(package)_config_cmds

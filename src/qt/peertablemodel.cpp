@@ -83,7 +83,7 @@ public:
         // build index map
         mapNodeRows.clear();
         int row = 0;
-        for (const CNodeCombinedStats& stats : cachedNodeStats)
+        for (const CNodeCombinedStats& stats : std::as_const(cachedNodeStats))
             mapNodeRows.insert(std::pair<NodeId, int>(stats.nodeStats.id, row++));
     }
 

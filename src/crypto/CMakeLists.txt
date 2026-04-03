@@ -49,6 +49,8 @@ if(ENABLE_ARM_SHANI)
     list(APPEND LIBGRIDCOIN_CRYPTO gridcoin_crypto_arm_shani)
     add_library(gridcoin_crypto_arm_shani STATIC sha256_arm_shani.cpp)
     target_compile_definitions(gridcoin_crypto_arm_shani PRIVATE ENABLE_ARM_SHANI)
+    # Add this line:
+    target_compile_options(gridcoin_crypto_arm_shani PRIVATE ${ARM_SHANI_FLAGS})
 endif()
 
 foreach(library IN LISTS LIBGRIDCOIN_CRYPTO)

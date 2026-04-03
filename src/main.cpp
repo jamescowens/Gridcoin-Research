@@ -6,6 +6,7 @@
 #include "amount.h"
 #include "chainparams.h"
 #include "consensus/merkle.h"
+#include "consensus/tx_verify.h"
 #include "gridcoin/voting/registry.h"
 #include "util.h"
 #include "net.h"
@@ -35,6 +36,7 @@
 #include "gridcoin/tally.h"
 #include "gridcoin/tx_message.h"
 #include "node/blockstorage.h"
+#include "node/orphan_blocks.h"
 #include "policy/fees.h"
 #include "policy/policy.h"
 #include "random.h"
@@ -96,8 +98,7 @@ CMedianFilter<int> cPeerBlockCounts(5, 0); // Amount of blocks that other nodes 
 
 
 
-map<uint256, CBlock*> mapOrphanBlocks;
-multimap<uint256, CBlock*> mapOrphanBlocksByPrev;
+// Orphan block storage managed by g_orphan_blocks (node/orphan_blocks.h)
 
 map<uint256, CTransaction> mapOrphanTransactions;
 map<uint256, set<uint256> > mapOrphanTransactionsByPrev;
@@ -543,6 +544,14 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CTransaction &tx, bool* pfMissingInput
             return false;
         }
 
+        // BIP68: Check relative lock-time (sequence locks) when v14 is active.
+        if (IsV14Enabled(nBestHeight + 1)) {
+            if (!CheckSequenceLocks(tx, 0, pindexBest)) {
+                return error("AcceptToMemoryPool : sequence locks not satisfied for tx %s",
+                             hash.ToString().substr(0, 10).c_str());
+            }
+        }
+
         // Check against previous transactions
         // This is done last to help prevent CPU exhaustion denial-of-service attacks.
         if (!ConnectInputs(tx, txdb, mapInputs, mapUnused, CDiskTxPos(1,1,1), pindexBest, false, false))
@@ -753,15 +762,6 @@ bool GetTransaction(const uint256 &hash, CTransaction &tx, uint256 &hashBlock)
 //
 // CBlock and CBlockIndex
 //
-static const CBlock* GetOrphanRoot(const CBlock* pblock)
-{
-    // Work back to the first block in the orphan chain
-    while (mapOrphanBlocks.count(pblock->hashPrevBlock))
-        pblock = mapOrphanBlocks[pblock->hashPrevBlock];
-    return pblock;
-}
-
-
 // Return maximum amount of blocks that other nodes claim to have
 int GetNumBlocksOfPeers()
 {
@@ -1466,7 +1466,7 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock, bool generated_by_me) EXCLUSIVE_
     uint256 hash = pblock->GetHash(true);
     if (mapBlockIndex.count(hash))
         return error("ProcessBlock() : already have block %d %s", mapBlockIndex[hash]->nHeight, hash.ToString().c_str());
-    if (mapOrphanBlocks.count(hash))
+    if (g_orphan_blocks.Contains(hash))
         return error("ProcessBlock() : already have block (orphan) %s", hash.ToString().c_str());
 
     if (pblock->hashPrevBlock != hashBestChain)
@@ -1501,7 +1501,7 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock, bool generated_by_me) EXCLUSIVE_
 
         if (pblock->IsProofOfStake()) {
             if (g_seen_stakes.ContainsOrphan(pblock->vtx[1])
-                && !mapOrphanBlocksByPrev.count(hash))
+                && !g_orphan_blocks.HasChildrenOf(hash))
             {
                 return error(
                     "%s: ignored duplicate proof-of-stake for orphan %s",
@@ -1512,29 +1512,32 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock, bool generated_by_me) EXCLUSIVE_
             }
         }
 
-        CBlock* pblock2 = new CBlock(*pblock);
-        mapOrphanBlocks.insert(make_pair(hash, pblock2));
-        mapOrphanBlocksByPrev.insert(make_pair(pblock->hashPrevBlock, pblock2));
+        if (!g_orphan_blocks.Add(hash, *pblock, GetTime())) {
+            return true;
+        }
 
         // Ask this guy to fill in what we're missing
-        const CBlock* const pblock_root = GetOrphanRoot(pblock2);
-        pfrom->PushGetBlocks(pindexBest, pblock_root->GetHash(true));
-        // ppcoin: getblocks may not obtain the ancestor block rejected
-        // earlier by duplicate-stake check so we ask for it again directly
-        if (!IsInitialBlockDownload())
-        {
-            const CInv ancestor_request(MSG_BLOCK, pblock_root->hashPrevBlock);
+        const CBlock* pblock_root = g_orphan_blocks.GetRootBlock(hash);
 
-            // Ensure that this request is not deferred. CNode::AskFor() bumps
-            // the earliest time for a message by two minutes for each call. A
-            // node with many connections can miss a parent block because this
-            // method can delay the queued request so far into the future that
-            // it never sends the request to download that block. We reset the
-            // request time first to guarantee that the node does not postpone
-            // the message:
-            //
-            mapAlreadyAskedFor[ancestor_request] = 0;
-            pfrom->AskFor(ancestor_request);
+        if (pblock_root) {
+            pfrom->PushGetBlocks(pindexBest, pblock_root->GetHash(true));
+            // ppcoin: getblocks may not obtain the ancestor block rejected
+            // earlier by duplicate-stake check so we ask for it again directly
+            if (!IsInitialBlockDownload())
+            {
+                const CInv ancestor_request(MSG_BLOCK, pblock_root->hashPrevBlock);
+
+                // Ensure that this request is not deferred. CNode::AskFor() bumps
+                // the earliest time for a message by two minutes for each call. A
+                // node with many connections can miss a parent block because this
+                // method can delay the queued request so far into the future that
+                // it never sends the request to download that block. We reset the
+                // request time first to guarantee that the node does not postpone
+                // the message:
+                //
+                mapAlreadyAskedFor[ancestor_request] = 0;
+                pfrom->AskFor(ancestor_request);
+            }
         }
 
         return true;
@@ -1544,25 +1547,11 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock, bool generated_by_me) EXCLUSIVE_
     if (!AcceptBlock(*pblock, generated_by_me))
         return error("ProcessBlock() : AcceptBlock FAILED");
 
-    // Recursively process any orphan blocks that depended on this one
-    vector<uint256> vWorkQueue;
-    vWorkQueue.push_back(hash);
-    for (unsigned int i = 0; i < vWorkQueue.size(); i++)
-    {
-        uint256 hashPrev = vWorkQueue[i];
-        for (multimap<uint256, CBlock*>::iterator mi = mapOrphanBlocksByPrev.lower_bound(hashPrev);
-             mi != mapOrphanBlocksByPrev.upper_bound(hashPrev);
-             ++mi)
-        {
-            CBlock* pblockOrphan = mi->second;
-            if (AcceptBlock(*pblockOrphan, generated_by_me))
-                vWorkQueue.push_back(pblockOrphan->GetHash(true));
-            mapOrphanBlocks.erase(pblockOrphan->GetHash(true));
-            g_seen_stakes.ForgetOrphan(pblockOrphan->vtx[1]);
-            delete pblockOrphan;
-        }
-        mapOrphanBlocksByPrev.erase(hashPrev);
-    }
+    // Recursively process any orphan blocks that depended on this one.
+    // ProcessQueue handles BFS traversal and SeenStakes cleanup internally.
+    g_orphan_blocks.ProcessQueue(hash, [&](CBlock& orphan) -> bool {
+        return AcceptBlock(orphan, generated_by_me);
+    });
 
     return true;
 }
@@ -1993,7 +1982,7 @@ bool static AlreadyHave(CTxDB& txdb, const CInv& inv)
 
     case MSG_BLOCK:
         return mapBlockIndex.count(inv.hash) ||
-               mapOrphanBlocks.count(inv.hash);
+               g_orphan_blocks.Contains(inv.hash);
     }
     // Don't know what it is, just say we already got one
     return true;
@@ -2046,13 +2035,15 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             return false;
         }
 
-        // Note the std::max is there to deal with the rollover of BlockV12Height + DISCONNECT_GRACE_PERIOD if
-        // BlockV12Height is set to std::numeric_limits<int>::max() which is the case during testing.
+        // Disconnect peers on old protocol versions after a grace period past the
+        // BlockV14Height activation height. Skip entirely if that fork is not yet
+        // activated (height == INT_MAX) to avoid signed integer overflow UB in the addition.
         if (pfrom->nVersion < MIN_PEER_PROTO_VERSION
             || (DISCONNECT_OLD_VERSION_AFTER_GRACE_PERIOD
                 && pfrom->nVersion < PROTOCOL_VERSION
-                && pindexBest->nHeight > std::max(Params().GetConsensus().BlockV12Height,
-                                                  Params().GetConsensus().BlockV12Height + DISCONNECT_GRACE_PERIOD)
+                && Params().GetConsensus().BlockV14Height != std::numeric_limits<int>::max()
+                && pindexBest->nHeight > Params().GetConsensus().BlockV14Height
+                                             + Params().GetConsensus().ProtocolVersionGracePeriod
                 )
             ) {
             // disconnect from peers older than this proto version
@@ -2068,6 +2059,10 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
         if (!vRecv.empty()) {
             vRecv >> pfrom->strSubVer;
+
+            if (pfrom->strSubVer.size() > 256) {
+                pfrom->strSubVer.resize(256);
+            }
 
             // This handles the special disconnect for clients between the mandatory 5.4.0.0 and the 5.4.5.0 since
             // 5.4.6.0 effectively became a mandatory due to the contract version error in TxMessage. The protocol version
@@ -2321,8 +2316,11 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
                 if (!fAlreadyHave)
                     pfrom->AskFor(inv);
-                else if (inv.type == MSG_BLOCK && mapOrphanBlocks.count(inv.hash)) {
-                    pfrom->PushGetBlocks(pindexBest, GetOrphanRoot(mapOrphanBlocks[inv.hash])->GetHash(true));
+                else if (inv.type == MSG_BLOCK && g_orphan_blocks.Contains(inv.hash)) {
+                    const CBlock* pblock_root = g_orphan_blocks.GetRootBlock(inv.hash);
+                    if (pblock_root) {
+                        pfrom->PushGetBlocks(pindexBest, pblock_root->GetHash(true));
+                    }
                 } else if (nInv == nLastBlock) {
                     // In case we are on a very long side-chain, it is possible that we already have
                     // the last block in an inv bundle sent in response to getblocks. Try to detect

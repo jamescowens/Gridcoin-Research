@@ -4,12 +4,14 @@
 #include "guiutil.h"
 #include "qt/decoration.h"
 
+#include <QComboBox>
 #include <QDataWidgetMapper>
 #include <QMessageBox>
 
 EditAddressDialog::EditAddressDialog(Mode mode, QWidget* parent)
                : QDialog(parent)
                , ui(new Ui::EditAddressDialog)
+               , addressCombo(nullptr)
                , mapper(nullptr)
                , mode(mode)
                , model(nullptr)
@@ -36,6 +38,14 @@ EditAddressDialog::EditAddressDialog(Mode mode, QWidget* parent)
     case EditSendingAddress:
         setWindowTitle(tr("Edit sending address"));
         break;
+    case AddExistingReceivingAddress:
+        setWindowTitle(tr("Add existing receiving address"));
+        // Replace the address line edit with a combo box of unbooked addresses
+        addressCombo = new QComboBox(this);
+        addressCombo->setFont(GUIUtil::bitcoinAddressFont());
+        ui->formLayout->replaceWidget(ui->addressEdit, addressCombo);
+        ui->addressEdit->hide();
+        break;
     }
 
     mapper = new QDataWidgetMapper(this);
@@ -56,6 +66,11 @@ void EditAddressDialog::setModel(AddressTableModel *model)
     mapper->setModel(model);
     mapper->addMapping(ui->labelEdit, AddressTableModel::Label);
     mapper->addMapping(ui->addressEdit, AddressTableModel::Address);
+
+    if(mode == AddExistingReceivingAddress && addressCombo)
+    {
+        addressCombo->addItems(model->unbookedReceiveAddresses());
+    }
 }
 
 void EditAddressDialog::loadRow(int row)
@@ -76,6 +91,12 @@ bool EditAddressDialog::saveCurrentRow()
                 mode == NewSendingAddress ? AddressTableModel::Send : AddressTableModel::Receive,
                 ui->labelEdit->text(),
                 ui->addressEdit->text());
+        break;
+    case AddExistingReceivingAddress:
+        address = model->addRow(
+                AddressTableModel::ReceiveExisting,
+                ui->labelEdit->text(),
+                addressCombo ? addressCombo->currentText() : QString());
         break;
     case EditReceivingAddress:
     case EditSendingAddress:
@@ -105,12 +126,12 @@ void EditAddressDialog::accept()
             break;
         case AddressTableModel::INVALID_ADDRESS:
             QMessageBox::warning(this, windowTitle(),
-                tr("The entered address \"%1\" is not a valid Gridcoin address.").arg(ui->addressEdit->text()),
+                tr("The entered address \"%1\" is not a valid Gridcoin address.").arg(getDisplayAddress()),
                 QMessageBox::Ok, QMessageBox::Ok);
             break;
         case AddressTableModel::DUPLICATE_ADDRESS:
             QMessageBox::warning(this, windowTitle(),
-                tr("The entered address \"%1\" is already in the address book.").arg(ui->addressEdit->text()),
+                tr("The entered address \"%1\" is already in the address book.").arg(getDisplayAddress()),
                 QMessageBox::Ok, QMessageBox::Ok);
             break;
         case AddressTableModel::WALLET_UNLOCK_FAILURE:
@@ -123,11 +144,22 @@ void EditAddressDialog::accept()
                 tr("New key generation failed."),
                 QMessageBox::Ok, QMessageBox::Ok);
             break;
-
+        case AddressTableModel::NOT_MINE:
+            QMessageBox::warning(this, windowTitle(),
+                tr("The entered address \"%1\" is not owned by this wallet.").arg(getDisplayAddress()),
+                QMessageBox::Ok, QMessageBox::Ok);
+            break;
         }
         return;
     }
     QDialog::accept();
+}
+
+QString EditAddressDialog::getDisplayAddress() const
+{
+    if(addressCombo)
+        return addressCombo->currentText();
+    return ui->addressEdit->text();
 }
 
 QString EditAddressDialog::getAddress() const

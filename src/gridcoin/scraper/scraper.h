@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2021 The Gridcoin developers
+// Copyright (c) 2014-2025 The Gridcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 #ifndef GRIDCOIN_SCRAPER_SCRAPER_H
@@ -9,6 +9,8 @@
 #include <cmath>
 #include <algorithm>
 #include <cctype>
+#include <set>
+#include <string>
 #include <vector>
 #include <map>
 
@@ -80,6 +82,8 @@ struct ScraperFileManifestEntry
     bool current = true;
     bool excludefromcsmanifest = true;
     std::string filetype;
+    double all_cpid_total_credit = 0;
+    bool no_records = true;
 };
 
 /**
@@ -122,9 +126,9 @@ uint256 GetFileHash(const fs::path& inputfile);
 /**
  * @brief Provides the computed scraper stats and verified beacons from the input converged manifest
  * @param StructConvergedManifest
- * @return ScraperStatsAndVerifiedBeacons
+ * @return ScraperStatsVerifiedBeaconsTotalCredits
  */
-ScraperStatsAndVerifiedBeacons GetScraperStatsByConvergedManifest(const ConvergedManifest& StructConvergedManifest);
+ScraperStatsVerifiedBeaconsTotalCredits GetScraperStatsByConvergedManifest(const ConvergedManifest& StructConvergedManifest);
 /**
  * @brief Gets a copy of the extended scrapers cache global. This global is an extension of the appcache in that it
  * retains deleted entries with a deleted flag.
@@ -201,9 +205,9 @@ std::vector<uint160> GetVerifiedBeaconIDs(const ScraperPendingBeaconMap& Verifie
 /**
  * @brief Returns the scraper stats and verified beacons in one structure from the input ConvergedScraperStats
  * @param stats
- * @return ScraperStatsAndVerifiedBeacons
+ * @return ScraperStatsVerifiedBeaconsTotalCredits
  */
-ScraperStatsAndVerifiedBeacons GetScraperStatsAndVerifiedBeacons(const ConvergedScraperStats &stats);
+ScraperStatsVerifiedBeaconsTotalCredits GetScraperStatsVerifiedBeaconsTotalCredits(const ConvergedScraperStats &stats);
 /**
  * @brief Returns a map of pending beacons
  * @return ScraperPendingBeaconMap of pending beacons
@@ -260,5 +264,8 @@ unsigned int NumScrapersForSupermajority(unsigned int nScraperCount);
 
 /** Gets a vector of projects that require an external adapter for the scrapers to pull statistics. */
 std::vector<std::string> GetProjectsExternalAdapterRequired();
+
+/** Returns the set of project master URLs for which ownership proof public keys are available. */
+std::set<std::string> GetProjectsWithOwnershipProofSupport();
 
 #endif // GRIDCOIN_SCRAPER_SCRAPER_H

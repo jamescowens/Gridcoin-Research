@@ -87,8 +87,16 @@ OptionsDialog::OptionsDialog(QWidget* parent)
         /** check if the locale name consists of 2 parts (language_country) */
         if(langStr.contains("_"))
         {
+            QString countryName;
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+            countryName = locale.nativeTerritoryName();
+#else
+            countryName = locale.nativeCountryName();
+#endif
+
             /** display language strings as "native language - native country (locale name)", e.g. "Deutsch - Deutschland (de)" */
-            ui->lang->addItem(locale.nativeLanguageName() + QString(" - ") + locale.nativeCountryName() + QString(" (") + langStr + QString(")"), QVariant(langStr));
+            ui->lang->addItem(locale.nativeLanguageName() + QString(" - ") + countryName + QString(" (") + langStr + QString(")"), QVariant(langStr));
         }
         else
         {
@@ -255,7 +263,7 @@ void OptionsDialog::setMapper()
         mapper->addMapping(ui->minimizeOnClose, OptionsModel::MinimizeOnClose);
     }
     mapper->addMapping(ui->confirmOnClose, OptionsModel::ConfirmOnClose);
-#endif    
+#endif
 
     /* Display */
     mapper->addMapping(ui->lang, OptionsModel::Language);

@@ -1,3 +1,8 @@
+# Generate the config.h file
+# ===========================
+# This creates config/gridcoin-config.h in the build directory
+# (e.g., build/config/gridcoin-config.h) with all the
+# correct HAVE_... definitions from the checks above.
 configure_file(
     config/gridcoin-config.h.cmake.in
     config/gridcoin-config.h
@@ -13,12 +18,25 @@ add_compile_definitions(
 )
 
 if(WIN32)
-    add_compile_definitions(_MT _WINDOWS _WIN32_WINNT=0x0601)
+    # _WIN32_WINNT is already defined by the toolchain/CMake.
+    # We remove it here to avoid "redefined" warnings.
+    add_compile_definitions(_MT _WINDOWS)
     add_compile_definitions(WIN32 BOOST_THREAD_USE_LIB UNICODE)
 elseif(UNIX AND NOT APPLE)
     add_compile_definitions(_FILE_OFFSET_BITS=64)
 endif()
 
+# These two files MUST be removed during a cmake build to ensure that an unclean autotools
+# in-source build does not pollute the cmake build process.
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/config/gridcoin-config.h")
+    message(STATUS "Detected stale Autotools configuration file. Removing: ${CMAKE_CURRENT_SOURCE_DIR}/config/gridcoin-config.h")
+    file(REMOVE "${CMAKE_CURRENT_SOURCE_DIR}/config/gridcoin-config.h")
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/obj/build.h")
+    message(STATUS "Detected stale Autotools configuration file. Removing: ${CMAKE_CURRENT_SOURCE_DIR}/obj/build.h")
+    file(REMOVE "${CMAKE_CURRENT_SOURCE_DIR}/obj/build.h")
+endif()
 
 # Dependencies
 # ============
@@ -58,12 +76,12 @@ if(SYSTEM_SECP256K1)
 else()
     set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
-    set(SECP256K1_BUILD_SHARED OFF)
-    set(SECP256K1_BUILD_STATIC ON)
+    set(SECP256K1_DISABLE_SHARED ON CACHE BOOL "" FORCE)
     set(SECP256K1_ENABLE_MODULE_ECDH OFF)
     set(SECP256K1_ENABLE_MODULE_RECOVERY ON)
     set(SECP256K1_ENABLE_MODULE_EXTRAKEYS OFF)
     set(SECP256K1_ENABLE_MODULE_SCHNORRSIG OFF)
+    set(SECP256K1_ENABLE_MODULE_MUSIG OFF)
     set(SECP256K1_VALGRIND OFF)
 
     set(SECP256K1_BUILD_BENCHMARK OFF)
@@ -78,10 +96,7 @@ else()
     endif()
 
     add_subdirectory(secp256k1 EXCLUDE_FROM_ALL)
-    target_include_directories(secp256k1_static PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/secp256k1/include>
-    )
-    set(LIBSECP256K1 secp256k1_static)
+    set(LIBSECP256K1 secp256k1)
 endif()
 
 if(SYSTEM_UNIVALUE)
@@ -117,9 +132,11 @@ add_library(gridcoin_util STATIC
     crypter.cpp
     dbwrapper.cpp
     fs.cpp
+    htlc.cpp
     gridcoin/backup.cpp
     gridcoin/beacon.cpp
     gridcoin/boinc.cpp
+    gridcoin/crypto/rsaverify.cpp
     gridcoin/claim.cpp
     gridcoin/contract/contract.cpp
     gridcoin/contract/message.cpp
@@ -164,6 +181,7 @@ add_library(gridcoin_util STATIC
     netaddress.cpp
     netbase.cpp
     node/blockstorage.cpp
+    node/orphan_blocks.cpp
     node/ui_interface.cpp
     noui.cpp
     pbkdf2.cpp
@@ -174,6 +192,7 @@ add_library(gridcoin_util STATIC
     random.cpp
     randomenv.cpp
     rpc/blockchain.cpp
+    rpc/htlc.cpp
     rpc/client.cpp
     rpc/dataacq.cpp
     rpc/mining.cpp
@@ -185,8 +204,6 @@ add_library(gridcoin_util STATIC
     rpc/voting.cpp
     scheduler.cpp
     script.cpp
-    scrypt-x86.S
-    scrypt-x86_64.S
     scrypt.cpp
     support/cleanse.cpp
     support/lockedpool.cpp
@@ -213,29 +230,47 @@ add_library(gridcoin_util STATIC
     wallet/walletutil.cpp
 )
 
+if(USE_ASM_SCRYPT)
+    target_sources(gridcoin_util PRIVATE scrypt-x86.S scrypt-x86_64.S)
+endif()
+
 target_include_directories(gridcoin_util PUBLIC
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_BINARY_DIR}/src
 )
 
 target_link_libraries(gridcoin_util PUBLIC
-    -lm ${ATOMICS_LIBRARIES} ${RT_LIBRARIES}
     ${LIBBDB_CXX} ${LIBLEVELDB} ${LIBSECP256K1} ${LIBUNIVALUE}
-    Boost::boost Boost::filesystem Boost::iostreams Boost::thread
+    Boost::boost Boost::filesystem Boost::iostreams Boost::thread Boost::date_time Boost::serialization
     CURL::libcurl
     OpenSSL::Crypto OpenSSL::SSL
     Threads::Threads
     libzip::zip
+    ZLIB::ZLIB
 )
+
+if(UNIX)
+    target_link_libraries(gridcoin_util PUBLIC -lm ${ATOMICS_LIBRARIES} ${RT_LIBRARIES})
+endif()
+
 target_link_libraries(gridcoin_util PUBLIC ${LIBGRIDCOIN_CRYPTO})
 
 if(WIN32)
-    target_link_libraries(gridcoin_util PUBLIC wsock32 Ws2_32)
+    target_link_libraries(gridcoin_util PUBLIC
+        wsock32
+        ws2_32
+        wldap32
+        crypt32
+        bcrypt
+        shlwapi
+        iphlpapi
+        )
 endif()
 
 target_compile_definitions(gridcoin_util PUBLIC
     HAVE_CONFIG_H
     HAVE_BUILD_INFO
+    CURL_STATICLIB
 )
 
 if(ENABLE_UPNP)
@@ -249,38 +284,82 @@ if(ENABLE_UPNP)
         target_compile_definitions(gridcoin_util PRIVATE MINIUPNP_STATICLIB)
     endif()
 
-    target_link_libraries(gridcoin_util PUBLIC PkgConfig::MINIUPNPC)
+    target_link_libraries(gridcoin_util PUBLIC ${LIBMINIUPNPC})
 endif()
 
+if(ENABLE_DEBUG_LOCKORDER)
+    target_compile_definitions(gridcoin_util PUBLIC DEBUG_LOCKORDER)
+endif()
 
 # Daemon
 # ======
 
 if(ENABLE_DAEMON)
     add_executable(gridcoinresearchd gridcoinresearchd.cpp)
-    target_link_libraries(gridcoinresearchd PUBLIC ${RUNTIME_LIBS} gridcoin_util)
+    target_include_directories(gridcoinresearchd PRIVATE ${CMAKE_BINARY_DIR})
+    target_compile_definitions(gridcoinresearchd PRIVATE CURL_STATICLIB) # <--- ADDED
+
+    # Link gridcoinresearchd to gridcoin_util AND all of gridcoin_util's
+    # dependencies, because it is a static library.
+    target_link_libraries(gridcoinresearchd PUBLIC
+        ${RUNTIME_LIBS}
+        gridcoin_util
+
+        # Dependencies of gridcoin_util
+        ${LIBBDB_CXX} ${LIBLEVELDB} ${LIBSECP256K1} ${LIBUNIVALUE}
+        Boost::boost Boost::filesystem Boost::iostreams Boost::thread Boost::date_time Boost::serialization
+        CURL::libcurl
+        OpenSSL::Crypto OpenSSL::SSL
+        Threads::Threads
+        libzip::zip
+        ZLIB::ZLIB
+    )
 
     if(WIN32)
+        # Link the windows-specific libs
+        target_link_libraries(gridcoinresearchd PUBLIC wsock32 ws2_32)
+
         target_sources(gridcoinresearchd PRIVATE gridcoinresearchd-res.rc)
         set_source_files_properties(gridcoinresearchd-res.rc PROPERTIES
+            COMPILE_FLAGS "-I${CMAKE_BINARY_DIR}"
             COMPILE_DEFINITIONS WINDRES_PREPROC
         )
     endif()
 
+    if(UNIX)
+        # Link the unix-specific libs
+        target_link_libraries(gridcoinresearchd PUBLIC
+            -lm ${ATOMICS_LIBRARIES} ${RT_LIBRARIES}
+        )
+    endif()
+
+    set_target_properties(gridcoinresearchd PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    )
+
+    # Installation
     if(UNIX AND NOT APPLE)
         include(GNUInstallDirs)
-        install(TARGETS gridcoinresearchd
+        install(TARGETS gridcoinresearchd COMPONENT daemon
             DESTINATION "${CMAKE_INSTALL_BINDIR}"
         )
-        install(FILES "${CMAKE_SOURCE_DIR}/doc/gridcoinresearchd.1"
+        install(FILES "${CMAKE_SOURCE_DIR}/doc/gridcoinresearchd.1" COMPONENT daemon
             DESTINATION "${CMAKE_INSTALL_MANDIR}/man1"
         )
-        install(FILES "${CMAKE_SOURCE_DIR}/contrib/init/gridcoinresearchd.service"
+        install(FILES "${CMAKE_SOURCE_DIR}/contrib/init/gridcoinresearchd.service" COMPONENT daemon
             DESTINATION "lib/systemd/system"
+        )
+        install(FILES "${CMAKE_SOURCE_DIR}/contrib/completions/bash/gridcoinresearchd.bash" COMPONENT daemon
+            DESTINATION "${CMAKE_INSTALL_DATADIR}/bash-completion/completions"
+            RENAME "gridcoinresearchd"
+        )
+    else()
+        install(TARGETS gridcoinresearchd COMPONENT daemon
+            RUNTIME DESTINATION bin
+            BUNDLE  DESTINATION "."
         )
     endif()
 endif()
-
 
 # Qt GUI
 # ======

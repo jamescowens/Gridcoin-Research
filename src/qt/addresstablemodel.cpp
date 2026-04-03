@@ -11,6 +11,7 @@
 
 const QString AddressTableModel::Send = "S";
 const QString AddressTableModel::Receive = "R";
+const QString AddressTableModel::ReceiveExisting = "RE";
 
 struct AddressTableEntry
 {
@@ -367,6 +368,26 @@ QString AddressTableModel::addRow(const QString &type, const QString &label, con
         }
         strAddress = EncodeDestination(newKey.GetID());
     }
+    else if(type == ReceiveExisting)
+    {
+        if(!walletModel->validateAddress(address))
+        {
+            editStatus = INVALID_ADDRESS;
+            return QString();
+        }
+        LOCK(wallet->cs_wallet);
+        CTxDestination dest = DecodeDestination(strAddress);
+        if(IsMine(*wallet, dest) == ISMINE_NO)
+        {
+            editStatus = NOT_MINE;
+            return QString();
+        }
+        if(wallet->mapAddressBook.count(dest))
+        {
+            editStatus = DUPLICATE_ADDRESS;
+            return QString();
+        }
+    }
     else
     {
         return QString();
@@ -395,6 +416,22 @@ bool AddressTableModel::removeRows(int row, int count, const QModelIndex &parent
         wallet->DelAddressBookName(DecodeDestination(rec->address.toStdString()));
     }
     return true;
+}
+
+QStringList AddressTableModel::unbookedReceiveAddresses() const
+{
+    QStringList result;
+    {
+        LOCK(wallet->cs_wallet);
+        std::map<CTxDestination, int64_t> balances = wallet->GetAddressBalances();
+        for (const auto& [dest, balance] : balances) {
+            if (balance > 0 && wallet->mapAddressBook.count(dest) == 0) {
+                result.append(QString::fromStdString(EncodeDestination(dest)));
+            }
+        }
+    }
+    result.sort();
+    return result;
 }
 
 /* Look up label for address in address book, if not found return empty string.

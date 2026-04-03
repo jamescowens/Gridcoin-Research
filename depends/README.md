@@ -13,10 +13,10 @@ For example:
     make HOST=x86_64-w64-mingw32 -j4
 
 A prefix will be generated that's suitable for plugging into Gridcoin's
-configure. In the above example, a dir named x86_64-w64-mingw32 will be
+CMake build. In the above example, a dir named x86_64-w64-mingw32 will be
 created. To use it for Gridcoin:
 
-    ./configure --prefix=`pwd`/depends/x86_64-w64-mingw32
+    cmake -B build --toolchain depends/x86_64-w64-mingw32/toolchain.cmake
 
 Common `host-platform-triplets` for cross compilation are:
 
@@ -70,7 +70,7 @@ The following can be set when running make: make FOO=bar
     BUILD_ID_SALT: Optional salt to use when generating build package ids
 
 If some packages are not built, for example `make NO_WALLET=1`, the appropriate
-options will be passed to Gridcoin's configure. In this case, `--disable-wallet`.
+options will be passed to Gridcoin's CMake configuration.
 
 ### Additional targets:
 

@@ -6,9 +6,11 @@
 #define GRIDCOIN_BOINC_H
 
 #include <fs.h>
+#include <vector>
 
 namespace GRC {
 fs::path GetBoincDataDir();
+fs::path ResolveBoincDataDir(const std::vector<fs::path>& candidates);
 }
 
 #endif // GRIDCOIN_BOINC_H

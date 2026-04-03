@@ -48,7 +48,11 @@ SendCoinsDialog::SendCoinsDialog(QWidget* parent)
     connect(ui->coinControlPushButton, &QPushButton::clicked, this, &SendCoinsDialog::coinControlButtonClicked);
     connect(ui->coinControlConsolidateWizardPushButton, &QPushButton::clicked, this, &SendCoinsDialog::coinControlConsolidateWizardButtonClicked);
     connect(ui->coinControlResetPushButton, &QPushButton::clicked, this, &SendCoinsDialog::coinControlResetButtonClicked);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0) // strictly it's 6.7+ for checkStateChanged
+    connect(ui->coinControlChangeCheckBox, &QCheckBox::checkStateChanged, this, &SendCoinsDialog::coinControlChangeChecked);
+#else
     connect(ui->coinControlChangeCheckBox, &QCheckBox::stateChanged, this, &SendCoinsDialog::coinControlChangeChecked);
+#endif
     connect(ui->coinControlChangeEdit, &QLineEdit::textEdited, this, &SendCoinsDialog::coinControlChangeEdited);
 
     // Coin Control: clipboard actions
@@ -148,7 +152,12 @@ void SendCoinsDialog::on_sendButton_clicked()
     // Format confirmation message
     QStringList formatted;
     for (const SendCoinsRecipient& rcp : recipients) {
-        formatted.append(tr("<b>%1</b> to %2 (%3)").arg(BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, rcp.amount),
+        QString amountStr = BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, rcp.amount);
+        if (rcp.fSubtractFeeFromAmount)
+        {
+            amountStr += " " + tr("(minus fee)");
+        }
+        formatted.append(tr("<b>%1</b> to %2 (%3)").arg(amountStr,
               rcp.label.toHtmlEscaped(), rcp.address));
     }
 
@@ -201,6 +210,13 @@ void SendCoinsDialog::on_sendButton_clicked()
         QMessageBox::warning(this, tr("Send Coins"),
             tr("The total exceeds your balance when the %1 transaction fee is included.").
             arg(BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, sendstatus.fee)),
+            QMessageBox::Ok, QMessageBox::Ok);
+        break;
+    case WalletModel::FeeExceedsSubtractedAmount:
+        QMessageBox::warning(this, tr("Send Coins"),
+            tr("The transaction fee (%1) exceeds the amount being sent to a recipient "
+               "with 'Subtract fee from amount' enabled. Please enter a larger amount.")
+            .arg(BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, sendstatus.fee)),
             QMessageBox::Ok, QMessageBox::Ok);
         break;
     case WalletModel::DuplicateAddress:
@@ -401,19 +417,25 @@ void SendCoinsDialog::coinControlClipboardQuantity()
 // Coin Control: copy label "Amount" to clipboard
 void SendCoinsDialog::coinControlClipboardAmount()
 {
-    QApplication::clipboard()->setText(ui->coinControlAmountLabel->text().left(ui->coinControlAmountLabel->text().indexOf(" ")));
+    QString text = ui->coinControlAmountLabel->text().left(ui->coinControlAmountLabel->text().indexOf(" "));
+    text.remove(BitcoinUnits::THIN_SPACE);
+    QApplication::clipboard()->setText(text);
 }
 
 // Coin Control: copy label "Fee" to clipboard
 void SendCoinsDialog::coinControlClipboardFee()
 {
-    QApplication::clipboard()->setText(ui->coinControlFeeLabel->text().left(ui->coinControlFeeLabel->text().indexOf(" ")));
+    QString text = ui->coinControlFeeLabel->text().left(ui->coinControlFeeLabel->text().indexOf(" "));
+    text.remove(BitcoinUnits::THIN_SPACE);
+    QApplication::clipboard()->setText(text);
 }
 
 // Coin Control: copy label "After fee" to clipboard
 void SendCoinsDialog::coinControlClipboardAfterFee()
 {
-    QApplication::clipboard()->setText(ui->coinControlAfterFeeLabel->text().left(ui->coinControlAfterFeeLabel->text().indexOf(" ")));
+    QString text = ui->coinControlAfterFeeLabel->text().left(ui->coinControlAfterFeeLabel->text().indexOf(" "));
+    text.remove(BitcoinUnits::THIN_SPACE);
+    QApplication::clipboard()->setText(text);
 }
 
 // Coin Control: copy label "Bytes" to clipboard
@@ -431,7 +453,9 @@ void SendCoinsDialog::coinControlClipboardLowOutput()
 // Coin Control: copy label "Change" to clipboard
 void SendCoinsDialog::coinControlClipboardChange()
 {
-    QApplication::clipboard()->setText(ui->coinControlChangeLabel->text().left(ui->coinControlChangeLabel->text().indexOf(" ")));
+    QString text = ui->coinControlChangeLabel->text().left(ui->coinControlChangeLabel->text().indexOf(" "));
+    text.remove(BitcoinUnits::THIN_SPACE);
+    QApplication::clipboard()->setText(text);
 }
 
 // Coin Control: settings menu - coin control enabled/disabled by user
@@ -445,7 +469,7 @@ void SendCoinsDialog::coinControlFeatureChanged(bool checked)
 // Coin Control: button inputs -> show actual coin control dialog
 void SendCoinsDialog::coinControlButtonClicked()
 {
-    CoinControlDialog dlg(this, coinControl, payAmounts);
+    CoinControlDialog dlg(this, coinControl, payAmounts, hasSubtractFeeRecipient());
     dlg.setModel(model);
 
     connect(&dlg, &CoinControlDialog::selectedConsolidationRecipientSignal,
@@ -463,7 +487,7 @@ void SendCoinsDialog::coinControlResetButtonClicked()
 
 void SendCoinsDialog::coinControlConsolidateWizardButtonClicked()
 {
-    CoinControlDialog dlg(this, coinControl, payAmounts);
+    CoinControlDialog dlg(this, coinControl, payAmounts, hasSubtractFeeRecipient());
     dlg.setModel(model);
 
     connect(&dlg, &CoinControlDialog::selectedConsolidationRecipientSignal,
@@ -558,6 +582,16 @@ void SendCoinsDialog::coinControlChangeEdited(const QString & text)
     }
 }
 
+bool SendCoinsDialog::hasSubtractFeeRecipient() const
+{
+    for (int i = 0; i < ui->entries->count(); ++i)
+    {
+        SendCoinsEntry *entry = qobject_cast<SendCoinsEntry*>(ui->entries->itemAt(i)->widget());
+        if (entry && entry->getValue().fSubtractFeeFromAmount) return true;
+    }
+    return false;
+}
+
 // Coin Control: update labels
 void SendCoinsDialog::coinControlUpdateLabels()
 {
@@ -577,7 +611,7 @@ void SendCoinsDialog::coinControlUpdateLabels()
     if (coinControl->HasSelected())
     {
         // actual coin control calculation
-        CoinControlDialog::updateLabels(model, coinControl, payAmounts, this);
+        CoinControlDialog::updateLabels(model, coinControl, payAmounts, this, hasSubtractFeeRecipient());
 
         // show coin control stats
         ui->coinControlAutomaticallySelectedLabel->hide();

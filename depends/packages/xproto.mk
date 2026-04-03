@@ -14,6 +14,11 @@ define $(package)_set_vars
   $(package)_cflags_arm_linux = $(GCCFLAGS)
 endef
 
+define $(package)_preprocess_cmds
+  cp -f $(BASEDIR)/config.guess . && \
+  cp -f $(BASEDIR)/config.sub .
+endef
+
 define $(package)_config_cmds
   $($(package)_autoconf)
 endef
@@ -23,5 +28,5 @@ define $(package)_build_cmds
 endef
 
 define $(package)_stage_cmds
-  $(MAKE) DESTDIR=$($(package)_staging_dir) install
+  $(MAKE) DESTDIR=$($(package)_staging_dir) -j1 install
 endef

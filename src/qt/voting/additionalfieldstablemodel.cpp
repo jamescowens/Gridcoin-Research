@@ -6,7 +6,6 @@
 #include "qt/voting/additionalfieldstablemodel.h"
 #include "qt/voting/votingmodel.h"
 
-#include <QtConcurrentRun>
 #include <QStringList>
 
 using namespace GRC;

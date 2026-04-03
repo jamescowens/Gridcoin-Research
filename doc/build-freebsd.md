@@ -1,109 +1,141 @@
-Building on FreeBSD
---------------------
+# FreeBSD Build Guide
 
-**Updated for FreeBSD [12.2](https://www.freebsd.org/releases/12.2R/announce.html)**
+This guide details how to build Gridcoin on FreeBSD (14.x+).
 
-This guide describes how to build gridcoinresearchd, command-line utilities, and GUI on FreeBSD.
+## 1. System Preparation (First Run Only)
 
-Preparing the Build
---------------------
+**Hostname Setup:**
+FreeBSD requires the FQDN in the configuration. If you are setting this OS up fresh, then replace `hostname` and `domainname` with your desired names.
 
-Install the required dependencies the usual way you [install software on FreeBSD](https://www.freebsd.org/doc/en/books/handbook/ports.html) - either with `pkg` or via the Ports collection. The example commands below use `pkg` which is usually run as `root` or via `sudo`. If you want to use `sudo`, and you haven't set it up: [use this guide](http://www.freebsdwiki.net/index.php/Sudo%2C_configuring) to setup `sudo` access on FreeBSD.
+```sh
+sudo sysrc hostname="hostname.domainname"
+sudo hostname "hostname.domainname"
+````
 
-#### General Dependencies
+*Note: Ensure you add this hostname to `/etc/hosts` next to 127.0.0.1 and ::1 to prevent sudo delays.*
 
-```bash
-pkg install cmake
-# or
-pkg install autoconf automake gmake libtool
+**Enable Desktop Services (VMware/XFCE):**
+Required for mouse integration (`evdev`) and GUI permissions in a virtualized environment.
 
-pkg install boost-libs curl db5 leveldb libzip openssl pkgconf secp256k1
+```sh
+# Enable mouse/keyboard integration
+echo "kern.evdev.rcpt_mask=6" | sudo tee -a /etc/sysctl.conf
+sudo sysctl kern.evdev.rcpt_mask=6
+
+# Enable DBus and VMware services
+sudo sysrc dbus_enable="YES"
+sudo sysrc hald_enable="YES"
+sudo sysrc vmware_guest_dmp_enable="YES"
+sudo sysrc vmware_guest_vmmemctl_enable="YES"
+sudo sysrc vmware_guest_vmblock_enable="YES"
+sudo sysrc vmware_guest_vmhgfs_enable="YES"
+sudo sysrc vmware_guest_vmsync_enable="YES"
+sudo sysrc vmware_guestd_enable="YES"
 ```
 
----
-#### GUI Dependencies
+## 2\. Install Dependencies
 
-```bash
-pkg install qt5 libqrencode
+Run the following commands to install the necessary build tools and libraries.
+
+```sh
+# Update package catalog
+sudo pkg update
+
+# Basic build requirements
+# Note: 'boost-all' is required to ensure headers are found.
+sudo pkg install git cmake boost-all libzip curl pkgconf miniupnpc
+
+# Install Qt6 for the GUI Wallet
+sudo pkg install qt6
 ```
 
----
-#### Test Suite Dependencies
+## 3\. Clone the Repository
 
-There is an included test suite that is useful for testing code changes when developing.
-To run the test suite (recommended), you will need to have the following packages installed:
-
-* With CMake:
-
-  ```bash
-  pkg install vim
-  ```
-
-* With Autotools:
-
-  ```bash
-  pkg install python3
-  ```
-
-Clone the repository and cd into it:
-
-``` bash
-git clone https://github.com/gridcoin-community/Gridcoin-Research
+```sh
+git clone [https://github.com/gridcoin-community/Gridcoin-Research.git](https://github.com/gridcoin-community/Gridcoin-Research.git)
 cd Gridcoin-Research
 git checkout master
 ```
 
-To Build
----------------------
-### 1. Configuration
+-----
 
-There are many ways to configure Gridcoin, here are a few common examples:
+## 4\. Build Configuration
 
-##### Wallet Support, No GUI:
-This configuration does not enable the GUI.
+Choose **Option A** (Headless/Daemon)  or **Option B** (GUI Wallet).
 
-* With CMake:
+### Option A: Headless (Daemon only)
 
-  ```bash
-  mkdir build && cd build
-  cmake ..
-  ```
+Use this for servers or jails where no X11 is present.
 
-* With Autotools:
+```sh
+cmake -B build \
+-DENABLE_GUI=off \
+-DENABLE_TESTS=on \
+-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+-DENABLE_PIE=on \
+-DENABLE_UPNP=on \
+-DBoost_USE_DEBUG_RUNTIME=OFF
 
-  ```bash
-  ./autogen.sh
-  ./configure --with-gui=no \
-  	MAKE=gmake
-  ```
+cmake --build build -j$(sysctl -n hw.ncpu)
 
-### 2. Compile
+sudo cmake --install build
+```
 
-* With CMake:
+### Option B: GUI Wallet (Qt6) - Recommended
 
-  ```bash
-  cmake --build . # use "-j N" for N parallel jobs
-  ctest . # Run tests
-  ```
+**Configure:**
+*Note: `-DBoost_USE_DEBUG_RUNTIME=OFF` is critical on FreeBSD. It forces CMake to accept the system's "Release" version of Boost even when building Gridcoin with debug symbols. You can alternatively use "Release" instead of RelWithDebInfo if you don't need the debug symbols and omit the -DBoost_USE_DEBUG_RUNTIME=OFF flag.*
 
-* With Autotools:
+```sh
+cmake -B build \
+-DENABLE_GUI=on \
+-DENABLE_TESTS=on \
+-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+-DUSE_QT6=on \
+-DENABLE_PIE=on \
+-DENABLE_UPNP=on \
+-DBoost_USE_DEBUG_RUNTIME=OFF
+```
 
-  ```bash
-  gmake # use "-j N" for N parallel jobs
-  ```
+**Build:**
+Use `sysctl` to automatically detect core count for parallel compilation. Pay attention to memory usage. General 1 GB per core is required, so if you have a smaller amount of memory, you may want to substitute your RAM in GB - 1 GB as the number of CPUs.
 
-### 3. Test
+```sh
+cmake --build build -j$(sysctl -n hw.ncpu)
+```
 
-* With CMake:
+**Install (Optional):**
 
-  ```bash
-  cmake .. -DENABLE_TESTS=ON
-  cmake --build .
-  ctest .
-  ```
+```sh
+sudo cmake --install build
+```
 
-* With Autotools:
+## 5\. Running Gridcoin
 
-  ```bash
-  gmake check
-  ```
+### If you followed option A (Daemon only)
+
+If you installed Gridcoin, you can launch from the terminal.
+
+```sh
+gridcoinresearchd
+```
+
+If you did not install, you can run directly from the build folder. Assuming you are still in the Gridcoin-Research repo directory,
+
+```
+./build/src/gridcoinresearchd
+```
+
+### If you followed option B (GUI)
+
+If you installed Gridcoin, you can launch from the terminal or use the Desktop menu.
+
+```sh
+gridcoinresearch
+```
+
+If you did not install, you can run directly from the build folder. Assuming you are still in the Gridcoin-Research repo directory,
+
+```
+./build/src/qt/gridcoinresearch
+```

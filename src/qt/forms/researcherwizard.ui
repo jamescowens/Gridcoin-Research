@@ -66,9 +66,17 @@
     </sizepolicy>
    </property>
   </widget>
-  <widget class="ResearcherWizardInvestorPage" name="investorPage"/>
+  <widget class="ResearcherWizardNoncruncherPage" name="NoncruncherPage"/>
   <widget class="ResearcherWizardPoolPage" name="poolPage"/>
   <widget class="ResearcherWizardPoolSummaryPage" name="poolSummaryPage"/>
+  <widget class="ResearcherWizardOwnershipProofPage" name="ownershipProofPage">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+  </widget>
  </widget>
  <customwidgets>
   <customwidget>
@@ -114,9 +122,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>ResearcherWizardInvestorPage</class>
+   <class>ResearcherWizardNoncruncherPage</class>
    <extends>QWizardPage</extends>
-   <header>researcher/researcherwizardinvestorpage.h</header>
+   <header>researcher/researcherwizardnoncruncherpage.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -129,6 +137,12 @@
    <class>ResearcherWizardPoolSummaryPage</class>
    <extends>QWizardPage</extends>
    <header>researcher/researcherwizardpoolsummarypage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ResearcherWizardOwnershipProofPage</class>
+   <extends>QWizardPage</extends>
+   <header>researcher/researcherwizardownershipproofpage.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

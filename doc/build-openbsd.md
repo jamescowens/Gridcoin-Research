@@ -1,93 +1,133 @@
-OpenBSD build guide
-===================
-(updated for OpenBSD 7.0)
+# OpenBSD build guide
 
-This guide describes how to build gridcoinresearchd, command-line utilities, and GUI on OpenBSD.
+This guide details how to build Gridcoin on OpenBSD. While this is not checked in CI/CD, it has been verified to work as of the 5.5.0.0 release.
 
-Preparation
------------
+## 1. Install Dependencies
 
-Run the following as root to install the base dependencies for building:
+Run the following commands as root (or using `doas`) to install the necessary build tools and libraries.
 
-```bash
-pkg_add cmake vim
-# or
-pkg_add autoconf automake gmake libtool python
+```ksh
+# Basic build requirements and libraries
+pkg_add git cmake boost curl libzip miniupnpc
 
-pkg_add boost curl libzip leveldb pkgconf
-pkg_add qt5 libqrencode  # optional for the GUI
+# If you prefer sudo over the native doas (optional)
+pkg_add sudo
+````
+
+### Note on Sudo vs. Doas
+
+OpenBSD uses `doas` by default. If you prefer `sudo`:
+
+1.  Ensure your user is in the `wheel` group:
+    ```ksh
+    # Replace 'jco' with your username
+    usermod -G wheel jco
+    ```
+2.  Edit the sudoers file using `visudo` and find the line:
+    `## Uncomment to allow members of group wheel to execute any command`
+
+    Uncomment the following line, which should be similar to
+    `%wheel ALL=(ALL) ALL`
+
+    and save the file with `:wq!`
+
+## 2\. Clone the Repository
+
+```ksh
+git clone [https://github.com/gridcoin-community/Gridcoin-Research.git](https://github.com/gridcoin-community/Gridcoin-Research.git)
+cd Gridcoin-Research
+git checkout master
 ```
 
-Resource limits
----------------
+-----
 
-If the build runs into out-of-memory errors, the instructions in this section
-might help.
+## 3\. Build Configuration
 
-The standard ulimit restrictions in OpenBSD are very strict:
+Choose **Option A** (Headless/Daemon) or **Option B** (GUI Wallet).
 
-    data(kbytes)         1572864
+### Option A: Headless (Daemon only)
 
-This is, unfortunately, in some cases not enough to compile some `.cpp` files in the project,
-(see [Bitcoin#6658](https://github.com/bitcoin/bitcoin/issues/6658)).
-If your user is in the `staff` group the limit can be raised with:
+Use this configuration for servers or command-line only environments.
 
-    ulimit -d 3000000
+```ksh
+# Configure
+cmake -B build -DENABLE_GUI=off -DENABLE_TESTS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -DENABLE_PIE=on -DENABLE_UPNP=on
 
-The change will only affect the current shell and processes spawned by it. To
-make the change system-wide, change `datasize-cur` and `datasize-max` in
-`/etc/login.conf`, and reboot.
+# Build
+# Replace <# of cpus> with your core count, e.g., -j4
+cmake --build build -j <# of cpus>
 
-### Building Gridcoin
+# Install (Optional)
+doas cmake --install build
+```
 
-**Important**: use `gmake`, not `make`. The non-GNU `make` will exit with a horrible error.
+### Option B: GUI Wallet (Qt6)
 
-To configure with gridcoinresearchd:
+Use this configuration for a desktop environment.
 
-* With CMake:
+**Additional GUI Dependencies:**
 
-  ```bash
-  mkdir build && cd build
-  cmake ..
-  ```
+```ksh
+# Qt6 framework
+pkg_add qt6
 
-* With Autotools:
+# Desktop Environment extras (Optional - for a full XFCE experience)
+pkg_add xfce xfce-extras
 
-  ```bash
-  ./autogen.sh
-  ./configure --with-gui=no \
-  	MAKE=gmake
-  ```
+# VMware helper (Optional - install only if running OpenBSD in a VMware VM)
+pkg_add vmwh
+```
 
-To configure with GUI:
+**System Services:**
+Qt6 and modern GUI applications require the message bus (dbus) to be running.
 
-* With CMake:
+```ksh
+rcctl enable messagebus
+rcctl start messagebus
+```
 
-  ```bash
-  mkdir build && cd build
-  cmake -DENABLE_GUI=ON
-  ```
+**Build & Install:**
 
-* With Autotools:
+```ksh
+# Configure
+# Note: Remove -DENABLE_QRENCODE=on if you do not have qrencode installed
+cmake -B build -DENABLE_GUI=on -DENABLE_TESTS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_QT6=on -DENABLE_PIE=on -DENABLE_QRENCODE=on -DENABLE_UPNP=on
 
-  ```bash
-  ./autogen.sh
-  ./configure --with-gui=yes \
-  	MAKE=gmake
-  ```
+# Build
+cmake --build build -j <# of cpus>
 
-Build and run the tests:
+# Install (Optional)
+# This will install binaries and assets (icons, desktop files)
+doas cmake --install build
+```
 
-* With CMake:
+## 4\. Running Gridcoin
 
-  ```bash
-  cmake --build .  # use "-j N" here for N parallel jobs
-  ctest .
-  ```
+### If you followed option A (Daemon only)
 
-* With Autotools:
+If you installed Gridcoin, you can launch from the terminal.
 
-  ```bash
-  gmake  # use "-j N" here for N parallel jobs
-  gmake check
-  ```
+```sh
+gridcoinresearchd
+```
+
+If you did not install, you can run directly from the build folder. Assuming you are still in the Gridcoin-Research repo directory,
+
+```
+./build/src/gridcoinresearchd
+```
+
+### If you followed option B (GUI)
+
+If you installed Gridcoin, you can launch from the terminal or use the Desktop menu.
+
+```sh
+gridcoinresearch
+```
+
+If you did not install, you can run directly from the build folder. Assuming you are still in the Gridcoin-Research repo directory,
+
+```
+./build/src/qt/gridcoinresearch
+```
+

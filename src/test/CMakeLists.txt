@@ -4,7 +4,9 @@ if(NOT SYSTEM_XXD)
 endif()
 
 add_executable(test_gridcoin
+    bip68_tests.cpp
     checkpoints_tests.cpp
+    csv_tests.cpp
     dos_tests.cpp
     accounting_tests.cpp
     addrman_tests.cpp
@@ -18,7 +20,9 @@ add_executable(test_gridcoin
     fs_tests.cpp
     getarg_tests.cpp
     gridcoin_tests.cpp
+    htlc_tests.cpp
     gridcoin/block_finder_tests.cpp
+    gridcoin/boinc_tests.cpp
     gridcoin/beacon_tests.cpp
     gridcoin/claim_tests.cpp
     gridcoin/contract_tests.cpp
@@ -29,6 +33,7 @@ add_executable(test_gridcoin
     gridcoin/project_tests.cpp
     gridcoin/protocol_tests.cpp
     gridcoin/researcher_tests.cpp
+    gridcoin/rsaverify_tests.cpp
     gridcoin/scraper_registry_tests.cpp
     gridcoin/sidestake_tests.cpp
     gridcoin/superblock_tests.cpp
@@ -38,6 +43,7 @@ add_executable(test_gridcoin
     multisig_tests.cpp
     netbase_tests.cpp
     net_tests.cpp
+    orphan_block_tests.cpp
     random_tests.cpp
     rpc_tests.cpp
     sanity_tests.cpp
@@ -56,10 +62,37 @@ add_executable(test_gridcoin
 
 add_subdirectory(data)
 
+target_include_directories(test_gridcoin PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_BINARY_DIR}/src
+)
+
+# Handle Boost Test linking mode automatically
+if(NOT STATIC_LIBS)
+    # Native Build: Linking against shared .so libraries requires this flag
+    target_compile_definitions(test_gridcoin PRIVATE BOOST_TEST_DYN_LINK)
+else()
+    # Depends Build: Linking against static .a libraries requires this flag (or simply omitting DYN_LINK)
+    target_compile_definitions(test_gridcoin PRIVATE BOOST_TEST_STATIC_LINK)
+endif()
+
+set_property(SOURCE test_gridcoin.cpp APPEND PROPERTY
+    COMPILE_DEFINITIONS "BOOST_TEST_MODULE=Gridcoin Test Suite"
+)
+
 target_link_libraries(test_gridcoin PRIVATE
     ${RUNTIME_LIBS}
     Boost::unit_test_framework
     gridcoin_util
+
+    # Dependencies of gridcoin_util
+    ${LIBBDB_CXX} ${LIBLEVELDB} ${LIBSECP256K1} ${LIBUNIVALUE}
+    Boost::boost Boost::filesystem Boost::iostreams Boost::thread Boost::date_time Boost::serialization Boost::unit_test_framework
+    CURL::libcurl
+    OpenSSL::Crypto OpenSSL::SSL
+    Threads::Threads
+    libzip::zip
+    ZLIB::ZLIB
 )
 
 add_test(NAME gridcoin_tests COMMAND test_gridcoin)

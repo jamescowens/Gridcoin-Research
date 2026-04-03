@@ -356,7 +356,7 @@ void ConsolidateUnspentWizardSelectInputsPage::updateLabels()
     // nPayAmount
     qint64 nPayAmount = 0;
     CTransaction txDummy;
-    for (const auto& amount: *payAmounts)
+    for (const auto& amount: std::as_const(*payAmounts))
     {
         nPayAmount += amount;
 
@@ -526,7 +526,7 @@ void ConsolidateUnspentWizardSelectInputsPage::updateView()
     ui->treeWidget->setEnabled(false); // performance, otherwise updateLabels would be called for every checked checkbox
     ui->treeWidget->setAlternatingRowColors(!treeMode);
     QFlags<Qt::ItemFlag> flgCheckbox=Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable;
-    QFlags<Qt::ItemFlag> flgTristate=Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsTristate;
+    QFlags<Qt::ItemFlag> flgTristate=Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsAutoTristate;
 
     int nDisplayUnit = BitcoinUnits::BTC;
 
@@ -593,7 +593,7 @@ void ConsolidateUnspentWizardSelectInputsPage::updateView()
             if (!(sAddress == sWalletAddress)) // change
             {
                 // tooltip from where the change comes from
-                itemOutput->setToolTip(COLUMN_LABEL, tr("change from %1 (%2)").arg(sWalletLabel).arg(sWalletAddress));
+                itemOutput->setToolTip(COLUMN_LABEL, tr("change from %1 (%2)").arg(sWalletLabel, sWalletAddress));
                 itemOutput->setText(COLUMN_LABEL, tr("(change)"));
                 itemOutput->setText(COLUMN_CHANGE_BOOL, QString::number(1));
             }

@@ -1,17 +1,20 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2014-2025 The Gridcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
 #include "chainparams.h"
 #include "blockchain.h"
 #include "gridcoin/protocol.h"
+#include "gridcoin/project.h"
 #include "gridcoin/scraper/scraper_registry.h"
 #include "gridcoin/sidestake.h"
 #include "node/blockstorage.h"
 #include <util/string.h>
 #include "gridcoin/mrc.h"
 #include "gridcoin/support/block_finder.h"
+#include "gridcoin/support/xml.h"
 
 #include <univalue.h>
 #include <stdexcept>
@@ -57,7 +60,7 @@ UniValue MRCToJson(const GRC::MRC& mrc) {
     return json;
 }
 
-UniValue ClaimToJson(const GRC::Claim& claim, const CBlockIndex* const pindex)
+UniValue ClaimToJson(const GRC::Claim& claim, CBlockIndex* pindex)
 {
     UniValue json(UniValue::VOBJ);
 
@@ -140,12 +143,39 @@ UniValue SuperblockToJson(const GRC::Superblock& superblock)
         beacons.push_back(key_id.ToString());
     }
 
+    UniValue project_greylist_status(UniValue::VARR);
+
+    for (const auto& project : superblock.m_project_status.m_project_status) {
+        UniValue status(UniValue::VOBJ);
+
+        // construct a dummy project entry to use the status to string.
+        auto dummy = GRC::ProjectEntry(GRC::ProjectEntry::CURRENT_VERSION, project.first, "foo", false, false, project.second, 0);
+
+        status.pushKV("project", project.first);
+        status.pushKV("status", dummy.StatusToString());
+
+        project_greylist_status.push_back(status);
+    }
+
+    UniValue project_all_cpid_total_credits(UniValue::VARR);
+
+    for (const auto& project : superblock.m_projects_all_cpids_total_credits.m_projects_all_cpid_total_credits) {
+        UniValue entry(UniValue::VOBJ);
+
+        entry.pushKV("project", project.first);
+        entry.pushKV("all_cpid_total_credit", project.second);
+
+        project_all_cpid_total_credits.push_back(entry);
+    }
+
     UniValue json(UniValue::VOBJ);
 
     json.pushKV("version", (int)superblock.m_version);
-    json.pushKV("magnitudes", std::move(magnitudes));
-    json.pushKV("projects", std::move(projects));
-    json.pushKV("beacons", std::move(beacons));
+    json.pushKV("magnitudes", magnitudes);
+    json.pushKV("projects", projects);
+    json.pushKV("beacons", beacons);
+    json.pushKV("project_greylist_status", project_greylist_status);
+    json.pushKV("project_all_cpid_total_credits", project_all_cpid_total_credits);
 
     return json;
 }
@@ -155,7 +185,7 @@ UniValue SuperblockToJson(const GRC::SuperblockPtr& superblock)
     return SuperblockToJson(*superblock);
 }
 
-UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool fPrintTransactionDetail)
+UniValue blockToJSON(const CBlock& block, CBlockIndex* blockindex, bool fPrintTransactionDetail)
 {
     UniValue result(UniValue::VOBJ);
 
@@ -512,7 +542,7 @@ UniValue getmrcinfo(const UniValue& params, bool fHelp)
     GRC::CpidOption cpid = mining_id.TryCpid();
 
     if (!output_all_cpids && !cpid) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for investor.");
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for non-cruncher.");
     }
 
     // No MRC's below V12 block height.
@@ -1141,7 +1171,7 @@ UniValue rainbymagnitude(const UniValue& params, bool fHelp)
         LOCK(cs_ConvergedScraperStatsCache);
 
         // Make a local copy of the cached stats in the convergence and release the lock.
-        mScraperConvergedStats = ConvergedScraperStatsCache.mScraperConvergedStats;
+        mScraperConvergedStats = ConvergedScraperStatsCache.mScraperConvergedStats.mScraperStats;
     }
 
     LogPrint(BCLog::LogFlags::VERBOSE, "rainbymagnitude: mScraperConvergedStats size = %u", mScraperConvergedStats.size());
@@ -1369,6 +1399,10 @@ UniValue advertisebeacon(const UniValue& params, bool fHelp)
                 "\n"
                 "Advertise a beacon (Requires wallet to be fully unlocked)\n");
 
+    if (OutOfSyncByAge()) {
+        throw JSONRPCError(RPC_MISC_ERROR, "The wallet must be in sync to advertise a beacon.");
+    }
+
     EnsureWalletIsUnlocked();
 
     const bool force = params.size() >= 1 ? params[0].get_bool() : false;
@@ -1404,7 +1438,7 @@ UniValue advertisebeacon(const UniValue& params, bool fHelp)
         case GRC::BeaconError::NO_CPID:
             throw JSONRPCError(
                 RPC_INVALID_REQUEST,
-                "No CPID detected. Cannot send a beacon in investor mode");
+                "No CPID detected. Cannot send a beacon in non-cruncher mode");
         case GRC::BeaconError::NOT_NEEDED:
             throw JSONRPCError(
                 RPC_INVALID_REQUEST,
@@ -1417,6 +1451,220 @@ UniValue advertisebeacon(const UniValue& params, bool fHelp)
             throw JSONRPCError(
                 RPC_WALLET_ERROR,
                 "Unable to send beacon transaction. See debug.log");
+        case GRC::BeaconError::V14_NOT_ENABLED:
+            throw JSONRPCError(
+                RPC_INVALID_REQUEST,
+                "v3 beacons are not yet active (requires block version 14)");
+        case GRC::BeaconError::WALLET_LOCKED:
+            throw JSONRPCError(
+                RPC_WALLET_UNLOCK_NEEDED,
+                "Wallet locked. Unlock it fully to send a beacon transaction");
+        case GRC::BeaconError::ALEADY_IN_MEMPOOL:
+            throw JSONRPCError(
+                RPC_INVALID_REQUEST,
+                "Beacon transaction for this CPID is already in the mempool");
+    }
+
+    throw JSONRPCError(RPC_INTERNAL_ERROR, "Unexpected error occurred");
+}
+
+UniValue beaconauth(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() != 0)
+        throw runtime_error(
+                "beaconauth\n"
+                "\n"
+                "Generate a beacon key pair and return the public key hex.\n"
+                "Use the public key to obtain a BOINC account ownership proof\n"
+                "from a project that supports the ownership proof extension,\n"
+                "then call advertisebeaconv3 with the proof to send the beacon.\n"
+                "\n"
+                "Requires wallet to be fully unlocked.\n");
+
+    EnsureWalletIsUnlocked();
+
+    LOCK2(cs_main, pwalletMain->cs_wallet);
+
+    const GRC::ResearcherPtr researcher = GRC::Researcher::Get();
+    const GRC::CpidOption cpid = researcher->Id().TryCpid();
+
+    if (!cpid) {
+        throw JSONRPCError(
+            RPC_INVALID_REQUEST,
+            "No CPID detected. Cannot generate beacon keys in non-cruncher mode");
+    }
+
+    GRC::AdvertiseBeaconResult result = GRC::GenerateBeaconKey(*cpid);
+
+    if (auto public_key_option = result.TryPublicKey()) {
+        const GRC::Beacon beacon(std::move(*public_key_option));
+
+        UniValue res(UniValue::VOBJ);
+
+        res.pushKV("result", "SUCCESS");
+        res.pushKV("cpid", cpid->ToString());
+        res.pushKV("public_key", HexStr(beacon.m_public_key));
+        res.pushKV("verification_code", beacon.GetVerificationCode());
+
+        return res;
+    }
+
+    switch (result.Error()) {
+        case GRC::BeaconError::NONE:
+            break; // suppress warning
+        case GRC::BeaconError::MISSING_KEY:
+            throw JSONRPCError(
+                RPC_INVALID_ADDRESS_OR_KEY,
+                "Failed to generate beacon key");
+        default:
+            break;
+    }
+
+    throw JSONRPCError(RPC_INTERNAL_ERROR, "Unexpected error occurred");
+}
+
+UniValue advertisebeaconv3(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1 || params.size() > 2)
+        throw runtime_error(
+                "advertisebeaconv3 <ownership_proof_xml> ( force )\n"
+                "\n"
+                "Send a v3 beacon with a BOINC account ownership proof.\n"
+                "\n"
+                "<ownership_proof_xml> --> The XML block returned by the BOINC project's\n"
+                "  proof-of-account-ownership page. Must contain <master_url>, <msg>,\n"
+                "  and <signature> elements. The <msg> field should have the format:\n"
+                "  \"{account_id} {beacon_public_key_hex}\" (the project generates this\n"
+                "  when you enter the beacon public key from beaconauth).\n"
+                "\n"
+                "[force] --> If true, send the beacon even when an active or pending\n"
+                "  beacon already exists for your CPID. This is useful if you lose a\n"
+                "  wallet with your original beacon keys but not necessary otherwise.\n"
+                "\n"
+                "Requires wallet to be fully unlocked.\n");
+
+    if (OutOfSyncByAge()) {
+        throw JSONRPCError(RPC_MISC_ERROR, "The wallet must be in sync to advertise a beacon.");
+    }
+
+    EnsureWalletIsUnlocked();
+
+    LOCK2(cs_main, pwalletMain->cs_wallet);
+
+    const GRC::ResearcherPtr researcher = GRC::Researcher::Get();
+    const GRC::CpidOption cpid = researcher->Id().TryCpid();
+
+    if (!cpid) {
+        throw JSONRPCError(
+            RPC_INVALID_REQUEST,
+            "No CPID detected. Cannot send a beacon in non-cruncher mode");
+    }
+
+    const bool force = params.size() >= 2 ? params[1].get_bool() : false;
+
+    // Parse the XML block from the BOINC project.
+    const std::string xml = params[0].get_str();
+
+    const std::string master_url = TrimString(ExtractXML(xml, "<master_url>", "</master_url>"));
+    const std::string msg = TrimString(ExtractXML(xml, "<msg>", "</msg>"));
+    const std::string sig_b64 = TrimString(ExtractXML(xml, "<signature>", "</signature>"));
+
+    if (master_url.empty() || msg.empty() || sig_b64.empty()) {
+        throw JSONRPCError(
+            RPC_INVALID_PARAMETER,
+            "Failed to parse ownership proof XML. Expected <master_url>, <msg>, "
+            "and <signature> elements.");
+    }
+
+    // Parse the msg field: "{account_id} {beacon_public_key_hex}"
+    const size_t space_pos = msg.find(' ');
+
+    if (space_pos == std::string::npos || space_pos + 1 >= msg.size()) {
+        throw JSONRPCError(
+            RPC_INVALID_PARAMETER,
+            "Invalid <msg> format. Expected \"{account_id} {beacon_public_key_hex}\"");
+    }
+
+    uint32_t account_id = 0;
+    if (!ParseUInt32(msg.substr(0, space_pos), &account_id) || account_id == 0) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid account ID in <msg> field");
+    }
+
+    const std::string public_key_hex = msg.substr(space_pos + 1);
+    const std::vector<uint8_t> pubkey_bytes = ParseHex(public_key_hex);
+    CPubKey beacon_pubkey(pubkey_bytes);
+
+    if (!beacon_pubkey.IsValid()) {
+        throw JSONRPCError(
+            RPC_INVALID_PARAMETER,
+            "Invalid beacon public key in <msg> field");
+    }
+
+    // Verify that the wallet holds the private key for this beacon.
+    if (!pwalletMain->HaveKey(beacon_pubkey.GetID())) {
+        throw JSONRPCError(
+            RPC_INVALID_ADDRESS_OR_KEY,
+            "Wallet does not contain the private key for this beacon public key. "
+            "Did you run beaconauth first?");
+    }
+
+    bool b64_invalid = false;
+    const std::vector<uint8_t> rsa_sig_bytes = DecodeBase64(sig_b64.c_str(), &b64_invalid);
+
+    if (b64_invalid || rsa_sig_bytes.empty()) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid base64 in <signature> field");
+    }
+
+    GRC::Beacon beacon(beacon_pubkey);
+    GRC::OwnershipProof proof;
+    proof.m_master_url = master_url;
+    proof.m_account_id = account_id;
+    proof.m_rsa_signature = rsa_sig_bytes;
+
+    GRC::AdvertiseBeaconResult result = GRC::SendBeaconContractV3(*cpid, beacon, std::move(proof), force);
+
+    if (auto public_key_option = result.TryPublicKey()) {
+        UniValue res(UniValue::VOBJ);
+
+        res.pushKV("result", "SUCCESS");
+        res.pushKV("cpid", cpid->ToString());
+        res.pushKV("public_key", HexStr(*public_key_option));
+        res.pushKV("verification_code", beacon.GetVerificationCode());
+
+        return res;
+    }
+
+    switch (result.Error()) {
+        case GRC::BeaconError::NONE:
+            break; // suppress warning
+        case GRC::BeaconError::INSUFFICIENT_FUNDS:
+            throw JSONRPCError(
+                RPC_WALLET_INSUFFICIENT_FUNDS,
+                "Available balance too low to send a beacon transaction");
+        case GRC::BeaconError::MISSING_KEY:
+            throw JSONRPCError(
+                RPC_INVALID_ADDRESS_OR_KEY,
+                "Beacon private key missing or invalid");
+        case GRC::BeaconError::NO_CPID:
+            throw JSONRPCError(
+                RPC_INVALID_REQUEST,
+                "No CPID detected. Cannot send a beacon in non-cruncher mode");
+        case GRC::BeaconError::NOT_NEEDED:
+            throw JSONRPCError(
+                RPC_INVALID_REQUEST,
+                "An active beacon already exists for this CPID");
+        case GRC::BeaconError::PENDING:
+            throw JSONRPCError(
+                RPC_INVALID_REQUEST,
+                "A beacon advertisement is already pending for this CPID");
+        case GRC::BeaconError::TX_FAILED:
+            throw JSONRPCError(
+                RPC_WALLET_ERROR,
+                "Unable to send beacon transaction. See debug.log");
+        case GRC::BeaconError::V14_NOT_ENABLED:
+            throw JSONRPCError(
+                RPC_INVALID_REQUEST,
+                "v3 beacons are not yet active (requires block version 14)");
         case GRC::BeaconError::WALLET_LOCKED:
             throw JSONRPCError(
                 RPC_WALLET_UNLOCK_NEEDED,
@@ -1432,20 +1680,28 @@ UniValue advertisebeacon(const UniValue& params, bool fHelp)
 
 UniValue revokebeacon(const UniValue& params, bool fHelp)
 {
-    if (fHelp || params.size() != 1)
+    if (fHelp || params.size() > 1)
         throw runtime_error(
-                "revokebeacon <cpid>\n"
+                "revokebeacon [cpid]\n"
                 "\n"
-                "<cpid> CPID associated with the beacon to revoke.\n"
+                "[cpid] CPID associated with the beacon to revoke. If omitted, uses the current CPID.\n"
                 "\n"
                 "Revoke a beacon (Requires wallet to be fully unlocked)\n");
 
+    if (OutOfSyncByAge()) {
+        throw JSONRPCError(RPC_MISC_ERROR, "The wallet must be in sync to revoke a beacon.");
+    }
+
     EnsureWalletIsUnlocked();
 
-    const GRC::CpidOption cpid = GRC::MiningId::Parse(params[0].get_str()).TryCpid();
+    const GRC::CpidOption cpid = params.size() == 1
+        ? GRC::MiningId::Parse(params[0].get_str()).TryCpid()
+        : GRC::Researcher::Get()->Id().TryCpid();
 
     if (!cpid) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid CPID.");
+        throw JSONRPCError(
+            params.size() == 1 ? RPC_INVALID_PARAMETER : RPC_INVALID_REQUEST,
+            params.size() == 1 ? "Invalid CPID." : "No CPID configured for this wallet.");
     }
 
     LOCK2(cs_main, pwalletMain->cs_wallet);
@@ -1483,6 +1739,8 @@ UniValue revokebeacon(const UniValue& params, bool fHelp)
             throw JSONRPCError(
                 RPC_WALLET_ERROR,
                 "Unable to send beacon transaction. See debug.log");
+        case GRC::BeaconError::V14_NOT_ENABLED:
+            throw JSONRPCError(RPC_INTERNAL_ERROR, "Unexpected error occurred");
         case GRC::BeaconError::WALLET_LOCKED:
             throw JSONRPCError(
                 RPC_WALLET_UNLOCK_NEEDED,
@@ -1691,7 +1949,7 @@ UniValue beaconstatus(const UniValue& params, bool fHelp)
     const GRC::CpidOption cpid = mining_id.TryCpid();
 
     if (!cpid) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "No beacon for investor.");
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "No beacon for non-cruncher.");
     }
 
     const int64_t now = GetAdjustedTime();
@@ -1787,7 +2045,7 @@ UniValue beaconaudit(const UniValue& params, bool fHelp)
     const GRC::CpidOption cpid = mining_id.TryCpid();
 
     if (!global && !cpid) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "No beacon for investor.");
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "No beacon for non-cruncher.");
     }
 
     // Only allow auditing when at or above block V11 threshold.
@@ -1966,7 +2224,7 @@ UniValue explainmagnitude(const UniValue& params, bool fHelp)
     const GRC::CpidOption cpid = mining_id.TryCpid();
 
     if (!cpid) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for investor.");
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for non-cruncher.");
     }
 
     UniValue res(UniValue::VARR);
@@ -2016,7 +2274,7 @@ UniValue lifetime(const UniValue& params, bool fHelp)
     const GRC::CpidOption cpid = mining_id.TryCpid();
 
     if (!cpid) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for investor.");
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for non-cruncher.");
     }
 
     UniValue results(UniValue::VOBJ);
@@ -2061,7 +2319,7 @@ UniValue magnitude(const UniValue& params, bool fHelp)
         return MagnitudeReport(*cpid);
     }
 
-    throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for investor.");
+    throw JSONRPCError(RPC_INVALID_PARAMETER, "No data for non-cruncher.");
 }
 
 UniValue resetcpids(const UniValue& params, bool fHelp)
@@ -2167,23 +2425,35 @@ UniValue superblocks(const UniValue& params, bool fHelp)
 //!
 //! To whitelist a project:
 //!
-//!     addkey add project projectname url
+//!     addkey add project projectname url (< v2)
+//!
+//!     addkey add project projectname url gdpr_controls (v2)
+//!
+//!     addkey add project projectname url gdpr_controls manual_greylist (v3)
 //!
 //! To de-whitelist a project:
 //!
-//!     addkey delete project projectname
+//!     addkey delete project projectname 1 (<= v2)
 //!
-//!     or
-//!
-//!     addkey delete project projectname 1
+//!     addkey delete project projectname (>= v3)
 //!
 //! Key examples:
 //!
+//!     To add:
+//!
 //!     v1: addkey add project milkyway@home http://milkyway.cs.rpi.edu/milkyway/@
 //!     v2: addkey add project milkyway@home http://milkyway.cs.rpi.edu/milkyway/@ true
+//!
+//!     To manually greylist:
+//!
+//!     v3: addkey add project milkyway@home http://milkyway.cs.rpi.edu/milkyway/@ true true
+//!
+//!     To delete:
+//!
 //!     v1 or v2: addkey delete project milkyway@home
 //!     v1 or v2: addkey delete project milkyway@home 1 (last parameter is a dummy)
 //!     v2: addkey delete project milkyway@home 1 false (last two parameters are dummies)
+//!     v3: addkey delete project milkyway@home (the dummy parameters are no longer needed for v3 deletes)
 //!
 //! GRC will only memorize the *last* value it finds for a key in the highest
 //! block.
@@ -2191,6 +2461,7 @@ UniValue superblocks(const UniValue& params, bool fHelp)
 UniValue addkey(const UniValue& params, bool fHelp)
 {
     bool project_v2_enabled = false;
+    bool project_v4_enabled = false;
     bool block_v13_enabled = false;
     uint32_t contract_version = 0;
 
@@ -2198,6 +2469,7 @@ UniValue addkey(const UniValue& params, bool fHelp)
         LOCK(cs_main);
 
         project_v2_enabled = IsProjectV2Enabled(nBestHeight);
+        project_v4_enabled = IsProjectV4Enabled(nBestHeight);
 
         block_v13_enabled = IsV13Enabled(nBestHeight);
         contract_version = block_v13_enabled ? 3 : 2;
@@ -2227,7 +2499,17 @@ UniValue addkey(const UniValue& params, bool fHelp)
             && action == GRC::ContractAction::ADD
             && type == GRC::ContractType::PROJECT) {
         required_param_count = 5;
-        param_count_max = 5;
+
+        if (block_v13_enabled) {
+            param_count_max = 6;
+
+            if (project_v4_enabled) {
+                required_param_count = 6;
+                param_count_max = 7;
+            }
+        } else {
+            param_count_max = 5;
+        }
     }
 
     if ((type == GRC::ContractType::PROJECT || type == GRC::ContractType::SCRAPER)
@@ -2256,7 +2538,37 @@ UniValue addkey(const UniValue& params, bool fHelp)
     if (fHelp || params.size() < required_param_count || params.size() > param_count_max) {
         std::string error_string;
 
-        if (project_v2_enabled) {
+        if (block_v13_enabled) {
+            if (project_v4_enabled) {
+                error_string = "addkey <action> <keytype> <keyname> <keyvalue> <gdpr_protection_bool> "
+                               "<requires_external_adapter> <status> \n"
+                               "\n"
+                               "<action> ---> Specify add or delete of key\n"
+                               "<keytype> --> Specify keytype ex: project\n"
+                               "<keyname> --> Specify keyname ex: milky\n"
+                               "<keyvalue> -> Specify keyvalue ex: 1\n"
+                               "\n"
+                               "For project keytype only\n"
+                               "<gdpr_protection_bool> -> true if GDPR stats export protection is enforced for project\n"
+                               "<requires_external_adapter> true if project requires an external adapter to collect stats\n"
+                               "<status> -> auto_greylist_override or man_greylist. Defaults to blank."
+                               "\n"
+                               "Add a key to the network";
+            } else {
+            error_string = "addkey <action> <keytype> <keyname> <keyvalue> <gdpr_protection_bool> <status> \n"
+                           "\n"
+                           "<action> ---> Specify add or delete of key\n"
+                           "<keytype> --> Specify keytype ex: project\n"
+                           "<keyname> --> Specify keyname ex: milky\n"
+                           "<keyvalue> -> Specify keyvalue ex: 1\n"
+                           "\n"
+                           "For project keytype only\n"
+                           "<gdpr_protection_bool> -> true if GDPR stats export protection is enforced for project\n"
+                           "<status> -> auto_greylist_override or man_greylist. Defaults to blank."
+                           "\n"
+                           "Add a key to the network";
+            }
+        } else if (project_v2_enabled) {
             error_string = "addkey <action> <keytype> <keyname> <keyvalue> <gdpr_protection_bool>\n"
                            "\n"
                            "<action> ---> Specify add or delete of key\n"
@@ -2305,8 +2617,12 @@ UniValue addkey(const UniValue& params, bool fHelp)
     {
         if (action == GRC::ContractAction::ADD) {
             bool gdpr_export_control = false;
+            GRC::ProjectEntryStatus status = GRC::ProjectEntryStatus::UNKNOWN;
 
             if (block_v13_enabled) {
+                bool requires_ext_adapter = false;
+                uint32_t payload_version = 3;
+
                 // We must do our own conversion to boolean here, because the 5th parameter can either be
                 // a boolean for project or a string for sidestake, which means the client.cpp entry cannot contain a
                 // unicode type specifier for the 5th parameter.
@@ -2317,13 +2633,53 @@ UniValue addkey(const UniValue& params, bool fHelp)
                     throw JSONRPCError(RPC_INVALID_PARAMETER, "GDPR export parameter invalid. Must be true or false.");
                 }
 
+                if (project_v4_enabled) {
+                    payload_version = 4;
+
+                    if (params.size() == 6) {
+                        if (ToLower(params[5].get_str()) == "true"){
+                            requires_ext_adapter = true;
+                        }
+                    } else if (ToLower(params[5].get_str()) != "false") {
+                        // Neither true or false - throw an exception.
+                        throw JSONRPCError(RPC_INVALID_PARAMETER, "Requires external adapter parameter invalid. "
+                                                                  "Must be true or false.");
+                    }
+
+                    if (params.size() == 7) {
+                        if (ToLower(params[6].get_str()) == "man_greylist") {
+                            status = GRC::ProjectEntryStatus::MAN_GREYLISTED;
+                        } else if (ToLower(params[6].get_str()) == "auto_greylist_override") {
+                            status = GRC::ProjectEntryStatus::AUTO_GREYLIST_OVERRIDE;
+                        } else {
+                            throw JSONRPCError(RPC_INVALID_PARAMETER, "project status specifier, if provided, "
+                                                                      "must be either man_greylist "
+                                                                      "or auto_greylist_override");
+                        }
+                    }
+                } else {
+                    if (params.size() == 6) {
+                        if (ToLower(params[5].get_str()) == "man_greylist") {
+                            status = GRC::ProjectEntryStatus::MAN_GREYLISTED;
+                        } else if (ToLower(params[5].get_str()) == "auto_greylist_override") {
+                            status = GRC::ProjectEntryStatus::AUTO_GREYLIST_OVERRIDE;
+                        } else {
+                            throw JSONRPCError(RPC_INVALID_PARAMETER, "project status specifier, if provided, must "
+                                                                      "be either man_greylist "
+                                                                      "or auto_greylist_override");
+                        }
+                    }
+                }
+
                 contract = GRC::MakeContract<GRC::Project>(
                             contract_version,
                             action,
-                            uint32_t{3},          // Contract payload version number, 3
+                            payload_version,      // Contract payload version number, 3 or 4
                             params[2].get_str(),  // Name
                             params[3].get_str(),  // URL
-                            gdpr_export_control); // GDPR stats export protection enforced boolean
+                            gdpr_export_control,  // GDPR stats export protection enforced boolean
+                            requires_ext_adapter, // Requires external adapter flag
+                            status);   // manual greylist flag
 
             } else if (project_v2_enabled) {
                 // We must do our own conversion to boolean here, because the 5th parameter can either be
@@ -2353,13 +2709,21 @@ UniValue addkey(const UniValue& params, bool fHelp)
             }
         } else if (action == GRC::ContractAction::REMOVE) {
             if (block_v13_enabled) {
+                uint32_t payload_version = 3;
+
+                if (project_v4_enabled) {
+                    payload_version = 4;
+                }
+
                 contract = GRC::MakeContract<GRC::Project>(
                             contract_version,
                             action,
-                            uint32_t{3},          // Contract payload version number, 3
-                            params[2].get_str(),  // Name
-                            std::string{},        // URL ignored
-                            false);               // GDPR status irrelevant
+                            payload_version,                   // Contract payload version number, 3 or 4
+                            params[2].get_str(),               // Name
+                            std::string{},                     // URL ignored
+                            false,                             // GDPR status irrelevant
+                            false,                             // Requires external adapter flag irrelevant
+                            GRC::ProjectEntryStatus::UNKNOWN); // manual greylisting or auto greylist override irrelevant
 
             } else if (project_v2_enabled) {
                 contract = GRC::MakeContract<GRC::Project>(
@@ -2432,14 +2796,32 @@ UniValue addkey(const UniValue& params, bool fHelp)
         break;
     }
     case GRC::ContractType::PROTOCOL:
-        // There will be no legacy payload contracts past version 2. This will need to be changed before the
-        // block v13 mandatory (which also means contract v3).
-        contract = GRC::MakeLegacyContract(
-                    type.Value(),
-                    action,
-                    params[2].get_str(),   // key
-                    params[3].get_str());  // value
+    {
+        if (block_v13_enabled) {
+            GRC::ProtocolEntryStatus status = GRC::ProtocolEntryStatus::UNKNOWN;
+
+            if (action == GRC::ContractAction::ADD) {
+                status = GRC::ProtocolEntryStatus::ACTIVE;
+            } else if (action == GRC::ContractAction::REMOVE) {
+                status = GRC::ProtocolEntryStatus::DELETED;
+            }
+
+            contract = GRC::MakeContract<GRC::ProtocolEntryPayload>(
+                        contract_version,
+                        action,
+                        uint32_t {2},         // Contract payload version number
+                        params[2].get_str(),  // key
+                        params[3].get_str(),  // value
+                        status);
+        } else {
+            contract = GRC::MakeLegacyContract(
+                type.Value(),
+                action,
+                params[2].get_str(),   // key
+                params[3].get_str());  // value
+        }
         break;
+    }
     case GRC::ContractType::SIDESTAKE:
     {
         if (block_v13_enabled) {
@@ -2570,15 +2952,23 @@ UniValue debug(const UniValue& params, bool fHelp)
 
 UniValue listprojects(const UniValue& params, bool fHelp)
 {
-    if (fHelp || params.size() != 0)
+    if (fHelp || params.size() > 1)
         throw runtime_error(
-                "listprojects\n"
+                "listprojects <bool>\n"
+                "\n"
+                "<bool> -> true to show all projects, including greylisted and deleted. Defaults to false.\n"
                 "\n"
                 "Displays information about whitelisted projects.\n");
 
     UniValue res(UniValue::VOBJ);
 
-    for (const auto& project : GRC::GetWhitelist().Snapshot().Sorted()) {
+    GRC::Project::ProjectFilterFlag filter = GRC::Project::ProjectFilterFlag::ACTIVE;
+
+    if (params.size() && params[0].get_bool() == true) {
+        filter = GRC::Project::ProjectFilterFlag::ALL;
+    }
+
+    for (const auto& project : GRC::GetWhitelist().Snapshot(filter).Sorted()) {
         UniValue entry(UniValue::VOBJ);
 
         entry.pushKV("version", (int)project.m_version);
@@ -2592,10 +2982,87 @@ UniValue listprojects(const UniValue& params, bool fHelp)
             entry.pushKV("gdpr_controls", *project.HasGDPRControls());
         }
 
+        if (project.RequiresExtAdapter()) {
+            entry.pushKV("requires_external_adapter", *project.RequiresExtAdapter());
+        }
+
         entry.pushKV("time", DateTimeStrFormat(project.m_timestamp));
+        entry.pushKV("status", project.StatusToString());
 
         res.pushKV(project.m_name, entry);
     }
+
+    return res;
+}
+
+UniValue getautogreylist(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() > 2) {
+        throw runtime_error(
+            "getautogreylist <bool> <bool> \n"
+            "\n"
+            "<bool> -> true to show all projects, including those that do not meet greylisting criteria. Defaults to false. \n"
+            "\n"
+            "<bool> -> true to show greylist history for each project. Defaults to false. \n"
+            "\n"
+            "Displays information about projects that meet auto greylisting criteria.");
+    }
+
+    bool show_all_projects = false;
+    bool show_history = false;
+
+    if (params.size()) {
+        show_all_projects = params[0].get_bool();
+    }
+
+    if (params.size() >= 2) {
+        show_history = params[1].get_bool();
+    }
+
+    UniValue res(UniValue::VOBJ);
+
+    std::shared_ptr<GRC::AutoGreylist> greylist_ptr = GRC::GetAutoGreylistCache();
+
+    greylist_ptr->Refresh();
+
+    UniValue autogreylist(UniValue::VARR);
+
+    for (auto iter : *greylist_ptr) {
+        if (!show_all_projects && !iter.second.m_meets_greylisting_crit) {
+            continue;
+        }
+
+        UniValue entry(UniValue::VOBJ);
+
+        entry.pushKV("project:", iter.first);
+        entry.pushKV("zcd", iter.second.GetZCD());
+        entry.pushKV("was", iter.second.GetWAS().ToDouble());
+        entry.pushKV("meets_greylist_criteria", iter.second.m_meets_greylisting_crit);
+
+        if (show_history) {
+            UniValue entry_history(UniValue::VARR);
+
+            for (const auto& hist_entry : iter.second.GetUpdateHistory()) {
+                UniValue historical_entry(UniValue::VOBJ);
+
+                historical_entry.pushKV("superblocks_from_baseline", hist_entry.m_sb_from_baseline_processed);
+
+                if (hist_entry.m_total_credit) {
+                    historical_entry.pushKV("total_credit", *hist_entry.m_total_credit);
+                } else {
+                    historical_entry.pushKV("total_credit", "NA");
+                }
+
+                entry_history.push_back(historical_entry);
+            }
+
+            entry.pushKV("history", entry_history);
+        }
+
+        autogreylist.push_back(entry);
+    }
+
+    res.pushKV("auto_greylist_projects", autogreylist);
 
     return res;
 }
@@ -2671,39 +3138,77 @@ UniValue listprotocolentries(const UniValue& params, bool fHelp)
     return res;
 }
 
+UniValue listsidestakes(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() > 1)
+        throw runtime_error(
+            "listsidestakes [type]\n"
+            "\n"
+            "Displays all active sidestakes (mandatory and local/voluntary).\n"
+            "\n"
+            "Arguments:\n"
+            "  type    (string, optional) Filter by type: \"mandatory\", \"local\", or \"all\" (default: \"all\")\n");
+
+    std::string type_filter = "all";
+    if (params.size() == 1) {
+        type_filter = params[0].get_str();
+        if (type_filter != "all" && type_filter != "mandatory" && type_filter != "local") {
+            throw runtime_error("Invalid type filter. Must be \"all\", \"mandatory\", or \"local\".");
+        }
+    }
+
+    GRC::SideStake::FilterFlag filter = GRC::SideStake::FilterFlag::ALL;
+    if (type_filter == "mandatory") {
+        filter = GRC::SideStake::FilterFlag::MANDATORY;
+    } else if (type_filter == "local") {
+        filter = GRC::SideStake::FilterFlag::LOCAL;
+    }
+
+    UniValue res(UniValue::VOBJ);
+    UniValue entries(UniValue::VARR);
+
+    for (const auto& sidestake : GRC::GetSideStakeRegistry().ActiveSideStakeEntries(filter, false)) {
+        UniValue entry(UniValue::VOBJ);
+
+        entry.pushKV("address", EncodeDestination(sidestake->GetDestination()));
+        entry.pushKV("allocation_pct", sidestake->GetAllocation().ToPercent());
+        entry.pushKV("type", sidestake->IsMandatory() ? "mandatory" : "local");
+        entry.pushKV("description", sidestake->GetDescription());
+        entry.pushKV("status", sidestake->StatusToString());
+
+        if (sidestake->IsMandatory()) {
+            entry.pushKV("tx_hash", sidestake->GetHash().ToString());
+            if (sidestake->GetPreviousHash().IsNull()) {
+                entry.pushKV("previous_tx_hash", "null");
+            } else {
+                entry.pushKV("previous_tx_hash", sidestake->GetPreviousHash().ToString());
+            }
+            entry.pushKV("timestamp", sidestake->GetTimeStamp());
+            entry.pushKV("time", DateTimeStrFormat(sidestake->GetTimeStamp()));
+        }
+
+        entries.push_back(entry);
+    }
+
+    res.pushKV("sidestake_entries", entries);
+
+    return res;
+}
+
 UniValue listmandatorysidestakes(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
         throw runtime_error(
-            "listprotocolentries\n"
+            "listmandatorysidestakes\n"
             "\n"
-            "Displays the mandatory sidestakes on the network.\n");
+            "Displays the mandatory sidestakes on the network.\n"
+            "\n"
+            "This is equivalent to listsidestakes \"mandatory\".\n");
 
-    UniValue res(UniValue::VOBJ);
-    UniValue scraper_entries(UniValue::VARR);
+    UniValue filter_params(UniValue::VARR);
+    filter_params.push_back("mandatory");
 
-    for (const auto& sidestake : GRC::GetSideStakeRegistry().ActiveSideStakeEntries(GRC::SideStake::FilterFlag::MANDATORY, false)) {
-        UniValue entry(UniValue::VOBJ);
-
-        entry.pushKV("mandatory_sidestake_entry_address", EncodeDestination(sidestake->GetDestination()));
-        entry.pushKV("mandatory_sidestake_entry_allocation", sidestake->GetAllocation().ToPercent());
-        entry.pushKV("mandatory_sidestake_entry_tx_hash", sidestake->GetHash().ToString());
-        if (sidestake->GetPreviousHash().IsNull()) {
-            entry.pushKV("previous_mandatory_sidestake_entry_tx_hash", "null");
-        } else {
-            entry.pushKV("previous_mandatory_sidestake_entry_tx_hash", sidestake->GetPreviousHash().ToString());
-        }
-
-        entry.pushKV("mandatory_sidestake_entry_timestamp", sidestake->GetTimeStamp());
-        entry.pushKV("mandatory_sidestake_entry_time", DateTimeStrFormat(sidestake->GetTimeStamp()));
-        entry.pushKV("mandatory_sidestake_entry_status", sidestake->StatusToString());
-
-        scraper_entries.push_back(entry);
-    }
-
-    res.pushKV("current_mandatory_sidestake_entries", scraper_entries);
-
-    return res;
+    return listsidestakes(filter_params, false);
 }
 
 UniValue network(const UniValue& params, bool fHelp)

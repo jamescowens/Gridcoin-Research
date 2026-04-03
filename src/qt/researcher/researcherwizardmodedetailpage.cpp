@@ -40,7 +40,7 @@ void ResearcherWizardModeDetailPage::initializePage()
 
     ui->modeButtonGroup->setId(ui->soloRadioButton, ResearcherWizard::ModeSolo);
     ui->modeButtonGroup->setId(ui->poolRadioButton, ResearcherWizard::ModePool);
-    ui->modeButtonGroup->setId(ui->investorRadioButton, ResearcherWizard::ModeInvestor);
+    ui->modeButtonGroup->setId(ui->noncruncherRadioButton, ResearcherWizard::ModeNoncruncher);
 
     #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
         connect(ui->modeButtonGroup, static_cast<void (QButtonGroup::*)(int)>(&QButtonGroup::idClicked),
@@ -50,8 +50,8 @@ void ResearcherWizardModeDetailPage::initializePage()
             this, &ResearcherWizardModeDetailPage::onModeChange);
     #endif
 
-    if (m_researcher_model->configuredForInvestorMode()) {
-        ui->investorRadioButton->setChecked(true);
+    if (m_researcher_model->configuredForNoncruncherMode()) {
+        ui->noncruncherRadioButton->setChecked(true);
     } else if (m_researcher_model->hasEligibleProjects()) {
         ui->soloRadioButton->setChecked(true);
     } else if (m_researcher_model->hasPoolProjects()) {

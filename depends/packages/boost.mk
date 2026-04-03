@@ -1,50 +1,37 @@
 package=boost
-GCCFLAGS?=
-$(package)_version=1.81.0
-$(package)_download_path=https://archives.boost.io/release/$($(package)_version)/source/
-$(package)_file_name=boost_$(subst .,_,$($(package)_version)).tar.gz
-$(package)_sha256_hash=205666dea9f6a7cfed87c7a6dfbeb52a2c1b9de55712c9c1a87735d7181452b6
-$(package)_dependencies=zlib
+$(package)_version=1.89.0
+$(package)_download_path = https://github.com/boostorg/boost/releases/download/boost-$($(package)_version)
+$(package)_file_name = boost-$($(package)_version)-cmake.tar.gz
+$(package)_sha256_hash=954a01219bf818c7fb850fa610c2c8c71a4fa28fa32a1900056bcb6ff58cf908
+$(package)_patches = skip_compiled_targets.patch
+$(package)_build_subdir = build
+$(package)_dependencies := zlib bzip2 xz
 
 define $(package)_set_vars
-$(package)_config_opts_release=variant=release
-$(package)_config_opts_debug=variant=debug
-$(package)_config_opts=--layout=tagged --build-type=complete --user-config=user-config.jam
-$(package)_config_opts+=threading=multi link=static -sNO_BZIP2=1
-$(package)_config_opts_linux=target-os=linux threadapi=pthread runtime-link=shared
-$(package)_config_opts_darwin=target-os=darwin runtime-link=shared
-$(package)_config_opts_mingw32=target-os=windows binary-format=pe threadapi=win32 runtime-link=static
-$(package)_config_opts_x86_64_mingw32=address-model=64
-$(package)_config_opts_i686_mingw32=address-model=32
-$(package)_config_opts_i686_linux=address-model=32 architecture=x86
-$(package)_config_opts_i686_android=address-model=32
-$(package)_config_opts_aarch64_android=address-model=64
-$(package)_config_opts_x86_64_android=address-model=64
-$(package)_config_opts_armv7a_android=address-model=32
-$(package)_toolset_$(host_os)=gcc
-$(package)_toolset_darwin=clang
-ifneq (,$(findstring clang,$($(package)_cxx)))
-   $(package)_toolset_$(host_os)=clang
-endif
-$(package)_archiver_$(host_os)=$($(package)_ar)
-$(package)_config_libraries=filesystem,system,thread,test,iostreams
-$(package)_cxxflags+=-DBOOST_NO_CXX98_FUNCTION_BASE
-$(package)_cxxflags_linux=-fPIC
-$(package)_cxxflags_android=-fPIC
+  $(package)_config_opts = -DBOOST_INCLUDE_LIBRARIES="assign;multi_index;signals2;test;filesystem;system;thread;iostreams;asio;serialization;date_time;interprocess"
+  $(package)_config_opts += -DBOOST_TEST_HEADERS_ONLY=OFF
+  $(package)_config_opts += -DBOOST_ENABLE_MPI=OFF
+  $(package)_config_opts += -DBOOST_ENABLE_PYTHON=OFF
+  $(package)_config_opts += -DBOOST_INSTALL_LAYOUT=system
+  $(package)_config_opts += -DBUILD_TESTING=OFF
+  $(package)_config_opts += -DCMAKE_DISABLE_FIND_PACKAGE_ICU=ON
+  $(package)_config_opts += -DCMAKE_DISABLE_FIND_PACKAGE_zstd=ON
+  $(package)_config_opts += -DZLIB_INCLUDE_DIR=$(host_prefix)/include
+  $(package)_config_opts += -DZLIB_LIBRARY=$(host_prefix)/lib/libz.a
+  $(package)_config_opts += -DBZIP2_INCLUDE_DIR=$(host_prefix)/include
+  $(package)_config_opts += -DBZIP2_LIBRARIES=$(host_prefix)/lib/libbz2.a
+  $(package)_config_opts += -DLIBLZMA_INCLUDE_DIR=$(host_prefix)/include
+  $(package)_config_opts += -DLIBLZMA_LIBRARY=$(host_prefix)/lib/liblzma.a
 endef
 
 define $(package)_preprocess_cmds
-  echo "using $($(package)_toolset_$(host_os)) : : $($(package)_cxx) : <cxxflags>\"$($(package)_cxxflags) $($(package)_cppflags)\" <linkflags>\"$($(package)_ldflags)\" <archiver>\"$($(package)_archiver_$(host_os))\" <striper>\"$(host_STRIP)\"  <ranlib>\"$(host_RANLIB)\" <rc>\"$(host_WINDRES)\" : ;" > user-config.jam
+  patch -p1 < $($(package)_patch_dir)/skip_compiled_targets.patch
 endef
 
 define $(package)_config_cmds
-  ./bootstrap.sh --without-icu --with-libraries=$($(package)_config_libraries) --with-toolset=$($(package)_toolset_$(host_os))
-endef
-
-define $(package)_build_cmds
-  ./b2 -d2 -j2 -d1 --prefix=$($(package)_staging_prefix_dir) $($(package)_config_opts) toolset=$($(package)_toolset_$(host_os)) stage
+  $($(package)_cmake) -S .. -B . $($(package)_config_opts)
 endef
 
 define $(package)_stage_cmds
-  ./b2 -d0 -j4 --prefix=$($(package)_staging_prefix_dir) $($(package)_config_opts) toolset=$($(package)_toolset_$(host_os)) --no-cmake-config install
+  $(MAKE) DESTDIR=$($(package)_staging_dir) install
 endef

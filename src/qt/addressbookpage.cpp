@@ -61,11 +61,13 @@ AddressBookPage::AddressBookPage(Mode mode, Tabs tab, QWidget* parent)
         ui->explanationLabel->setVisible(false);
         ui->deleteButton->setVisible(true);
         ui->signMessageButton->setVisible(false);
+        ui->addExistingButton->setVisible(false);
         break;
     case ReceivingTab:
         ui->deleteButton->setVisible(false);
         ui->verifyMessageButton->setVisible(false);
         ui->signMessageButton->setVisible(true);
+        ui->addExistingButton->setVisible(true);
         break;
     }
 
@@ -202,7 +204,7 @@ void AddressBookPage::on_signMessageButton_clicked()
     QModelIndexList indexes = table->selectionModel()->selectedRows(AddressTableModel::Address);
     QString addr;
 
-    for (QModelIndex index : indexes) {
+    for (QModelIndex index : std::as_const(indexes)) {
         QVariant address = index.data();
         addr = address.toString();
     }
@@ -216,7 +218,7 @@ void AddressBookPage::on_verifyMessageButton_clicked()
     QModelIndexList indexes = table->selectionModel()->selectedRows(AddressTableModel::Address);
     QString addr;
 
-    for (QModelIndex index : indexes) {
+    for (QModelIndex index : std::as_const(indexes)) {
         QVariant address = index.data();
         addr = address.toString();
     }
@@ -232,6 +234,18 @@ void AddressBookPage::on_newAddressButton_clicked()
             tab == SendingTab ?
             EditAddressDialog::NewSendingAddress :
             EditAddressDialog::NewReceivingAddress, this);
+    dlg.setModel(model);
+    if(dlg.exec())
+    {
+        newAddressToSelect = dlg.getAddress();
+    }
+}
+
+void AddressBookPage::on_addExistingButton_clicked()
+{
+    if(!model)
+        return;
+    EditAddressDialog dlg(EditAddressDialog::AddExistingReceivingAddress, this);
     dlg.setModel(model);
     if(dlg.exec())
     {
@@ -308,7 +322,7 @@ void AddressBookPage::done(int retval)
     // Figure out which address was selected, and return it
     QModelIndexList indexes = table->selectionModel()->selectedRows(AddressTableModel::Address);
 
-    for (QModelIndex index : indexes) {
+    for (QModelIndex index : std::as_const(indexes)) {
         QVariant address = table->model()->data(index);
         returnValue = address.toString();
     }

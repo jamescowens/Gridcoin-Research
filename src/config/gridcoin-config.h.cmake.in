@@ -14,12 +14,28 @@
 #define COPYRIGHT_YEAR "@COPYRIGHT_YEAR@"
 #define COPYRIGHT_HOLDERS_FINAL "@COPYRIGHT_HOLDERS_FINAL@"
 
+#ifndef ENABLE_SSE41
 #cmakedefine ENABLE_SSE41
+#endif
+
+#ifndef ENABLE_AVX2
 #cmakedefine ENABLE_AVX2
+#endif
+
+#ifndef ENABLE_X86_SHANI
 #cmakedefine ENABLE_X86_SHANI
+#endif
+
+#ifndef ENABLE_ARM_CRC
 #cmakedefine ENABLE_ARM_CRC
+#endif
+
+#ifndef ENABLE_ARM_SHANI
 #cmakedefine ENABLE_ARM_SHANI
+#endif
+
 #cmakedefine USE_ASM
+#cmakedefine USE_ASM_SCRYPT
 
 #cmakedefine USE_DBUS
 #cmakedefine USE_QRCODE
@@ -33,6 +49,10 @@
 #cmakedefine HAVE_ENDIAN_H
 #cmakedefine HAVE_SYS_ENDIAN_H
 #cmakedefine HAVE_SYS_PRCTL_H
+
+#cmakedefine01 HAVE_DECL_FORK
+#cmakedefine01 HAVE_DECL_PIPE2
+#cmakedefine01 HAVE_DECL_SETSID
 
 #cmakedefine01 HAVE_DECL_LE16TOH
 #cmakedefine01 HAVE_DECL_LE32TOH

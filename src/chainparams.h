@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2020 The Bitcoin Core developers
+// Copyright (c) 2014-2025 The Gridcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -10,14 +11,9 @@
 #include "consensus/params.h"
 #include "protocol.h"
 
-// system.h and extern reference to cs_main included only for temporary V13 fork point overrides for testing.
-#include "util/system.h"
-
 #include <memory>
 #include <stdexcept>
 #include <vector>
-
-extern CCriticalSection cs_main;
 
 typedef std::map<int, uint256> MapCheckpoints;
 typedef std::map<int, std::vector<unsigned char>> MapMasterKeys;
@@ -155,9 +151,7 @@ inline bool IsV12Enabled(int nHeight)
 
 inline bool IsV13Enabled(int nHeight)
 {
-    // The argument driven override temporarily here to facilitate testing.
-
-    return nHeight >= gArgs.GetArg("-blockv13height", Params().GetConsensus().BlockV13Height);
+    return nHeight >= Params().GetConsensus().BlockV13Height;
 }
 
 inline bool IsPollV3Enabled(int nHeight)
@@ -168,6 +162,26 @@ inline bool IsPollV3Enabled(int nHeight)
 inline bool IsProjectV2Enabled(int nHeight)
 {
     return nHeight >= Params().GetConsensus().ProjectV2Height;
+}
+
+inline bool IsAutoGreylistAuditEnabled(int nHeight)
+{
+    return nHeight >= Params().GetConsensus().AutoGreylistAuditHeight;
+}
+
+inline bool IsSuperblockV3Enabled(int nHeight)
+{
+    return nHeight >= Params().GetConsensus().SuperblockV3Height;
+}
+
+inline bool IsV14Enabled(int nHeight)
+{
+    return nHeight >= Params().GetConsensus().BlockV14Height;
+}
+
+inline bool IsProjectV4Enabled(int nHeight)
+{
+    return nHeight >= Params().GetConsensus().ProjectV4Height;
 }
 
 inline int GetSuperblockAgeSpacing(int nHeight)

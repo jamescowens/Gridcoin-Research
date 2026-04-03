@@ -47,8 +47,6 @@ class MRC;
 typedef std::optional<Claim> ClaimOption;
 }
 
-static const int64_t DEFAULT_CBR = 10 * COIN;
-
 /** Threshold for nLockTime: below this value it is interpreted as block number, otherwise as UNIX timestamp. */
 static const unsigned int LOCKTIME_THRESHOLD = 500000000; // Tue Nov  5 00:53:20 1985 UTC
 
@@ -89,8 +87,7 @@ extern std::atomic<bool> g_reorg_in_progress;
 extern const std::string strMessageMagic;
 extern CCriticalSection cs_setpwalletRegistered;
 extern std::set<CWallet*> setpwalletRegistered;
-extern std::map<uint256, CBlock*> mapOrphanBlocks;
-extern std::multimap<uint256, CBlock*> mapOrphanBlocksByPrev;
+// Orphan block storage is managed by g_orphan_blocks in node/orphan_blocks.h
 
 // Settings
 extern int64_t nTransactionFee;
@@ -210,7 +207,7 @@ public:
 class CBlockHeader
 {
 public:
-    static const int32_t CURRENT_VERSION = 13;
+    static const int32_t CURRENT_VERSION = 14;
 
     // header
     int32_t nVersion;
@@ -485,7 +482,7 @@ public:
 
         // Gridcoin
         EMPTY_CPID           = (1 << 3), // CPID is empty
-        INVESTOR_CPID        = (1 << 4), // CPID equals "INVESTOR"
+        NONCRUNCHER_CPID     = (1 << 4), // CPID equals "NONCRUNCHER"
         SUPERBLOCK           = (1 << 5), // Block contains a superblock
         CONTRACT             = (1 << 6), // Block contains a contract
     };
@@ -617,7 +614,7 @@ public:
 
     bool IsUserCPID() const
     {
-        return !(nFlags & (INVESTOR_CPID | EMPTY_CPID));
+        return !(nFlags & (NONCRUNCHER_CPID | EMPTY_CPID));
     }
 
     unsigned int GetStakeEntropyBit() const
@@ -650,7 +647,7 @@ public:
         const int64_t research_subsidy,
         const double magnitude)
     {
-        nFlags &= ~(EMPTY_CPID | INVESTOR_CPID);
+        nFlags &= ~(EMPTY_CPID | NONCRUNCHER_CPID);
 
         if (const auto cpid_option = mining_id.TryCpid()) {
             if (research_subsidy > 0) {
@@ -674,7 +671,7 @@ public:
         if (mining_id.Which() == GRC::MiningId::Kind::INVALID) {
             nFlags |= EMPTY_CPID;
         } else {
-            nFlags |= INVESTOR_CPID;
+            nFlags |= NONCRUNCHER_CPID;
         }
     }
 
@@ -717,8 +714,8 @@ public:
         if (m_researcher)
             return GRC::MiningId(m_researcher->m_cpid);
 
-        if (nFlags & INVESTOR_CPID)
-            return GRC::MiningId::ForInvestor();
+        if (nFlags & NONCRUNCHER_CPID)
+            return GRC::MiningId::ForNoncruncher();
 
         return GRC::MiningId();
     }

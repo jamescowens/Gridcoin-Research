@@ -246,7 +246,7 @@ void MRCModel::refresh() EXCLUSIVE_LOCKS_REQUIRED(cs_main)
     }
 
     if (!m_researcher_model->hasActiveBeacon()
-            || m_researcher_model->configuredForInvestorMode()
+            || m_researcher_model->configuredForNoncruncherMode()
             || m_researcher_model->detectedPoolMode()) {
         m_mrc_error |= true;
         m_mrc_status = MRCRequestStatus::NOT_VALID_RESEARCHER;

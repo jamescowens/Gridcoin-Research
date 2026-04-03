@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2020 The Bitcoin Core developers
+// Copyright (c) 2014-2025 The Gridcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -67,20 +68,27 @@ public:
         consensus.BlockV10Height = 1420000;
         consensus.BlockV11Height = 2053000;
         consensus.BlockV12Height = 2671700;
-        consensus.BlockV13Height = std::numeric_limits<int>::max();
+        consensus.BlockV13Height = 3989800;
+        consensus.BlockV14Height = 3990000;
+        consensus.ProtocolVersionGracePeriod = 900 * 7; // ~6.5 days
         consensus.PollV3Height = 2671700;
         consensus.ProjectV2Height = 2671700;
+        consensus.AutoGreylistAuditHeight = 3989800;
+        consensus.DefaultConstantBlockReward = 10 * COIN;
+        consensus.ConstantBlockRewardFloor = 0;
+        consensus.ConstantBlockRewardCeiling = 500 * COIN;
+        consensus.ProjectV4Height = 3989800;
+        consensus.SuperblockV3Height = 3989800;
         // Immediately post zero payment interval fees 40% for mainnet
         consensus.InitialMRCFeeFractionPostZeroInterval = Fraction(2, 5);
-        // Zero day interval is 14 days on mainnet
         consensus.MRCZeroPaymentInterval = 14 * 24 * 60 * 60;
-        // The maximum ratio of rewards that can be allocated to all of the mandatory sidestakes.
         consensus.MaxMandatorySideStakeTotalAlloc = Fraction(1, 4);
-        // The "standard" contract replay lookback for those contract types
-        // that do not have a registry db.
+        consensus.DefaultMagnitudeUnit = Fraction(1, 4);
+        consensus.MaxMagnitudeUnit = Fraction(5, 1);
+        consensus.MinMagnitudeWeightFactor = Fraction(1, 10);
+        consensus.DefaultMagnitudeWeightFactor = Fraction(100, 567);
+        consensus.MaxMagnitudeWeightFactor = Fraction(1);
         consensus.StandardContractReplayLookback = 180 * 24 * 60 * 60;
-        // "standard" scrypt target limit for proof of work, results in 0,000244140625 proof-of-work difficulty.
-        // Equivalent to ~arith_uint256() >> 20 or 1e0fffff in compact notation.
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -184,19 +192,27 @@ public:
         consensus.BlockV10Height = 629409;
         consensus.BlockV11Height = 1301500;
         consensus.BlockV12Height = 1871830;
-        consensus.BlockV13Height = std::numeric_limits<int>::max();
+        consensus.BlockV13Height = 2870000;
+        consensus.BlockV14Height = 3126500;
+        consensus.ProtocolVersionGracePeriod = 900 * 21; // ~19.6 days — extended because v14 fork preceded deployment
         consensus.PollV3Height = 1944820;
         consensus.ProjectV2Height = 1944820;
+        consensus.AutoGreylistAuditHeight = 3111000;
+        consensus.DefaultConstantBlockReward = 10 * COIN;
+        consensus.ConstantBlockRewardFloor = 0;
+        consensus.ConstantBlockRewardCeiling = 500 * COIN;
+        consensus.ProjectV4Height = 2870000;
+        consensus.SuperblockV3Height = 2870000;
         // Immediately post zero payment interval fees 40% for testnet, the same as mainnet
         consensus.InitialMRCFeeFractionPostZeroInterval = Fraction(2, 5);
-        // Zero day interval is 10 minutes on testnet. The very short interval facilitates testing.
         consensus.MRCZeroPaymentInterval = 10 * 60;
-        // The maximum ratio of rewards that can be allocated to all of the mandatory sidestakes.
         consensus.MaxMandatorySideStakeTotalAlloc = Fraction(1, 4);
-        // The "standard" contract replay lookback for those contract types
-        // that do not have a registry db.
+        consensus.DefaultMagnitudeUnit = Fraction(1, 4);
+        consensus.MaxMagnitudeUnit = Fraction(5, 1);
+        consensus.MinMagnitudeWeightFactor = Fraction(1, 10);
+        consensus.DefaultMagnitudeWeightFactor = Fraction(100, 567);
+        consensus.MaxMagnitudeWeightFactor = Fraction(1);
         consensus.StandardContractReplayLookback = 180 * 24 * 60 * 60;
-        // Equivalent to ~arith_uint256() >> 16 or 1f00ffff in compact notation.
         consensus.powLimit = uint256S("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 
         pchMessageStart[0] = 0xcd;
@@ -224,6 +240,7 @@ public:
             {
                 {0,       uint256S("0x00006e037d7b84104208ecf2a8638d23149d712ea810da604ee2f2cb39bae713")},
                 {2400000, uint256S("0x962b7607f8ffceb5c77951d242caed3f94f465f8529d924338700895ff8ed458")},
+                {2800000, uint256S("0x038f6a3bdea036e11f6793e5ec0d66434c7889c1fdb340e32136ec0d5bc4cd18")}
             }
         };
 

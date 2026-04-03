@@ -2,6 +2,7 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
+#include "gridcoin/protocol.h"
 #include "main.h"
 #include "gridcoin/beacon.h"
 #include "gridcoin/quorum.h"
@@ -612,6 +613,8 @@ private:
     //!
     static bool IsInMainChain(const CBlockHeader& header)
     {
+        LOCK(cs_main);
+
         const auto iter = mapBlockIndex.find(header.GetHash());
 
         if (iter == mapBlockIndex.end()) {
@@ -796,7 +799,22 @@ public:
         }
 
         // Use integer arithmetic to avoid floating-point discrepancies:
-        m_magnitude_factor = supply / total_mag * 100 / 567;
+
+        // Overflow analysis:
+        //
+        // Current supply as of block 3404576 = 493424753.
+        // network magnitude = 115000
+        // max value for uint64_t = 2^64 - 1
+        //
+        // 2^64 - 1 >= (493424753 / 115000) * mwf numerator
+        //
+        // This means mwf numerator <= (2^64 - 1) * (115000 / 493424753)
+        //                         ~<= 4.3E15
+        // Even if money supply is approximately doubled we can safely handle 2E15, which means 15 decimal
+        // places in the fraction numerator
+        m_magnitude_factor = supply / total_mag
+                             * (uint64_t) m_poll.m_magnitude_weight_factor.GetNumerator()
+                             / (uint64_t) m_poll.m_magnitude_weight_factor.GetDenominator();
         m_resolver.SetSuperblock(std::move(superblock));
     }
 
@@ -1133,6 +1151,7 @@ CAmount ResolveMoneySupplyForPoll(const Poll& poll)
 
     return pindex->nMoneySupply;
 }
+
 } // Anonymous namespace
 
 // -----------------------------------------------------------------------------
@@ -1184,15 +1203,27 @@ PollResultOption PollResult::BuildFor(const PollReference& poll_ref)
         VoteCounter counter(txdb, result.m_poll);
 
         if (result.m_poll.IncludesMagnitudeWeight()) {
-            counter.EnableMagnitudeWeight(
-                ResolveSuperblockForPoll(result.m_poll),
-                ResolveMoneySupplyForPoll(result.m_poll));
+            SuperblockPtr superblock;
+            uint64_t supply;
+
+            {
+                LOCK(cs_main);
+                superblock = ResolveSuperblockForPoll(result.m_poll);
+                supply = ResolveMoneySupplyForPoll(result.m_poll);
+            }
+
+            counter.EnableMagnitudeWeight(std::move(superblock), supply);
         }
 
         LogPrint(BCLog::LogFlags::VOTE, "INFO: %s: number of votes = %u for poll %s",
                  __func__, poll_ref.Votes().size(), result.m_poll.m_title);
 
         counter.CountVotes(result, poll_ref.Votes());
+
+        LogPrint(BCLog::LogFlags::VOTE, "INFO: %s: poll_ref.Time() = %" PRId64 " poll.GetMagnitudeWeightFactor() = %s",
+                 __func__,
+                 poll_ref.Time(),
+                 poll_ref.GetMagnitudeWeightFactor().ToString());
 
         if (auto active_vote_weight = poll_ref.GetActiveVoteWeight(result)) {
             result.m_active_vote_weight = active_vote_weight;

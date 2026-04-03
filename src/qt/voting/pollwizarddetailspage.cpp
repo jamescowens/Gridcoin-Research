@@ -302,9 +302,9 @@ void PollWizardDetailsPage::initializePage()
 
     if (type_id == (int) GRC::PollType::PROJECT) {
         ui->titleField->setText(QStringLiteral("[%1] %2 %3")
-            .arg(poll_type.m_name)
-            .arg(field("projectPollAddRemoveState").toString())
-            .arg(field("projectName").toString()));
+            .arg(poll_type.m_name,
+                 field("projectPollAddRemoveState").toString(),
+                 field("projectName").toString()));
         ui->responseTypeList->setCurrentIndex(0); // Yes/No/Abstain
         ui->responseTypeList->setDisabled(true);
 

@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2014-2025 The Gridcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -221,9 +222,9 @@ UniValue help(const UniValue& params, bool fHelp)
             "developer -----> Returns help for developer commands\n"
             "network -------> Returns help for network related commands\n"
             "voting --------> Returns help for voting related commands\n"
-	    "\n"
-	    "You can support the development of Gridcoin by donating GRC to the\n"
-	    "Gridcoin Foundation at this address: bc3NA8e8E3EoTL1qhRmeprbjWcmuoZ26A2\n";
+            "\n"
+            "You can support the development of Gridcoin by donating GRC to the\n"
+            "Gridcoin Foundation at this address: bc3NA8e8E3EoTL1qhRmeprbjWcmuoZ26A2\n";
 
     // Allow to process through if params size is > 0
     string strCommand;
@@ -292,6 +293,8 @@ static const CRPCCommand vRPCCommands[] =
     { "backupwallet",            &backupwallet,            cat_wallet        },
     { "burn",                    &burn,                    cat_wallet        },
     { "checkwallet",             &checkwallet,             cat_wallet        },
+    { "claimhtlc",              &claimhtlc,               cat_wallet        },
+    { "createhtlc",             &createhtlc,              cat_wallet        },
     { "createrawtransaction",    &createrawtransaction,    cat_wallet        },
     { "consolidatemsunspent",    &consolidatemsunspent,    cat_wallet        },
     { "decoderawtransaction",    &decoderawtransaction,    cat_wallet        },
@@ -329,6 +332,7 @@ static const CRPCCommand vRPCCommands[] =
     { "maintainbackups",         &maintainbackups,         cat_wallet        },
     { "move",                    &movecmd,                 cat_wallet        },
     { "rainbymagnitude",         &rainbymagnitude,         cat_wallet        },
+    { "refundhtlc",             &refundhtlc,              cat_wallet        },
     { "repairwallet",            &repairwallet,            cat_wallet        },
     { "resendtx",                &resendtx,                cat_wallet        },
     { "reservebalance",          &reservebalance,          cat_wallet        },
@@ -353,6 +357,8 @@ static const CRPCCommand vRPCCommands[] =
 
   // Staking commands
     { "advertisebeacon",         &advertisebeacon,         cat_staking        },
+    { "advertisebeaconv3",       &advertisebeaconv3,       cat_staking        },
+    { "beaconauth",              &beaconauth,              cat_staking        },
     { "beaconconvergence",       &beaconconvergence,       cat_staking        },
     { "beaconreport",            &beaconreport,            cat_staking        },
     { "beaconstatus",            &beaconstatus,            cat_staking        },
@@ -385,9 +391,11 @@ static const CRPCCommand vRPCCommands[] =
     { "inspectaccrualsnapshot",  &inspectaccrualsnapshot,  cat_developer     },
     { "listalerts",              &listalerts,              cat_developer     },
     { "listprojects",            &listprojects,            cat_developer     },
+    { "getautogreylist",         &getautogreylist,         cat_developer     },
     { "listprotocolentries",     &listprotocolentries,     cat_developer     },
     { "listresearcheraccounts",  &listresearcheraccounts,  cat_developer     },
     { "listscrapers",            &listscrapers,            cat_developer     },
+    { "listsidestakes",          &listsidestakes,           cat_developer     },
     { "listmandatorysidestakes", &listmandatorysidestakes, cat_developer     },
     { "listsettings",            &listsettings,            cat_developer     },
     { "logging",                 &logging,                 cat_developer     },
@@ -450,6 +458,7 @@ static const CRPCCommand vRPCCommands[] =
     { "getpollresults",          &getpollresults,          cat_voting        },
     { "getvotingclaim",          &getvotingclaim,          cat_voting        },
     { "listpolls",               &listpolls,               cat_voting        },
+    { "testpollnotification",    &testpollnotification,    cat_voting        },
     { "vote",                    &vote,                    cat_voting        },
     { "votebyid",                &votebyid,                cat_voting        },
     { "votedetails",             &votedetails,             cat_voting        },
@@ -501,7 +510,8 @@ bool ClientAllowed(const boost::asio::ip::address& address)
     // Make sure that IPv4-compatible and IPv4-mapped IPv6 addresses are treated as IPv4 addresses
     if (address.is_v6()
      && (address.to_v6() <= boost::asio::ip::make_address_v6("::ffff:ffff")
-      || address.to_v6().is_v4_mapped())) {
+      || address.to_v6().is_v4_mapped())
+     && !(address.to_v6() == asio::ip::address_v6::loopback() || address.to_v6() == asio::ip::make_address_v6("::"))) {
         auto address6 = address.to_v6();
         auto bytes = address6.to_bytes();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2021 The Gridcoin developers
+// Copyright (c) 2014-2025 The Gridcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -501,13 +501,15 @@ EXCLUSIVE_LOCKS_REQUIRED(CScraperManifest::cs_mapManifest, CSplitBlob::cs_manife
     // is set to below 0.5, both to prevent a divide by zero exception, and also prevent unreasonably lose limits. So this
     // means the loosest limit that is allowed is essentially 2 * whitelist + 2.
 
+    // Note that the whitelist size is taken from the snapshot including all projects but deleted.
     unsigned int nMaxProjects = 0;
 
     {
         LOCK(cs_ScraperGlobals);
 
-        nMaxProjects = static_cast<unsigned int>(std::ceil(static_cast<double>(GRC::GetWhitelist().Snapshot().size()) /
-                                                                    std::max(0.5, CONVERGENCE_BY_PROJECT_RATIO)) + 2);
+        nMaxProjects = static_cast<unsigned int>(
+            std::ceil(static_cast<double>(GRC::GetWhitelist().Snapshot(GRC::ProjectEntry::ProjectFilterFlag::ALL_BUT_DELETED).size()) /
+                      std::max(0.5, CONVERGENCE_BY_PROJECT_RATIO)) + 2);
     }
 
     if (!OutOfSyncByAge() && projects.size() > nMaxProjects)
@@ -691,7 +693,12 @@ bool CScraperManifest::RecvManifest(CNode* pfrom, CDataStream& vRecv)
     const auto it = mapManifest.emplace(hash, manifest);
 
     {
-        LOCK(manifest->cs_manifest);
+        // Hold cs_mapParts together with cs_manifest in canonical order. UnserializeCheck() calls
+        // addPart() which acquires both locks via LOCK2. Without cs_mapParts held here, the recursive
+        // re-lock of cs_manifest inside addPart() establishes the reverse ordering cs_manifest ->
+        // cs_mapParts, conflicting with the canonical cs_mapParts -> cs_manifest lock ordering
+        // established by the LOCK2(cs_mapParts, manifest->cs_manifest) below.
+        LOCK2(cs_mapParts, manifest->cs_manifest);
 
         // The phash in the manifest points to the actual hash which is the index to the element in the map.
         manifest->phash = &it.first->first;
@@ -870,12 +877,35 @@ UniValue CScraperManifest::ToJson() const EXCLUSIVE_LOCKS_REQUIRED(CSplitBlob::c
     r.pushKV("BeaconList_c", (int64_t) BeaconList_c);
 
     UniValue projects(UniValue::VARR);
+    UniValue project_all_cpid_total_credits(UniValue::VARR);
+
+    std::map<std::string, double> total_credit_map;
+
     for (const dentry& part : this->projects)
     {
-        projects.push_back(part.ToJson());
+        UniValue project(UniValue::VOBJ);
+
+        if (part.project != "ProjectsAllCpidTotalCredits") {
+            projects.push_back(part.ToJson());
+
+        } else if (!vParts[part.part1]->data.empty()) {
+            CDataStream ss(vParts[part.part1]->data, SER_NETWORK, 1);
+
+            ss >> total_credit_map;
+
+            for (const auto& iter : total_credit_map) {
+                UniValue tc_entry(UniValue::VOBJ);
+
+                tc_entry.pushKV("project", iter.first);
+                tc_entry.pushKV("all_cpid_total_credit", iter.second);
+
+                project_all_cpid_total_credits.push_back(tc_entry);
+            }
+        }
     }
 
     r.pushKV("projects", projects);
+    r.pushKV("project_all_cpid_total_credits", project_all_cpid_total_credits);
 
     UniValue parts(UniValue::VARR);
     for (const CPart* part : this->vParts)

@@ -226,7 +226,7 @@ static std::string Translate(const char* psz)
 }
 
 /* qDebug() message handler --> debug.log */
-void DebugMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString &msg)
+static void DebugMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString &msg)
 {
     Q_UNUSED(context);
     if (type == QtDebugMsg) {
@@ -290,10 +290,16 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    // Generate high-dpi pixmaps
+    // Generate high-dpi pixmaps. This is now wrapped by a macro conditional because these are always
+    // on for Qt 6.0+ and are deprecated.
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-
+#else
+    // QT6: Disable scale factor rounding. This ensures that if a user manually
+    // sets QT_FONT_DPI or uses fractional scaling, icons/windows scale smoothly.
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+#endif
     // Initiate the app here to support choosing the data directory.
     Q_INIT_RESOURCE(bitcoin);
     Q_INIT_RESOURCE(bitcoin_locale);
@@ -390,12 +396,19 @@ int main(int argc, char *argv[])
     // - First load the translator for the base language, without territory
     // - Then load the more specific locale translator
 
+// Near line 394
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QString transPath = QLibraryInfo::path(QLibraryInfo::TranslationsPath);
+#else
+    QString transPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+#endif
+
     // Load e.g. qt_de.qm
-    if (qtTranslatorBase.load("qt_" + lang, QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
+    if (qtTranslatorBase.load("qt_" + lang, transPath))
         app.installTranslator(&qtTranslatorBase);
 
     // Load e.g. qt_de_DE.qm
-    if (qtTranslator.load("qt_" + lang_territory, QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
+    if (qtTranslator.load("qt_" + lang_territory, transPath))
         app.installTranslator(&qtTranslator);
 
     // Load e.g. bitcoin_de.qm (shortcut "de" needs to be defined in bitcoin.qrc)
@@ -428,11 +441,12 @@ int main(int argc, char *argv[])
     // Determine availability of data directory and parse gridcoinresearch.conf
     // Do not call GetDataDir(true) before this step finishes
     if (!CheckDataDirOption()) {
-        ThreadSafeMessageBox(strprintf("Specified data directory \"%s\" does not exist.\n", gArgs.GetArg("-datadir", "")),
+        std::string datadir_display = fsbridge::LongPathString(fs::path(gArgs.GetArg("-datadir", "")));
+        ThreadSafeMessageBox(strprintf("Specified data directory \"%s\" does not exist.\n", datadir_display),
                              "", CClientUIInterface::ICON_ERROR | CClientUIInterface::BTN_OK | CClientUIInterface::MODAL);
         QMessageBox::critical(nullptr, PACKAGE_NAME,
             QObject::tr("Error: Specified data directory \"%1\" does not exist.")
-                              .arg(QString::fromStdString(gArgs.GetArg("-datadir", ""))));
+                              .arg(QString::fromStdString(datadir_display)));
         return EXIT_FAILURE;
     }
 

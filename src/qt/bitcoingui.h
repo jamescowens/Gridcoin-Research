@@ -32,6 +32,7 @@ class Notificator;
 class RPCConsole;
 class DiagnosticsDialog;
 class ClickLabel;
+class SyncOverlay;
 class UpdateDialog;
 
 QT_BEGIN_NAMESPACE
@@ -113,6 +114,9 @@ private:
     SignVerifyMessageDialog *signVerifyMessageDialog;
     std::unique_ptr<UpdateDialog> updateMessageDialog;
 
+    SyncOverlay *m_sync_overlay;
+    bool m_in_sync;
+
     QLabel *statusbarAlertsLabel;
     QLabel *labelEncryptionIcon;
     QLabel *labelStakingIcon;
@@ -158,6 +162,9 @@ private:
     QAction *snapshotAction;
     QAction *resetblockchainAction;
     QAction *m_mask_values_action;
+    QAction *openWikiAction;
+    QAction *openFaqAction;
+    QAction *openGuidesAction;
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
@@ -188,6 +195,8 @@ private:
     void createTrayIconMenu();
     /** Set Icons */
     void setIcons();
+    /** Re-check the toolbar action that matches the currently displayed page. */
+    void recheckCurrentTabAction();
 
 
 public slots:
@@ -264,6 +273,9 @@ private slots:
     void snapshotClicked();
     void resetblockchainClicked();
     void setPrivacy();
+    void openWikiClicked();
+    void openFaqClicked();
+    void openGuidesClicked();
     bool tryQuit();
 
 #ifndef Q_OS_MAC

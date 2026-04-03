@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2014-2025 The Gridcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -9,7 +10,6 @@
 #include "util.h"
 #include "util/threadnames.h"
 #include "net.h"
-#include "txdb.h"
 #include "wallet/walletdb.h"
 #include "banman.h"
 #include "random.h"
@@ -359,6 +359,12 @@ void SetupServerArgs()
                    ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-walletnotify=<cmd>", "Execute command when a wallet transaction changes (%s in cmd is replaced by TxID)",
                    ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    argsman.AddArg("-pollnotify=<cmd>", "Execute command when a poll is added/deleted/expiring (%s1 in cmd is replaced by poll id,"
+                                        "%s2 is replaced by status: added, deleted, expiration warning)",
+                   ArgsManager::ALLOW_ANY | ArgsManager::IMMEDIATE_EFFECT, OptionsCategory::OPTIONS);
+    argsman.AddArg("-pollexpirewarningtime=<hours>", "Hours before poll expiration to execute notification command. Default is "
+                                                     "7 days (168 hours)",
+                   ArgsManager::ALLOW_ANY | ArgsManager::IMMEDIATE_EFFECT, OptionsCategory::OPTIONS);
 #endif
     argsman.AddArg("-confchange", "Require confirmations for change (default: 0)",
                    ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
@@ -469,7 +475,10 @@ void SetupServerArgs()
                    ArgsManager::ALLOW_ANY, OptionsCategory::RESEARCHER);
     argsman.AddArg("-forcecpid=<cpid>", "Override automatic CPID detection with the specified CPID",
                    ArgsManager::ALLOW_ANY, OptionsCategory::RESEARCHER);
-    argsman.AddArg("-investor", "Disable CPID detection and do not participate in the research reward system",
+    argsman.AddArg("-investor", "Disable CPID detection and do not participate in the research reward system (deprecated - "
+                                "replaced by -noncruncher).",
+                   ArgsManager::ALLOW_ANY, OptionsCategory::RESEARCHER);
+    argsman.AddArg("-noncruncher", "Disable CPID detection and do not participate in the research reward system",
                    ArgsManager::ALLOW_ANY, OptionsCategory::RESEARCHER);
     argsman.AddArg("-pooloperator", "Skip pool CPID checks for staking nodes run by pool administrators",
                    ArgsManager::ALLOW_ANY, OptionsCategory::RESEARCHER);
@@ -617,9 +626,6 @@ void SetupServerArgs()
     hidden_args.emplace_back("-daemon");
     hidden_args.emplace_back("-daemonwait");
 #endif
-
-    // Temporary hidden option for block v13 height override to facilitate testing.
-    hidden_args.emplace_back("-blockv13height");
 
     // Additional hidden options
     hidden_args.emplace_back("-devbuild");
@@ -902,7 +908,7 @@ bool AppInit2(ThreadHandlerPtr threads)
     }
 
     //6-10-2014: R Halford: Updating Boost version to 1.5.5 to prevent sync issues; print the boost version to verify:
-	//5-04-2018: J Owens: Boost now needs to be 1.65 or higher to avoid thread sleep problems with system clock resets.
+    //5-04-2018: J Owens: Boost now needs to be 1.65 or higher to avoid thread sleep problems with system clock resets.
     std::string boost_version = "";
     std::ostringstream s;
     s << boost_version  << "Using Boost "
@@ -1026,24 +1032,43 @@ bool AppInit2(ThreadHandlerPtr threads)
         return InitError(_("Initialization sanity check failed. Gridcoin is shutting down."));
 
     LogPrintf("Block version 11 hard fork configured for block %d", Params().GetConsensus().BlockV11Height);
-    LogPrintf("Block version 12 hard fork configured for block %d",
-              gArgs.GetArg("-blockv12height", Params().GetConsensus().BlockV12Height));
+    LogPrintf("Block version 12 hard fork configured for block %d", Params().GetConsensus().BlockV12Height);
+    LogPrintf("Block version 13 hard fork configured for block %d", Params().GetConsensus().BlockV13Height);
+    LogPrintf("Block version 14 hard fork configured for block %d", Params().GetConsensus().BlockV14Height);
 
     fs::path datadir = GetDataDir();
     fs::path walletFileName = gArgs.GetArg("-wallet", "wallet.dat");
 
-    LogPrintf("INFO %s: DataDir = %s.", __func__, datadir.string());
+    LogPrintf("INFO %s: DataDir = %s.", __func__, fsbridge::LongPathString(datadir));
 
     // WalletFileName must be a plain filename without a directory
     if (walletFileName != walletFileName.filename())
-        return InitError(strprintf(_("Wallet %s resides outside data directory %s."), walletFileName.string(), datadir.string()));
+        return InitError(strprintf(_("Wallet %s resides outside data directory %s."), walletFileName.string(), fsbridge::LongPathString(datadir)));
 
     // Make sure only a single Bitcoin process is using the data directory.
     if (!DirIsWritable(datadir)) {
-        return InitError(strprintf(_("Cannot write to data directory '%s'; check permissions."), datadir.string()));
+        return InitError(strprintf(_("Cannot write to data directory '%s'; check permissions."), fsbridge::LongPathString(datadir)));
     }
     if (!LockDirectory(datadir, ".lock", false)) {
-        return InitError(strprintf(_("Cannot obtain a lock on data directory %s. %s is probably already running."), datadir.string(), PACKAGE_NAME));
+        return InitError(strprintf(_("Cannot obtain a lock on data directory %s. %s is probably already running."), fsbridge::LongPathString(datadir), PACKAGE_NAME));
+    }
+
+    // Check early whether the data directory path can be used by legacy database libraries (BDB, LevelDB)
+    // that only accept narrow (const char*) paths. On Windows, paths with characters outside the system
+    // code page require conversion to 8.3 short names for BDB compatibility.
+    //
+    // Known limitation: if -datadir is passed on the command line with non-codepage characters, the path
+    // is already garbled by the time we see it — Windows main(argc, argv) delivers narrow strings in the
+    // system code page. The same applies to datadir= in gridcoin.conf saved as UTF-8. Fixing this would
+    // require switching to GetCommandLineW()/wmain at the argument parsing level. The Qt directory chooser
+    // path (which stays in UTF-16 via QString) is not affected.
+    if (fsbridge::PathHasNonCodepageChars(datadir)) {
+        if (fsbridge::ShortPathString(datadir).empty()) {
+            return InitError(strprintf(_("The data directory path '%s' contains characters that cannot be "
+                "represented in the system code page, and Windows 8.3 short filename generation is not available "
+                "on this volume. Please choose a data directory path using only characters supported by your "
+                "system locale, or enable 8.3 filename generation."), fsbridge::LongPathString(datadir)));
+        }
     }
 
     #if (OPENSSL_VERSION_NUMBER < 0x10100000L)
@@ -1085,7 +1110,7 @@ bool AppInit2(ThreadHandlerPtr threads)
     {
          string msg = strprintf(_("Error initializing database environment %s!"
                                  " To recover, BACKUP THAT DIRECTORY, then remove"
-                                 " everything from it except for wallet.dat."), datadir.string());
+                                 " everything from it except for wallet.dat."), fsbridge::LongPathString(datadir));
         return InitError(msg);
     }
 
@@ -1105,7 +1130,7 @@ bool AppInit2(ThreadHandlerPtr threads)
             string msg = strprintf(_("Warning: wallet.dat corrupt, data salvaged!"
                                      " Original wallet.dat saved as wallet.{timestamp}.bak in %s; if"
                                      " your balance or transactions are incorrect you should"
-                                     " restore from a backup."), datadir.string());
+                                     " restore from a backup."), fsbridge::LongPathString(datadir));
             InitWarning(msg);
         }
         if (r == CDBEnv::RECOVER_FAIL)
@@ -1234,7 +1259,7 @@ bool AppInit2(ThreadHandlerPtr threads)
     {
         string msg = strprintf(_("Error initializing database environment %s!"
                                  " To recover, BACKUP THAT DIRECTORY, then remove"
-                                 " everything from it except for wallet.dat."), datadir.string());
+                                 " everything from it except for wallet.dat."), fsbridge::LongPathString(datadir));
         return InitError(msg);
     }
 

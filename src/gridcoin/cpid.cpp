@@ -99,8 +99,11 @@ MiningId MiningId::Parse(const std::string& input)
         return MiningId();
     }
 
-    if (input == "INVESTOR" || input == "investor") {
-        return MiningId::ForInvestor();
+    std::string input_lc = ToLower(input);
+
+    // Investor is a synonym for noncruncher for legacy support.
+    if (input_lc == "noncruncher" || input_lc == "non-cruncher" || input == "investor") {
+        return MiningId::ForNoncruncher();
     }
 
     if (input.size() == 32) {
@@ -129,10 +132,10 @@ std::string MiningId::Invalid::ToString() const
 }
 
 // -----------------------------------------------------------------------------
-// Class: MiningId::Investor
+// Class: MiningId::Noncruncher
 // -----------------------------------------------------------------------------
 
-std::string MiningId::Investor::ToString() const
+std::string MiningId::Noncruncher::ToString() const
 {
-    return "INVESTOR";
+    return "NONCRUNCHER";
 }

@@ -395,7 +395,7 @@ public:
         // Known checking here is only to save space from duplicates.
         // SendMessages will filter it again for knowns that were added
         // after addresses were pushed.
-        if (addr.IsValid() && !setAddrKnown.count(addr))
+        if (addr.IsValid() && !setAddrKnown.count(addr) && vAddrToSend.size() < 10000)
             vAddrToSend.push_back(addr);
     }
 
@@ -412,7 +412,7 @@ public:
     {
         {
             LOCK(cs_inventory);
-            if (!setInventoryKnown.count(inv))
+            if (!setInventoryKnown.count(inv) && vInventoryToSend.size() < 10000)
                 vInventoryToSend.push_back(inv);
         }
     }
@@ -421,6 +421,8 @@ public:
     {
         // We're using mapAskFor as a priority queue,
         // the key is the earliest time the request can be sent
+        if (mapAskFor.size() > 50000) return;
+
         int64_t& nRequestTime = mapAlreadyAskedFor[inv];
         LogPrint(BCLog::LogFlags::NET, "askfor %s   %" PRId64 " (%s)", inv.ToString(), nRequestTime, DateTimeStrFormat("%H:%M:%S", nRequestTime/1000000));
 
@@ -554,7 +556,32 @@ public:
     // static void ClearBanned(); // needed for unit testing
     // static bool IsBanned(CNetAddr ip);
     bool Misbehaving(int howmuch); // 1 == a little, 100 == a lot
+
+    //!
+    //! \brief Score misbehavior against an address without requiring a CNode
+    //! instance. Operates on the same static mapMisbehavior used by the
+    //! instance method, so scores are shared — misbehavior accumulated here
+    //! is visible to any CNode with the same address.
+    //!
+    //! \param addr    The address to score against.
+    //! \param howmuch Misbehavior points to add.
+    //!
+    //! \return \c true if the accumulated score triggered a ban.
+    //!
+    static bool MisbehavingAddr(const CAddress& addr, int howmuch);
+
     int GetMisbehavior() const;
+
+    //!
+    //! \brief Get the current misbehavior score for an address without
+    //! requiring a CNode instance. Applies the same time-based decay as
+    //! the instance method.
+    //!
+    //! \param addr The address to query.
+    //!
+    //! \return The decayed misbehavior score.
+    //!
+    static int GetMisbehaviorAddr(const CAddress& addr);
     void copyStats(CNodeStats &stats);
 
     static void CopyNodeStats(std::vector<CNodeStats>& vstats);

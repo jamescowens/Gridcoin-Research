@@ -1017,7 +1017,8 @@ BOOST_AUTO_TEST_CASE(it_initializes_with_beacon_contract_data)
     const GRC::Cpid cpid = GRC::Cpid::Parse("00010203040506070809101112131415");
     const GRC::BeaconPayload payload(cpid, GRC::Beacon(TestKey::Public()));
 
-    BOOST_CHECK_EQUAL(payload.m_version, GRC::BeaconPayload::CURRENT_VERSION);
+    // The two-arg constructor produces a v2 payload (not CURRENT_VERSION which is now 3).
+    BOOST_CHECK_EQUAL(payload.m_version, (uint32_t)2);
     BOOST_CHECK(payload.m_cpid == cpid);
     BOOST_CHECK(payload.m_beacon.m_public_key == TestKey::Public());
     BOOST_CHECK_EQUAL(payload.m_beacon.m_timestamp, 0);
@@ -1132,8 +1133,11 @@ BOOST_AUTO_TEST_CASE(it_serializes_to_a_stream)
     GRC::BeaconPayload payload(cpid, beacon);
     payload.m_signature = TestKey::Signature();
 
+    // BeaconPayload(cpid, beacon) produces a v2 payload.
+    const uint32_t expected_version = 2;
+
     const CDataStream expected = CDataStream(SER_NETWORK, PROTOCOL_VERSION)
-        << GRC::BeaconPayload::CURRENT_VERSION
+        << expected_version
         << cpid
         << beacon
         << payload.m_signature;
@@ -1154,8 +1158,11 @@ BOOST_AUTO_TEST_CASE(it_deserializes_from_a_stream)
     const GRC::Beacon beacon(TestKey::Public());
     const std::vector<uint8_t> signature = TestKey::Signature();
 
+    // Test v2 payload deserialization (v2 does not include ownership proof).
+    const uint32_t v2_version = 2;
+
     CDataStream stream_add = CDataStream(SER_NETWORK, PROTOCOL_VERSION)
-        << GRC::BeaconPayload::CURRENT_VERSION
+        << v2_version
         << cpid
         << beacon
         << signature;
@@ -1165,7 +1172,7 @@ BOOST_AUTO_TEST_CASE(it_deserializes_from_a_stream)
     GRC::BeaconPayload payload;
     payload.Unserialize(stream_add, GRC::ContractAction::ADD);
 
-    BOOST_CHECK_EQUAL(payload.m_version, GRC::BeaconPayload::CURRENT_VERSION);
+    BOOST_CHECK_EQUAL(payload.m_version, v2_version);
     BOOST_CHECK(payload.m_cpid == cpid);
     BOOST_CHECK(payload.m_beacon.m_public_key == TestKey::Public());
     BOOST_CHECK_EQUAL(payload.m_beacon.m_timestamp, 0);
@@ -1181,7 +1188,7 @@ BOOST_AUTO_TEST_CASE(it_deserializes_from_a_stream)
     payload = GRC::BeaconPayload();
     payload.Unserialize(stream_remove, GRC::ContractAction::REMOVE);
 
-    BOOST_CHECK_EQUAL(payload.m_version, GRC::BeaconPayload::CURRENT_VERSION);
+    BOOST_CHECK_EQUAL(payload.m_version, v2_version);
     BOOST_CHECK(payload.m_cpid == cpid);
     BOOST_CHECK(payload.m_beacon.m_public_key == TestKey::Public());
     BOOST_CHECK_EQUAL(payload.m_beacon.m_timestamp, 0);
@@ -1193,6 +1200,157 @@ BOOST_AUTO_TEST_CASE(it_deserializes_from_a_stream)
         signature.end());
 
     BOOST_CHECK(payload.WellFormed(GRC::ContractAction::REMOVE) == true);
+}
+
+BOOST_AUTO_TEST_CASE(ownership_proof_serialization_roundtrip)
+{
+    GRC::OwnershipProof proof;
+    proof.m_master_url = "https://minecraftathome.com/minecrafthome/";
+    proof.m_account_id = 19100117;
+    proof.m_rsa_signature = {0x01, 0x02, 0x03, 0x04, 0x05};
+
+    BOOST_CHECK(!proof.Empty());
+
+    // Serialize
+    CDataStream stream(SER_NETWORK, PROTOCOL_VERSION);
+    stream << proof;
+
+    // Deserialize
+    GRC::OwnershipProof deserialized;
+    stream >> deserialized;
+
+    BOOST_CHECK_EQUAL(deserialized.m_master_url, proof.m_master_url);
+    BOOST_CHECK_EQUAL(deserialized.m_account_id, proof.m_account_id);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        deserialized.m_rsa_signature.begin(),
+        deserialized.m_rsa_signature.end(),
+        proof.m_rsa_signature.begin(),
+        proof.m_rsa_signature.end());
+}
+
+BOOST_AUTO_TEST_CASE(ownership_proof_empty_check)
+{
+    GRC::OwnershipProof empty_proof;
+    BOOST_CHECK(empty_proof.Empty());
+
+    // A proof with any field set is not empty (Empty() uses AND logic).
+    GRC::OwnershipProof partial_proof;
+    partial_proof.m_master_url = "https://example.com/";
+    BOOST_CHECK(!partial_proof.Empty());
+
+    GRC::OwnershipProof full_proof;
+    full_proof.m_master_url = "https://example.com/";
+    full_proof.m_account_id = 1;
+    full_proof.m_rsa_signature = {0x01};
+    BOOST_CHECK(!full_proof.Empty());
+}
+
+BOOST_AUTO_TEST_CASE(it_serializes_v3_payload_to_a_stream)
+{
+    const GRC::Cpid cpid = GRC::Cpid::Parse("00010203040506070809101112131415");
+    const GRC::Beacon beacon(TestKey::Public());
+
+    GRC::OwnershipProof proof;
+    proof.m_master_url = "https://example.com/project/";
+    proof.m_account_id = 42;
+    proof.m_rsa_signature = {0xAA, 0xBB, 0xCC};
+
+    GRC::BeaconPayload payload(cpid, beacon, std::move(proof));
+    payload.m_signature = TestKey::Signature();
+
+    BOOST_CHECK_EQUAL(payload.m_version, (uint32_t)3);
+    BOOST_CHECK(!payload.m_ownership_proof.Empty());
+
+    // Serialize
+    CDataStream stream(SER_NETWORK, PROTOCOL_VERSION);
+    payload.Serialize(stream, GRC::ContractAction::ADD);
+
+    // Deserialize
+    GRC::BeaconPayload deserialized;
+    deserialized.Unserialize(stream, GRC::ContractAction::ADD);
+
+    BOOST_CHECK_EQUAL(deserialized.m_version, (uint32_t)3);
+    BOOST_CHECK(deserialized.m_cpid == cpid);
+    BOOST_CHECK(deserialized.m_beacon.m_public_key == TestKey::Public());
+    BOOST_CHECK_EQUAL(deserialized.m_ownership_proof.m_master_url, "https://example.com/project/");
+    BOOST_CHECK_EQUAL(deserialized.m_ownership_proof.m_account_id, (uint32_t)42);
+    BOOST_CHECK_EQUAL(deserialized.m_ownership_proof.m_rsa_signature.size(), (size_t)3);
+}
+
+BOOST_AUTO_TEST_CASE(it_checks_v3_payload_well_formed_for_add)
+{
+    const GRC::Cpid cpid = GRC::Cpid::Parse("00010203040506070809101112131415");
+
+    GRC::OwnershipProof proof;
+    proof.m_master_url = "https://example.com/project/";
+    proof.m_account_id = 42;
+    // RSA signature must be between 64 and 1024 bytes for WellFormed()
+    proof.m_rsa_signature.resize(256, 0xAA);
+
+    GRC::BeaconPayload payload(cpid, GRC::Beacon(TestKey::Public()), GRC::OwnershipProof(proof));
+    payload.m_signature = TestKey::Signature();
+
+    // v3 ADD with valid proof should be well-formed.
+    BOOST_CHECK(payload.WellFormed(GRC::ContractAction::ADD) == true);
+
+    // v3 REMOVE should also work (proof is not required for removal).
+    BOOST_CHECK(payload.WellFormed(GRC::ContractAction::REMOVE) == true);
+}
+
+BOOST_AUTO_TEST_CASE(it_rejects_v3_add_with_empty_proof)
+{
+    const GRC::Cpid cpid = GRC::Cpid::Parse("00010203040506070809101112131415");
+
+    // Create v3 payload with empty proof — should fail WellFormed for ADD.
+    GRC::OwnershipProof empty_proof;
+    GRC::BeaconPayload payload(cpid, GRC::Beacon(TestKey::Public()), std::move(empty_proof));
+    payload.m_signature = TestKey::Signature();
+
+    BOOST_CHECK(payload.WellFormed(GRC::ContractAction::ADD) == false);
+}
+
+BOOST_AUTO_TEST_CASE(it_rejects_v3_add_with_short_rsa_signature)
+{
+    const GRC::Cpid cpid = GRC::Cpid::Parse("00010203040506070809101112131415");
+
+    GRC::OwnershipProof proof;
+    proof.m_master_url = "https://example.com/project/";
+    proof.m_account_id = 42;
+    proof.m_rsa_signature.resize(10, 0xAA); // Too short (< 64 bytes)
+
+    GRC::BeaconPayload payload(cpid, GRC::Beacon(TestKey::Public()), std::move(proof));
+    payload.m_signature = TestKey::Signature();
+
+    BOOST_CHECK(payload.WellFormed(GRC::ContractAction::ADD) == false);
+}
+
+BOOST_AUTO_TEST_CASE(it_includes_ownership_proof_in_v3_hash)
+{
+    const GRC::Cpid cpid = GRC::Cpid::Parse("00010203040506070809101112131415");
+    const GRC::Beacon beacon(TestKey::Public());
+
+    GRC::OwnershipProof proof1;
+    proof1.m_master_url = "https://example.com/project/";
+    proof1.m_account_id = 42;
+    proof1.m_rsa_signature.resize(256, 0xAA);
+
+    GRC::OwnershipProof proof2;
+    proof2.m_master_url = "https://example.com/project/";
+    proof2.m_account_id = 43; // Different account ID
+    proof2.m_rsa_signature.resize(256, 0xAA);
+
+    GRC::BeaconPayload payload1(cpid, beacon, std::move(proof1));
+    GRC::BeaconPayload payload2(cpid, beacon, std::move(proof2));
+
+    // Hash the payloads using SER_GETHASH (which includes the ownership proof).
+    CHashWriter hasher1(SER_GETHASH, PROTOCOL_VERSION);
+    payload1.Serialize(hasher1, GRC::ContractAction::UNKNOWN);
+
+    CHashWriter hasher2(SER_GETHASH, PROTOCOL_VERSION);
+    payload2.Serialize(hasher2, GRC::ContractAction::UNKNOWN);
+
+    // Different ownership proofs should produce different hashes.
+    BOOST_CHECK(hasher1.GetHash() != hasher2.GetHash());
 }
 
 BOOST_AUTO_TEST_CASE(beaconstorage_testnet_test)

@@ -9,7 +9,7 @@
 // network protocol versioning
 //
 //! The current protocol version
-static const int PROTOCOL_VERSION = 180327;
+static const int PROTOCOL_VERSION = 180329;
 
 //! Note that there may be special logic implemented for
 //! a hard fork that actually disconnects nodes less than
@@ -18,13 +18,10 @@ static const int PROTOCOL_VERSION = 180327;
 //! DISCONNECT_OLD_VERSION_AFTER_GRACE_PERIOD to true.
 static const bool DISCONNECT_OLD_VERSION_AFTER_GRACE_PERIOD = true;
 
-//! This is the number of blocks for the disconnect grace period if
-//! DISCONNECT_OLD_VERSION_AFTER_GRACE_PERIOD is true. If it is false, this
-//! is inoperative.
-static const int DISCONNECT_GRACE_PERIOD = 900 * 7;
+//! The disconnect grace period is now per-network in Consensus::Params::ProtocolVersionGracePeriod.
 
 //! Disconnect from peers older than this proto version. This is absolute.
-static const int MIN_PEER_PROTO_VERSION = 180326;
+static const int MIN_PEER_PROTO_VERSION = 180327;
 
 //! initial proto version, to be increased after version/verack negotiation.
 static const int INIT_PROTO_VERSION = 180275;

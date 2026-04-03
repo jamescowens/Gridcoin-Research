@@ -1,242 +1,150 @@
-# macOS Build Instructions and Notes
+# Building Gridcoin for macOS
 
-**Updated for MacOS [11.2](https://www.apple.com/macos/big-sur/)**
+This guide describes how to build the Gridcoin macOS client (Qt6) from source. These instructions match the official build process used in our CI/CD pipelines.
 
-This guide describes how to build gridcoinresearchd, command-line utilities, and GUI on macOS
+## Automatic Build Script
 
-**Note:** The following is for Intel Macs only!
-
-## Preparation
-The commands in this guide should be executed in a Terminal application.
-macOS comes with a built-in Terminal located in:
+We have created a fairly comprehensive and easy to use build script that automates the macOS build (among other targets), ***build_targets.sh***, and its helper script, ***install_dependencies.sh***.
 
 ```
-/Applications/Utilities/Terminal.app
+./build_targets.sh -h
+Usage: ./build_targets.sh [OPTIONS]
+
+Options:
+  TARGET=<target>     Select build target. Options: native, depends, win64, all.
+                      Default: all
+  BUILD_TYPE=<type>   Set the CMake build type. Options: Release, Debug, RelWithDebInfo.
+                      Default: RelWithDebInfo
+  CLEAN_BUILD=<bool>  Force a clean build even if executables exist. Options: true, false.
+                      Default: false
+  SKIP_DEPS=<bool>    Skip installing system dependencies (step 1). Options: true, false.
+                      Default: false
+  USE_CCACHE=<bool>   Enable ccache compiler launcher. Options: true, false.
+                      Default: false
+  USE_QT6=<bool>      Use Qt6 for Linux Native build. Options: true, false.
+                      Default: true (Set to false for Qt5)
+  PARALLEL=<int>      Specify number of build threads to use (i.e. -j X).
+                      Default: number of cpu threads reported by OS
+  CC=<path>           Override C compiler for Native Linux build.
+                      (e.g., CC=/usr/bin/gcc-13).
+  CXX=<path>          Override C++ compiler for Native Linux build.
+                      (e.g., CXX=/usr/bin/g++-13).
+  --help, -h          Show this help message.
 ```
-### 1. Xcode Command Line Tools
 
-The Xcode Command Line Tools are a collection of build tools for macOS.
-These tools must be installed in order to build Gridcoin from source.
+**macOS 14 (Sonoma) or newer is required.**
 
-To install, run the following command from your terminal:
+If you use the build helper script above:
 
-```shell
+1. Ensure that you clone the repo and select the desired branch using step 3 below (if not already done)
+2. Run the build_targets.sh helper script. Here is an example command:
+
+```
+./build_targets.sh TARGET=macos BUILD_TYPE=Release CLEAN_BUILD=true USE_CCACHE=true
+```
+
+3. Run the application using step 6 below and/or create the installation package via step 7.
+
+## Step-by-step
+
+### Prerequisites
+
+1. macOS 14 (Sonoma) or newer is required.
+2. Xcode Command Line Tools: Install these by running the following in your terminal:
+
+```
 xcode-select --install
 ```
 
-Upon running the command, you should see a popup appear.
-Click on `Install` to continue the installation process.
+3. Homebrew: The standard package manager for macOS (see [https://brew.sh](https://brew.sh)). If you don't have it, install it by running the following in your terminal:
 
-### 2. Homebrew Package Manager
-
-Homebrew is a package manager for macOS that allows one to install packages from the command line easily.
-While several package managers are available for macOS, this guide will focus on Homebrew as it is the most popular.
-Since the examples in this guide which walk through the installation of a package will use Homebrew, it is recommended that you install it to follow along.
-Otherwise, you can adapt the commands to your package manager of choice.
-
-To install the Homebrew package manager, see: https://brew.sh
-
-Note: If you run into issues while installing Homebrew or pulling packages, refer to [Homebrew's troubleshooting page](https://docs.brew.sh/Troubleshooting).
-
-### 3. Install Required Dependencies
-
-The first step is to download the required dependencies.
-These dependencies represent the packages required to get a barebones installation up and running.
-To install, run the following from your terminal:
-
-```shell
-brew install cmake
-# or
-brew install automake libtool
-
-brew install berkeley-db@5 boost curl leveldb libzip openssl pkgconf secp256k1
-export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/usr/local/opt/openssl@3/lib/pkgconfig"
+```
+/bin/bash -c "$(curl -fsSL [https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh](https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh))"
 ```
 
-### 4. Clone Gridcoin repository
+### 1. Install Dependencies
 
-`git` should already be installed by default on your system.
-Now that all the required dependencies are installed, let's clone the Gridcoin repository to a directory.
-All build scripts and commands will run from this directory.
+We use Homebrew to install the required libraries (Qt6, Boost, OpenSSL, etc.) and build tools.
 
-``` bash
-git clone https://github.com/gridcoin-community/Gridcoin-Research
+Open your terminal and run:
+
+```
+brew update
+brew install qt boost openssl libevent miniupnpc qrencode libzip ccache cmake
+```
+
+Note: Homebrew installs Qt6 by default when you request qt.
+
+### 2. Get the Source Code
+
+Clone the repository and enter the directory (substitute the desired branch if not master):
+
+```
+git clone [https://github.com/gridcoin-community/Gridcoin-Research.git](https://github.com/gridcoin-community/Gridcoin-Research.git)
 cd Gridcoin-Research
 git checkout master
 ```
 
-### 5. Install Optional Dependencies
+### 3. Configure the Build
 
-#### GUI Dependencies
+We need to tell CMake where Homebrew installed Qt and OpenSSL. We do this dynamically using brew --prefix.
+Create a build directory and configure the project by running the following in the terminal:
 
-###### Qt
+```
+# Set paths for Homebrew libraries
+QT6_PATH=$(brew --prefix qt)
+OPENSSL_ROOT=$(brew --prefix openssl)
 
-Gridcoin includes a GUI built with the cross-platform Qt Framework.
-To compile the GUI, we need to install `qt@5`.
-Skip if you don't intend to use the GUI.
-
-``` bash
-brew install qt@5
+# Configure CMake
+cmake -B build \
+  -DCMAKE_PREFIX_PATH="$QT6_PATH" \
+  -DENABLE_GUI=ON \
+  -DENABLE_QRENCODE=ON \
+  -DENABLE_UPNP=ON \
+  -DDEFAULT_UPNP=ON \
+  -DENABLE_TESTS=ON \
+  -DUSE_QT6=ON \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT" \
+  -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+  -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 ```
 
-Ensure that the `qt@5` package is installed, not the `qt` package.
-If 'qt' is installed, the build process will fail.
-if installed, remove the `qt` package with the following command:
+#### Build Types
+ * RelWithDebInfo (Recommended): Optimized, but includes debug symbols.
+ * Release: Fully optimized, smaller binaries.
+ * Debug: Unoptimized, useful for development and debugging.
 
-``` bash
-brew uninstall qt
+### 4. Compile
+
+Start the compilation process. This will use all available CPU cores automatically. Note that Gridcoin compilationi requires about 1 GB per core when parallel compiling, so if you are limited on memory, you may want to substitute a lower number than is automatically determined by sysctl -n hw.logicalcpu.
+
+```
+cmake --build build_macos -j $(sysctl -n hw.logicalcpu)
 ```
 
-Note: Building with Qt binaries downloaded from the Qt website is not officially supported.
-See the notes in [Bitcoin#7714](https://github.com/bitcoin/bitcoin/issues/7714).
+### 5. Run Tests (Optional)
 
-###### qrencode
+It is highly recommended to run the self-tests to ensure the binary is functioning correctly.
 
-The GUI can encode addresses in a QR Code. To build in QR support for the GUI, install `qrencode`.
-Skip if not using the GUI or don't want QR code functionality.
-
-``` bash
-brew install qrencode
 ```
----
-
-#### Port Mapping Dependencies
-
-###### miniupnpc
-
-miniupnpc may be used for UPnP port mapping.
-Skip if you do not need this functionality.
-
-``` bash
-brew install miniupnpc
+ctest --test-dir build_macos --output-on-failure
 ```
 
----
+### 6. Run the Application
 
-#### Test Suite Dependencies
+You can run the application directly from the build folder:
 
-There is an included test suite that is useful for testing code changes when developing.
-To run the test suite (recommended), you will need to have the following packages installed:
-
-* With CMake:
-
-  ```bash
-  brew install vim
-  ```
-
-* With Autotools:
-
-  ```bash
-  brew install python
-  ```
-
----
-
-#### Deploy Dependencies
-
-You can deploy a `.dmg` containing the Gridcoin application using `make deploy`.
-This command depends on a couple of python packages, so it is required that you have `python` installed.
-
-Ensuring that `python` is installed, you can install the deploy dependencies by running the following commands in your terminal:
-
-``` bash
-brew install librsvg
+```
+./build_macos/src/qt/gridcoinresearch
 ```
 
-``` bash
-pip3 install ds_store mac_alias
+### 7. Create the DMG Installer (Optional)
+
+If you want to create a distributable disk image (.dmg), you can use CPack (included with CMake).
+
+```
+cpack -G DragNDrop --config build/CPackConfig.cmake -B release_packages
 ```
 
-## Build Gridcoin
-
-1. Prepare the assembly code (requires Perl):
-
-   ```shell
-   pushd src
-   ../contrib/nomacro.pl
-   popd
-   ```
-
-2. Configure and build the Gridcoin binaries:
-
-   You can enable the GUI build by passing `-DENABLE_GUI=ON` to CMake or
-   `--with-gui=qt5` to the configure script.
-
-   * With CMake:
-
-     ```shell
-     mkdir build && cd build
-
-     cmake ..
-     # or, to configure with GUI
-     cmake .. -DENABLE_GUI=ON -DQt5_DIR=/usr/local/opt/qt5/lib/cmake/Qt5
-
-     cmake --build .
-     ```
-   * With Autotools:
-
-     ```shell
-     ./autogen.sh
-     ./configure
-     make
-     ```
-
-3. It is recommended to build and run the unit tests:
-
-   * With CMake:
-
-     ```shell
-     cmake .. -DENABLE_TESTS=ON
-     cmake --build .
-     ctest .
-     ```
-
-   * With Autotools:
-
-     ```shell
-     make check
-     ```
-
-4. You can also create a  `.dmg` that contains the `.app` bundle (optional):
-
-   * With Autotools:
-
-     ```shell
-     make deploy
-     ```
-
-## Running
-
-The daemon binary is placed in _src/_ and the GUI client is found in _src/qt/_.
-For example, to run the GUI client for production or testnet:
-
-**Important:** [Please read this before using testnet.](https://gridcoin.us/wiki/testnet)
-
-```shell
-./src/qt/gridcoinresearch
-./src/qt/gridcoinresearch -testnet
-./src/qt/gridcoinresearch -printtoconsole -debug -testnet
-```
-
-The first time you run Gridcoin, it will start downloading the blockchain. This process could
-take several hours.
-
-By default, blockchain and wallet data files will be stored in:
-
-``` bash
-/Users/${USER}/Library/Application Support/GridcoinResearch
-```
-
-Before running, you may create an empty configuration file:
-```shell
-mkdir -p "/Users/${USER}/Library/Application Support/GridcoinResearch"
-
-touch "/Users/${USER}/Library/Application Support/GridcoinResearch/gridcoinresearch.conf"
-
-chmod 600 "/Users/${USER}/Library/Application Support/GridcoinResearch/gridcoinresearch.conf"
-```
-
-You can monitor the download process by looking at the debug.log file:
-```shell
-tail -f $HOME/Library/Application\ Support/GridcoinResearch/debug.log
-```
+The resulting .dmg file will be located in the release_packages directory.

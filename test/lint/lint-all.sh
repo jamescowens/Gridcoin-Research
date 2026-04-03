@@ -19,7 +19,6 @@ LINTALL=$(basename "${BASH_SOURCE[0]}")
 EXIT_CODE=0
 
 IGNORE_EXIT=(
-  "lint-circular-dependencies.sh"
 )
 
 for f in "${SCRIPTDIR}"/lint-*.sh; do

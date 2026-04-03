@@ -222,9 +222,9 @@ public:
     //!
     enum class Kind : unsigned char
     {
-        INVALID  = 0x00, //!< An empty or invalid CPID.
-        INVESTOR = 0x01, //!< A CPID that represents a non-researcher.
-        CPID     = 0x02, //!< A valid external CPID.
+        INVALID     = 0x00, //!< An empty or invalid CPID.
+        NONCRUNCHER = 0x01, //!< A CPID that represents a non-researcher.
+        CPID        = 0x02, //!< A valid external CPID.
     };
 
     //!
@@ -242,14 +242,14 @@ public:
 
     //!
     //! \brief A tag type that describes a CPID that represents a non-researcher
-    //! (an investor without a BOINC CPID).
+    //! (a non-cruncher, i.e. no CPID).
     //!
-    struct Investor
+    struct Noncruncher
     {
         //!
-        //! \brief Get the string representation of an investor.
+        //! \brief Get the string representation of an non-cruncher.
         //!
-        //! \return The string literal "INVESTOR".
+        //! \return The string literal "NONCRUNCHER".
         //!
         std::string ToString() const;
     };
@@ -273,10 +273,10 @@ public:
     //!
     //! \brief Initialize a mining ID that represents a non-researcher.
     //!
-    static MiningId ForInvestor()
+    static MiningId ForNoncruncher()
     {
         MiningId miningId;
-        miningId.m_variant = Investor();
+        miningId.m_variant = Noncruncher();
 
         return miningId;
     }
@@ -284,7 +284,7 @@ public:
     //!
     //! \brief Create a mining ID object from its string representation.
     //!
-    //! \param input Hex-encoded bytes of a CPID, or the string "INVESTOR".
+    //! \param input Hex-encoded bytes of a CPID, or the string "NONCRUNCHER".
     //!
     //! \return A mining ID object parsed from the input.
     //!
@@ -362,7 +362,7 @@ public:
     //!
     //! \brief Determine whether the mining ID is valid.
     //!
-    //! \return \c true if the object represents a valid CPID or an investor.
+    //! \return \c true if the object represents a valid CPID or a non-cruncher.
     //!
     bool Valid() const
     {
@@ -387,8 +387,8 @@ public:
     //!
     //! \brief Get the string representation of the mining ID.
     //!
-    //! \return Hex-encoded bytes of the MD5 hash for a CPID, "INVESTOR" for
-    //! an investor, or an empty string for invalid mining IDs.
+    //! \return Hex-encoded bytes of the MD5 hash for a CPID, "NONCRUNCHER" for
+    //! a non-cruncher, or an empty string for invalid mining IDs.
     //!
     std::string ToString() const;
 
@@ -422,8 +422,8 @@ public:
         ::Unserialize(stream, kind);
 
         switch (static_cast<Kind>(kind)) {
-            case Kind::INVESTOR:
-                m_variant = Investor();
+            case Kind::NONCRUNCHER:
+                m_variant = Noncruncher();
                 break;
             case Kind::CPID:
                 {
@@ -443,7 +443,7 @@ private:
     //!
     //! \brief Stores the various states that a mining ID may exist in.
     //!
-    std::variant<Invalid, Investor, Cpid> m_variant;
+    std::variant<Invalid, Noncruncher, Cpid> m_variant;
 }; // MiningId
 } // namespace GRC
 

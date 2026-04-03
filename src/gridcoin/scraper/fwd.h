@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2021 The Gridcoin developers
+// Copyright (c) 2014-2025 The Gridcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -9,6 +9,7 @@
 #include <vector>
 #include <unordered_map>
 
+#include "gridcoin/fwd.h"
 #include "gridcoin/scraper/scraper_net.h"
 #include "util.h"
 #include "streams.h"
@@ -159,6 +160,12 @@ struct ConvergedManifest
      */
     std::vector<std::string> vExcludedProjects;
 
+    //!
+    //! \brief The list of projects that have been greylisted, with the greylisting status, indicating whether they are
+    //! manually or automatically greylisted.
+    //!
+    std::vector<std::pair<std::string, GRC::ProjectEntryStatus>> vGreylistedProjects;
+
     /** Populates the part pointers map in the convergence */
     bool PopulateConvergedManifestPartPtrsMap();
 
@@ -220,6 +227,14 @@ struct ScraperPendingBeaconEntry
     uint160 key_id;
     int64_t timestamp;
 
+    // v3 ownership proof fields — populated locally from the beacon registry,
+    // NOT transmitted in manifests. Serialization methods remain unchanged.
+    bool has_ownership_proof = false;
+    std::string ownership_master_url;
+    uint32_t ownership_account_id = 0;
+    std::vector<uint8_t> ownership_rsa_signature;
+    std::string beacon_public_key_hex;
+
     template<typename Stream>
     void Serialize(Stream& stream) const
     {
@@ -250,6 +265,11 @@ struct BeaconConsensus
     uint256 nBlockHash;
     ScraperBeaconMap mBeaconMap;
     ScraperPendingBeaconMap mPendingMap;
+
+    //! Project RSA public keys for ownership proof verification.
+    //! Key: project master_url, Value: PEM-encoded RSA public key.
+    //! Populated from converged ProjectPublicKeys manifest part.
+    std::map<std::string, std::string> mProjectPublicKeys;
 };
 
 /** Small structure to define the fields for verified beacons and (un)serialization */
@@ -276,13 +296,32 @@ struct ScraperVerifiedBeacons
     }
 };
 
+/**
+ * @brief Used to hold total credits across ALL cpids for each project. This is to support auto greylisting.
+ */
+struct ScraperProjectsAllCpidTotalCredit
+{
+    int64_t m_timestamp = GetAdjustedTime();
+    std::map<std::string, double> m_all_cpid_total_credit_map;
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action)
+    {
+        READWRITE(m_timestamp);
+        READWRITE(m_all_cpid_total_credit_map);
+    }
+};
+
 /** A combination of scraper stats and verified beacons. For convenience in the interface between the scraper and the
  * quorum/superblock code.
  */
-struct ScraperStatsAndVerifiedBeacons
+struct ScraperStatsVerifiedBeaconsTotalCredits
 {
     ScraperStats mScraperStats;
     ScraperPendingBeaconMap mVerifiedMap;
+    std::map<std::string, double> m_total_credit_map;
 };
 
 #endif // GRIDCOIN_SCRAPER_FWD_H

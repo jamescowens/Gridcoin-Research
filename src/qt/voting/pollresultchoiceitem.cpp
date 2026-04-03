@@ -24,8 +24,8 @@ QString CalculateBarStyle(const double ratio)
         (1 - ratio) * BAR_START_COLOR.blue() + ratio * BAR_END_COLOR.blue());
 
     return QString(CHUNK_STYLE_TEMPLATE)
-        .arg(BAR_START_COLOR.name())
-        .arg(end_color.name());
+        .arg(BAR_START_COLOR.name(),
+             end_color.name());
 }
 } // Anonymous namespace
 

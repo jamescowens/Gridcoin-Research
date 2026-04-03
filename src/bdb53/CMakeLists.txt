@@ -31,12 +31,21 @@ if(WIN32)
 endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     list(APPEND BDB_FLAGS
-        CFLAGS=-Wno-implicit-function-declaration
+        "CFLAGS=-Wno-implicit-function-declaration -Wno-incompatible-pointer-types"
     )
 endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     list(APPEND BDB_FLAGS
-        CFLAGS=-Wno-error=implicit-int
+        "CFLAGS=-Wno-error=implicit-int -Wno-incompatible-pointer-types"
+    )
+endif()
+if(CMAKE_CROSSCOMPILING)
+    list(APPEND BDB_FLAGS
+        "--host=${CMAKE_C_COMPILER_TARGET}"
+        "CC=${CMAKE_C_COMPILER}"
+        "CXX=${CMAKE_CXX_COMPILER}"
+        "AR=${CMAKE_AR}"
+        "RANLIB=${CMAKE_RANLIB}"
     )
 endif()
 

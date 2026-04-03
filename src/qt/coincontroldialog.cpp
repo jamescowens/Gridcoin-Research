@@ -27,13 +27,15 @@
 
 using namespace std;
 
-CoinControlDialog::CoinControlDialog(QWidget* parent, CCoinControl* coinControl, QList<qint64>* payAmounts)
+CoinControlDialog::CoinControlDialog(QWidget* parent, CCoinControl* coinControl, QList<qint64>* payAmounts,
+                                     bool fSubtractFeeFromAmount)
                : QDialog(parent)
                , m_inputSelectionLimit(GetMaxInputsForConsolidationTxn())
                , ui(new Ui::CoinControlDialog)
                , coinControl(coinControl)
                , payAmounts(payAmounts)
                , model(nullptr)
+               , m_fSubtractFeeFromAmount(fSubtractFeeFromAmount)
 {
     assert(coinControl != nullptr && payAmounts != nullptr);
 
@@ -158,7 +160,7 @@ void CoinControlDialog::setModel(WalletModel *model)
     {
         updateView();
         //updateLabelLocked();
-        CoinControlDialog::updateLabels(model, coinControl, payAmounts, this);
+        CoinControlDialog::updateLabels(model, coinControl, payAmounts, this, m_fSubtractFeeFromAmount);
     }
 }
 
@@ -226,7 +228,7 @@ void CoinControlDialog::buttonSelectAllClicked()
        ui->selectAllPushButton->setText(tr("Select None"));
     }
 
-    CoinControlDialog::updateLabels(model, coinControl, payAmounts, this);
+    CoinControlDialog::updateLabels(model, coinControl, payAmounts, this, m_fSubtractFeeFromAmount);
     showHideConsolidationReadyToSend();
 }
 
@@ -353,7 +355,7 @@ bool CoinControlDialog::filterInputsByValue(const bool& less, const CAmount& inp
     // Re-enable update signals.
     ui->treeWidget->setEnabled(true);
 
-    CoinControlDialog::updateLabels(model, coinControl, payAmounts, this);
+    CoinControlDialog::updateLabels(model, coinControl, payAmounts, this, m_fSubtractFeeFromAmount);
 
     // If the number of inputs selected was limited, then true is returned.
     return culled_inputs;
@@ -491,19 +493,25 @@ void CoinControlDialog::clipboardQuantity()
 // copy label "Amount" to clipboard
 void CoinControlDialog::clipboardAmount()
 {
-    QApplication::clipboard()->setText(ui->coinControlAmountLabel->text().left(ui->coinControlAmountLabel->text().indexOf(" ")));
+    QString text = ui->coinControlAmountLabel->text().left(ui->coinControlAmountLabel->text().indexOf(" "));
+    text.remove(BitcoinUnits::THIN_SPACE);
+    QApplication::clipboard()->setText(text);
 }
 
 // copy label "Fee" to clipboard
 void CoinControlDialog::clipboardFee()
 {
-    QApplication::clipboard()->setText(ui->coinControlFeeLabel->text().left(ui->coinControlFeeLabel->text().indexOf(" ")));
+    QString text = ui->coinControlFeeLabel->text().left(ui->coinControlFeeLabel->text().indexOf(" "));
+    text.remove(BitcoinUnits::THIN_SPACE);
+    QApplication::clipboard()->setText(text);
 }
 
 // copy label "After fee" to clipboard
 void CoinControlDialog::clipboardAfterFee()
 {
-    QApplication::clipboard()->setText(ui->coinControlAfterFeeLabel->text().left(ui->coinControlAfterFeeLabel->text().indexOf(" ")));
+    QString text = ui->coinControlAfterFeeLabel->text().left(ui->coinControlAfterFeeLabel->text().indexOf(" "));
+    text.remove(BitcoinUnits::THIN_SPACE);
+    QApplication::clipboard()->setText(text);
 }
 
 // copy label "Bytes" to clipboard
@@ -521,7 +529,9 @@ void CoinControlDialog::clipboardLowOutput()
 // copy label "Change" to clipboard
 void CoinControlDialog::clipboardChange()
 {
-    QApplication::clipboard()->setText(ui->coinControlChangeLabel->text().left(ui->coinControlChangeLabel->text().indexOf(" ")));
+    QString text = ui->coinControlChangeLabel->text().left(ui->coinControlChangeLabel->text().indexOf(" "));
+    text.remove(BitcoinUnits::THIN_SPACE);
+    QApplication::clipboard()->setText(text);
 }
 
 // treeview: sort
@@ -588,7 +598,7 @@ void CoinControlDialog::viewItemChanged(QTreeWidgetItem* item, int column)
         // selection changed -> update labels
         if (ui->treeWidget->isEnabled()) // do not update on every click for (un)select all
         {
-            CoinControlDialog::updateLabels(model, coinControl, payAmounts, this);
+            CoinControlDialog::updateLabels(model, coinControl, payAmounts, this, m_fSubtractFeeFromAmount);
         }
     }
 
@@ -611,7 +621,8 @@ void CoinControlDialog::viewItemChanged(QTreeWidgetItem* item, int column)
 void CoinControlDialog::updateLabels(WalletModel *model,
                                      CCoinControl *coinControl,
                                      QList<qint64>* payAmounts,
-                                     QDialog* dialog)
+                                     QDialog* dialog,
+                                     bool fSubtractFeeFromAmount)
 {
     if (!model) return;
 
@@ -620,7 +631,7 @@ void CoinControlDialog::updateLabels(WalletModel *model,
     bool fLowOutput = false;
     bool fDust = false;
     CTransaction txDummy;
-    for (const qint64& amount : *payAmounts) {
+    for (const qint64& amount : std::as_const(*payAmounts)) {
         nPayAmount += amount;
 
         if (amount > 0)
@@ -687,7 +698,11 @@ void CoinControlDialog::updateLabels(WalletModel *model,
 
         if (nPayAmount > 0)
         {
-            nChange = nAmount - nPayFee - nPayAmount;
+            // When subtracting fee from amount, the fee is absorbed by the
+            // recipients rather than coming from the change output.
+            nChange = fSubtractFeeFromAmount
+                ? nAmount - nPayAmount
+                : nAmount - nPayFee - nPayAmount;
 
             // if sub-cent change is required, the fee must be raised to at least CTransaction::nMinTxFee
             if (nPayFee < CENT && nChange > 0 && nChange < CENT)
@@ -749,8 +764,8 @@ void CoinControlDialog::updateLabels(WalletModel *model,
 
     // tool tips
     l5->setToolTip(tr("This label turns red, if the transaction size is bigger than 10000 bytes.\n\n This means a fee of at least %1 per kb is required.\n\n Can vary +/- 1 Byte per input.").arg(BitcoinUnits::formatWithUnit(nDisplayUnit, CENT)));
-    l7->setToolTip(tr("This label turns red, if any recipient receives an amount smaller than %1.\n\n This means a fee of at least %2 is required. \n\n Amounts below 0.546 times the minimum relay fee are shown as DUST.").arg(BitcoinUnits::formatWithUnit(nDisplayUnit, CENT)).arg(BitcoinUnits::formatWithUnit(nDisplayUnit, CENT)));
-    l8->setToolTip(tr("This label turns red, if the change is smaller than %1.\n\n This means a fee of at least %2 is required.").arg(BitcoinUnits::formatWithUnit(nDisplayUnit, CENT)).arg(BitcoinUnits::formatWithUnit(nDisplayUnit, CENT)));
+    l7->setToolTip(tr("This label turns red, if any recipient receives an amount smaller than %1.\n\n This means a fee of at least %2 is required. \n\n Amounts below 0.546 times the minimum relay fee are shown as DUST.").arg(BitcoinUnits::formatWithUnit(nDisplayUnit, CENT), BitcoinUnits::formatWithUnit(nDisplayUnit, CENT)));
+    l8->setToolTip(tr("This label turns red, if the change is smaller than %1.\n\n This means a fee of at least %2 is required.").arg(BitcoinUnits::formatWithUnit(nDisplayUnit, CENT), BitcoinUnits::formatWithUnit(nDisplayUnit, CENT)));
     dialog->findChild<QLabel *>("coinControlBytesTextLabel")    ->setToolTip(l5->toolTip());
     dialog->findChild<QLabel *>("coinControlLowOutputTextLabel")->setToolTip(l7->toolTip());
     dialog->findChild<QLabel *>("coinControlChangeTextLabel")   ->setToolTip(l8->toolTip());
@@ -769,7 +784,7 @@ void CoinControlDialog::updateView()
     ui->treeWidget->setEnabled(false); // performance, otherwise updateLabels would be called for every checked checkbox
     ui->treeWidget->setAlternatingRowColors(!treeMode);
     QFlags<Qt::ItemFlag> flgCheckbox=Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable;
-    QFlags<Qt::ItemFlag> flgTristate=Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsTristate;
+    QFlags<Qt::ItemFlag> flgTristate=Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsAutoTristate;
 
     int nDisplayUnit = BitcoinUnits::BTC;
     if (model && model->getOptionsModel())
@@ -833,7 +848,7 @@ void CoinControlDialog::updateView()
             if (!(sAddress == sWalletAddress)) // change
             {
                 // tooltip from where the change comes from
-                itemOutput->setToolTip(COLUMN_LABEL, tr("change from %1 (%2)").arg(sWalletLabel).arg(sWalletAddress));
+                itemOutput->setToolTip(COLUMN_LABEL, tr("change from %1 (%2)").arg(sWalletLabel, sWalletAddress));
                 itemOutput->setText(COLUMN_LABEL, tr("(change)"));
                 itemOutput->setText(COLUMN_CHANGE_BOOL, QString::number(1));
             }

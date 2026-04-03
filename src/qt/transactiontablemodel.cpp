@@ -172,7 +172,7 @@ public:
                     {
                         parent->beginInsertRows(QModelIndex(), lowerIndex, lowerIndex+toInsert.size()-1);
                         int insert_idx = lowerIndex;
-                        for (const TransactionRecord& rec : toInsert) {
+                        for (const TransactionRecord& rec : std::as_const(toInsert)) {
                             cachedWallet.insert(insert_idx, rec);
                             insert_idx += 1;
                         }
@@ -406,25 +406,25 @@ QString TransactionTableModel::formatTxType(const TransactionRecord *wtx) const
         {
             switch (wtx->status.generated_type)
             {
-            case MinedType::POS:
+            case GRC::MinedType::POS:
                 return tr("Mined - PoS");
-            case MinedType::POR:
+            case GRC::MinedType::POR:
                 return tr("Mined - PoS+RR");
-            case MinedType::ORPHANED:
+            case GRC::MinedType::ORPHANED:
                 return tr("Mined - Orphaned");
-            case MinedType::POS_SIDE_STAKE_RCV:
+            case GRC::MinedType::POS_SIDE_STAKE_RCV:
                 return tr("PoS Side Stake Received");
-            case MinedType::POR_SIDE_STAKE_RCV:
+            case GRC::MinedType::POR_SIDE_STAKE_RCV:
                 return tr("PoS+RR Side Stake Received");
-            case MinedType::POS_SIDE_STAKE_SEND:
+            case GRC::MinedType::POS_SIDE_STAKE_SEND:
                 return tr("PoS Side Stake Sent");
-            case MinedType::POR_SIDE_STAKE_SEND:
+            case GRC::MinedType::POR_SIDE_STAKE_SEND:
                 return tr("PoS+RR Side Stake Sent");
-            case MinedType::MRC_RCV:
+            case GRC::MinedType::MRC_RCV:
                 return tr("MRC Payment Received");
-            case MinedType::MRC_SEND:
+            case GRC::MinedType::MRC_SEND:
                 return tr("MRC Payment Sent");
-            case MinedType::SUPERBLOCK:
+            case GRC::MinedType::SUPERBLOCK:
                 return tr("Mined - Superblock");
             default:
                 return tr("Mined - Unknown");
@@ -454,25 +454,25 @@ QVariant TransactionTableModel::txAddressDecoration(const TransactionRecord *wtx
     {
         switch (wtx->status.generated_type)
         {
-        case MinedType::POS:
+        case GRC::MinedType::POS:
             return QIcon(":/icons/tx_pos");
-        case MinedType::POR:
+        case GRC::MinedType::POR:
             return QIcon(":/icons/tx_por");
-        case MinedType::ORPHANED:
+        case GRC::MinedType::ORPHANED:
             return QIcon(":/icons/transaction_conflicted");
-        case MinedType::POS_SIDE_STAKE_RCV:
+        case GRC::MinedType::POS_SIDE_STAKE_RCV:
             return QIcon(":/icons/tx_pos_ss");
-        case MinedType::POR_SIDE_STAKE_RCV:
+        case GRC::MinedType::POR_SIDE_STAKE_RCV:
             return QIcon(":/icons/tx_por_ss");
-        case MinedType::POS_SIDE_STAKE_SEND:
+        case GRC::MinedType::POS_SIDE_STAKE_SEND:
             return QIcon(":/icons/tx_pos_ss_sent");
-        case MinedType::POR_SIDE_STAKE_SEND:
+        case GRC::MinedType::POR_SIDE_STAKE_SEND:
             return QIcon(":/icons/tx_por_ss_sent");
-        case MinedType::MRC_RCV:
+        case GRC::MinedType::MRC_RCV:
             return QIcon(":/icons/tx_por_ss");
-        case MinedType::MRC_SEND:
+        case GRC::MinedType::MRC_SEND:
             return QIcon(":/icons/tx_por_ss_sent");
-        case MinedType::SUPERBLOCK:
+        case GRC::MinedType::SUPERBLOCK:
             return QIcon(":/icons/superblock");
         default:
             return QIcon(":/icons/transaction_0");
@@ -596,7 +596,68 @@ QString TransactionTableModel::formatTooltip(const TransactionRecord *rec) const
     {
         tooltip += QString(" ") + formatTxToAddress(rec, true);
     }
+
+    QString explanation = formatTxTypeExplanation(rec);
+    if (!explanation.isEmpty()) {
+        tooltip += QString(": ") + explanation;
+    }
+
     return tooltip;
+}
+
+QString TransactionTableModel::formatTxTypeExplanation(const TransactionRecord *rec) const
+{
+    if (rec->type == TransactionRecord::Generated) {
+        switch (rec->status.generated_type) {
+        case GRC::MinedType::POS:
+            return tr("Earned by staking a block (Proof of Stake).");
+        case GRC::MinedType::POR:
+            return tr("Earned by staking a block with BOINC research rewards (Proof of Stake + Research Rewards).");
+        case GRC::MinedType::SUPERBLOCK:
+            return tr("Earned by staking a superblock.");
+        case GRC::MinedType::ORPHANED:
+            return tr("This staked block was orphaned and did not become part of the chain.");
+        case GRC::MinedType::POS_SIDE_STAKE_RCV:
+            return tr("Side stake received from another staker's Proof of Stake reward.");
+        case GRC::MinedType::POR_SIDE_STAKE_RCV:
+            return tr("Side stake received from another staker's research reward.");
+        case GRC::MinedType::POS_SIDE_STAKE_SEND:
+            return tr("Your staking reward automatically allocated this side stake; no manual send occurred.");
+        case GRC::MinedType::POR_SIDE_STAKE_SEND:
+            return tr("Your research staking reward automatically allocated this side stake; no manual send occurred.");
+        case GRC::MinedType::MRC_RCV:
+            return tr("MRC payment received from a staker who included your MRC claim.");
+        case GRC::MinedType::MRC_SEND:
+            return tr("Your staked block automatically paid this MRC claim; no manual send occurred.");
+        default:
+            return tr("Mined transaction of unknown type.");
+        }
+    }
+
+    switch (rec->type) {
+    case TransactionRecord::SendToAddress:
+    case TransactionRecord::SendToOther:
+        return tr("Funds sent to another address.");
+    case TransactionRecord::RecvWithAddress:
+    case TransactionRecord::RecvFromOther:
+        return tr("Funds received.");
+    case TransactionRecord::SendToSelf:
+        return tr("Payment to yourself (e.g. change consolidation).");
+    case TransactionRecord::BeaconAdvertisement:
+        return tr("Beacon advertisement linking your CPID to your wallet.");
+    case TransactionRecord::Poll:
+        return tr("On-chain poll creation transaction.");
+    case TransactionRecord::Vote:
+        return tr("On-chain vote transaction.");
+    case TransactionRecord::Message:
+        return tr("On-chain message transaction.");
+    case TransactionRecord::MRC:
+        return tr("Manual Rewards Claim request submitted to the network.");
+    case TransactionRecord::Other:
+        return tr("Transaction with mixed inputs and outputs.");
+    default:
+        return QString();
+    }
 }
 
 QVariant TransactionTableModel::data(const QModelIndex &index, int role) const

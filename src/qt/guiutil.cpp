@@ -19,6 +19,8 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QThread>
+#include <QStandardPaths>
+#include <QRegExp>
 
 #ifdef WIN32
 #ifdef _WIN32_IE
@@ -97,8 +99,8 @@ QString formatNiceTimeOffset(qint64 secs)
         qint64 years = secs / YEAR_IN_SECONDS;
         qint64 remainder = secs % YEAR_IN_SECONDS;
         timeBehindText = QObject::tr("%1 and %2")
-            .arg(QObject::tr("%n year(s)", "", years))
-            .arg(QObject::tr("%n week(s)","", round_half_up(remainder, WEEK_IN_SECONDS)));
+            .arg(QObject::tr("%n year(s)", "", years),
+                 QObject::tr("%n week(s)","", round_half_up(remainder, WEEK_IN_SECONDS)));
     }
 
     return timeBehindText;
@@ -297,12 +299,27 @@ QList<QModelIndex> getEntryData(QAbstractItemView *view, int column)
 
 fs::path qstringToBoostPath(const QString &path)
 {
+    // On Windows, QString is UTF-16 and toStdString() produces UTF-8, but boost::filesystem::path
+    // interprets narrow strings as the system code page (e.g. CP-1252), not UTF-8. Using
+    // toStdWString() stays in UTF-16, which is the native Windows path encoding and is accepted
+    // directly by boost::filesystem::path. See #2736.
+#ifdef WIN32
+    return fs::path(path.toStdWString());
+#else
     return fs::path(path.toStdString());
+#endif
 }
 
 QString boostPathToQString(const fs::path &path)
 {
+    // On Windows, path.string() converts to the system code page, but QString::fromStdString()
+    // expects UTF-8 — encoding mismatch corrupts non-ASCII characters. Using wstring() stays in
+    // UTF-16 which QString::fromStdWString() handles natively. See #2736.
+#ifdef WIN32
+    return QString::fromStdWString(path.wstring());
+#else
     return QString::fromStdString(path.string());
+#endif
 }
 
 QString getDefaultDataDirectory()
@@ -386,7 +403,7 @@ void openDebugLogfile()
 
     /* Open debug.log with the associated application */
     if (fs::exists(pathDebug))
-        QDesktopServices::openUrl(QUrl::fromLocalFile(QString::fromStdString(pathDebug.string())));
+        QDesktopServices::openUrl(QUrl::fromLocalFile(boostPathToQString(pathDebug)));
 }
 
 ToolTipToRichTextFilter::ToolTipToRichTextFilter(int size_threshold, QObject *parent) :

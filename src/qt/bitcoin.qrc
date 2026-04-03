@@ -175,12 +175,12 @@
         <file alias="gridcoin">res/images/gridcoin.svg</file>
         <file alias="about_light">res/images/about_light.svg</file>
         <file alias="gridcoin_testnet">res/images/gridcoin_testnet.svg</file>
-        <file alias="ic_investor_active">res/images/ic_investor_active.svg</file>
-        <file alias="ic_investor_inactive">res/images/ic_investor_inactive.svg</file>
         <file alias="ic_pool_active">res/images/ic_pool_active.svg</file>
         <file alias="ic_pool_inactive">res/images/ic_pool_inactive.svg</file>
         <file alias="ic_solo_active">res/images/ic_solo_active.svg</file>
         <file alias="ic_solo_inactive">res/images/ic_solo_inactive.svg</file>
+        <file alias="ic_noncruncher_active">res/images/ic_noncruncher_active.svg</file>
+        <file alias="ic_noncruncher_inactive">res/images/ic_noncruncher_inactive.svg</file>
     </qresource>
     <qresource prefix="/fonts">
         <file alias="inconsolata-regular">res/fonts/Inconsolata-Regular.ttf</file>

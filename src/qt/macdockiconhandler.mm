@@ -1,5 +1,6 @@
 #include "macdockiconhandler.h"
 
+#include <QCoreApplication>
 #include <QImageWriter>
 #include <QMenu>
 #include <QTemporaryFile>
@@ -7,8 +8,6 @@
 
 #undef slots
 #include <Cocoa/Cocoa.h>
-
-extern bool fRequestShutdown;
 
 @interface DockIconClickEventHandler : NSObject
 {
@@ -57,10 +56,19 @@ MacDockShutdownHandler::MacDockShutdownHandler() {
 }
 
 int MacDockShutdownHandler::handleShutdown(id self, SEL _cmd, ...) {
-    // Proper shutdown is possible, if MacOS does not decide to
-    // instantly send us to the shadow realm.
-    fRequestShutdown = true;
-    return false;
+    // Exit the Qt event loop directly so app.exec() returns and the
+    // normal Shutdown() sequence in bitcoin.cpp proceeds. We cannot use
+    // StartShutdown() -> uiInterface.QueueShutdown() -> qApp->quit()
+    // because Qt's quit() on macOS calls [NSApp terminate:] which
+    // re-triggers applicationShouldTerminate: creating an infinite loop.
+    // QCoreApplication::exit() just posts a QEvent::Quit without going
+    // through the Cocoa terminate cycle.
+    static bool shutdownInitiated = false;
+    if (!shutdownInitiated) {
+        shutdownInitiated = true;
+        QCoreApplication::exit(0);
+    }
+    return NSTerminateCancel;
 }
 
 MacDockIconHandler::MacDockIconHandler() : QObject()

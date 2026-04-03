@@ -1,0 +1,153 @@
+name: CMake Quality Gate
+
+on:
+  # Trigger on any push/PR to any branch (matches production/compatibility workflows)
+  push:
+    branches:
+      - '**'
+    tags:
+      - "v*"
+      - "5.*"
+  pull_request:
+    branches:
+      - '**'
+  # Manual trigger for debugging
+  workflow_dispatch:
+
+env:
+  # Use Clang for better sanitizer support
+  CC: clang
+  CXX: clang++
+  # Ccache configuration
+  CCACHE_COMPRESS: 1
+  CCACHE_DIR: /home/runner/.ccache
+
+jobs:
+  # ----------------------------------------------------------------------
+  # JOB 1: Sanitizers (ASan + UBSan + LSan)
+  # Replaces: native_asan
+  # ----------------------------------------------------------------------
+  sanitizers:
+    name: Sanitizers (Clang)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install System Deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake build-essential libboost-all-dev \
+            libssl-dev libdb++-dev libminiupnpc-dev libqrencode-dev \
+            qt6-base-dev qt6-tools-dev qt6-l10n-tools libcurl4-openssl-dev \
+            libzip-dev zipcmp zipmerge ziptool ccache
+
+      - name: Restore Ccache
+        uses: actions/cache@v5
+        with:
+          path: /home/runner/.ccache
+          key: ccache-quality-${{ github.sha }}
+          restore-keys: ccache-quality-
+
+      - name: Setup Concurrency
+        run: |
+          if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
+            echo "CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "CTEST_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "Concurrency: Auto-detected $(nproc) cores."
+          else
+            echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
+          fi
+
+      - name: Configure (Sanitizers)
+        run: |
+          # -fsanitize=address includes LSan (LeakSanitizer)
+          # -fsanitize=undefined catches UB (integer overflow, null deref, etc)
+          cmake -B build_asan \
+            -DENABLE_GUI=OFF \
+            -DENABLE_TESTS=ON \
+            -DUSE_QT6=ON \
+            -DUSE_ASM=OFF \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+      - name: Build
+        # Removed explicit --parallel flag; CMake reads the env var automatically
+        run: cmake --build build_asan
+
+      - name: Test (With Sanitizers)
+        env:
+          # ASAN options to prevent false positives or known minor issues from failing the build
+          LSAN_OPTIONS: suppressions=${{ github.workspace }}/test/sanitizer_suppressions/lsan
+          TSAN_OPTIONS: suppressions=${{ github.workspace }}/test/sanitizer_suppressions/tsan
+          UBSAN_OPTIONS: suppressions=${{ github.workspace }}/test/sanitizer_suppressions/ubsan:print_stacktrace=1:halt_on_error=1
+          ASAN_OPTIONS: malloc_context_size=0:check_initialization_order=1
+        run: |
+          # We exclude the Qt tests here if they trigger false positives in GUI libs
+          ctest --test-dir build_asan --output-on-failure
+
+  # ----------------------------------------------------------------------
+  # JOB 2: Linter
+  # Replaces: lint
+  # Ported from: 04_install.sh, 05_before_script.sh, 06_script.sh
+  # ----------------------------------------------------------------------
+  lint:
+    name: Lint Checks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # Required for subtree and commit checks
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install Lint Dependencies
+        run: |
+          sudo apt-get update
+          # Install ClangFormat and Shellcheck
+          # Ubuntu 24.04 has sufficiently new versions, removing need for manual download
+          sudo apt-get install -y clang-format shellcheck
+
+          # Install specific python linters (Matching versions from 04_install.sh)
+          pip install codespell==2.2.2 flake8==4.0.1 mypy==0.942 vulture==2.3
+
+      - name: Prepare Subtree Remotes
+        # Logic from 05_before_script.sh
+        run: |
+          git fetch https://github.com/bitcoin-core/crc32c-subtree.git
+          git fetch https://github.com/bitcoin-core/ctaes.git
+          git fetch https://github.com/bitcoin-core/secp256k1.git
+
+      - name: Run Lint Checks
+        # Logic from 06_script.sh
+        env:
+          COMMIT_RANGE: ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}
+        run: |
+          export LC_ALL=C
+
+          # 1. Commit Script Check (Only runs on Pull Requests)
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+             echo "Checking commit range: $COMMIT_RANGE"
+             # Ensure the commit range is valid before running
+             if [ -n "$COMMIT_RANGE" ]; then
+                 test/lint/commit-script-check.sh "$COMMIT_RANGE"
+             fi
+          fi
+
+          # 2. Subtree Checks (Ported from 06_script.sh)
+          test/lint/git-subtree-check.sh src/crypto/ctaes
+          test/lint/git-subtree-check.sh src/secp256k1
+          test/lint/git-subtree-check.sh src/crc32c
+
+          # 3. Main Lint Script
+          if [ -f "./test/lint/lint-all.sh" ]; then
+             ./test/lint/lint-all.sh
+          else
+             echo "Error: lint-all.sh not found."
+             exit 1
+          fi

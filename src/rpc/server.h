@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2014-2025 The Gridcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -106,6 +107,8 @@ extern UniValue addredeemscript(const UniValue& params, bool fHelp);
 extern UniValue backupwallet(const UniValue& params, bool fHelp);
 extern UniValue burn(const UniValue& params, bool fHelp);
 extern UniValue checkwallet(const UniValue& params, bool fHelp);
+extern UniValue claimhtlc(const UniValue& params, bool fHelp);
+extern UniValue createhtlc(const UniValue& params, bool fHelp);
 extern UniValue createrawtransaction(const UniValue& params, bool fHelp);
 extern UniValue consolidatemsunspent(const UniValue& params, bool fHelp);
 extern UniValue decoderawtransaction(const UniValue& params, bool fHelp);
@@ -143,6 +146,7 @@ extern UniValue makekeypair(const UniValue& params, bool fHelp);
 extern UniValue maintainbackups(const UniValue& params, bool fHelp);
 extern UniValue movecmd(const UniValue& params, bool fHelp);
 extern UniValue rainbymagnitude(const UniValue& params, bool fHelp);
+extern UniValue refundhtlc(const UniValue& params, bool fHelp);
 extern UniValue repairwallet(const UniValue& params, bool fHelp);
 extern UniValue resendtx(const UniValue& params, bool fHelp);
 extern UniValue reservebalance(const UniValue& params, bool fHelp);
@@ -167,6 +171,8 @@ extern UniValue walletdiagnose(const UniValue& params, bool fHelp);
 
 // Staking
 extern UniValue advertisebeacon(const UniValue& params, bool fHelp);
+extern UniValue advertisebeaconv3(const UniValue& params, bool fHelp);
+extern UniValue beaconauth(const UniValue& params, bool fHelp);
 extern UniValue beaconreport(const UniValue& params, bool fHelp);
 extern UniValue beaconconvergence(const UniValue& params, bool fHelp);
 extern UniValue beaconstatus(const UniValue& params, bool fHelp);
@@ -195,9 +201,11 @@ extern UniValue rpc_getblockstats(const UniValue& params, bool fHelp);
 extern UniValue inspectaccrualsnapshot(const UniValue& params, bool fHelp);
 extern UniValue listalerts(const UniValue& params, bool fHelp);
 extern UniValue listprojects(const UniValue& params, bool fHelp);
+extern UniValue getautogreylist(const UniValue& params, bool fHelp);
 extern UniValue listprotocolentries(const UniValue& params, bool fHelp);
 extern UniValue listresearcheraccounts(const UniValue& params, bool fHelp);
 extern UniValue listscrapers(const UniValue& params, bool fHelp);
+extern UniValue listsidestakes(const UniValue& params, bool fHelp);
 extern UniValue listmandatorysidestakes(const UniValue& params, bool fHelp);
 extern UniValue listsettings(const UniValue& params, bool fHelp);
 extern UniValue logging(const UniValue& params, bool fHelp);
@@ -263,6 +271,7 @@ extern UniValue addpoll(const UniValue& params, bool fHelp);
 extern UniValue getpollresults(const UniValue& params, bool fHelp);
 extern UniValue getvotingclaim(const UniValue& params, bool fHelp);
 extern UniValue listpolls(const UniValue& params, bool fHelp);
+extern UniValue testpollnotification(const UniValue& params, bool fHelp);
 extern UniValue vote(const UniValue& params, bool fHelp);
 extern UniValue votebyid(const UniValue& params, bool fHelp);
 extern UniValue votedetails(const UniValue& params, bool fHelp);

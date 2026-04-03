@@ -1,0 +1,390 @@
+#!/usr/bin/env bash
+
+export LC_ALL=C
+
+# ==============================================================================
+# HELPER: DETECT WSL
+# ==============================================================================
+check_is_wsl() {
+    if grep -qE "(Microsoft|WSL)" /proc/version &> /dev/null; then
+        return 0 # True (Is WSL)
+    else
+        return 1 # False (Is Native Linux)
+    fi
+}
+
+install_deps() {
+    local TARGET="$1"
+    local USE_QT6="$2"
+    local WITH_GUI="$3"
+
+    # Detect OS Type first
+    OS_TYPE=$(uname -s)
+
+    if [[ "$OS_TYPE" == "Darwin" ]]; then
+        OS="macos"
+        echo "Detected OS: macOS (Darwin)"
+    elif [ -f /etc/os-release ]; then
+        # The next line prevents the linter from looking into os-release and complaining about unused variables.
+        # shellcheck source=/dev/null
+        . /etc/os-release
+        OS=$ID
+    else
+        echo "Error: Cannot detect OS distribution."
+        return 1
+    fi
+
+    # Detect WSL Status (Only relevant for Linux)
+    IS_WSL="false"
+    if [[ "$OS" != "macos" ]]; then
+        if check_is_wsl; then
+            IS_WSL="true"
+            echo "Detected Environment: WSL (Windows Subsystem for Linux)"
+        else
+            echo "Detected Environment: Native Linux"
+        fi
+    fi
+
+    echo "Installing dependencies for Target: $TARGET, Qt6: $USE_QT6, GUI: $WITH_GUI"
+
+    # --- Package Groups Definition ---
+    PKGS_BASE=""
+    PKGS_QT=""
+    PKGS_MINGW=""
+    PKGS_WINE=""
+
+    append_base() { PKGS_BASE="$PKGS_BASE $*"; }
+    append_qt() { PKGS_QT="$PKGS_QT $*"; }
+    append_mingw() { PKGS_MINGW="$PKGS_MINGW $*"; }
+
+    # Conditional Wine Append
+    # We only install Wine if the target is win64 AND we are NOT on WSL.
+    # On WSL, we can run Windows binaries natively.
+    append_wine() {
+        if [[ "$IS_WSL" == "false" ]]; then
+            PKGS_WINE="$PKGS_WINE $*"
+        fi
+    }
+
+    # --- Define Packages per OS ---
+    case $OS in
+        macos)
+            # Homebrew Logic
+            if ! command -v brew &> /dev/null; then
+                echo "Error: Homebrew not found. Please install it from https://brew.sh"
+                return 1
+            fi
+
+            # Base Tools
+            append_base cmake ccache libtool automake autoconf pkg-config
+            # Libraries
+            append_base boost openssl libevent miniupnpc qrencode libzip
+
+            # Qt Logic for macOS Homebrew (Only if GUI is requested)
+            if [[ "$WITH_GUI" == "true" ]]; then
+                if [[ "$USE_QT6" == "true" ]]; then
+                    append_qt qt
+                else
+                    # Install Qt5 specific formula for legacy support
+                    append_qt qt@5
+                fi
+            fi
+            ;;
+
+        debian|ubuntu|linuxmint)
+            # Base Build Tools
+            append_base build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 cmake git curl ccache doxygen graphviz bison xxd libxkbcommon-dev
+
+            # Libraries for Native Build
+            append_base libssl-dev libevent-dev libboost-all-dev libminiupnpc-dev libqrencode-dev libzip-dev libcurl4-openssl-dev zipcmp zipmerge ziptool
+
+            # Qt6 Packages (Qt5 names are not defined here as most are EOL)
+            append_qt qt6-base-dev qt6-tools-dev qt6-l10n-tools qt6-tools-dev-tools libqt6charts6-dev libqt6svg6-dev libqt6core5compat6-dev
+
+            # Windows Cross-Compile Tools
+            # NOTE: We only append NSIS here. The MinGW compiler (g++-mingw-w64-x86-64)
+            # is handled conditionally below to support manual installs on Ubuntu 22.04.
+            append_mingw nsis
+
+            # Wine (Emulator for Native Linux only)
+            append_wine wine wine64
+
+            # Smart Check for MinGW Headers on Ubuntu 22.04
+            if [[ "$TARGET" == "win64" || "$TARGET" == "all" ]]; then
+                SHOULD_INSTALL_MINGW="true"
+
+                if grep -q "22.04" /etc/os-release; then
+                    # 1. Check if binary exists
+                    MINGW_BIN="x86_64-w64-mingw32-g++"
+                    if command -v "$MINGW_BIN" &> /dev/null; then
+
+                        # 2. Check HEADER version directly using the preprocessor
+                        # We look for __MINGW64_VERSION_MAJOR in _mingw.h
+                        MINGW_HEADER_VER=$(echo "#include <_mingw.h>" | "$MINGW_BIN" -E -dM - 2>/dev/null | grep "^#define __MINGW64_VERSION_MAJOR " | awk '{print $3}')
+
+                        # Default to 0 if grep failed
+                        if [ -z "$MINGW_HEADER_VER" ]; then MINGW_HEADER_VER=0; fi
+
+                        # 3. Logic Gate: We need headers >= 9 for D3D12/Qt6 support
+                        if [[ "$MINGW_HEADER_VER" -ge 9 ]]; then
+                            echo "Detected manual MinGW install (Header Version $MINGW_HEADER_VER). Skipping repo package."
+                            SHOULD_INSTALL_MINGW="false"
+                        else
+                             echo "Error: Detected MinGW header version $MINGW_HEADER_VER is too old (Need >= 9)."
+                             # We must force 'false' here so we fall through to the fatal error block below
+                             # We cannot simply install the repo package to fix this, as the repo package IS the problem.
+                             SHOULD_INSTALL_MINGW="false"
+                             FORCE_FAIL_2204="true"
+                        fi
+                    else
+                        # Binary missing entirely
+                        echo "Error: MinGW compiler not found."
+                        SHOULD_INSTALL_MINGW="false" # Do not try to install repo package
+                        FORCE_FAIL_2204="true"
+                    fi
+
+                    # Fatal Error Block for 22.04
+                    if [[ "$FORCE_FAIL_2204" == "true" ]]; then
+                        echo "----------------------------------------------------------------"
+                        echo "CRITICAL: Windows Cross-Compilation on Ubuntu 22.04 requires manual setup."
+                        echo "          The standard repository packages are too old (Headers < 9.0)."
+                        echo ""
+                        echo "          You must manually install a newer MinGW toolchain (v9+)"
+                        echo "          OR upgrade to Ubuntu 24.04+."
+                        echo "----------------------------------------------------------------"
+                        exit 1
+                    fi
+                fi
+
+                # If logic allows, append the compiler package (Standard path for non-22.04)
+                if [[ "$SHOULD_INSTALL_MINGW" == "true" ]]; then
+                    append_mingw g++-mingw-w64-x86-64
+                fi
+            fi
+            ;;
+
+        fedora|rhel)
+            append_base libstdc++-static gcc-c++ libtool automake autoconf pkgconf-pkg-config python3 cmake git curl patch perl-FindBin bison flex ccache doxygen graphviz
+            append_base openssl-devel libevent-devel boost-devel miniupnpc-devel qrencode-devel libzip-devel libcurl-devel libzip-tools
+
+            append_qt qt6-qtbase-devel qt6-qttools-devel qt6-qtcharts-devel qt6-qtsvg-devel qt6-qt5compat-devel
+
+            append_mingw mingw64-gcc-c++ mingw64-nsis xxd
+
+            # Fedora Wine
+            append_wine wine
+            ;;
+
+        opensuse*|sles)
+            # Detect Tumbleweed vs Leap
+            if [[ "$ID" == "sles" ]]; then
+                echo "Error: SLES not supported automatically."
+                return 1
+            fi
+
+            IS_TUMBLEWEED="false"
+            if [[ "$PRETTY_NAME" == *"Tumbleweed"* ]]; then
+                DISTRO_PATH="openSUSE_Tumbleweed"
+                IS_TUMBLEWEED="true"
+            elif [[ "$PRETTY_NAME" == *"Leap"* ]]; then
+                DISTRO_PATH="15.6"
+            else
+                 echo "Error: Unknown openSUSE version."
+                 return 1
+            fi
+
+            # Repo Logic for openSUSE
+            if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]]; then
+                REPO_64_URL="https://download.opensuse.org/repositories/windows:/mingw:/win64/$DISTRO_PATH/"
+                REPO_64_NAME="windows_mingw_win64"
+                REPO_32_URL="https://download.opensuse.org/repositories/windows:/mingw:/win32/$DISTRO_PATH/"
+                REPO_32_NAME="windows_mingw_win32"
+
+                add_repo_if_missing() {
+                    local url="$1"
+                    local name="$2"
+                    local desc="$3"
+                    if sudo zypper lr -u | grep -Fq "$url"; then
+                        echo "Repository for $desc already exists (URL match)."
+                    else
+                        if sudo zypper lr | grep -q "$name"; then
+                            echo "Warning: Repository alias '$name' exists but URL mismatch."
+                        else
+                            echo "Adding $desc repository: $url"
+                            sudo zypper ar -f "$url" "$name"
+                        fi
+                    fi
+                }
+                add_repo_if_missing "$REPO_64_URL" "$REPO_64_NAME" "MinGW Win64"
+                add_repo_if_missing "$REPO_32_URL" "$REPO_32_NAME" "MinGW Win32"
+                sudo zypper --gpg-auto-import-keys refresh
+            fi
+
+            # Pattern Install
+            echo "Installing devel_basis pattern..."
+            sudo zypper install -y -t pattern devel_basis
+
+            # Base common packages
+            append_base libtool automake autoconf pkg-config python3 cmake git curl ccache doxygen graphviz libzstd-devel
+            append_base libopenssl-devel libevent-devel qrencode-devel libzip-devel libcurl-devel libzip-tools
+            append_base miniupnpc libminiupnpc-devel
+
+            # Boost Packages
+            append_base libboost_headers-devel libboost_filesystem-devel libboost_thread-devel libboost_date_time-devel libboost_iostreams-devel libboost_serialization-devel libboost_test-devel libboost_atomic-devel libboost_regex-devel
+
+            # Boost System Logic:
+            # Use 'zypper info' to check which version of headers is (or will be) installed.
+            # This handles both Clean Install and Upgrade scenarios correctly.
+
+            INSTALL_BOOST_SYSTEM="true"
+
+            # Get the version string from the repository metadata
+            # Output format example: "Version      : 1.89.0-..."
+            BOOST_VER_STRING=$(zypper info libboost_headers-devel | grep -i "Version" | head -n 1 | awk '{print $3}')
+
+            if [ -n "$BOOST_VER_STRING" ]; then
+                # Extract Major.Minor
+                IFS='.' read -r -a VER_PARTS <<< "$BOOST_VER_STRING"
+                MAJOR=${VER_PARTS[0]}
+                MINOR=${VER_PARTS[1]}
+
+                # Check if >= 1.69 (Boost System became header-only)
+                if [[ "$MAJOR" -ge 1 ]] && [[ "$MINOR" -ge 69 ]]; then
+                     INSTALL_BOOST_SYSTEM="false"
+                     echo "Detected Boost >= 1.69 ($BOOST_VER_STRING) in repo. Skipping libboost_system-devel."
+                fi
+            fi
+
+            if [[ "$IS_TUMBLEWEED" == "false" ]]; then
+                append_base gcc13 gcc13-c++
+            fi
+
+            if [[ "$INSTALL_BOOST_SYSTEM" == "true" ]]; then
+                append_base libboost_system-devel
+            fi
+
+            append_qt qt6-base-devel qt6-tools-devel qt6-charts-devel qt6-svg-devel qt6-qt5compat-devel qt6-linguist-devel
+
+            append_mingw mingw64-cross-gcc-c++ nsis
+
+            # OpenSUSE Wine
+            append_wine wine
+            ;;
+
+        arch|manjaro)
+            sudo pacman -Syu --noconfirm
+
+            append_base base-devel python cmake git ccache doxygen graphviz
+            append_base boost boost-libs libevent miniupnpc libzip qrencode curl icu
+
+            append_qt qt6-base qt6-tools qt6-charts qt6-svg qt6-5compat
+
+            append_mingw mingw-w64-gcc nsis
+
+            # Arch Wine
+            append_wine wine
+            ;;
+
+        alpine)
+            # Base Build Tools
+            # 'build-base' is Alpine's build-essential.
+            # 'linux-headers' often needed. 'bash' is needed for these scripts.
+            # 'libexecinfo-dev' is sometimes needed for backtraces on musl.
+            append_base build-base cmake git curl ccache doxygen graphviz bison linux-headers xxd bash autoconf automake libtool perl
+
+            # Libraries
+            append_base boost-dev openssl-dev libevent-dev miniupnpc-dev libqrencode-dev libzip-dev curl-dev
+
+            # Qt6 Packages
+            append_qt qt6-qtbase-dev qt6-qttools-dev qt6-qtcharts-dev qt6-qtsvg-dev qt6-qt5compat-dev
+            ;;
+
+        *)
+            echo "Error: Unsupported distribution '$OS'."
+            return 1
+            ;;
+    esac
+
+    # --- Determine Final Package List to Install ---
+    PKGS_TO_INSTALL=""
+
+    # FIX: Base packages are always required.
+    PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_BASE"
+
+    # --- Qt Package Logic ---
+    if [[ "$WITH_GUI" == "true" ]]; then
+        if [[ "$OS" == "macos" ]]; then
+            # macOS: PKGS_QT was already populated conditionally inside the case statement
+            PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_QT"
+        else
+            # Linux: PKGS_QT is populated unconditionally in the distro blocks with Qt6 packages.
+            # We must handle the logic here to ensure we don't install Qt6 when Qt5 is requested.
+            if [[ "$USE_QT6" == "true" ]]; then
+                if [[ "$TARGET" == "all" || "$TARGET" == "native" ]]; then
+                    PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_QT"
+                fi
+            else
+                # Case: Linux + Qt5.
+                # We do not list Qt5 packages for Linux as distro support is spotty/EOL.
+                echo "----------------------------------------------------------------"
+                echo "WARNING: Qt5 requested on Linux (WITH_GUI=true, USE_QT6=false)."
+                echo "         This script only defines Qt6 packages for Linux."
+                echo "         You must install the appropriate Qt5 packages manually."
+                echo "----------------------------------------------------------------"
+            fi
+        fi
+    fi
+
+    if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]]; then
+        PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_MINGW"
+        # Only adds wine if !WSL
+        PKGS_TO_INSTALL="$PKGS_TO_INSTALL $PKGS_WINE"
+    fi
+
+    # Clean up leading whitespace
+    PKGS_TO_INSTALL=$(echo "$PKGS_TO_INSTALL" | xargs)
+
+    if [ -z "$PKGS_TO_INSTALL" ]; then
+        echo "No packages selected for installation."
+        return 0
+    fi
+
+    # --- Execute Install Command ---
+    echo "Installing Packages: $PKGS_TO_INSTALL"
+
+    case $OS in
+        macos)
+            # macOS uses Homebrew, usually doesn't need sudo if user owns prefix
+            brew install $PKGS_TO_INSTALL
+            ;;
+        debian|ubuntu|linuxmint)
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends $PKGS_TO_INSTALL
+
+            # MinGW Threading Fix (Linux Only)
+            if [[ "$TARGET" == "all" || "$TARGET" == "win64" ]]; then
+                echo "Configuring MinGW-w64 threading model to POSIX..."
+                if [ -f /usr/bin/x86_64-w64-mingw32-g++-posix ]; then
+                    sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
+                    sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
+                    echo "MinGW-w64 threading model set to POSIX."
+                else
+                    echo "Warning: MinGW POSIX alternative not found. Skipping threading configuration."
+                fi
+            fi
+            ;;
+        fedora|rhel)
+            sudo dnf install -y $PKGS_TO_INSTALL
+            ;;
+        opensuse*|sles)
+            sudo zypper install -y $PKGS_TO_INSTALL
+            ;;
+        arch|manjaro)
+            sudo pacman -S --noconfirm $PKGS_TO_INSTALL
+            ;;
+        alpine)
+            sudo apk update
+            sudo apk add $PKGS_TO_INSTALL
+            ;;
+    esac
+}

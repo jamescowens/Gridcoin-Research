@@ -148,7 +148,7 @@ public:
     //! \param cpid May contain a CPID to fetch the magnitude for.
     //!
     //! \return Magnitude as of the last tallied superblock or zero if the
-    //! mining ID represents an investor.
+    //! mining ID represents a non-cruncher.
     //!
     static Magnitude GetMagnitude(const MiningId mining_id);
 

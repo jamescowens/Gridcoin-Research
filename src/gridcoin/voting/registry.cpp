@@ -331,6 +331,8 @@ PollReference::PollReference()
     , m_timestamp(0)
     , m_duration_days(0)
     , m_votes({})
+    , m_magnitude_weight_factor(Fraction())
+    , m_expiration_warn_notified(false)
 {
 }
 
@@ -346,7 +348,22 @@ PollOption PollReference::TryReadFromDisk(CTxDB& txdb) const
     for (auto& contract : tx.PullContracts()) {
         if (contract.m_type == ContractType::POLL) {
             auto payload = contract.PullPayloadAs<PollPayload>();
-            payload.m_poll.m_timestamp = m_timestamp;
+            // The time for the poll is the time of the containing transaction.
+            payload.m_poll.m_timestamp = tx.nTime;
+            m_timestamp = tx.nTime;
+
+            // This is a critical initialization, because the magnitude weight factor is only stored
+            // in memory and is not serialized.
+            payload.m_poll.m_magnitude_weight_factor = payload.m_poll.ResolveMagnitudeWeightFactor(GetStartingBlockIndexPtr());
+            m_magnitude_weight_factor = payload.m_poll.m_magnitude_weight_factor;
+            m_weight_type = payload.m_poll.m_weight_type.Value();
+
+            LogPrint(BCLog::LogFlags::VOTE, "INFO: %s: reference.m_timestamp = %" PRId64 " , poll.m_timestamp = %" PRId64 " , "
+                     "poll.m_magnitude_weight_factor = %s",
+                     __func__,
+                     m_timestamp,
+                     payload.m_poll.m_timestamp,
+                     payload.m_poll.m_magnitude_weight_factor.ToString());
 
             return std::move(payload.m_poll);
         }
@@ -476,6 +493,11 @@ std::optional<int> PollReference::GetEndingHeight() const EXCLUSIVE_LOCKS_REQUIR
     return std::nullopt;
 }
 
+Fraction PollReference::GetMagnitudeWeightFactor() const
+{
+    return m_magnitude_weight_factor;
+}
+
 std::optional<CAmount> PollReference::GetActiveVoteWeight(const PollResultOption& result) const
 {
     // Instrument this so we can log real time performance.
@@ -507,6 +529,36 @@ std::optional<CAmount> PollReference::GetActiveVoteWeight(const PollResultOption
                  __func__, pindex_end->nHeight);
     }
 
+    arith_uint256 active_vote_weight_tally = 0;
+    unsigned int blocks = 0;
+
+    // If poll weight type is balance only, then simply sum up the netweights over the block range of the poll.
+    if (m_weight_type == PollWeightType::BALANCE) {
+        for (CBlockIndex* pindex = pindex_start; pindex ; pindex = pindex->pnext) {
+
+            arith_uint256 net_weight = GetAvgNetworkWeight(pindex);
+
+            active_vote_weight_tally += net_weight;
+            ++blocks;
+
+            if (pindex == pindex_end) {
+                break;
+            }
+        }
+
+        if (!blocks) {
+            return std::nullopt;
+        }
+
+        return (active_vote_weight_tally / blocks).GetLow64();
+
+        // If it is not balance only (handled by above), and is not BALANCE_AND_MAGNITUDE (everything else) then return nullopt.
+        // In reality all weight types other than BALANCE and BALANCE_AND_MAGNITUDE are deprecated in Fern onwards, so this
+        // only applies for legacy polls.
+    } else if (m_weight_type != PollWeightType::BALANCE_AND_MAGNITUDE) {
+        return std::nullopt;
+    }
+
     // determine the pools that did NOT vote in the poll (via the result passed in). Only pools that did not
     // vote contribute to the magnitude correction for pools.
     std::vector<MiningPool> pools_not_voting;
@@ -536,10 +588,8 @@ std::optional<CAmount> PollReference::GetActiveVoteWeight(const PollResultOption
     // Note we must use bignums here, because the second term of the active_vote_weight_tally will overflow
     // otherwise. We are also avoiding floating point calculations, because avw will be used in consensus rules in
     // the future.
-    arith_uint256 active_vote_weight_tally = 0;
     arith_uint256 scaled_pool_magnitude = 0;
     arith_uint256 scaled_network_magnitude = 0;
-    unsigned int blocks = 0;
 
     // Lambda for active_vote_weight tally.
     const auto tally_active_vote_weight = [&](
@@ -548,9 +598,14 @@ std::optional<CAmount> PollReference::GetActiveVoteWeight(const PollResultOption
             const arith_uint256 scaled_pool_magnitude,
             const arith_uint256 scaled_network_magnitude)
     {
+        // Unlike the complementary calculation in EnableMagnitudeWeight for vote weights, this calculation is not
+        // subject to overflow because it uses 256 bit integers. In the end it the RESULT is cast to a 64 bit integer, but
+        // by then all of the multiplication and division are done. m_magnitude_weight_factor as a fraction something that is
+        // not expected to stray any farther than the interval [1/10, 1/1], where the current default value of 100 / 567 is
+        // in that interval. So we should never have an overflow problem here.
         active_vote_weight_tally += net_weight + money_supply * (scaled_network_magnitude - scaled_pool_magnitude)
-                                                              * arith_uint256(100)
-                                                              / arith_uint256(567)
+                                                              * arith_uint256(m_magnitude_weight_factor.GetNumerator())
+                                                              / arith_uint256(m_magnitude_weight_factor.GetDenominator())
                                                               / scaled_network_magnitude;
 
         ++blocks;
@@ -632,13 +687,7 @@ std::optional<CAmount> PollReference::GetActiveVoteWeight(const PollResultOption
             }
         }
 
-        // Please refer to https://gridcoin.us/assets/docs/grc-bluepaper-section-1.pdf equations 1 and 16 and footnote 5.
-        // This method of computing net_weight is from first principles using the target from the nBits representation
-        // recorded in the index, rather than the GetEstimatedNetworkWeight() function, which uses double fp arithmetic.
-        arith_uint256 target;
-        target.SetCompact(pindex->nBits);
-
-        arith_uint256 net_weight = ~arith_uint256() / arith_uint256(450) / target * arith_uint256(COIN);
+        arith_uint256 net_weight = GetAvgNetworkWeight(pindex);
 
         arith_uint256 money_supply = pindex->nMoneySupply;
 
@@ -647,13 +696,15 @@ std::optional<CAmount> PollReference::GetActiveVoteWeight(const PollResultOption
         // If voting logging category is active, log the first block and every superblock
         if (blocks == 1 || pindex->IsSuperblock()) {
             LogPrint(BCLog::LogFlags::VOTE, "INFO: %s: tally_active_vote_weight: net_weight = %f, money_supply = %f, "
-                                            "pool_magnitude = %f, network_magnitude = %f, block height = %i, "
-                                            "blocks = %u, active_vote_weight_tally = %f, active_vote_weight = %f.",
+                                            "pool_magnitude = %f, network_magnitude = %f, magnitude weight factor = %s, "
+                                            "block height = %i, blocks = %u, active_vote_weight_tally = %f, "
+                                            "active_vote_weight = %f.",
                      __func__,
                      net_weight.getdouble() / (double) COIN,
                      money_supply.getdouble() / (double) COIN,
                      scaled_pool_magnitude.getdouble() / 100.0,
                      scaled_network_magnitude.getdouble() / 100.0,
+                     m_magnitude_weight_factor.ToString(),
                      pindex->nHeight,
                      blocks,
                      active_vote_weight_tally.getdouble() / (double) COIN,
@@ -664,13 +715,15 @@ std::optional<CAmount> PollReference::GetActiveVoteWeight(const PollResultOption
         // Log the last block and break if at pindex_end.
         if (pindex == pindex_end) {
             LogPrint(BCLog::LogFlags::VOTE, "INFO: %s: tally_active_vote_weight: net_weight = %f, money_supply = %f, "
-                                            "pool_magnitude = %f, network_magnitude = %f, block height = %i, "
-                                            "blocks = %u, active_vote_weight_tally = %f, active_vote_weight = %f.",
+                                            "pool_magnitude = %f, network_magnitude = %f, magnitude weight factor = %s, "
+                                            "block height = %i, blocks = %u, active_vote_weight_tally = %f, "
+                                            "active_vote_weight = %f.",
                      __func__,
                      net_weight.getdouble() / (double) COIN,
                      money_supply.getdouble() / (double) COIN,
                      scaled_pool_magnitude.getdouble() / 100.0,
                      scaled_network_magnitude.getdouble() / 100.0,
+                     m_magnitude_weight_factor.ToString(),
                      pindex->nHeight,
                      blocks,
                      active_vote_weight_tally.getdouble() / (double) COIN,
@@ -710,6 +763,53 @@ std::optional<CAmount> PollReference::GetActiveVoteWeight(const PollResultOption
 
         return std::nullopt;
     }
+}
+
+std::string PollReference::NotifyTypeToString(const PollNotificationType& notify_type) const
+{
+    switch (notify_type) {
+    case PollNotificationType::POLL_ADD:
+        return "added";
+    case PollNotificationType::POLL_DELETE:
+        return "deleted";
+    case PollNotificationType::POLL_EXPIRE_WARNING:
+        return "expiration_warning";
+    case PollNotificationType::POLL_NOTIFY_TEST:
+        return "test";
+    default:
+        return "unknown";
+    }
+}
+
+std::string PollReference::Notify(const PollNotificationType& notify_type) const
+{
+    std::string strCmd = gArgs.GetArg("-pollnotify", std::string {});
+
+#if HAVE_SYSTEM
+    // Support running an external command on poll creation. Do not notify for already expired polls. This is especially
+    // important during a sync to avoid spamming poll notifications.
+    if (!Expired(GetAdjustedTime())) {
+        if (!strCmd.empty()) {
+            // The placeholders %s1 and %s2 are replaced with the txid and the notification type.
+            boost::replace_all(strCmd, "%s1", m_txid.ToString());
+            boost::replace_all(strCmd, "%s2", NotifyTypeToString(notify_type));
+            boost::thread t(runCommand, strCmd); // thread runs free
+
+            LogPrint(BCLog::LogFlags::MISC, "INFO: %s: poll notify command: %s", __func__, strCmd);
+
+            if (notify_type == POLL_EXPIRE_WARNING) {
+                m_expiration_warn_notified = true;
+            }
+        }
+    }
+#endif
+
+    return strCmd;
+}
+
+bool PollReference::IsExpiringWarningNotified() const
+{
+    return m_expiration_warn_notified;
 }
 
 void PollReference::LinkVote(const uint256 txid)
@@ -1010,6 +1110,10 @@ void PollRegistry::AddPoll(const ContractContext& ctx) EXCLUSIVE_LOCKS_REQUIRED(
         auto result_pair = m_polls_by_txid.emplace(ctx.m_tx.GetHash(), &poll_ref);
         poll_ref.m_txid = result_pair.first->first;
 
+        poll_ref.m_magnitude_weight_factor = payload->m_poll.ResolveMagnitudeWeightFactor(ctx.m_pindex);
+
+        poll_ref.Notify(PollReference::PollNotificationType::POLL_ADD);
+
         if (fQtActive && !poll_ref.Expired(GetAdjustedTime())) {
             uiInterface.NewPollReceived(poll_ref.Time());
         }
@@ -1088,6 +1192,14 @@ void PollRegistry::DeletePoll(const ContractContext& ctx) EXCLUSIVE_LOCKS_REQUIR
 
     int64_t poll_time = payload->m_poll.m_timestamp;
 
+    PollReference* poll_ref = TryBy(payload->m_poll.m_title);
+
+    if (poll_ref) {
+        // Note this reference will effectively disappear once this function exits, but this is ok, because there will
+        // be no need to further reference it after this point for purposes of notification.
+        poll_ref->Notify(PollReference::PollNotificationType::POLL_DELETE);
+    }
+
     m_polls.erase(ToLower(payload->m_poll.m_title));
 
     m_polls_by_txid.erase(ctx.m_tx.GetHash());
@@ -1101,7 +1213,6 @@ void PollRegistry::DeletePoll(const ContractContext& ctx) EXCLUSIVE_LOCKS_REQUIR
     if (fQtActive) {
         uiInterface.NewPollReceived(poll_time);;
     }
-
 }
 
 void PollRegistry::DeleteVote(const ContractContext& ctx) EXCLUSIVE_LOCKS_REQUIRED(cs_main, PollRegistry::cs_poll_registry)

@@ -376,7 +376,7 @@ UniValue rpc_exportstats(const UniValue& params, bool fHelp)
     double max_interest = 0;
     double sum_magnitude = 0;
     unsigned long cnt_empty = 0;
-    unsigned long cnt_investor = 0;
+    unsigned long cnt_noncruncher = 0;
     unsigned long cnt_trans = 0;
     unsigned long cnt_research = 0;
     unsigned long cnt_quorumvote = 0;
@@ -395,7 +395,7 @@ UniValue rpc_exportstats(const UniValue& params, bool fHelp)
     Output << "#midheight  ave_diff min_diff max_diff  "
     "ave_spacing min_spacing max_spacing  ave_size min_size max_size  "
     "ave_research avenz_research max_research  ave_interest max_interest  "
-    "fra_empty cnt_empty  fra_investor cnt_investor  ave_trans avenz_trans cnt_trans  "
+    "fra_empty cnt_empty  fra_noncruncher cnt_noncruncher  ave_trans avenz_trans cnt_trans  "
     "fra_research cnt_research  fra_contract cnt_contract  "
     "fra_quorumvote cnt_quorumvote fra_quorumcur cnt_quorumcurr  "
     "avenz_magnitude  \n";
@@ -415,7 +415,7 @@ UniValue rpc_exportstats(const UniValue& params, bool fHelp)
         min_spacing=std::min(min_spacing,i_spacing);
         max_spacing=std::max(max_spacing,i_spacing);
 
-        cnt_investor += !! (cur->nFlags & CBlockIndex::INVESTOR_CPID);
+        cnt_noncruncher += !! (cur->nFlags & CBlockIndex::NONCRUNCHER_CPID);
         cnt_contract += !! cur->IsContract();
 
         CBlock block;
@@ -456,8 +456,8 @@ UniValue rpc_exportstats(const UniValue& params, bool fHelp)
         if(samples>=smoothing)
         {
             int midheight = cur->nHeight + (smoothing/2);
-            double samples_w_cpid = samples - cnt_investor;
-            if(samples == cnt_investor)
+            double samples_w_cpid = samples - cnt_noncruncher;
+            if(samples == cnt_noncruncher)
                 samples_w_cpid = std::numeric_limits<double>::max();
             double samples_w_research = cnt_research;
             if(cnt_research==0)
@@ -474,7 +474,7 @@ UniValue rpc_exportstats(const UniValue& params, bool fHelp)
             Output << (sum_research / samples) << " " << (sum_research / samples_w_research) << " " << max_research << "  ";
             Output << (sum_interest / samples) << " " << max_interest << "  ";
             Output << (cnt_empty / samples) << " " << cnt_empty << "  ";
-            Output << (cnt_investor / samples) << " " << cnt_investor << "  ";
+            Output << (cnt_noncruncher / samples) << " " << cnt_noncruncher << "  ";
             Output << (cnt_trans / samples) << " " << (cnt_trans / samples_w_trans) << " " << cnt_trans << "  ";
             Output << (cnt_research / samples) << " " << cnt_research << "  ";
             Output << (cnt_contract / samples) << " " << cnt_contract << "  ";
@@ -489,7 +489,7 @@ UniValue rpc_exportstats(const UniValue& params, bool fHelp)
             min_diff = INT_MAX;
             max_diff = 0;
             cnt_empty = 0;
-            cnt_investor = 0;
+            cnt_noncruncher = 0;
             sum_spacing = 0;
             min_spacing = INT_MAX;
             max_spacing = 0;

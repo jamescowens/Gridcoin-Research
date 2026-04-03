@@ -11,6 +11,7 @@
 #include "gridcoin/voting/result.h"
 #include "protocol.h"
 #include "server.h"
+#include "util/time.h"
 
 using namespace GRC;
 
@@ -166,6 +167,8 @@ UniValue PollResultToJson(const PollResult& result, const PollReference& poll_re
 
 UniValue PollResultToJson(const PollReference& poll_ref)
 {
+    g_timer.InitTimer("buildPollTable", LogInstance().WillLogCategory(BCLog::LogFlags::VOTE));
+
     GetPollRegistry().registry_traversal_in_progress = true;
 
     try {
@@ -219,13 +222,21 @@ UniValue VoteDetailsToJson(const PollResult& result)
 
 UniValue VoteDetailsToJson(const PollReference& poll_ref)
 {
+    GetPollRegistry().registry_traversal_in_progress = true;
+
     try {
         if (const PollResultOption result = PollResult::BuildFor(poll_ref)) {
+            GetPollRegistry().registry_traversal_in_progress = false;
+
             return VoteDetailsToJson(*result);
         }
     } catch (InvalidDuetoReorgFork& e) {
+        GetPollRegistry().registry_traversal_in_progress = false;
+
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Failed to load poll from disk due to reorg in progress during inquiry.");
     }
+
+    GetPollRegistry().registry_traversal_in_progress = false;
 
     throw JSONRPCError(RPC_INTERNAL_ERROR, "Failed to load poll from disk.");
 }
@@ -645,6 +656,10 @@ UniValue vote(const UniValue& params, bool fHelp)
             "This RPC function is deprecated and may be removed in the future. "
             "Use \"votebyid\" instead.");
 
+    if (OutOfSyncByAge()) {
+        throw JSONRPCError(RPC_MISC_ERROR, "The wallet must be in sync to vote.");
+    }
+
     EnsureWalletIsUnlocked();
 
     const std::string title = boost::to_lower_copy(params[0].get_str());
@@ -683,6 +698,10 @@ UniValue votebyid(const UniValue& params, bool fHelp)
             "<choice_ids...> --> Numeric IDs of the choices to vote for.\n"
             "\n"
             "Cast a vote for a poll.\n");
+
+    if (OutOfSyncByAge()) {
+        throw JSONRPCError(RPC_MISC_ERROR, "The wallet must be in sync to vote.");
+    }
 
     EnsureWalletIsUnlocked();
 
@@ -742,4 +761,28 @@ UniValue votedetails(const UniValue& params, bool fHelp)
 #endif
 
     throw JSONRPCError(RPC_MISC_ERROR, "No matching poll found");
+}
+
+UniValue testpollnotification(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1) {
+        throw std::runtime_error(
+                "testpollnotification <poll txid>\n"
+                "\n"
+                "<poll txid> --> Transaction id of the poll to test notification.\n"
+                "\n"
+                "Test the poll notification system.\n");
+    }
+
+    const uint256 txid = uint256S(params[0].get_str());
+
+    const PollReference* ref = GetPollRegistry().TryByTxid(txid);
+
+    if (!ref) {
+        throw JSONRPCError(RPC_MISC_ERROR, "No poll exists for that ID");
+    }
+
+    std::string cmd = ref->Notify(PollReference::PollNotificationType::POLL_NOTIFY_TEST);
+
+    return strprintf("Notification command: %s", cmd);
 }

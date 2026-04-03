@@ -93,40 +93,65 @@ LockData& GetLockData() {
 
 static void potential_deadlock_detected(const LockPair& mismatch, const LockStack& s1, const LockStack& s2)
 {
-    LogPrintf("POTENTIAL DEADLOCK DETECTED\n");
-    LogPrintf("Previous lock order was:\n");
-    for (const LockStackItem& i : s1) {
-        if (i.first == mismatch.first) {
-            LogPrintf(" (1)"); /* Continued */
+    // Identify the two conflicting locks by name. Try s2 (current stack) first,
+    // fall back to s1 (historical stack) if a lock isn't present in s2.
+    // mismatch.first  = lock already held by current thread
+    // mismatch.second = lock being acquired now
+    // So current order is: mismatch.first -> mismatch.second
+    // Historical order was the reverse: mismatch.second -> mismatch.first
+    std::string name_a, name_b;
+    for (const LockStack* stack : {&s2, &s1}) {
+        for (const LockStackItem& i : *stack) {
+            if (i.first == mismatch.first && name_a.empty()) name_a = i.second.Name();
+            if (i.first == mismatch.second && name_b.empty()) name_b = i.second.Name();
         }
-        if (i.first == mismatch.second) {
-            LogPrintf(" (2)"); /* Continued */
-        }
-        LogPrintf(" %s\n", i.second.ToString());
     }
+    if (name_a.empty()) name_a = "unknown";
+    if (name_b.empty()) name_b = "unknown";
 
-    std::string mutex_a, mutex_b;
-    LogPrintf("Current lock order is:\n");
-    for (const LockStackItem& i : s2) {
-        if (i.first == mismatch.first) {
-            LogPrintf(" (1)"); /* Continued */
-            mutex_a = i.second.Name();
+    LogPrintf("\n");
+    LogPrintf("POTENTIAL DEADLOCK DETECTED\n");
+    LogPrintf("Conflict: '%s' and '%s' acquired in inconsistent orders.\n", name_a, name_b);
+    LogPrintf("  Current:    '%s' -> '%s'\n", name_a, name_b);
+    LogPrintf("  Historical: '%s' -> '%s'\n", name_b, name_a);
+    LogPrintf("\n");
+
+    // Helper to print a lock stack with numbered entries and annotations.
+    // Only the first occurrence of each conflicting lock gets the <-- marker;
+    // subsequent re-entrant acquisitions are annotated separately.
+    auto printStack = [&](const char* label, const LockStack& stack) {
+        LogPrintf("%s:\n", label);
+        std::set<void*> seen;
+        int pos = 1;
+        for (const LockStackItem& i : stack) {
+            bool is_conflict = (i.first == mismatch.first || i.first == mismatch.second);
+            bool is_reentrant = seen.count(i.first) > 0;
+            bool mark = is_conflict && !is_reentrant;
+
+            LogPrintf("  #%d %s%s%s\n",
+                pos++,
+                i.second.ToString(),
+                mark ? "  <--" : "",
+                is_reentrant ? "  (re-entrant, already held above)" : "");
+
+            seen.insert(i.first);
         }
-        if (i.first == mismatch.second) {
-            LogPrintf(" (2)"); /* Continued */
-            mutex_b = i.second.Name();
-        }
-        LogPrintf(" %s\n", i.second.ToString());
-    }
+    };
+
+    printStack("Historical lock stack (where the reverse order was first seen)", s1);
+    LogPrintf("\n");
+    printStack("Current lock stack (triggering this warning)", s2);
+    LogPrintf("\n");
+
     if (g_debug_lockorder_abort) {
-        tfm::format(std::cerr, "Assertion failed: detected inconsistent lock order for %s, details in debug log.\n", s2.back().second.ToString());
+        tfm::format(std::cerr, "Assertion failed: detected inconsistent lock order for '%s' and '%s', details in debug log.\n", name_a, name_b);
         abort();
     }
 
     if (g_debug_lockorder_throw_exception) {
-        throw std::logic_error(strprintf("potential deadlock detected: %s -> %s -> %s", mutex_b, mutex_a, mutex_b));
+        throw std::logic_error(strprintf("potential deadlock detected: %s -> %s -> %s", name_b, name_a, name_b));
     } else {
-        LogPrintf("potential deadlock detected: %s -> %s -> %s", mutex_b, mutex_a, mutex_b);
+        LogPrintf("potential deadlock detected: %s -> %s -> %s\n", name_b, name_a, name_b);
     }
 }
 

@@ -216,6 +216,13 @@ public:
             throw std::out_of_range("denominator specified is zero");
         }
 
+        // std::gcd and std::abs produce undefined behavior for INT64_MIN
+        // because |INT64_MIN| is not representable as int64_t.
+        if (m_numerator == std::numeric_limits<int64_t>::min()
+            || m_denominator == std::numeric_limits<int64_t>::min()) {
+            throw std::out_of_range("INT64_MIN is not supported (std::abs overflow)");
+        }
+
         if (std::gcd(m_numerator, m_denominator) == 1 && m_denominator > 0) {
             m_simplified = true;
         }
@@ -327,10 +334,11 @@ public:
         return (double) m_numerator / (double) m_denominator;
     }
 
-    Fraction operator=(const Fraction& rhs)
+    Fraction& operator=(const Fraction& rhs)
     {
         m_numerator = rhs.GetNumerator();
         m_denominator = rhs.GetDenominator();
+        m_simplified = rhs.IsSimplified();
 
         return *this;
     }
@@ -340,7 +348,35 @@ public:
         return strprintf("%" PRId64 "/" "%" PRId64, m_numerator, m_denominator);
     }
 
-    bool operator!()
+    static Fraction FromString(const std::string& string)
+    {
+        std::vector<std::string> string_fraction = split(string, "/");
+
+        if (string_fraction.size() > 2 || string_fraction.size() < 1) {
+            throw std::out_of_range("fraction input string cannot be parsed to fraction");
+        }
+
+        int64_t numerator;
+        int64_t denominator;
+
+        if (string_fraction.size() == 1) {
+            if (!ParseInt64(string_fraction[0], &numerator)) {
+                throw std::out_of_range("fraction input string cannot be parsed to fraction");
+            }
+
+            denominator = 1;
+        } else {
+            // There must be two elements to the string fraction if we are here.
+            if (!ParseInt64(string_fraction[0], &numerator)
+                || !ParseInt64(string_fraction[1], &denominator)) {
+                throw std::out_of_range("fraction input string cannot be parsed to fraction");
+            }
+        }
+
+        return Fraction(numerator, denominator, true);
+    }
+
+    bool operator!() const
     {
         return IsZero();
     }
@@ -487,7 +523,7 @@ public:
         return Fraction(slhs.GetNumerator(), overflow_mult(slhs.GetDenominator(), rhs), true);
     }
 
-    Fraction operator+=(const Fraction& rhs)
+    Fraction& operator+=(const Fraction& rhs)
     {
         Simplify();
 
@@ -496,7 +532,7 @@ public:
         return *this;
     }
 
-    Fraction operator+=(const int64_t& rhs)
+    Fraction& operator+=(const int64_t& rhs)
     {
         Simplify();
 
@@ -505,7 +541,7 @@ public:
         return *this;
     }
 
-    Fraction operator-=(const Fraction& rhs)
+    Fraction& operator-=(const Fraction& rhs)
     {
         Simplify();
 
@@ -514,7 +550,7 @@ public:
         return *this;
     }
 
-    Fraction operator-=(const int64_t& rhs)
+    Fraction& operator-=(const int64_t& rhs)
     {
         Simplify();
 
@@ -523,7 +559,7 @@ public:
         return *this;
     }
 
-    Fraction operator*=(const Fraction& rhs)
+    Fraction& operator*=(const Fraction& rhs)
     {
         Simplify();
 
@@ -532,7 +568,7 @@ public:
         return *this;
     }
 
-    Fraction operator*=(const int64_t& rhs)
+    Fraction& operator*=(const int64_t& rhs)
     {
         Simplify();
 
@@ -541,7 +577,7 @@ public:
         return *this;
     }
 
-    Fraction operator/=(const Fraction& rhs)
+    Fraction& operator/=(const Fraction& rhs)
     {
         Simplify();
 
@@ -550,7 +586,7 @@ public:
         return *this;
     }
 
-    Fraction operator/=(const int64_t& rhs)
+    Fraction& operator/=(const int64_t& rhs)
     {
         Simplify();
 
@@ -564,7 +600,7 @@ public:
         Fraction slhs(*this, true);
         Fraction srhs(rhs, true);
 
-        return (slhs.GetNumerator() == srhs.GetNumerator() && slhs.GetDenominator() == slhs.GetDenominator());
+        return (slhs.GetNumerator() == srhs.GetNumerator() && slhs.GetDenominator() == srhs.GetDenominator());
     }
 
     bool operator!=(const Fraction& rhs) const
@@ -630,11 +666,27 @@ public:
         READWRITE(m_numerator);
         READWRITE(m_denominator);
         READWRITE(m_simplified);
+
+        if (ser_action.ForRead()) {
+            if (m_denominator == 0) {
+                throw std::ios_base::failure("deserialized Fraction has zero denominator");
+            }
+            if (m_numerator == std::numeric_limits<int64_t>::min()
+                || m_denominator == std::numeric_limits<int64_t>::min()) {
+                throw std::ios_base::failure("deserialized Fraction has INT64_MIN value");
+            }
+        }
     }
 
 private:
     int msb(const int64_t& n) const
     {
+        // std::abs(INT64_MIN) is undefined behavior (two's complement
+        // asymmetry). |INT64_MIN| = 2^63, so msb = 64.
+        if (n == std::numeric_limits<int64_t>::min()) {
+            return 64;
+        }
+
         int64_t abs_n = std::abs(n);
 
         int index = 0;

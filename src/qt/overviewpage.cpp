@@ -19,7 +19,13 @@
 #include "guiconstants.h"
 #include "gridcoin/voting/fwd.h"
 
+#include <functional>
+
 #include <QAbstractItemDelegate>
+#include <QApplication>
+#include <QClipboard>
+#include <QLabel>
+#include <QMenu>
 #include <QPainter>
 
 #define DECORATION_SIZE 40
@@ -60,7 +66,7 @@ public:
         qint64 amount = index.data(TransactionTableModel::AmountRole).toLongLong();
         bool confirmed = index.data(TransactionTableModel::ConfirmedRole).toBool();
 
-		QColor foreground = QColor(200, 0, 0);
+        QColor foreground = QColor(200, 0, 0);
         QVariant value = index.data(Qt::ForegroundRole);
         if(value.canConvert<QColor>())
         {
@@ -173,6 +179,31 @@ OverviewPage::OverviewPage(QWidget *parent) :
     showOutOfSyncWarning(true);
 
     showHideMRCToolButton();
+
+    // Set up right-click "Copy amount" context menus on balance labels
+    auto setupCopyMenu = [this](QLabel* label, std::function<qint64()> getAmount) {
+        label->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(label, &QWidget::customContextMenuRequested, this, [this, label, getAmount](const QPoint& pos) {
+            if (m_privacy) return;
+            QMenu menu;
+            menu.addAction(tr("Copy amount"), this, [this, getAmount]() {
+                int unit = walletModel->getOptionsModel()->getDisplayUnit();
+                QString text = BitcoinUnits::format(unit, getAmount());
+                text.remove(BitcoinUnits::THIN_SPACE);
+                QApplication::clipboard()->setText(text);
+            });
+            menu.exec(label->mapToGlobal(pos));
+        });
+    };
+
+    setupCopyMenu(ui->headerBalanceLabel, [this]() { return currentBalance; });
+    setupCopyMenu(ui->balanceLabel, [this]() { return currentBalance; });
+    setupCopyMenu(ui->stakeLabel, [this]() { return currentStake; });
+    setupCopyMenu(ui->unconfirmedLabel, [this]() { return currentUnconfirmedBalance; });
+    setupCopyMenu(ui->immatureLabel, [this]() { return currentImmatureBalance; });
+    setupCopyMenu(ui->totalLabel, [this]() {
+        return currentBalance + currentStake + currentUnconfirmedBalance + currentImmatureBalance;
+    });
 }
 
 void OverviewPage::handleTransactionClicked(const QModelIndex &index)
@@ -301,8 +332,8 @@ void OverviewPage::setHeight(int height, int height_of_peers, bool in_sync)
         percent_progress = height * 100 / height_of_peers;
 
         text += QString(" of %1 (%2\%)")
-                .arg(QString::number(height_of_peers))
-                .arg(QString::number(percent_progress));
+                .arg(QString::number(height_of_peers),
+                     QString::number(percent_progress));
     }
 
     ui->blocksLabel->setText(text);
@@ -373,7 +404,7 @@ void OverviewPage::setResearcherModel(ResearcherModel *researcherModel)
     connect(researcherModel, &ResearcherModel::researcherChanged, this, &OverviewPage::updateResearcherStatus);
     connect(researcherModel, &ResearcherModel::magnitudeChanged, this, &OverviewPage::updateMagnitude);
     connect(researcherModel, &ResearcherModel::accrualChanged, this, &OverviewPage::updatePendingAccrual);
-    connect(researcherModel, &ResearcherModel::beaconChanged, this, &OverviewPage::updateResearcherAlert);
+    connect(researcherModel, &ResearcherModel::beaconChanged, this, &OverviewPage::updateResearcherStatus);
 
     // Show or hide the MRC request tool button based on the researcher and beacon status.
     connect(researcherModel, &ResearcherModel::researcherChanged, this, &OverviewPage::showHideMRCToolButton);
@@ -556,7 +587,7 @@ void OverviewPage::showHideMRCToolButton()
     }
 
     if (!researcherModel->hasActiveBeacon()
-            || researcherModel->configuredForInvestorMode()
+            || researcherModel->configuredForNoncruncherMode()
             || researcherModel->detectedPoolMode()) {
         ui->mrcRequestToolButton->hide();
         return;

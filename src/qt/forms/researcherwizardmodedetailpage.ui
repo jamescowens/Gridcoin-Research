@@ -42,7 +42,7 @@
       <string>&lt;html&gt;
 &lt;head/&gt;
 &lt;body&gt;
-&lt;p&gt;You can participate as either a miner or investor. &lt;span style=&quot; font-weight:600;&quot;&gt;Miners&lt;/span&gt; earn Gridcoin by participating in whitelisted BOINC projects. To redeem their rewards, miners must stake blocks. &lt;span style=&quot; font-weight:600;&quot;&gt;Solo Miners&lt;/span&gt; stake blocks on their own which typically requires a balance of at least 5000 GRC. &lt;span style=&quot; font-weight:600;&quot;&gt;Pool Miners&lt;/span&gt; avoid this upfront investment by letting a third party (the pool) stake blocks on their behalf. Pool mining is recommended for new users with a low initial balance. &lt;span style=&quot; font-weight:600;&quot;&gt;Investors&lt;/span&gt; own Gridcoin but do not participate in BOINC mining. By using their balance to stake blocks, investors help to secure the network and are rewarded 10 GRC per block.&lt;/p&gt;
+&lt;p&gt;You can participate as either a miner or non-cruncher. &lt;span style=&quot; font-weight:600;&quot;&gt;Miners&lt;/span&gt; earn Gridcoin by participating in whitelisted BOINC projects. To redeem their rewards, miners must stake blocks. &lt;span style=&quot; font-weight:600;&quot;&gt;Solo Miners&lt;/span&gt; stake blocks on their own which typically requires a balance of at least 5000 GRC. &lt;span style=&quot; font-weight:600;&quot;&gt;Pool Miners&lt;/span&gt; avoid this upfront investment by letting a third party (the pool) stake blocks on their behalf. Pool mining is recommended for new users with a low initial balance. &lt;span style=&quot; font-weight:600;&quot;&gt;Non-crunchers&lt;/span&gt; own Gridcoin but do not participate in BOINC mining. By using their balance to stake blocks, non-crunchers help to secure the network and are rewarded 10 GRC per block.&lt;/p&gt;
 &lt;/body&gt;
 &lt;/html&gt;</string>
      </property>
@@ -65,7 +65,7 @@
         <x>0</x>
         <y>0</y>
         <width>610</width>
-        <height>312</height>
+        <height>310</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -190,7 +190,7 @@
             </widget>
            </item>
            <item row="5" column="2" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-            <widget class="QLabel" name="investorDecentralizedIconLabel">
+            <widget class="QLabel" name="noncruncherDecentralizedIconLabel">
              <property name="text">
               <string/>
              </property>
@@ -203,7 +203,7 @@
             </widget>
            </item>
            <item row="4" column="2" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-            <widget class="QLabel" name="investorSecureNetworkIconLabel">
+            <widget class="QLabel" name="noncruncherSecureNetworkIconLabel">
              <property name="text">
               <string/>
              </property>
@@ -359,7 +359,7 @@
             </widget>
            </item>
            <item row="2" column="2" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-            <widget class="ClickLabel" name="investorBoincRewardsIconLabel">
+            <widget class="ClickLabel" name="noncruncherBoincRewardsIconLabel">
              <property name="text">
               <string/>
              </property>
@@ -385,7 +385,7 @@
             </widget>
            </item>
            <item row="3" column="2" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-            <widget class="QLabel" name="investorBlockRewardIconLabel">
+            <widget class="QLabel" name="noncruncherBlockRewardIconLabel">
              <property name="text">
               <string/>
              </property>
@@ -398,7 +398,7 @@
             </widget>
            </item>
            <item row="7" column="2" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-            <widget class="QLabel" name="investorKeepRewardIconLabel">
+            <widget class="QLabel" name="noncruncherKeepRewardIconLabel">
              <property name="text">
               <string/>
              </property>
@@ -411,12 +411,12 @@
             </widget>
            </item>
            <item row="1" column="2" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-            <widget class="QRadioButton" name="investorRadioButton">
+            <widget class="QRadioButton" name="noncruncherRadioButton">
              <property name="styleSheet">
               <string notr="true">font-weight: bold;</string>
              </property>
              <property name="text">
-              <string>Investor</string>
+              <string>Non-cruncher</string>
              </property>
              <attribute name="buttonGroup">
               <string notr="true">modeButtonGroup</string>
@@ -450,7 +450,7 @@
             </widget>
            </item>
            <item row="8" column="2" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-            <widget class="QLabel" name="investorUpfrontInvestmentIconLabel">
+            <widget class="QLabel" name="noncruncherUpfrontInvestmentIconLabel">
              <property name="text">
               <string/>
              </property>
@@ -463,7 +463,7 @@
             </widget>
            </item>
            <item row="6" column="2" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-            <widget class="QLabel" name="investorVoteIconLabel">
+            <widget class="QLabel" name="noncruncherVoteIconLabel">
              <property name="text">
               <string/>
              </property>
@@ -509,7 +509,7 @@
             </widget>
            </item>
            <item row="9" column="2" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-            <widget class="QLabel" name="investorBoincLeaderboardsIconLabel">
+            <widget class="QLabel" name="noncruncherBoincLeaderboardsIconLabel">
              <property name="text">
               <string/>
              </property>

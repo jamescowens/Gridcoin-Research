@@ -53,11 +53,11 @@ ResearcherPtr g_researcher = std::make_shared<Researcher>();
 std::atomic<bool> g_researcher_dirty(true);
 
 //!
-//! \brief Change investor mode and set the email address directive in the
+//! \brief Change non-cruncher mode and set the email address directive in the
 //! read-write JSON settings file
 //!
 //! \param email The email address to update the directive to. If empty, set
-//! the configuration to investor mode.
+//! the configuration to non-cruncher mode.
 //!
 //! \return \c false if an error occurs during the update.
 //!
@@ -65,12 +65,15 @@ bool UpdateRWSettingsForMode(const ResearcherMode mode, const std::string& email
 {
     std::vector<std::pair<std::string, util::SettingsValue>> settings;
 
-    if (mode == ResearcherMode::INVESTOR) {
+    // Ensure old (legacy) investor key is removed.
+    settings.push_back(std::make_pair("investor", util::SettingsValue(UniValue::VNULL)));
+
+    if (mode == ResearcherMode::NONCRUNCHER) {
         settings.push_back(std::make_pair("email", util::SettingsValue(UniValue::VNULL)));
-        settings.push_back(std::make_pair("investor", "1"));
+        settings.push_back(std::make_pair("noncruncher", "1"));
     } else if (mode == ResearcherMode::SOLO) {
         settings.push_back(std::make_pair("email", util::SettingsValue(email)));
-        settings.push_back(std::make_pair("investor", "0"));
+        settings.push_back(std::make_pair("noncruncher", "0"));
     }
 
     return ::updateRwSettings(settings);
@@ -467,8 +470,8 @@ void StoreResearcher(Researcher context)
         case ResearcherStatus::NO_BEACON:
             msMiningErrors = _("Staking Only - No active beacon");
             break;
-        case ResearcherStatus::INVESTOR:
-            msMiningErrors = _("Staking Only - Investor Mode");
+        case ResearcherStatus::NONCRUNCHER:
+            msMiningErrors = _("Staking Only - Non-cruncher Mode");
             break;
     }
 
@@ -601,15 +604,9 @@ bool CheckBeaconPrivateKey(const CWallet* const wallet, const CPubKey& public_ke
     return true;
 }
 
-//!
-//! \brief Generate a new beacon key pair.
-//!
-//! \param cpid The participant's current primary CPID.
-//!
-//! \return A variant that contains the new public key if successful or a
-//! description of the error that occurred.
-//!
-AdvertiseBeaconResult GenerateBeaconKey(const Cpid& cpid)
+} // anonymous namespace
+
+AdvertiseBeaconResult GRC::GenerateBeaconKey(const Cpid& cpid)
 {
     LogPrintf("%s: Generating new keys for %s...", __func__, cpid.ToString());
 
@@ -643,6 +640,8 @@ AdvertiseBeaconResult GenerateBeaconKey(const Cpid& cpid)
 
     return public_key;
 }
+
+namespace {
 
 //!
 //! \brief Sign a new beacon payload with the beacon's private key.
@@ -747,6 +746,64 @@ AdvertiseBeaconResult SendBeaconContract(
 
     return AdvertiseBeaconResult(std::move(beacon.m_public_key));
 }
+
+} // anonymous namespace
+
+AdvertiseBeaconResult GRC::SendBeaconContractV3(
+    const Cpid& cpid,
+    Beacon beacon,
+    OwnershipProof proof,
+    const bool force)
+{
+    if (!IsV14Enabled(nBestHeight)) {
+        LogPrintf("WARNING: %s: v3 beacons not yet active (requires v14).", __func__);
+        return BeaconError::V14_NOT_ENABLED;
+    }
+
+    if (!force) {
+        if (g_recent_beacons.Try(cpid)) {
+            LogPrintf("%s: Beacon awaiting confirmation already", __func__);
+            return BeaconError::PENDING;
+        }
+
+        const BeaconOption current_beacon = GetBeaconRegistry().TryActive(cpid, GetAdjustedTime());
+
+        if (current_beacon) {
+            LogPrintf("%s: Active beacon already exists for CPID", __func__);
+            return BeaconError::NOT_NEEDED;
+        }
+    }
+
+    const BeaconError error = CheckBeaconTransactionViable(pwalletMain, cpid);
+
+    if (error != BeaconError::NONE) {
+        return error;
+    }
+
+    BeaconPayload payload(cpid, beacon, std::move(proof));
+
+    if (!SignBeaconPayload(payload)) {
+        return BeaconError::MISSING_KEY;
+    }
+
+    // v3 beacon payloads require contract version >= 3.
+    uint32_t contract_version = IsV13Enabled(nBestHeight) ? 3 : 2;
+
+    const auto result_pair = SendContract(
+        MakeContract<BeaconPayload>(contract_version, ContractAction::ADD, std::move(payload)));
+
+    if (!result_pair.second.empty()) {
+        return BeaconError::TX_FAILED;
+    }
+
+    AdvertiseBeaconResult result(std::move(beacon.m_public_key));
+
+    g_recent_beacons.Remember(cpid, result);
+
+    return result;
+}
+
+namespace {
 
 //!
 //! \brief Generate keys for and send a new beacon contract.
@@ -1074,7 +1131,7 @@ BeaconError AdvertiseBeaconResult::Error() const
 // -----------------------------------------------------------------------------
 
 Researcher::Researcher()
-    : m_mining_id(MiningId::ForInvestor())
+    : m_mining_id(MiningId::ForNoncruncher())
     , m_beacon_error(GRC::BeaconError::NONE)
 {
 }
@@ -1114,6 +1171,8 @@ void Researcher::RunRenewBeaconJob()
         return;
     }
 
+    LogPrintf("INFO: %s: Running renew beacon job for %s", __func__, researcher->Id().ToString());
+
     TRY_LOCK(cs_main, locked_main);
 
     if (!locked_main) {
@@ -1137,6 +1196,10 @@ void Researcher::RunRenewBeaconJob()
         }
 
         researcher->AdvertiseBeacon();
+    } else {
+        LogPrint(BCLog::LogFlags::BEACON,
+                 "INFO: %s: Skipping beacon renewal while within scraper beacon consensus window.",
+                 __func__);
     }
 }
 
@@ -1144,9 +1207,10 @@ std::string Researcher::Email()
 {
     std::string email;
 
-    // If the investor mode flag is set, it should override the email setting. This is especially important now
-    // that the read-write settings file is populated, which overrides the settings in the config file.
-    if (gArgs.GetBoolArg("-investor", false)) return email;
+    // If the non-cruncher mode flag is set, it should override the email setting. This is especially important now
+    // that the read-write settings file is populated, which overrides the settings in the config file. The legacy
+    // -investor argument is also supported for backward compatibility.
+    if (gArgs.GetBoolArg("-noncruncher", false) || gArgs.GetBoolArg("-investor", false)) return email;
 
     email = gArgs.GetArg("-email", "");
     email = ToLower(email);
@@ -1154,10 +1218,11 @@ std::string Researcher::Email()
     return email;
 }
 
-bool Researcher::ConfiguredForInvestorMode(bool log)
+bool Researcher::ConfiguredForNoncruncherMode(bool log)
 {
-    if (gArgs.GetBoolArg("-investor", false) || Researcher::Email() == "investor") {
-        if (log) LogPrintf("Investor mode configured. Skipping CPID import.");
+    if (gArgs.GetBoolArg("-noncruncher", false) || Researcher::Email() == "noncruncher"
+        || gArgs.GetBoolArg("-investor", false) || Researcher::Email() == "investor") {
+        if (log) LogPrintf("Non-cruncher mode configured. Skipping CPID import.");
         return true;
     }
 
@@ -1176,16 +1241,16 @@ void Researcher::MarkDirty()
 
 void Researcher::Reload()
 {
-    if (ConfiguredForInvestorMode(true)) {
-        StoreResearcher(Researcher()); // Investor
+    if (ConfiguredForNoncruncherMode(true)) {
+        StoreResearcher(Researcher()); // Non-cruncher
         return;
     }
 
-    // Don't force an empty email to investor mode for pool detection:
+    // Don't force an empty email to non-cruncher mode for pool detection:
     if (Researcher::Email().empty()) {
         LogPrintf(
             "WARNING: Please set 'email=<your BOINC account email>' in "
-            "gridcoinresearch.conf or 'investor=1' to decline research "
+            "gridcoinresearch.conf or 'noncruncher=1' to decline research "
             "rewards");
     }
 
@@ -1214,7 +1279,7 @@ void Researcher::Reload(MiningProjectMap projects, GRC::BeaconError beacon_error
 
     projects.ApplyTeamWhitelist(team_whitelist);
 
-    MiningId mining_id = MiningId::ForInvestor();
+    MiningId mining_id = MiningId::ForNoncruncher();
 
     // Enable a user to override CPIDs detected from BOINC's client_state.xml
     // file. This provides some flexibility for a user that needs to manage a
@@ -1228,7 +1293,7 @@ void Researcher::Reload(MiningProjectMap projects, GRC::BeaconError beacon_error
             LogPrintf("Configuration forces CPID: %s", mining_id.ToString());
         } else {
             LogPrintf("ERROR: invalid CPID in -forcecpid");
-            mining_id = MiningId::ForInvestor();
+            mining_id = MiningId::ForNoncruncher();
         }
     }
 
@@ -1300,9 +1365,9 @@ bool Researcher::Eligible() const
     return false;
 }
 
-bool Researcher::IsInvestor() const
+bool Researcher::IsNoncruncher() const
 {
-    return m_mining_id.Which() == MiningId::Kind::INVESTOR;
+    return m_mining_id.Which() == MiningId::Kind::NONCRUNCHER;
 }
 
 GRC::Magnitude Researcher::Magnitude() const
@@ -1381,7 +1446,7 @@ ResearcherStatus Researcher::Status() const
         return ResearcherStatus::NO_PROJECTS;
     }
 
-    return ResearcherStatus::INVESTOR;
+    return ResearcherStatus::NONCRUNCHER;
 }
 
 std::optional<Beacon> Researcher::TryBeacon() const
@@ -1436,7 +1501,7 @@ bool Researcher::ChangeMode(const ResearcherMode mode, std::string email)
 {
     email = ToLower(email);
 
-    if (mode == ResearcherMode::INVESTOR && ConfiguredForInvestorMode()) {
+    if (mode == ResearcherMode::NONCRUNCHER && ConfiguredForNoncruncherMode()) {
         return true;
     } else if (mode == ResearcherMode::SOLO && email == Email()) {
         return true;
@@ -1447,7 +1512,7 @@ bool Researcher::ChangeMode(const ResearcherMode mode, std::string email)
     }
 
     gArgs.ForceSetArg("-email", email);
-    gArgs.ForceSetArg("-investor", mode == ResearcherMode::INVESTOR ? "1" : "0");
+    gArgs.ForceSetArg("-noncruncher", mode == ResearcherMode::NONCRUNCHER ? "1" : "0");
 
     Reload();
 

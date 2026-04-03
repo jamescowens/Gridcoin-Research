@@ -4,6 +4,95 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [5.5.0.0], 2026-04-04, mandatory, "Natasha"
+
+### Added
+
+- consensus: set mainnet fork heights for Natasha mandatory (v13 at 3989800, v14 at 3990000) #2907 (@jamescowens)
+- consensus, script, rpc: add BIP68, BIP112/CSV, block v14 activation, and HTLC support (createhtlc, claimhtlc, refundhtlc) #2846 (@jamescowens)
+- consensus: set testnet v14 activation height at 3126500 #2874 (@jamescowens)
+- beacon: add BOINC account ownership proof verification for v3 beacons; add beaconauth and advertisebeaconv3 RPCs #2851 (@jamescowens)
+- qt: add v3 beacon ownership proof GUI wizard page #2856 (@jamescowens)
+- consensus: set testnet v13 mandatory height at 2870000; increment PROTOCOL_VERSION to 180328. Block v13 activates mandatory sidestaking, superblock v3 contracts, the AutoGreylist system, changeable magnitude weight factor and magnitude unit, and enhanced CBR #2800 (@jamescowens)
+- polls, voting, staking: changeable magnitude unit and magnitude weight factor via protocol entries; refactored GetConstantBlockReward with CBR ceiling raised to 500 GRC; corrected AVW computation for balance-only polls #2781 (@jamescowens)
+- testnet: set AutoGreylistAuditHeight mandatory at 3111000 #2842 (@jamescowens)
+- poll: implement poll notifications in core and testpollnotification RPC #2804 (@jamescowens)
+- qt: add sync overlay and out-of-sync action guards #2893 (@jamescowens)
+- qt: add "Add Existing" button to receive tab address book #2890 (@jamescowens)
+- wallet, qt: add subtract fee from amount option to send dialog #2875 (@jamescowens)
+- rpc: add listsidestakes RPC for combined sidestake view #2887 (@jamescowens)
+- qt: add thin space thousands separators to coin amounts (closes #1040) #2849 (@jamescowens)
+- qt, doc: add transaction type tooltips, Help menu links, and transaction-types.md (closes #2808) #2850 (@jamescowens)
+- contrib: add bash completion for gridcoinresearchd and gridcoinresearch #2884 (@gridcoin-community)
+- refactor, net: orphan block manager with bounded storage, time-based expiry, and network hardening #2903 (@jamescowens)
+- net: bump protocol version to 180329 for block v14 mandatory; move grace period to per-network consensus param #2906 (@jamescowens)
+- build: add Flatpak support with CI/CD artifact #2861 (@jamescowens)
+- build, ci, cd: add official Docker container images (headless and GUI) #2855 (@jamescowens)
+- build: add ENABLE_DEBUG_LOCKORDER CMake option #2860 (@jamescowens)
+- build: define DEBUG macro for CMake Debug builds #2871 (@jamescowens)
+- build: implement Alpine/Musl Linux CI #2832 (@jamescowens)
+- build: add Qt6 depends support and CMake compatibility #2826 (@jamescowens)
+- qt, build, ci: add optional Qt6 support #2798 (@CyberTailor)
+- build: use CPack to generate NSIS installer for Windows #48 (@CyberTailor)
+- ci: fix macOS DMG packaging and add macOS Intel DMG CI build #2864 (@jamescowens)
+- doc: replace coding.txt with Bitcoin developer-notes.md #2186 (@jamescowens)
+- doc: add quality control checklist (clinerules) #2854 (@PrestackI)
+
+### Changed
+
+- autogreylist: remove ZCD, WAS, and meets-greylist-criteria fields from getautogreylist history output #2817 (@jamescowens)
+- beacon: change beacon renewal job interval #2806 (@jamescowens)
+- build: remove Autotools build system entirely #2843 (@jamescowens)
+- build: fix version string duplication and stale autotools artifact pollution in CMake builds #2830 (@jamescowens)
+- build: add multiple depends source fallback capability #2824 (@jamescowens)
+- build: only link Boost::System if Boost < 1.89 #2823 (@2001herne)
+- build: bump libsecp256k1 to v0.6.0 #2801 (@div72)
+- build: cmake build fixes for missing symbol checks and pipe2 detection #2821 (@fedux)
+- sync: improve DEBUG_LOCKORDER diagnostic output #2868 (@jamescowens)
+- refactor: replace "investor" terminology with "non-cruncher" throughout #2805 (@jamescowens)
+- ci: fix ARM64 cross-build, Arch Linux build, and update GitHub Actions to Node.js 24 #2905 (@jamescowens)
+- ci: add boost-libs for Arch Linux package split #2905 (@jamescowens)
+
+### Removed
+
+- build: remove Autotools build system (configure.ac, Makefile.am, m4 macros) #2843 (@jamescowens)
+- build: remove stale generated test data headers from source tree #2845 (@jamescowens)
+
+### Fixed
+
+- consensus, autogreylist: fix autogreylisting flutter during scraper quiescent periods #2840 (@jamescowens)
+- autogreylist: fix stack-use-after-return in AutoGreylist #2802 (@jamescowens)
+- staking: fix mandatory sidestake miscounting when staker address matches sidestake address #2848 (@jamescowens)
+- voting: fix unprotected chain state reads during vote tallying #2853 (@jamescowens)
+- voting, doc: fix false-positive lockorder warning in poll registry and document LOCK2 semantics #2867 (@jamescowens)
+- voting: fix null pointer dereference in PollRegistry::DeletePoll during chain reorganization #2904 (@jamescowens)
+- voting: initialize buildPollTable timer for daemon/RPC callers #2908 (@jamescowens)
+- researcher: fix stale GUI researcher status after beacon activation via superblock #2852 (@jamescowens)
+- beacon: fix stale GUI researcher status after beacon revocation #2857 (@jamescowens)
+- rpc: fix params index bug in addkey for project auto_greylist_override contract type #2858 (@jamescowens)
+- rpc: make revokebeacon CPID parameter optional (defaults to current CPID) #2859 (@jamescowens)
+- scraper: fix lock ordering inconsistency in RecvManifest #2872 (@jamescowens)
+- scraper: fix scraper_net unserialize check to include ALL_BUT_DELETED projects #2813 (@jamescowens)
+- net: fix signed integer overflow UB in protocol version disconnect check #2906 (@jamescowens)
+- fix: use hash comparison in CTransaction::operator== (was missing hashBoinc/vContracts) #2899 (@PrestackI)
+- refactor: fix Fraction operator== bug and harden against INT64_MIN UB #2876 (@jamescowens)
+- consensus: fix misleading ERROR log for voluntary sidestake to mandatory address #2891 (@jamescowens)
+- wallet, qt: fix subtract-fee failing when sending entire balance; fix post-creation fee check #2875 (@jamescowens)
+- build, qt: fix DebugMessageHandler linkage and DEP_LIB path resolution #2883 (@jamescowens)
+- qt, init: fix Unicode data directory path handling on Windows #2863 (@jamescowens)
+- util: fix BOINC data directory resolution when native and Flatpak coexist #2862 (@jamescowens)
+- qt: fix macOS quit hang with QCoreApplication::exit #2873 (@jamescowens)
+- gui: fix fractional scaling with Qt6 #2829 (@jamescowens)
+- gui: fix external adapter project display logic #2811 (@jamescowens)
+- gui: fix researcher status display after beacon state changes on main screen #2810 (@jamescowens)
+- gui, init: fix "Blocks Verified" progress message total count #2814 (@ZiggySchulz)
+- compatibility: fix Qt6 and other compiler warnings #2827 (@jamescowens)
+- gui: fix build failures with -Werror=odr,lto-type-mismatch in notificator #2836 (@Kangie)
+- lint: fix include circular dependency linter false positives #2844 (@jamescowens)
+- build: fix configure.ac for Boost >= 1.89 compatibility #2824 (@jamescowens)
+- build: add changed build folders to git ignore #2879 (@ZiggySchulz)
+- doc: fix minor comment issues #2815 (@friendlyping)
+
 ## [5.4.9.0], 2025-02-16, leisure
 
 ### Added
@@ -248,7 +337,7 @@ none
  - gui: Translation updates #2599 (@jamescowens)
  - build: update CI for linter and actions version #2606 (@jamescowens)
  - gui: Update translations #2608 (@jamescowens)
- 
+
 ### Removed
  - refactor: remove unused c-string variant of atoi64() #2562 (@barton2526)
  - refactor: Remove unused CDataStream::rdbuf method #2585 (@div72)
@@ -553,9 +642,9 @@ none
  - gui: Show GUI error dialog if command line parsing fails #2218 (@jamescowens)
  - gui: Implement close confirmation. #2216 (@denravonska)
  - build: Use -fstack-reuse=none #2232 (@barton2526)
- 
+
 ### Changed
- - doc: Update build doc #2078 (@iFoggz) 
+ - doc: Update build doc #2078 (@iFoggz)
  - gui: Normalize button and input control appearance #2096 (@cyrossignol)
  - consensus: Implement GetMinimumRequiredConnectionsForStaking #2097 (@jamescowens)
  - refactor: move CTransaction to primitives #2006 (@div72)
@@ -667,7 +756,7 @@ none
  - gui: Avoid refreshing GUI researcher status while out-of-sync #2068 (@cyrossignol)
  - consensus: Reimplement checkpoint-based spam protection #2084 (@cyrossignol)
  - consensus: Verify hardened checkpoints on start up #2087 (@cyrossignol)
- 
+
 ### Changed
  - test: autogenerate data headers #2030 (@div72)
  - doc: Change copyright years to 2021 #2042 (@caraka)
@@ -681,7 +770,7 @@ none
  - log: Adjust logging #2076 (@jamescowens)
  - gui: Change scraper tab to Inconsolata monospace font #2085 (@jamescowens)
  - researcher: Change beacon deferment fix to reference nActiveBeforeSB #2092 (@jamescowens)
- 
+
 ### Removed
  - net: Clean up mandatory protocol version transition #2080 (@cyrossignol)
  - refactor: Remove LessVerbose() function #2089 (@cyrossignol)
@@ -699,7 +788,7 @@ none
  - gui: Fix shutdown response for failed core init #2088 (@cyrossignol)
  - researcher: Fix deferment of beacon renewal in superblock window #2090 (@cyrossignol)
  - gui: Fix typo in beacon status refresh #2091 (@div72)
- 
+
 ## [5.3.0.0] 2021-03-16, mandatory
 ### Fixed
  - consensus, accrual: Fix accrual post hard-fork at 2197000 #2053 (@jamescowens, @div72, @cyrossignol)
@@ -788,7 +877,7 @@ none
  - gui: Adds detection if version is below last mandatory #1939 (@jamescowens)
  - contract: Reimplement legacy administrative contract validation #1943 (@cyrossignol)
  - voting: Add poll choices to "gettransaction" RPC contract output #1948 (@cyrossignol)
- 
+
 ### Changed
  - doc: Fix link in build-openbsd.md #1924 (@Pythonix)
  - voting: Decrease poll duration to 90 days #1936 (@cyrossignol)
@@ -1170,7 +1259,7 @@ none
    - new SB format and packing for bv11
    - new SB contract hashing (native) for bv11
    - changes to accommodate new beacon approach
-   - Implement in memory versioning for team file ETags 
+   - Implement in memory versioning for team file ETags
  - Implement local dynamic team requirement removal and whitelist #1502 (@cyrossignol)
 
 ### Changed
@@ -1352,7 +1441,7 @@ none
  - Stress testing script  (@Foggyx420)
  - refhash command also on Linux (@jamescowens)
  - Documentation for out of source build (@thecharlatan)
- 
+
 ### Changed
  - More accurate time to stake and network weight estimations (@jamescowens)
  - Compressed image files (@Peppernrino)
@@ -1364,7 +1453,7 @@ none
  - Pretty-print rpc output (@denravonska)
  - Logging for debugging reward computation (@tomasbrod)
  - Clean-up beacon manipulation (@Foggyx420)
- 
+
 ### Fixed
  - Building errors on Mac related to SVG framework (@thecharlatan)
  - neural data response
@@ -1385,7 +1474,7 @@ none
  - GUI FAQ (@Lenni)
  - unusable limit from magnitude command (@Foggyx420)
  - cgminer support (@Foggyx420)
- - deprecated menu items (@jamescowens) 
+ - deprecated menu items (@jamescowens)
 
 ## [3.7.13.0] 2018-06-02, leisure
 ### Fixed
@@ -1401,7 +1490,7 @@ none
 ### Added
  - Neural Report RPC command #1063 (@tomasbrod).
  - GUI wallet redign with new icons and purple native style (@skcin).
- 
+
 ### Changed
  - Switch to autotools and Depends from Bitcoin #487 (@thecharlatan).
  - Clean and update docs for new build system, remove outdated #828 (@thecharlatan).
@@ -1423,7 +1512,7 @@ none
  - Upgrade menu #1094 (@jamescowens).
  - Acid test functions #871 (@tomasbrod).
  - Qt4 support #801 (@denravonska).
- 
+
 ## [3.7.11.0] 2018-03-15, leisure
 ### Fixed
  - Fix wallet being locked while flushing. It now requires a clean shutdown
@@ -1585,7 +1674,7 @@ Internal test version used to sort out the forks.
  - Fix an issue where multiple beacons could be advertised in rapid
    succession #604 (@Foggyx420).
  - Stake weight in the UI will no longer include old DPOR weght #602
-   (@Foggyx420). 
+   (@Foggyx420).
  - Fix stake modifier mismatch which caused nodes to get stuck on first
    V8 block #581 (@tomasbrod).
  - Fix beacon auto advertisement issue when done automatically #580 (@Foggyx420).
@@ -1651,7 +1740,7 @@ Internal test version used to sort out the forks.
 
 ## [3.6.0.0] - 2017-08-14
 ### Fixed
- - Fix a crash when starting up as a new user #488 (@Foggyx420, 
+ - Fix a crash when starting up as a new user #488 (@Foggyx420,
    @denravonska).
  - Fix an out of memory crash when syncing from 0 #508 (@tomasbrod).
 
@@ -1659,7 +1748,7 @@ Internal test version used to sort out the forks.
 ### Changed
  - Staking cleanup #301 (@tomasbrod). This also solves several other issues:
  - UI:
-    - Wallet window can now be made smaller #384 (@skcin). 
+    - Wallet window can now be made smaller #384 (@skcin).
     - Interest and Research subsidy visible in getmininginfo (@tomasbrod).
     - External links now use HTTPS where possible, and the code has been cleaned
       up #339 (@skcin).
@@ -1669,7 +1758,7 @@ Internal test version used to sort out the forks.
    the Bitcoin source tree: Arabic, Belarusian, Bulgarian, Greek, Persian,
    Hebrew, Hindi, Japanese, Georgian, Kirghiz, Serbian, Thai, Ukrainian,
    Urdu and Chinese.
- - Don't print the "Bootup" and "Signing block" messages unless fDebug (@tomasbrod). 
+ - Don't print the "Bootup" and "Signing block" messages unless fDebug (@tomasbrod).
  - Print beacons as they are loaded and debug3=true (@tomasbrod).
  - Show superblock information in getblock (@tomasbrod).
  - Code cleanup (@skcin).
@@ -1684,7 +1773,7 @@ Internal test version used to sort out the forks.
  - Client no longer has to be restarted for a beacon to activate #253
    (@Foggyx420).
  - Fixed a coin age bug which made it hard to stake on testnet (@denravonska)
- - Fixed reloading of polls in the voting GUI #431 (@skcin) 
+ - Fixed reloading of polls in the voting GUI #431 (@skcin)
  - Fix crash when listing receivedby on addresses with no transactions,
    #456 (@denravonska).
  - Fix buffer overflow in TX message unscambling #468 (@tomasbrod).
@@ -1801,7 +1890,7 @@ Internal test version used to sort out the forks.
 - Add man pages to doc folder #135 (@caraka).
 
 ### Changed
- - Windows are now resizable 
+ - Windows are now resizable
  - Replace Windows voting dialog with the new dialog.
  - Update Gridcoin icon on Windows.
  - Enable C++11.

@@ -1,0 +1,1072 @@
+name: CMake Production Builds
+
+on:
+  # Trigger on any push/PR to any branch (matches production/compatibility workflows)
+  push:
+    branches:
+      - '**'
+    # AND run on release tags (triggers the deploy job)
+    tags:
+      - "v*"
+      - "5.*"
+  pull_request:
+    branches:
+      - '**'
+  # Manual trigger for debugging
+  workflow_dispatch:
+
+env:
+  # Global settings for all jobs
+  BUILD_TYPE: Release
+  OS_REF: ubuntu-24.04
+  USE_CCACHE: true
+
+jobs:
+  # ----------------------------------------------------------------------
+  # JOB 1: Depends Builds (Linux Static & Windows Cross)
+  # ----------------------------------------------------------------------
+  depends-builds:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux Static
+          - name: Linux Static (Depends)
+            host: x86_64-pc-linux-gnu
+            build_dir: build_linux_depends
+            # Pass specific flags for static linux build
+            cmake_args: >
+              -DSTATIC_LIBS=ON
+              -DCMAKE_CXX_FLAGS="-fPIE"
+              -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++ -Wl,-Bdynamic"
+            cpack_generator: TGZ
+
+          # Windows Cross-Compile
+          - name: Windows Cross-Compile
+            host: x86_64-w64-mingw32
+            build_dir: build_win64
+            # Pass specific flags for Windows cross build
+            cmake_args: >
+              -DSYSTEM_XXD=ON
+              -DCMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/wine
+              -DCMAKE_EXE_LINKER_FLAGS="-static"
+            cpack_generator: NSIS64
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # 1. Install Host Tools
+      - name: Install System Dependencies
+        run: |
+          source ./install_dependencies.sh
+          install_deps all false false
+
+          # Ensure wine is installed for Windows testing
+          if [[ "${{ matrix.host }}" == *"mingw"* ]]; then
+             sudo dpkg --add-architecture i386
+             sudo apt-get update
+             sudo apt-get install -y wine-stable wine64 wine32
+          fi
+
+      # 2. Setup Concurrency (New Step)
+      - name: Setup Concurrency
+        run: |
+          if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
+            echo "CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "CTEST_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "Concurrency: Auto-detected $(nproc) cores."
+          else
+            echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
+          fi
+
+      # 3. Cache Depends
+      - name: Cache Depends
+        id: cache-depends
+        uses: actions/cache@v5
+        with:
+          path: |
+            depends/built
+            depends/work
+            depends/${{ matrix.host }}
+            depends/sdk-sources
+          key: ${{ env.os_ref }}-depends-${{ matrix.host }}-${{ hashFiles('depends/packages/*', 'depends/Makefile', 'depends/qt.include') }}
+
+      # 4. Build Depends
+      - name: Build Depends
+        if: steps.cache-depends.outputs.cache-hit != 'true'
+        run: |
+          cd depends
+          # Make (legacy) needs explicit -j flag; we use the variable if set, else nproc
+          make HOST=${{ matrix.host }} -j${CMAKE_BUILD_PARALLEL_LEVEL:-$(nproc)}
+
+      # 5. Configure CMake
+      - name: Configure CMake
+        run: |
+          CC_LAUNCHER='-DCMAKE_C_COMPILER_LAUNCHER=ccache'
+          CXX_LAUNCHER='-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
+          TOOLCHAIN_PATH=$(pwd)/depends/${{ matrix.host }}/toolchain.cmake
+          DEP_LIB_PATH=$(pwd)/depends/${{ matrix.host }}/lib
+
+          # Handle Qt6 Cross-Compilation (Windows)
+          HOST_TOOLS_DIR="depends/${{ matrix.host }}/native"
+
+          if [ -d "$HOST_TOOLS_DIR" ]; then
+             QT_HOST_PATH="$(pwd)/$HOST_TOOLS_DIR"
+             QT_HOST_PATH_CMAKE_DIR="${QT_HOST_PATH}/lib/cmake"
+             echo "Cross-compiling detected. Setting QT_HOST_PATH=$QT_HOST_PATH"
+             EXTRA_CMAKE_ARGS="-DQT_HOST_PATH=$QT_HOST_PATH -DQT_HOST_PATH_CMAKE_DIR=$QT_HOST_PATH_CMAKE_DIR"
+          else
+             EXTRA_CMAKE_ARGS=""
+          fi
+
+          cmake -B ${{ matrix.build_dir }} \
+            --toolchain "$TOOLCHAIN_PATH" \
+            -DENABLE_GUI=ON \
+            -DUSE_QT6=ON \
+            -DENABLE_UPNP=ON \
+            -DDEFAULT_UPNP=ON \
+            -DENABLE_TESTS=ON \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DDEP_LIB="${DEP_LIB_PATH}" \
+            $EXTRA_CMAKE_ARGS \
+            $CC_LAUNCHER \
+            $CXX_LAUNCHER \
+            ${{ matrix.cmake_args }}
+
+      # 6. Build
+      - name: Build
+        # Removed explicit --parallel flag; CMake reads the env var automatically
+        run: cmake --build ${{ matrix.build_dir }}
+
+      # 7. Hermeticity Check
+      - name: Verify Hermeticity (Linux)
+        if: contains(matrix.host, 'linux')
+        run: |
+          echo "Checking binaries for unexpected shared library dependencies..."
+
+          # Use readelf -d to inspect NEEDED entries from the ELF dynamic section.
+          # Allowed shared libraries: libc.so.6 and libm.so.6 only.
+          ALLOWED='libc\.so|libm\.so'
+
+          # Check both the GUI (src/qt/) and Daemon (src/)
+          BINARIES="${{ matrix.build_dir }}/src/qt/gridcoinresearch ${{ matrix.build_dir }}/src/gridcoinresearchd"
+
+          fail_count=0
+
+          for bin in $BINARIES; do
+            if [ -f "$bin" ]; then
+              echo "------------------------------------------------"
+              echo "Scanning: $bin"
+
+              # Extract NEEDED entries from ELF dynamic section
+              NEEDED=$(readelf -d "$bin" 2>/dev/null | grep '(NEEDED)' | sed 's/.*\[//;s/\]//' || true)
+              LEAKS=$(echo "$NEEDED" | grep -vE "$ALLOWED" | grep -v '^$' || true)
+
+              if [ -n "$LEAKS" ]; then
+                echo "::error::NON-HERMETIC DEPENDENCY DETECTED!"
+                echo "The following system libraries are dynamically linked (unexpected):"
+                echo "$LEAKS"
+                fail_count=$((fail_count+1))
+              else
+                echo "Verified hermetic. NEEDED: $(echo $NEEDED | tr '\n' ' ')"
+              fi
+            else
+              # Warn but don't fail immediately if a binary is missing (e.g. GUI disabled)
+              echo "::warning::Binary not found at expected path: $bin"
+            fi
+          done
+
+          if [ "$fail_count" -gt 0 ]; then
+            echo "::error::Hermeticity check failed for $fail_count binary(ies)."
+            exit 1
+          fi
+
+      # 8a. Test (Linux)
+      - name: Run Tests (Linux)
+        if: contains(matrix.host, 'linux')
+        env:
+          QT_QPA_PLATFORM: offscreen
+        # Removed -j flag; CTest reads env var
+        run: ctest --test-dir ${{ matrix.build_dir }} --output-on-failure
+
+      # 8b. Test (Windows)
+      - name: Run Tests (Windows)
+        if: contains(matrix.host, 'mingw')
+        env:
+          QT_QPA_PLATFORM: offscreen
+          WINEDLLOVERRIDES: "mscoree,mshtml="
+          WINEARCH: win64
+        run: |
+          wineboot --init || true
+          # Removed -j flag; CTest reads env var
+          ctest --test-dir ${{ matrix.build_dir }} --output-on-failure
+
+      # 9. Package
+      - name: Create Package
+        run: |
+          cpack -G ${{ matrix.cpack_generator }} --config ${{ matrix.build_dir }}/CPackConfig.cmake -B release_packages
+
+      # 10. Prepare Flat Artifacts
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p dist
+
+          # Linux: Flatten Tarball
+          if [[ "${{ matrix.host }}" == *"linux"* ]]; then
+             cp release_packages/*.tar.gz dist/
+          fi
+
+          # Windows: Flatten Installer, Daemon, AND GUI (with version rename)
+          if [[ "${{ matrix.host }}" == *"mingw"* ]]; then
+             # 1. Copy Installer
+             INSTALLER=$(find release_packages -maxdepth 1 -name "gridcoin-*-setup.exe" | head -n 1)
+             if [ -f "$INSTALLER" ]; then
+               cp "$INSTALLER" dist/
+
+               # 2. Extract Version from Installer name (e.g. gridcoin-5.4.9.6-win64-setup.exe)
+               BASENAME=$(basename "$INSTALLER")
+               VERSION=$(awk -F '-' '{ print $2 }' <<< "$BASENAME")
+
+               # 3. Copy and Rename Daemon (Stripped binary in bin/)
+               DAEMON_SRC="${{ matrix.build_dir }}/bin/gridcoinresearchd.exe"
+               if [ -f "$DAEMON_SRC" ]; then
+                  cp "$DAEMON_SRC" "dist/gridcoinresearchd-${VERSION}-win64.exe"
+               else
+                  echo "::warning::Daemon binary not found at $DAEMON_SRC"
+               fi
+
+               # 4. Copy and Rename GUI (Stripped binary in bin/)
+               GUI_SRC="${{ matrix.build_dir }}/bin/gridcoinresearch.exe"
+               if [ -f "$GUI_SRC" ]; then
+                  cp "$GUI_SRC" "dist/gridcoinresearch-${VERSION}-win64.exe"
+               else
+                  echo "::warning::GUI binary not found at $GUI_SRC"
+               fi
+             else
+               # Fallback just in case naming changes
+               cp release_packages/*.exe dist/ || true
+             fi
+          fi
+
+      # 11. Upload Artifacts
+      - name: Upload Artifacts
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: gridcoin-${{ matrix.host }}
+          path: |
+            release_packages/*.tar.gz
+            release_packages/*.exe
+          retention-days: 5
+
+  # ----------------------------------------------------------------------
+  # JOB 2: macOS Native
+  # ----------------------------------------------------------------------
+  macos-native-arm64:
+    name: macOS ARM64 (Homebrew Qt6)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Dependencies
+        run: |
+          brew update
+          brew install qt boost openssl libevent miniupnpc qrencode libzip ccache cmake
+
+      - name: Configure Ccache
+        uses: actions/cache@v5
+        with:
+          path: /Users/runner/Library/Caches/ccache
+          key: ccache-macos-arm64-${{ github.sha }}
+          restore-keys: ccache-macos-arm64-
+
+      # Setup Concurrency for macOS too
+      - name: Setup Concurrency
+        run: |
+          if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
+            # macOS usually uses sysctl -n hw.logicalcpu, but nproc might not exist
+            # We'll use the sysctl command directly
+            CORES=$(sysctl -n hw.logicalcpu)
+            echo "CMAKE_BUILD_PARALLEL_LEVEL=$CORES" >> $GITHUB_ENV
+            echo "CTEST_PARALLEL_LEVEL=$CORES" >> $GITHUB_ENV
+            echo "Concurrency: Auto-detected $CORES cores."
+          else
+            echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
+          fi
+
+      - name: Set up Python venv for DMG packaging
+        run: |
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install ds_store mac_alias
+
+      - name: Import Code Signing Certificate
+        env:
+          APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          if [ -z "$APPLE_CERTIFICATE_P12" ]; then
+            echo "No signing certificate configured, skipping import."
+            exit 0
+          fi
+
+          KEYCHAIN_PATH="${RUNNER_TEMP}/build.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -hex 32)"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          CERT_PATH="${RUNNER_TEMP}/certificate.p12"
+          echo "$APPLE_CERTIFICATE_P12" | base64 --decode > "$CERT_PATH"
+          security import "$CERT_PATH" \
+            -k "$KEYCHAIN_PATH" \
+            -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security
+          rm -f "$CERT_PATH"
+
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
+
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+
+      - name: Set Signing Identity
+        run: |
+          if [ -n "$IDENTITY" ]; then
+            echo "APPLE_SIGNING_IDENTITY=$IDENTITY" >> $GITHUB_ENV
+            echo "Signing identity configured."
+          else
+            echo "No signing identity configured, will use ad-hoc signing."
+          fi
+        env:
+          IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+
+      - name: Configure CMake
+        run: |
+          export CC_LAUNCHER='-DCMAKE_C_COMPILER_LAUNCHER=ccache'
+          export CXX_LAUNCHER='-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
+          QT6_PATH=$(brew --prefix qt)
+          OPENSSL_ROOT=$(brew --prefix openssl)
+
+          cmake -B build \
+            -DCMAKE_PREFIX_PATH="$QT6_PATH" \
+            -DENABLE_GUI=ON \
+            -DENABLE_QRENCODE=ON \
+            -DENABLE_UPNP=ON \
+            -DDEFAULT_UPNP=ON \
+            -DENABLE_TESTS=ON \
+            -DENABLE_DOCS=OFF \
+            -DUSE_QT6=ON \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT" \
+            -DPython3_EXECUTABLE="${RUNNER_TEMP}/venv/bin/python3" \
+            $CC_LAUNCHER \
+            $CXX_LAUNCHER
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Package (DMG)
+        run: cmake --build build --target deploy
+
+      - name: Verify DMG Package
+        run: |
+          set -e
+          DMG_FILE=$(find build -maxdepth 1 -name "gridcoin-*.dmg" | head -1)
+          if [ -z "$DMG_FILE" ]; then
+            echo "ERROR: No DMG file found in build/"
+            exit 1
+          fi
+          echo "Verifying: $DMG_FILE"
+
+          # Mount the DMG read-only
+          MOUNT_POINT="/Volumes/GridcoinVerify"
+          hdiutil attach "$DMG_FILE" -readonly -mountpoint "$MOUNT_POINT"
+
+          # Verify app bundle structure
+          APP="$MOUNT_POINT/Gridcoin.app"
+          for dir in Contents/MacOS Contents/Frameworks Contents/PlugIns Contents/Resources; do
+            if [ ! -d "$APP/$dir" ]; then
+              echo "FAIL: Missing $dir"
+              hdiutil detach "$MOUNT_POINT"
+              exit 1
+            fi
+          done
+          echo "PASS: App bundle structure intact"
+
+          # Verify main executable
+          BINARY="$APP/Contents/MacOS/gridcoinresearch"
+          if [ ! -x "$BINARY" ]; then
+            echo "FAIL: Main binary not found or not executable"
+            hdiutil detach "$MOUNT_POINT"
+            exit 1
+          fi
+          echo "PASS: Main binary exists and is executable"
+
+          # List deployed frameworks for diagnostics
+          echo "Deployed frameworks:"
+          ls "$APP/Contents/Frameworks/"
+
+          # Verify code signature
+          if codesign --verify --strict --verbose=2 "$APP" 2>&1; then
+            echo "PASS: Code signature valid"
+            codesign --display --verbose=2 "$APP" 2>&1 | grep -q "runtime" \
+              && echo "PASS: Hardened runtime enabled" \
+              || echo "INFO: Hardened runtime not enabled (ad-hoc build)"
+          else
+            echo "WARNING: Code signature verification failed (ad-hoc signing may not verify on CI)"
+          fi
+
+          # Verify binary is a valid Mach-O executable (no runtime execution
+          # since the GUI binary pops up dialogs that hang in headless CI)
+          if file "$BINARY" | grep -q "Mach-O"; then
+            echo "PASS: Binary is valid Mach-O executable"
+          else
+            echo "FAIL: Binary is not a valid Mach-O executable"
+            hdiutil detach "$MOUNT_POINT"
+            exit 1
+          fi
+
+          # Cleanup
+          hdiutil detach "$MOUNT_POINT"
+          echo "DMG verification: ALL CHECKS PASSED"
+
+      - name: Upload Artifacts
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: gridcoin-macos-arm64-dmg
+          path: build/gridcoin-*.dmg
+          retention-days: 5
+
+      - name: Cleanup Signing Keychain
+        if: ${{ always() && env.KEYCHAIN_PATH != '' }}
+        run: security delete-keychain "$KEYCHAIN_PATH" || true
+
+  macos-native-intel:
+    name: macOS Intel (Homebrew Qt6)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install x86_64 Homebrew and Dependencies
+        run: |
+          # Install a separate x86_64 Homebrew at /usr/local (Intel prefix).
+          # The ARM64 runner has Rosetta 2, so x86_64 binaries run transparently.
+          arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/null
+          arch -x86_64 /usr/local/bin/brew update
+          arch -x86_64 /usr/local/bin/brew install qt boost openssl libevent miniupnpc qrencode libzip ccache cmake
+
+      - name: Configure Ccache
+        uses: actions/cache@v5
+        with:
+          path: /Users/runner/Library/Caches/ccache
+          key: ccache-macos-intel-${{ github.sha }}
+          restore-keys: ccache-macos-intel-
+
+      - name: Setup Concurrency
+        run: |
+          if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
+            CORES=$(sysctl -n hw.logicalcpu)
+            echo "CMAKE_BUILD_PARALLEL_LEVEL=$CORES" >> $GITHUB_ENV
+            echo "CTEST_PARALLEL_LEVEL=$CORES" >> $GITHUB_ENV
+            echo "Concurrency: Auto-detected $CORES cores."
+          else
+            echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
+          fi
+
+      - name: Set up Python venv for DMG packaging
+        run: |
+          arch -x86_64 /usr/local/bin/python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install ds_store mac_alias
+
+      - name: Import Code Signing Certificate
+        env:
+          APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          if [ -z "$APPLE_CERTIFICATE_P12" ]; then
+            echo "No signing certificate configured, skipping import."
+            exit 0
+          fi
+
+          KEYCHAIN_PATH="${RUNNER_TEMP}/build.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -hex 32)"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          CERT_PATH="${RUNNER_TEMP}/certificate.p12"
+          echo "$APPLE_CERTIFICATE_P12" | base64 --decode > "$CERT_PATH"
+          security import "$CERT_PATH" \
+            -k "$KEYCHAIN_PATH" \
+            -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security
+          rm -f "$CERT_PATH"
+
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
+
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+
+      - name: Set Signing Identity
+        run: |
+          if [ -n "$IDENTITY" ]; then
+            echo "APPLE_SIGNING_IDENTITY=$IDENTITY" >> $GITHUB_ENV
+            echo "Signing identity configured."
+          else
+            echo "No signing identity configured, will use ad-hoc signing."
+          fi
+        env:
+          IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+
+      - name: Configure CMake
+        run: |
+          export CC_LAUNCHER='-DCMAKE_C_COMPILER_LAUNCHER=ccache'
+          export CXX_LAUNCHER='-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
+          QT6_PATH=$(arch -x86_64 /usr/local/bin/brew --prefix qt)
+          OPENSSL_ROOT=$(arch -x86_64 /usr/local/bin/brew --prefix openssl)
+
+          arch -x86_64 /usr/local/bin/cmake -B build \
+            -DCMAKE_PREFIX_PATH="$QT6_PATH" \
+            -DCMAKE_OSX_ARCHITECTURES=x86_64 \
+            -DENABLE_GUI=ON \
+            -DENABLE_QRENCODE=ON \
+            -DENABLE_UPNP=ON \
+            -DDEFAULT_UPNP=ON \
+            -DENABLE_TESTS=ON \
+            -DENABLE_DOCS=OFF \
+            -DUSE_QT6=ON \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT" \
+            -DPython3_EXECUTABLE="${RUNNER_TEMP}/venv/bin/python3" \
+            $CC_LAUNCHER \
+            $CXX_LAUNCHER
+
+      - name: Build
+        run: arch -x86_64 /usr/local/bin/cmake --build build
+
+      - name: Test
+        run: arch -x86_64 /usr/local/bin/ctest --test-dir build --output-on-failure
+
+      - name: Package (DMG)
+        run: arch -x86_64 /usr/local/bin/cmake --build build --target deploy
+
+      - name: Verify DMG Package
+        run: |
+          set -e
+          DMG_FILE=$(find build -maxdepth 1 -name "gridcoin-*.dmg" | head -1)
+          if [ -z "$DMG_FILE" ]; then
+            echo "ERROR: No DMG file found in build/"
+            exit 1
+          fi
+          echo "Verifying: $DMG_FILE"
+
+          # Mount the DMG read-only
+          MOUNT_POINT="/Volumes/GridcoinVerify"
+          hdiutil attach "$DMG_FILE" -readonly -mountpoint "$MOUNT_POINT"
+
+          # Verify app bundle structure
+          APP="$MOUNT_POINT/Gridcoin.app"
+          for dir in Contents/MacOS Contents/Frameworks Contents/PlugIns Contents/Resources; do
+            if [ ! -d "$APP/$dir" ]; then
+              echo "FAIL: Missing $dir"
+              hdiutil detach "$MOUNT_POINT"
+              exit 1
+            fi
+          done
+          echo "PASS: App bundle structure intact"
+
+          # Verify main executable
+          BINARY="$APP/Contents/MacOS/gridcoinresearch"
+          if [ ! -x "$BINARY" ]; then
+            echo "FAIL: Main binary not found or not executable"
+            hdiutil detach "$MOUNT_POINT"
+            exit 1
+          fi
+          echo "PASS: Main binary exists and is executable"
+
+          # List deployed frameworks for diagnostics
+          echo "Deployed frameworks:"
+          ls "$APP/Contents/Frameworks/"
+
+          # Verify code signature
+          if codesign --verify --strict --verbose=2 "$APP" 2>&1; then
+            echo "PASS: Code signature valid"
+            codesign --display --verbose=2 "$APP" 2>&1 | grep -q "runtime" \
+              && echo "PASS: Hardened runtime enabled" \
+              || echo "INFO: Hardened runtime not enabled (ad-hoc build)"
+          else
+            echo "WARNING: Code signature verification failed (ad-hoc signing may not verify on CI)"
+          fi
+
+          # Verify binary is a valid Mach-O executable (no runtime execution
+          # since the GUI binary pops up dialogs that hang in headless CI)
+          if file "$BINARY" | grep -q "Mach-O"; then
+            echo "PASS: Binary is valid Mach-O executable"
+          else
+            echo "FAIL: Binary is not a valid Mach-O executable"
+            hdiutil detach "$MOUNT_POINT"
+            exit 1
+          fi
+
+          # Cleanup
+          hdiutil detach "$MOUNT_POINT"
+          echo "DMG verification: ALL CHECKS PASSED"
+
+      - name: Upload Artifacts
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: gridcoin-macos-intel-dmg
+          path: build/gridcoin-*.dmg
+          retention-days: 5
+
+      - name: Cleanup Signing Keychain
+        if: ${{ always() && env.KEYCHAIN_PATH != '' }}
+        run: security delete-keychain "$KEYCHAIN_PATH" || true
+
+  # ----------------------------------------------------------------------
+  # JOB 2b: AMD64 Native Build (for Docker)
+  # ----------------------------------------------------------------------
+  amd64-native-build:
+    name: Linux AMD64 Native Build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Dependencies
+        run: |
+          source ./install_dependencies.sh
+          install_deps native true true
+
+      - name: Setup Concurrency
+        run: |
+          if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
+            echo "CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "CTEST_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "Concurrency: Auto-detected $(nproc) cores."
+          else
+            echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
+          fi
+
+      - name: Configure Ccache
+        uses: actions/cache@v5
+        with:
+          path: ~/.ccache
+          key: ccache-prod-amd64-native-${{ github.sha }}
+          restore-keys: ccache-prod-amd64-native-
+
+      - name: Configure CMake
+        run: |
+          cmake -B build_native \
+            -DENABLE_GUI=ON \
+            -DUSE_QT6=ON \
+            -DENABLE_UPNP=ON \
+            -DDEFAULT_UPNP=ON \
+            -DENABLE_TESTS=OFF \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+      - name: Build
+        run: cmake --build build_native
+
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p dist
+          cp build_native/bin/gridcoinresearchd dist/
+          cp build_native/bin/gridcoinresearch dist/
+
+      - name: Upload Artifacts
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: docker-gridcoin-x86_64-linux-gnu
+          path: dist/
+          retention-days: 5
+
+  # ----------------------------------------------------------------------
+  # JOB 2c: ARM64 Cross-Build (for Docker)
+  # ----------------------------------------------------------------------
+  arm64-cross-build:
+    name: Linux ARM64 Cross-Build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Add ARM64 Architecture
+        run: |
+          sudo dpkg --add-architecture arm64
+          # Remove all existing sources and write clean amd64-only + arm64 config.
+          # The runner image adds sources (microsoft-prod, azure-cli, ubuntu) with
+          # varying formats that break when arm64 is added as an architecture.
+          sudo rm -f /etc/apt/sources.list.d/*.sources /etc/apt/sources.list.d/*.list
+          cat <<'EOF' | sudo tee /etc/apt/sources.list.d/ubuntu-amd64.sources
+          Types: deb
+          URIs: http://azure.archive.ubuntu.com/ubuntu
+          Suites: noble noble-updates noble-backports
+          Components: main universe multiverse restricted
+          Architectures: amd64
+          Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+
+          Types: deb
+          URIs: http://security.ubuntu.com/ubuntu
+          Suites: noble-security
+          Components: main universe multiverse restricted
+          Architectures: amd64
+          Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+          EOF
+          cat <<'EOF' | sudo tee /etc/apt/sources.list.d/arm64.list
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble main universe multiverse restricted
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-updates main universe multiverse restricted
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-security main universe multiverse restricted
+          EOF
+          sudo apt-get update
+
+      - name: Install ARM64 Toolchain & Libraries
+        run: |
+          sudo dpkg --remove --force-all libcurl4-openssl-dev libcurl4-gnutls-dev libcups2 libcups2t64 || true
+          sudo apt-get update
+          sudo apt-get -f install -y
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build zipcmp zipmerge ziptool qemu-user-static \
+            g++-aarch64-linux-gnu qt6-base-dev:arm64 qt6-charts-dev:arm64 qt6-svg-dev:arm64 \
+            qt6-l10n-tools qt6-tools-dev:arm64 qt6-tools-dev-tools:arm64 \
+            libqt6core5compat6-dev:arm64 libssl-dev:arm64 libzip-dev:arm64 \
+            libcurl4-openssl-dev:arm64 libboost-system-dev:arm64 libboost-filesystem-dev:arm64 \
+            libboost-thread-dev:arm64 libboost-iostreams-dev:arm64 libboost-program-options-dev:arm64 \
+            libboost-serialization-dev:arm64 libboost-chrono-dev:arm64 \
+            libminiupnpc-dev:arm64 libxkbcommon-dev:arm64 \
+            libcups2t64:arm64 \
+            ccache
+
+      - name: Setup Concurrency
+        run: |
+          if [ -z "$CMAKE_BUILD_PARALLEL_LEVEL" ]; then
+            echo "CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "CTEST_PARALLEL_LEVEL=$(nproc)" >> $GITHUB_ENV
+            echo "Concurrency: Auto-detected $(nproc) cores."
+          else
+            echo "Concurrency: Limit set externally to $CMAKE_BUILD_PARALLEL_LEVEL."
+          fi
+
+      - name: Configure Ccache
+        uses: actions/cache@v5
+        with:
+          path: ~/.ccache
+          key: ccache-prod-arm64-${{ github.sha }}
+          restore-keys: ccache-prod-arm64-
+
+      - name: Configure CMake (Cross)
+        env:
+          PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig
+        run: |
+          cmake -B build_arm64 -GNinja \
+            -DCMAKE_SYSTEM_NAME=Linux \
+            -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+            -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
+            -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
+            -DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu \
+            -DCMAKE_FIND_ROOT_PATH="/usr/lib/aarch64-linux-gnu;/usr/include/aarch64-linux-gnu" \
+            -DCMAKE_SYSROOT=/ \
+            -DENABLE_GUI=ON \
+            -DUSE_QT6=ON \
+            -DQt6_DIR=/usr/lib/aarch64-linux-gnu/cmake/Qt6 \
+            -DENABLE_UPNP=ON \
+            -DDEFAULT_UPNP=ON \
+            -DENABLE_TESTS=OFF \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+      - name: Build
+        run: cmake --build build_arm64
+
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p dist
+          cp build_arm64/bin/gridcoinresearchd dist/
+          cp build_arm64/bin/gridcoinresearch dist/
+
+      - name: Upload Artifacts
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: docker-gridcoin-aarch64-linux-gnu
+          path: dist/
+          retention-days: 5
+
+  # ----------------------------------------------------------------------
+  # JOB 2d: Flatpak Build
+  # ----------------------------------------------------------------------
+  flatpak-build:
+    name: Flatpak Build (x86_64)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Flatpak and flatpak-builder
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+
+      - name: Add Flathub Remote
+        run: |
+          sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+      - name: Install KDE 6.9 SDK and Runtime
+        run: |
+          sudo flatpak install -y --noninteractive flathub org.kde.Platform//6.9 org.kde.Sdk//6.9
+
+      - name: Cache flatpak-builder
+        uses: actions/cache@v5
+        with:
+          path: .flatpak-builder
+          key: flatpak-builder-${{ hashFiles('contrib/flatpak/us.gridcoin.GridcoinResearch.yml') }}
+
+      - name: Build Flatpak
+        run: |
+          flatpak-builder \
+            --force-clean \
+            --repo=flatpak-repo \
+            flatpak-build \
+            contrib/flatpak/us.gridcoin.GridcoinResearch.yml
+
+      - name: Create Flatpak Bundle
+        run: |
+          VERSION=$(sed -n 's/^[[:space:]]*VERSION \([0-9.]*\)$/\1/p' CMakeLists.txt)
+          if [ -z "$VERSION" ]; then
+            echo "::error::Could not extract project version from CMakeLists.txt"
+            exit 1
+          fi
+          flatpak build-bundle \
+            flatpak-repo \
+            "gridcoin-${VERSION}-x86_64.flatpak" \
+            us.gridcoin.GridcoinResearch
+          echo "FLATPAK_BUNDLE=gridcoin-${VERSION}-x86_64.flatpak" >> $GITHUB_ENV
+
+      - name: Upload Artifact
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: gridcoin-flatpak-x86_64
+          path: ${{ env.FLATPAK_BUNDLE }}
+          retention-days: 5
+
+  # ----------------------------------------------------------------------
+  # JOB 3: Publish Docker Images
+  # ----------------------------------------------------------------------
+  docker-publish:
+    name: Publish Docker Images
+    needs: [amd64-native-build, arm64-cross-build]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    env:
+      # Prevent docker/build-push-action from uploading .dockerbuild
+      # record artifacts that collide with the gridcoin-* glob in the
+      # Create Release download step.
+      DOCKER_BUILD_RECORD_UPLOAD: false
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download x86_64 Build Artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: docker-gridcoin-x86_64-linux-gnu
+          path: artifacts/amd64
+
+      - name: Download ARM64 Build Artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: docker-gridcoin-aarch64-linux-gnu
+          path: artifacts/arm64
+
+      - name: Stage Binaries
+        run: |
+          cd contrib/docker
+          mkdir -p bin/amd64 bin/arm64
+
+          cp ../../artifacts/amd64/gridcoinresearchd bin/amd64/
+          cp ../../artifacts/amd64/gridcoinresearch bin/amd64/
+
+          cp ../../artifacts/arm64/gridcoinresearchd bin/arm64/
+          cp ../../artifacts/arm64/gridcoinresearch bin/arm64/
+
+          chmod +x bin/amd64/gridcoin* bin/arm64/gridcoin*
+
+          echo "Staged binaries:"
+          file bin/amd64/* bin/arm64/*
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Version from Tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Build and Push Headless Image
+        uses: docker/build-push-action@v6
+        with:
+          context: contrib/docker
+          file: contrib/docker/Dockerfile.headless
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/gridcoinresearchd:${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/gridcoinresearchd:latest
+
+      - name: Build and Push GUI Image
+        uses: docker/build-push-action@v6
+        with:
+          context: contrib/docker
+          file: contrib/docker/Dockerfile.gui
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/gridcoinresearch:${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/gridcoinresearch:latest
+
+  # ----------------------------------------------------------------------
+  # JOB 4: Notarize macOS DMGs (tag pushes only)
+  # ----------------------------------------------------------------------
+  notarize-macos:
+    name: Notarize and Staple macOS DMGs
+    needs: [macos-native-arm64, macos-native-intel]
+    runs-on: macos-14
+    if: startsWith(github.ref, 'refs/tags/')
+    env:
+      APPLE_NOTARY_APPLE_ID: ${{ secrets.APPLE_NOTARY_APPLE_ID }}
+      APPLE_NOTARY_PASSWORD: ${{ secrets.APPLE_NOTARY_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    steps:
+      - name: Download ARM64 DMG
+        uses: actions/download-artifact@v5
+        with:
+          name: gridcoin-macos-arm64-dmg
+          path: dmgs
+
+      - name: Download Intel DMG
+        uses: actions/download-artifact@v5
+        with:
+          name: gridcoin-macos-intel-dmg
+          path: dmgs
+
+      - name: Submit, Wait, and Staple
+        run: |
+          cd dmgs
+          mkdir -p ../notarized
+
+          for DMG in *.dmg; do
+            echo "=== Submitting: $DMG ==="
+            SUBMIT_OUTPUT=$(xcrun notarytool submit "$DMG" \
+              --apple-id "$APPLE_NOTARY_APPLE_ID" \
+              --password "$APPLE_NOTARY_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" \
+              --output-format json 2>&1) || {
+              echo "WARNING: Submit failed for $DMG, skipping."
+              echo "$SUBMIT_OUTPUT"
+              continue
+            }
+            SUBMISSION_ID=$(echo "$SUBMIT_OUTPUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+            echo "  Submission ID: $SUBMISSION_ID"
+
+            echo "=== Waiting for notarization (up to 2 hours) ==="
+            if xcrun notarytool wait "$SUBMISSION_ID" \
+              --apple-id "$APPLE_NOTARY_APPLE_ID" \
+              --password "$APPLE_NOTARY_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" \
+              --timeout 120m; then
+
+              echo "=== Stapling: $DMG ==="
+              xcrun stapler staple "$DMG"
+              xcrun stapler validate "$DMG"
+
+              # Copy stapled DMG with -notarized suffix for the release
+              NOTARIZED_NAME="${DMG%.dmg}-notarized.dmg"
+              cp "$DMG" "../notarized/$NOTARIZED_NAME"
+              echo "=== Done: $NOTARIZED_NAME ==="
+            else
+              echo "WARNING: Notarization timed out or failed for $DMG."
+              echo "The signed (non-notarized) DMG will still be published."
+              echo "You can manually notarize and staple later."
+            fi
+          done
+
+      - name: Upload Notarized ARM64 DMG
+        if: ${{ hashFiles('notarized/*arm64*') != '' }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: gridcoin-macos-arm64-dmg-notarized
+          path: notarized/*arm64*.dmg
+          retention-days: 5
+
+      - name: Upload Notarized Intel DMG
+        if: ${{ hashFiles('notarized/*x86_64*') != '' }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: gridcoin-macos-intel-dmg-notarized
+          path: notarized/*x86_64*.dmg
+          retention-days: 5
+
+  # ----------------------------------------------------------------------
+  # JOB 5: Deploy (GitHub Release)
+  # ----------------------------------------------------------------------
+  deploy:
+    name: Create Release
+    needs: [depends-builds, notarize-macos, flatpak-build]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: artifacts
+
+      - name: Assemble Release Assets
+        run: |
+          mkdir -p release_assets
+
+          # Copy all artifacts into release_assets
+          for dir in artifacts/gridcoin-*/; do
+            cp "$dir"* release_assets/ 2>/dev/null || true
+          done
+
+          cd release_assets
+          ls -la
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release_assets/*
+          draft: true
+          generate_release_notes: true

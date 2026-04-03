@@ -7,3 +7,6 @@
 export LC_ALL=C
 
 git fetch --unshallow
+git fetch https://github.com/bitcoin-core/crc32c-subtree.git
+git fetch https://github.com/bitcoin-core/ctaes.git
+git fetch https://github.com/bitcoin-core/secp256k1.git

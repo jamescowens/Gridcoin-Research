@@ -6,6 +6,7 @@
 
 #include "amount.h"
 #include "consensus/merkle.h"
+#include "consensus/tx_verify.h"
 #include "txdb.h"
 #include "miner.h"
 #include "main.h"
@@ -88,7 +89,7 @@ bool TrySignClaim(
     const GRC::CpidOption cpid = claim.m_mining_id.TryCpid();
 
     if (!cpid) {
-        return true; // Skip beacon signature for investors.
+        return true; // Skip beacon signature for non-crunchers.
     }
 
     const GRC::BeaconOption beacon = GRC::GetBeaconRegistry().Try(*cpid);
@@ -272,10 +273,10 @@ bool CreateMRCRewards(CBlock &blocknew, std::map<GRC::Cpid, std::pair<uint256, G
     // the block:
     //
     if (!TrySignClaim(pwallet, claim, blocknew, true)) {
-        error("%s: Failed to sign researcher claim. Staking as investor", __func__);
+        error("%s: Failed to sign researcher claim. Staking as non-cruncher", __func__);
 
         coinstake.vout[1].nValue -= claim.m_research_subsidy;
-        claim.m_mining_id = GRC::MiningId::ForInvestor();
+        claim.m_mining_id = GRC::MiningId::ForNoncruncher();
         claim.m_research_subsidy = 0;
         claim.m_magnitude = 0;
     }
@@ -555,6 +556,13 @@ bool CreateRestOfTheBlock(CBlock &block, CBlockIndex* pindexPrev,
             if (!ConnectInputs(tx, txdb, mapInputs, mapTestPoolTmp, CDiskTxPos(1,1,1), pindexPrev, false, true))
             {
                 LogPrint(BCLog::LogFlags::NOISY, "Unable to connect inputs for tx %s ",tx.GetHash().GetHex());
+                continue;
+            }
+
+            // BIP68: Skip transactions that don't satisfy sequence locks when v14 is active.
+            if (IsV14Enabled(nHeight) && !CheckSequenceLocks(tx, 0, pindexPrev)) {
+                LogPrint(BCLog::LogFlags::NOISY, "Not including tx %s due to unsatisfied sequence locks",
+                         tx.GetHash().GetHex());
                 continue;
             }
 
@@ -1229,7 +1237,7 @@ bool CreateGridcoinReward(
 
     claim.m_mining_id = researcher->Id();
 
-    // If a researcher's beacon expired, generate the block as an investor. We
+    // If a researcher's beacon expired, generate the block as a non-cruncher. We
     // cannot sign a research claim without the beacon key, so this avoids the
     // issue that prevents a researcher from staking blocks if the beacon does
     // not exist (it expired or it has yet to be advertised).
@@ -1237,9 +1245,9 @@ bool CreateGridcoinReward(
     if (researcher->Status() == GRC::ResearcherStatus::NO_BEACON) {
         LogPrintf(
             "CreateGridcoinReward: CPID eligible but no active beacon key "
-            "found. Staking as investor.");
+            "found. Staking as non-cruncher.");
 
-        claim.m_mining_id = GRC::MiningId::ForInvestor();
+        claim.m_mining_id = GRC::MiningId::ForNoncruncher();
     }
 
     // First argument is coin age - unused since CBR (block version 10)
@@ -1250,7 +1258,7 @@ bool CreateGridcoinReward(
     if (const GRC::CpidOption cpid = claim.m_mining_id.TryCpid()) {
         claim.m_research_subsidy = GRC::Tally::GetAccrual(*cpid, blocknew.nTime, pindexPrev);
 
-        // If no pending research subsidy value exists, build an investor claim.
+        // If no pending research subsidy value exists, build a non-cruncher claim.
         // This avoids polluting the block index with non-research reward blocks
         // that contain CPIDs which increases the effort needed to load research
         // age context at start-up:
@@ -1258,9 +1266,9 @@ bool CreateGridcoinReward(
         if (claim.m_research_subsidy <= 0) {
             LogPrintf(
                 "CreateGridcoinReward: No positive research reward pending at "
-                "time of stake. Staking as investor.");
+                "time of stake. Staking as non-cruncher.");
 
-            claim.m_mining_id = GRC::MiningId::ForInvestor();
+            claim.m_mining_id = GRC::MiningId::ForNoncruncher();
         } else {
             nReward += claim.m_research_subsidy;
             claim.m_magnitude = GRC::Quorum::GetMagnitude(*cpid).Floating();
@@ -1393,11 +1401,13 @@ void StakeMiner(CWallet *pwallet)
 
         // * Create a bare block
 
-        // This transition code is to handle the v12 to v13 transition. The other transition handling
-        // for block versions in the stakeminer have been removed, because no blocks of an earlier version
-        // than v13 can be staked now, since the chain is past the v12 transition height.
+        // Block version transition handling. The other transition handling
+        // for block versions prior to v13 have been removed, because no blocks
+        // of an earlier version than v13 can be staked now.
         if (!IsV13Enabled(pindexPrev->nHeight + 1)) {
             StakeBlock.nVersion = 12;
+        } else if (!IsV14Enabled(pindexPrev->nHeight + 1)) {
+            StakeBlock.nVersion = 13;
         }
 
         StakeBlock.nTime = GetAdjustedTime();

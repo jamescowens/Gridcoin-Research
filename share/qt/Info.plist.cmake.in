@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
+<plist version="0.9">
+<dict>
+  <key>LSMinimumSystemVersion</key>
+  <string>10.8.0</string>
+
+  <key>LSArchitecturePriority</key>
+  <array>
+    <string>@CMAKE_SYSTEM_PROCESSOR@</string>
+  </array>
+
+  <key>CFBundleIconFile</key>
+  <string>gridcoin.icns</string>
+
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+
+  <key>CFBundleGetInfoString</key>
+  <string>@PROJECT_VERSION@, Copyright © 2009-@COPYRIGHT_YEAR@ @COPYRIGHT_HOLDERS_FINAL@</string>
+
+  <key>CFBundleShortVersionString</key>
+  <string>@PROJECT_VERSION@</string>
+
+  <key>CFBundleVersion</key>
+  <string>@PROJECT_VERSION@</string>
+
+  <key>CFBundleSignature</key>
+  <string>????</string>
+
+  <key>CFBundleExecutable</key>
+  <string>gridcoinresearch</string>
+
+  <key>CFBundleName</key>
+  <string>Gridcoin</string>
+
+  <key>LSHasLocalizedDisplayName</key>
+  <true/>
+
+  <key>CFBundleIdentifier</key>
+  <string>world.gridcoin.Gridcoin-Qt</string>
+
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleTypeRole</key>
+      <string>Editor</string>
+      <key>CFBundleURLName</key>
+      <string>world.gridcoin.GridcoinPayment</string>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>gridcoin</string>
+      </array>
+    </dict>
+  </array>
+
+  <key>UTExportedTypeDeclarations</key>
+  <array>
+    <dict>
+      <key>UTTypeIdentifier</key>
+      <string>world.gridcoin.paymentrequest</string>
+      <key>UTTypeDescription</key>
+      <string>Gridcoin payment request</string>
+      <key>UTTypeConformsTo</key>
+      <array>
+        <string>public.data</string>
+      </array>
+      <key>UTTypeTagSpecification</key>
+      <dict>
+        <key>public.mime-type</key>
+        <string>application/x-gridcoin-payment-request</string>
+        <key>public.filename-extension</key>
+        <array>
+          <string>gridcoinpaymentrequest</string>
+        </array>
+      </dict>
+    </dict>
+  </array>
+
+  <key>CFBundleDocumentTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleTypeRole</key>
+      <string>Editor</string>
+      <key>LSItemContentTypes</key>
+      <array>
+        <string>world.gridcoin.paymentrequest</string>
+      </array>
+      <key>LSHandlerRank</key>
+      <string>Owner</string>
+    </dict>
+  </array>
+
+  <key>NSPrincipalClass</key>
+    <string>NSApplication</string>
+
+  <key>NSHighResolutionCapable</key>
+    <string>True</string>
+
+  <key>LSApplicationCategoryType</key>
+    <string>public.app-category.finance</string>
+
+  <key>NSRequiresAquaSystemAppearance</key>
+    <string>@QT_MACOS_DISABLE_DARK_MODE@</string>
+</dict>
+</plist>

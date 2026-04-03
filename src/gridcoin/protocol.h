@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2024 The Gridcoin developers
+// Copyright (c) 2014-2025 The Gridcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -461,6 +461,17 @@ public:
     ProtocolEntryOption TryActive(const std::string& key) const;
 
     //!
+    //! \brief Get the last protocol entry for the specified key string at or before the specified timestamp
+    //!
+    //! \param key The key string of the protocol entry.
+    //! \param timestamp The desired timestamp to limit the find.
+    //!
+    //! \return An object that either contains a reference to some protocol entry if it exists
+    //! for the key at or before the provided timestamp or does not.
+    //!
+    ProtocolEntryOption TryLastBeforeTimestamp(const std::string& key, const int64_t& timestamp);
+
+    //!
     //! \brief Destroy the contract handler state in case of an error in loading
     //! the protocol entry registry state from LevelDB to prepare for reload from contract
     //! replay. This is not used for protocol entries, unless -clearprotocolentryhistory is specified
@@ -591,6 +602,8 @@ private:
     PendingProtocolEntryMap m_pending_protocol_entries {}; //!< Not used. Only to satisfy the template.
 
     std::set<ProtocolEntry> m_expired_protocol_entries {}; //!< Not used. Only to satisfy the template.
+
+    ProtocolEntryMap m_protocol_first_entries {};          //!< Not used. Only to satisfy the template.
 
     ProtocolEntryDB m_protocol_db;
 

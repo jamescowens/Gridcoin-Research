@@ -5,6 +5,7 @@
 
 #include "checkpoints.h"
 #include "consensus/merkle.h"
+#include "consensus/tx_verify.h"
 #include "dbwrapper.h"
 #include "main.h"
 #include "gridcoin/beacon.h"
@@ -21,6 +22,7 @@
 #include "gridcoin/staking/spam.h"
 #include "gridcoin/tally.h"
 #include "node/blockstorage.h"
+#include "node/orphan_blocks.h"
 #include "policy/fees.h"
 #include "serialize.h"
 #include "util.h"
@@ -434,7 +436,7 @@ bool ConnectInputs(CTransaction& tx, CTxDB& txdb, MapPrevTx inputs, std::map<uin
             if (!(fBlock && (nBestHeight < Params().Checkpoints().GetHeight())))
             {
                 // Verify signature
-                if (!VerifySignature(txPrev, tx, i, 0))
+                if (!VerifySignature(txPrev, tx, GetBlockScriptFlags(*pindexBlock), i, 0))
                 {
                     return tx.DoS(100,error("ConnectInputs() : %s VerifySignature failed", tx.GetHash().ToString().substr(0,10).c_str()));
                 }
@@ -758,7 +760,7 @@ public:
     {
         return m_claim.HasResearchReward()
             ? CheckResearcherClaim()
-            : CheckInvestorClaim();
+            : CheckNoncruncherClaim();
     }
 
 private:
@@ -880,14 +882,37 @@ private:
                             return error("%s: FAILED: coinstake output has invalid destination.");
                         }
 
+                        // Skip outputs to the coinstake destination. When a mandatory sidestake address matches
+                        // the staker's address, the miner suppresses the dedicated sidestake output and returns
+                        // the funds via the normal coinstake split outputs instead. Without this check, the
+                        // validator would miscount those split outputs as mandatory sidestakes.
+                        if (output_destination == coinstake_destination) {
+                            continue;
+                        }
+
                         std::vector<GRC::SideStake_ptr> mandatory_sidestake
                             = GRC::GetSideStakeRegistry().TryActive(output_destination,
-                                                                    GRC::SideStake::FilterFlag::MANDATORY);;
+                                                                    GRC::SideStake::FilterFlag::MANDATORY);
 
                         // The output is deemed to match if the destination matches AND the computed allocation matches or exceeds
                         // what is required by the mandatory sidestake. Note that the test uses the GRC::Allocation class, which
                         // extends the Fraction class, and provides comparison operators. This is now a precise calculation as it
                         // is integer arithmetic.
+                        //
+                        // IMPORTANT: An output to a mandatory sidestake address that does NOT meet the >= threshold is not
+                        // necessarily an error. This happens legitimately when a staker configures a voluntary sidestake to
+                        // the same address as an active mandatory sidestake. The miner produces two outputs to that address:
+                        //   - A voluntary output (e.g. 5% of total_owed) which is smaller than required.
+                        //   - A mandatory output (e.g. 10% of total_owed) which meets the >= threshold.
+                        //
+                        // Because this loop scans all non-MRC outputs, the voluntary output is encountered first (or second,
+                        // depending on the vout layout after stake splitting reorders outputs). It matches the mandatory
+                        // sidestake destination but fails the amount check. This is expected — the actual mandatory output
+                        // elsewhere in the vout array will satisfy the threshold and increment validated_mandatory_sidestakes.
+                        //
+                        // Therefore, a per-output amount mismatch is logged at VERBOSE level only. The definitive validation
+                        // is the final count check below (validated_mandatory_sidestakes vs expected), which correctly handles
+                        // the coincidence case because the mandatory output's amount will pass the >= check.
                         if (!mandatory_sidestake.empty()) {
                             CAmount actual_output = coinstake.vout[i].nValue;
 
@@ -895,18 +920,17 @@ private:
                                                        * total_owed_to_staker).ToCAmount();
 
                             if (actual_output >= required_output) {
-
                                 ++validated_mandatory_sidestakes;
                             } else {
-                                error_out = "Mandatory sidestake failed validation";
-
-                                error("%s: vout[%u] is mandatory sidestake destination %s, but failed validation: "
-                                      "actual_output = %" PRId64 ", required_output = %" PRId64,
-                                          __func__,
-                                          i,
-                                          EncodeDestination(output_destination),
-                                          actual_output,
-                                          required_output);
+                                LogPrint(BCLog::LogFlags::VERBOSE,
+                                         "INFO: %s: vout[%u] destination %s matches mandatory sidestake but "
+                                         "amount is below threshold (actual = %" PRId64 ", required = %" PRId64 "). "
+                                         "This is expected when a voluntary sidestake shares the same address.",
+                                         __func__,
+                                         i,
+                                         EncodeDestination(output_destination),
+                                         actual_output,
+                                         required_output);
                             }
                         }
 
@@ -1011,7 +1035,7 @@ private:
         return m_total_claimed <= max_owed;
     }
 
-    bool CheckInvestorClaim() const
+    bool CheckNoncruncherClaim() const
     {
         CAmount mrc_rewards = 0;
         CAmount mrc_staker_fees = 0;
@@ -1020,7 +1044,7 @@ private:
         unsigned int mrc_non_zero_outputs = 0;
         std::string error_out;
 
-        // Even if the block is staked by an investor, the claim can include MRC payments to researchers...
+        // Even if the block is staked by a non-cruncher, the claim can include MRC payments to researchers...
         //
         // If block version 12 or higher, this checks the MRC part of the claim, and also returns the total mrc_fees,
         // which are needed because are part of the total claimed. Note that the DoS and log output for MRC
@@ -1050,7 +1074,7 @@ private:
 
         if (GRC::GetBadBlocks().count(m_pindex->GetBlockHash())) {
             LogPrintf(
-                "WARNING: ConnectBlock[%s]: ignored bad investor claim on block %s",
+                "WARNING: ConnectBlock[%s]: ignored bad non-cruncher claim on block %s",
                 __func__,
                 m_pindex->GetBlockHash().ToString());
 
@@ -1058,7 +1082,7 @@ private:
         }
 
         return m_block.DoS(10, error(
-                                   "ConnectBlock[%s]: investor claim %s, expected %s, fees %: %s",
+                                   "ConnectBlock[%s]: non-cruncher claim %s, expected %s, fees %: %s",
                                    __func__,
                                    FormatMoney(m_total_claimed),
                                    FormatMoney(out_stake_owed),
@@ -1158,7 +1182,7 @@ private:
         const GRC::CpidOption cpid = m_claim.m_mining_id.TryCpid();
 
         if (!cpid) {
-            // Investor claims are not signed by a beacon key.
+            // Non-cruncher claims are not signed by a beacon key.
             return false;
         }
 
@@ -1506,6 +1530,11 @@ bool TryLoadSuperblock(
                     block.GetHash(),
                     pindex->nHeight);
 
+        // A beacon activation may change the researcher's eligibility status,
+        // so mark the context dirty to refresh the cached status on the next
+        // Researcher::Refresh() call.
+        GRC::Researcher::MarkDirty();
+
         // Notify the GUI if present that beacons have changed.
         uiInterface.BeaconChanged();
     }
@@ -1606,6 +1635,19 @@ bool GridcoinConnectBlock(
     return true;
 }
 } // Anonymous namespace
+
+unsigned int GetBlockScriptFlags(const CBlockIndex& block_index)
+{
+    unsigned int flags{SCRIPT_VERIFY_P2SH};
+
+    // BIP65 (CLTV) and BIP112 (CSV) are enforced starting with block version 14.
+    if (IsV14Enabled(block_index.nHeight)) {
+        flags |= SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY;
+        flags |= SCRIPT_VERIFY_CHECKSEQUENCEVERIFY;
+    }
+
+    return flags;
+}
 
 bool ConnectBlock(CBlock& block, CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
 {
@@ -2062,6 +2104,7 @@ bool AcceptBlock(CBlock& block, bool generated_by_me) EXCLUSIVE_LOCKS_REQUIRED(c
             || (IsV11Enabled(nHeight) && block.nVersion < 11)
             || (IsV12Enabled(nHeight) && block.nVersion < 12)
             || (IsV13Enabled(nHeight) && block.nVersion < 13)
+            || (IsV14Enabled(nHeight) && block.nVersion < 14)
             ) {
         return block.DoS(20, error("%s: reject too old nVersion = %d", __func__, block.nVersion));
     } else if ((!IsProtocolV2(nHeight) && block.nVersion >= 7)
@@ -2071,6 +2114,7 @@ bool AcceptBlock(CBlock& block, bool generated_by_me) EXCLUSIVE_LOCKS_REQUIRED(c
                || (!IsV11Enabled(nHeight) && block.nVersion >= 11)
                || (!IsV12Enabled(nHeight) && block.nVersion >= 12)
                || (!IsV13Enabled(nHeight) && block.nVersion >= 13)
+               || (!IsV14Enabled(nHeight) && block.nVersion >= 14)
                ) {
         return block.DoS(100, error("%s: reject too new nVersion = %d", __func__, block.nVersion));
     }
@@ -2121,6 +2165,13 @@ bool AcceptBlock(CBlock& block, bool generated_by_me) EXCLUSIVE_LOCKS_REQUIRED(c
         // Check that all transactions are finalized
         if (!IsFinalTx(tx, nHeight, block.GetBlockTime()))
             return block.DoS(10, error("%s: contains a non-final transaction", __func__));
+
+        // BIP68: Check sequence locks for v14+ blocks (skip coinbase and coinstake)
+        if (IsV14Enabled(nHeight) && !tx.IsCoinBase() && !tx.IsCoinStake()) {
+            if (!CheckSequenceLocks(tx, 0, pindexPrev)) {
+                return block.DoS(10, error("%s: contains a transaction with unsatisfied sequence locks", __func__));
+            }
+        }
     }
 
     // Check that the block chain matches the known block chain up to a checkpoint
@@ -2144,7 +2195,7 @@ bool AcceptBlock(CBlock& block, bool generated_by_me) EXCLUSIVE_LOCKS_REQUIRED(c
         }
 
         if (g_seen_stakes.ContainsProof(hashProof)
-            && mapOrphanBlocksByPrev.find(hash) == mapOrphanBlocksByPrev.end())
+            && !g_orphan_blocks.HasChildrenOf(hash))
         {
             return error(
                 "%s: ignored duplicate proof-of-stake (%s) for block %s",

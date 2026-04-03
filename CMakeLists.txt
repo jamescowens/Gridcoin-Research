@@ -1,13 +1,8 @@
-# CMake build system is intended to be used by maintainers to package Gridcoin
-# for software repositories. For that reason, only external dependencies are
-# supported.
-#
-# Use Autotools build system for all other needs.
-#
-# CMake support is experimental. Use with caution and report any bugs.
+# CMake is the official build system for Gridcoin.
 
 cmake_minimum_required(VERSION 3.18)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/build-aux/cmake")
+set(CPACK_MODULE_PATH "${CPACK_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/build-aux/cpack")
 
 
 # Hunter Package Manager
@@ -28,14 +23,14 @@ HunterGate(
 # =====================
 
 project("Gridcoin"
-    VERSION 5.4.9.0
+    VERSION 5.5.0.0
     DESCRIPTION "POS-based cryptocurrency that rewards BOINC computation"
     HOMEPAGE_URL "https://gridcoin.us"
     LANGUAGES C CXX
 )
 
 set(CLIENT_VERSION_IS_RELEASE "true")
-set(COPYRIGHT_YEAR "2025")
+set(COPYRIGHT_YEAR "2026")
 set(COPYRIGHT_HOLDERS_FINAL "The Gridcoin developers")
 
 
@@ -50,6 +45,8 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+add_compile_definitions(HAVE_CMAKE)
+
 if(MSVC)
     if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
         message(FATAL_ERROR "It's not yet possible to build Gridcoin with MSVC")
@@ -58,6 +55,11 @@ if(MSVC)
 else()
     add_compile_options(-UNDEBUG)
 endif()
+
+# Define DEBUG for Debug builds to match the old Autotools --enable-debug behavior.
+# Code in init.cpp and span.h uses #ifdef DEBUG to select debug-specific paths.
+# Uses a generator expression so it works with multi-config generators too.
+add_compile_definitions($<$<CONFIG:Debug>:DEBUG>)
 
 
 # Load CMake modules
@@ -69,8 +71,20 @@ include(CheckIncludeFile)
 include(CheckPIESupported)
 include(CheckSymbolExists)
 
-include(CheckSSE)
-include(CheckStrerrorR)
+# SIMD checks are compile-only, so they are safe for cross-compilation.
+# We run them unconditionally. The compiler flags will determine success/fail.
+include(CheckSSE41)
+include(CheckAVX2)
+include(CheckSHANI)
+include(CheckARMSHANI)
+
+# Runtime checks must still be skipped during cross-compilation
+if(NOT CMAKE_CROSSCOMPILING)
+    include(CheckStrerrorR)
+else()
+    message(STATUS "Cross-compiling: skipping CheckStrerrorR probe.")
+endif()
+
 include(FindPkgConfig)
 include(HunterGate)
 include(VersionFromGit)
@@ -95,15 +109,28 @@ option(ENABLE_X86_SHANI "Build code that uses x86 SHA-NI intrinsics" ${HAS_X86_S
 option(ENABLE_ARM_SHANI "Build code that uses ARM SHA-NI intrinsics" ${HAS_ARM_SHANI})
 option(USE_ASM          "Enable assembly routines" ON)
 
+# Scrypt assembly uses GNU assembler syntax incompatible with Apple's
+# LLVM assembler, so default to OFF on Apple and ON elsewhere.
+if(NOT DEFINED USE_ASM_SCRYPT)
+    if(APPLE)
+        set(USE_ASM_SCRYPT OFF)
+    else()
+        set(USE_ASM_SCRYPT ${USE_ASM})
+    endif()
+endif()
+option(USE_ASM_SCRYPT   "Enable scrypt assembly routines (requires GNU assembler)" ${USE_ASM_SCRYPT})
+
 # Optional functionality
 option(ENABLE_PIE       "Build position-independent executables" OFF)
+option(ENABLE_DEBUG_LOCKORDER "Enable run-time lock-order checking (DEBUG_LOCKORDER)" OFF)
 option(ENABLE_QRENCODE  "Enable generation of QR Codes for receiving payments" OFF)
 option(ENABLE_UPNP      "Enable UPnP port mapping support" OFF)
 option(DEFAULT_UPNP     "Turn UPnP on startup" OFF)
 option(USE_DBUS         "Enable DBus support" OFF)
+option(USE_QT6          "Use Qt 6 instead of Qt 5" OFF)
 
 # Bundled packages
-option(SYSTEM_BDB	    "Find system installation of Berkeley DB CXX 5.3" OFF)
+option(SYSTEM_BDB       "Find system installation of Berkeley DB CXX 5.3" OFF)
 option(SYSTEM_LEVELDB   "Find system installation of leveldb" OFF)
 option(SYSTEM_SECP256K1 "Find system installation of libsecp256k1 with pkg-config" OFF)
 option(SYSTEM_UNIVALUE  "Find system installation of Univalue with pkg-config" OFF)
@@ -114,24 +141,30 @@ option(BUNDLED_BOOST    "Use the bundled version of Boost" ${HUNTER_ENABLED})
 option(BUNDLED_CURL     "Use the bundled version of cURL" ${HUNTER_ENABLED})
 option(BUNDLED_LIBZIP   "Use the bundled version of libzip" ${HUNTER_ENABLED})
 option(BUNDLED_OPENSSL  "Use the bundled version of OpenSSL" ${HUNTER_ENABLED})
-option(BUNDLED_QT       "Use the bundled version of Qt" ${HUNTER_ENABLED})
+option(BUNDLED_QT5      "Use the bundled version of Qt 5" ${HUNTER_ENABLED})
 
 
 # Handle dependencies
 # ===================
 
+set(MINIUPNPC_USE_STATIC_LIBS ${STATIC_LIBS})
+
 set(QT5_MINIMUM_VERSION 5.9.5)
-set(QT5_COMPONENTS Concurrent Core Gui LinguistTools Network Widgets)
-set(QT5_HUNTER_COMPONENTS qtbase qttools)
+set(QT6_MINIMUM_VERSION 6.2.0)
+set(QT_COMPONENTS Core Concurrent Gui LinguistTools Network Widgets Svg)
+set(QT_HUNTER_COMPONENTS qtbase qttools)
+if(USE_QT6)
+    list(APPEND QT_COMPONENTS Core5Compat)
+endif()
 if(USE_DBUS)
-    list(APPEND QT5_COMPONENTS DBus)
+    list(APPEND QT_COMPONENTS DBus)
 endif()
 if(ENABLE_TESTS)
-    list(APPEND QT5_COMPONENTS Test)
+    list(APPEND QT_COMPONENTS Test)
 endif()
 
 set(BOOST_MINIMUM_VERSION 1.63.0)
-set(BOOST_COMPONENTS filesystem iostreams thread)
+set(BOOST_COMPONENTS filesystem iostreams thread serialization date_time)
 set(BOOST_HUNTER_COMPONENTS system atomic regex ${BOOST_COMPONENTS})
 if(ENABLE_TESTS)
     list(APPEND BOOST_COMPONENTS unit_test_framework)
@@ -165,11 +198,18 @@ endif()
 if(BUNDLED_BOOST)
     hunter_add_package(Boost COMPONENTS ${BOOST_HUNTER_COMPONENTS})
 endif()
+
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.30)
     # Allow to find old Boost (pre 1.70) with new CMake (3.30 and later).
     cmake_policy(SET CMP0167 OLD)
 endif()
+
 find_package(Boost ${BOOST_MINIMUM_VERSION} REQUIRED)
+
+if(Boost_VERSION VERSION_LESS 1.69.0)
+    list(APPEND BOOST_COMPONENTS system)
+endif()
+
 if(Boost_VERSION VERSION_LESS 1.70.0)
     find_package(Boost ${BOOST_MINIMUM_VERSION} COMPONENTS ${BOOST_COMPONENTS} REQUIRED)
 else()
@@ -194,34 +234,53 @@ if(BUNDLED_LIBZIP)
 endif()
 find_package(libzip CONFIG REQUIRED)
 
+find_package(ZLIB REQUIRED)
+
 if(USE_ASM)
     enable_language(ASM)
 endif()
 
 if(ENABLE_GUI)
-    if(BUNDLED_QT)
-        hunter_add_package(Qt COMPONENTS ${QT5_HUNTER_COMPONENTS})
+    set(QT_MACOS_DISABLE_DARK_MODE False)
+    if(USE_QT6)
+        find_package(Qt6 ${QT6_MINIMUM_VERSION} COMPONENTS ${QT_COMPONENTS} REQUIRED)
+        set(QT Qt6)
+    else()
+        if(BUNDLED_QT5)
+            hunter_add_package(Qt COMPONENTS ${QT_HUNTER_COMPONENTS})
+        endif()
+        find_package(Qt5 ${QT5_MINIMUM_VERSION} COMPONENTS ${QT_COMPONENTS} REQUIRED)
+        set(QT Qt5)
+
+        if(Qt5Core_VERSION VERSION_LESS 5.12.0)
+            set(QT_MACOS_DISABLE_DARK_MODE True)
+        endif()
+
+        # Compatibility macros
+        if(Qt5Core_VERSION VERSION_LESS 5.15.0)
+            macro(qt_create_translation)
+                qt5_create_translation(${ARGN})
+            endmacro()
+
+            macro(qt_add_translation)
+                qt5_add_translation(${ARGN})
+            endmacro()
+        endif()
     endif()
-    find_package(Qt5 ${QT5_MINIMUM_VERSION} COMPONENTS ${QT5_COMPONENTS} REQUIRED)
 
     if(ENABLE_QRENCODE)
         pkg_check_modules(QRENCODE REQUIRED IMPORTED_TARGET libqrencode)
     endif()
-
-    # Compatibility macros
-    if(Qt5Core_VERSION VERSION_LESS 5.15.0)
-        macro(qt_create_translation)
-            qt5_create_translation(${ARGN})
-        endmacro()
-
-        macro(qt_add_translation)
-            qt5_add_translation(${ARGN})
-        endmacro()
-    endif()
 endif()
 
 if(ENABLE_UPNP)
-    pkg_check_modules(MINIUPNPC REQUIRED IMPORTED_TARGET miniupnpc>=1.9)
+    pkg_check_modules(MINIUPNPC IMPORTED_TARGET miniupnpc>=1.9)
+    if(MINIUPNPC_FOUND)
+        set(LIBMINIUPNPC PkgConfig::MINIUPNPC)
+    else()
+        find_package(miniupnpc CONFIG REQUIRED)
+        set(LIBMINIUPNPC miniupnpc::miniupnpc)
+    endif()
 endif()
 
 if(ENABLE_TESTS)
@@ -282,10 +341,18 @@ if(CMAKE_CXX_BYTE_ORDER EQUAL BIG_ENDIAN)
 endif()
 
 # Check headers
-check_include_file("byteswap.h" HAVE_BYTESWAP_H)
-check_include_file("endian.h" HAVE_ENDIAN_H)
-check_include_file("sys/endian.h" HAVE_SYS_ENDIAN_H)
-check_include_file("sys/prctl.h" HAVE_SYS_PRCTL_H)
+if(CMAKE_CROSSCOMPILING AND WIN32)
+    message(STATUS "Cross-compiling for Windows: forcing POSIX headers to 'not found'")
+    set(HAVE_BYTESWAP_H FALSE CACHE INTERNAL "Manually set to false for Windows cross-compile")
+    set(HAVE_ENDIAN_H FALSE CACHE INTERNAL "Manually set to false for Windows cross-compile")
+    set(HAVE_SYS_ENDIAN_H FALSE CACHE INTERNAL "Manually set to false for Windows cross-compile")
+    set(HAVE_SYS_PRCTL_H FALSE CACHE INTERNAL "Manually set to false for Windows cross-compile")
+else()
+    check_include_file("byteswap.h" HAVE_BYTESWAP_H)
+    check_include_file("endian.h" HAVE_ENDIAN_H)
+    check_include_file("sys/endian.h" HAVE_SYS_ENDIAN_H)
+    check_include_file("sys/prctl.h" HAVE_SYS_PRCTL_H)
+endif()
 
 if(HAVE_ENDIAN_H)
     set(ENDIAN_INCLUDES "endian.h")
@@ -299,7 +366,9 @@ endif()
 
 # Check symbols
 check_symbol_exists(fork "unistd.h" HAVE_DECL_FORK)
+list(APPEND CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
 check_symbol_exists(pipe2 "unistd.h" HAVE_DECL_PIPE2)
+list(REMOVE_ITEM CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
 check_symbol_exists(setsid "unistd.h" HAVE_DECL_SETSID)
 
 check_symbol_exists(le16toh "${ENDIAN_INCLUDES}" HAVE_DECL_LE16TOH)
@@ -356,3 +425,57 @@ add_subdirectory(src)
 if(ENABLE_DOCS)
     add_subdirectory(doc)
 endif()
+
+# CPack packaging
+# ===============
+
+# Common metadata
+set(CPACK_PACKAGE_VERSION_TWEAK ${PROJECT_VERSION_TWEAK})
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "GridcoinResearch")
+set(CPACK_PACKAGE_VENDOR "The Gridcoin Community")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Gridcoin Research Wallet")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://gridcoin.us")
+set(CPACK_PACKAGE_CONTACT "Gridcoin Developers <dev@gridcoin.us>")
+set(CPACK_PACKAGE_CHECKSUM SHA256)
+set(CPACK_COPYRIGHT_STRING "Copyright (C) 2014-${COPYRIGHT_YEAR} ${COPYRIGHT_HOLDERS_FINAL}")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
+set(CPACK_RESOURCE_FILE_CHANGELOG "${CMAKE_SOURCE_DIR}/CHANGELOG.md")
+set(CPACK_ICONDIR "${CMAKE_SOURCE_DIR}/share/pixmaps")
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set(CPACK_WINDOWS_BITS 32)
+else()
+    set(CPACK_WINDOWS_BITS 64)
+endif()
+
+if(CMAKE_C_COMPILER_TARGET)
+    # Cross/depends builds: e.g. x86_64-pc-linux-gnu, x86_64-w64-mingw32
+    set(CPACK_SYSTEM_NAME "${CMAKE_C_COMPILER_TARGET}")
+elseif(CMAKE_SYSTEM_PROCESSOR)
+    # Native builds: e.g. x86_64, aarch64
+    set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_PROCESSOR}")
+endif()
+
+# CPack constructs CPACK_PACKAGE_VERSION from MAJOR.MINOR.PATCH, excluding
+# TWEAK. Override it to use the full quad version (e.g. 5.4.9.10).
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+
+set(CPACK_NSIS_PACKAGE_NAME ${PROJECT_NAME})
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "gridcoinresearch-${PROJECT_VERSION}")
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_SOURCE_PACKAGE_FILE_NAME}-${CPACK_SYSTEM_NAME}")
+set(CPACK_DMG_VOLUME_NAME "Gridcoin")
+
+# Strip the binaries to make the tarball smaller
+set(CPACK_STRIP_FILES ON)
+
+# File included at cpack time, once per generator after setting CPACK_GENERATOR
+# to the actual generator being used; allows per-generator setting of CPACK_*
+# variables at cpack time.
+configure_file(
+    "${CMAKE_SOURCE_DIR}/build-aux/cpack/CPackOptions.cmake.in"
+    "${CMAKE_BINARY_DIR}/CPackOptions.cmake"
+    @ONLY
+)
+set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/CPackOptions.cmake")
+
+include(CPack)

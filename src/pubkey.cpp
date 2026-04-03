@@ -185,9 +185,11 @@ bool CPubKey::Verify(const uint256 &hash, const std::vector<unsigned char>& vchS
         return false;
     }
     /* libsecp256k1's ECDSA verification requires lower-S signatures, which have
-     * not historically been enforced in Bitcoin, so normalize them first. */
-    // This however is not the case with Gridcoin.
-    // secp256k1_ecdsa_signature_normalize(secp256k1_context_static, &sig, &sig);
+     * not historically been enforced in Bitcoin, so normalize them first.
+     * Gridcoin similarly normalizes here to accept both high-S and low-S
+     * signatures at the crypto layer; policy-level low-S enforcement is
+     * handled by SCRIPT_VERIFY_LOW_S in the script interpreter. */
+    secp256k1_ecdsa_signature_normalize(secp256k1_context_static, &sig, &sig);
     return secp256k1_ecdsa_verify(secp256k1_context_static, &sig, hash.begin(), &pubkey);
 }
 

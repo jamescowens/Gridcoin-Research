@@ -62,7 +62,11 @@ void init_blockindex(leveldb::Options& options, bool fRemoveOld = false) {
 
     fs::create_directory(directory);
     LogPrintf("Opening LevelDB in %s", directory.string());
-    leveldb::Status status = leveldb::DB::Open(options, directory.string(), &txdb);
+    // LevelDB's Windows port internally converts paths from UTF-8 to UTF-16 via
+    // MultiByteToWideChar(CP_UTF8). But fs::path::string() produces code page bytes, not UTF-8.
+    // Utf8PathString provides proper UTF-8 encoding when the path contains non-codepage characters.
+    // For codepage-safe paths, it returns path.string() unchanged. See #2736.
+    leveldb::Status status = leveldb::DB::Open(options, fsbridge::Utf8PathString(directory), &txdb);
     if (!status.ok()) {
         throw runtime_error(strprintf("init_blockindex(): error opening database environment %s", status.ToString()));
     }
@@ -450,7 +454,6 @@ bool CTxDB::LoadBlockIndex()
       nBestHeight,
       DateTimeStrFormat("%x %H:%M:%S", pindexBest->GetBlockTime()));
 
-    nLoaded = 0;
     // Verify blocks in the best chain
     int nCheckLevel = gArgs.GetArg("-checklevel", 1);
     int nCheckDepth = gArgs.GetArg( "-checkblocks", 1000);
@@ -460,7 +463,8 @@ bool CTxDB::LoadBlockIndex()
     map<pair<unsigned int, unsigned int>, CBlockIndex*> mapBlockPos;
     for (CBlockIndex* pindex = pindexBest; pindex && pindex->pprev; pindex = pindex->pprev)
     {
-        if (fRequestShutdown || pindex->nHeight < nBestHeight-nCheckDepth)
+        int nCurrentDepth = nBestHeight - pindex->nHeight + 1;
+        if (fRequestShutdown || nCurrentDepth > nCheckDepth)
             break;
         CBlock block;
         if (!ReadBlockFromDisk(block, pindex, Params().GetConsensus()))
@@ -470,12 +474,9 @@ bool CTxDB::LoadBlockIndex()
 
         if(fQtActive)
         {
-            if ((pindex->nHeight % 1000) == 0)
+            if ((nCurrentDepth % 1000) == 0)
             {
-                nLoaded +=1000;
-                if (nLoaded > nHighest) nHighest=nLoaded;
-                if (nHighest < nGrandfather) nHighest=nGrandfather;
-                uiInterface.InitMessage(strprintf("%" PRId64 "/%" PRId64 " %s", nLoaded, nHighest, _("Blocks Verified")));
+                uiInterface.InitMessage(strprintf("%" PRId64 "/%" PRId64 " %s", nCurrentDepth, nCheckDepth, _("Blocks Verified")));
             }
         }
 

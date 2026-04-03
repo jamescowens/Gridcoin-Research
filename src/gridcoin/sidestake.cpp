@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2024 The Gridcoin developers
+// Copyright (c) 2014-2025 The Gridcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -106,44 +106,52 @@ Allocation Allocation::operator/(const int64_t& rhs) const
     return static_cast<Allocation>(Fraction::operator/(rhs));
 }
 
-Allocation Allocation::operator+=(const Allocation& rhs)
+Allocation& Allocation::operator+=(const Allocation& rhs)
 {
-    return static_cast<Allocation>(Fraction::operator+=(rhs));
+    Fraction::operator+=(rhs);
+    return *this;
 }
 
-Allocation Allocation::operator+=(const int64_t& rhs)
+Allocation& Allocation::operator+=(const int64_t& rhs)
 {
-    return static_cast<Allocation>(Fraction::operator+=(rhs));
+    Fraction::operator+=(rhs);
+    return *this;
 }
 
-Allocation Allocation::operator-=(const Allocation& rhs)
+Allocation& Allocation::operator-=(const Allocation& rhs)
 {
-    return static_cast<Allocation>(Fraction::operator-=(rhs));
+    Fraction::operator-=(rhs);
+    return *this;
 }
 
-Allocation Allocation::operator-=(const int64_t& rhs)
+Allocation& Allocation::operator-=(const int64_t& rhs)
 {
-    return static_cast<Allocation>(Fraction::operator-=(rhs));
+    Fraction::operator-=(rhs);
+    return *this;
 }
 
-Allocation Allocation::operator*=(const Allocation& rhs)
+Allocation& Allocation::operator*=(const Allocation& rhs)
 {
-    return static_cast<Allocation>(Fraction::operator*=(rhs));
+    Fraction::operator*=(rhs);
+    return *this;
 }
 
-Allocation Allocation::operator*=(const int64_t& rhs)
+Allocation& Allocation::operator*=(const int64_t& rhs)
 {
-    return static_cast<Allocation>(Fraction::operator*=(rhs));
+    Fraction::operator*=(rhs);
+    return *this;
 }
 
-Allocation Allocation::operator/=(const Allocation& rhs)
+Allocation& Allocation::operator/=(const Allocation& rhs)
 {
-    return static_cast<Allocation>(Fraction::operator/=(rhs));
+    Fraction::operator/=(rhs);
+    return *this;
 }
 
-Allocation Allocation::operator/=(const int64_t& rhs)
+Allocation& Allocation::operator/=(const int64_t& rhs)
 {
-    return static_cast<Allocation>(Fraction::operator/=(rhs));
+    Fraction::operator/=(rhs);
+    return *this;
 }
 
 bool Allocation::operator==(const Allocation& rhs) const
@@ -887,7 +895,11 @@ int SideStakeRegistry::Initialize()
 {
     LOCK(cs_lock);
 
-    int height = m_sidestake_db.Initialize(m_mandatory_sidestake_entries, m_pending_sidestake_entries, m_expired_sidestake_entries);
+    int height = m_sidestake_db.Initialize(m_mandatory_sidestake_entries,
+                                           m_pending_sidestake_entries,
+                                           m_expired_sidestake_entries,
+                                           m_sidestake_first_entries,
+                                           false);
 
     SubscribeToCoreSignals();
 
@@ -1092,7 +1104,7 @@ void SideStakeRegistry::LoadLocalSideStakesFromConfig()
 
     // If we get here and dSumAllocation is zero then the enablesidestaking flag was set, but no VALID distribution
     // was provided in the config file, so warn in the debug log.
-    if (!sum_allocation)
+    if (gArgs.GetBoolArg("-enablesidestaking") && !sum_allocation)
         LogPrintf("WARN: %s: enablesidestaking was set in config but nothing has been allocated for"
                   " distribution!", __func__);
 }

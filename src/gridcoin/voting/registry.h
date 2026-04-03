@@ -10,6 +10,7 @@
 #include "gridcoin/voting/fwd.h"
 #include "sync.h"
 #include "uint256.h"
+#include "util.h"
 #include <atomic>
 #include <map>
 
@@ -46,6 +47,15 @@ class PollReference
     friend class PollRegistry;
 
 public:
+    enum PollNotificationType
+    {
+        UNKNOWN,
+        POLL_ADD,
+        POLL_DELETE,
+        POLL_EXPIRE_WARNING,
+        POLL_NOTIFY_TEST
+    };
+
     //!
     //! \brief Initialize an empty, invalid poll reference object.
     //!
@@ -153,11 +163,39 @@ public:
     std::optional<int> GetEndingHeight() const;
 
     //!
+    //! \brief Get the magnitude weight factor at the poll start.
+    //!
+    //! \return Fraction representing magnitude weight factor.
+    //!
+    Fraction GetMagnitudeWeightFactor() const;
+
+    //!
     //! \brief Computes the Active Vote Weight for the poll, which is used to determine whether the poll is validated.
     //! \param result: The actual tabulated votes (poll result)
     //! \return ActiveVoteWeight
     //!
     std::optional<CAmount> GetActiveVoteWeight(const PollResultOption &result) const;
+
+    //!
+    //! \brief Provides string equivalent of PollNotificationType
+    //! \param notify_type
+    //! \return string equivalent of PollNotificationType
+    //!
+    std::string NotifyTypeToString(const PollNotificationType& notify_type) const;
+
+    //!
+    //! \brief Runs a free thread executing provided poll notification command. Also sets m_expiration_warn_notified
+    //! to true if the notification type is EXPIRE_WARNING.
+    //! \param notify_type
+    //! \return std::string of command run
+    //!
+    std::string Notify(const PollNotificationType& notify_type) const;
+
+    //!
+    //! \brief Returns whether the expiration warning was sent.
+    //! \return boolean indicating whether the expiration warning was sent.
+    //!
+    bool IsExpiringWarningNotified() const;
 
     //!
     //! \brief Record a transaction that contains a response to the poll.
@@ -175,14 +213,17 @@ public:
     void UnlinkVote(const uint256 txid);
 
 private:
-    uint256 m_txid;               //!< Hash of the poll transaction.
-    uint32_t m_payload_version;   //!< Version of the poll (payload).
-    PollType m_type;              //!< Type of the poll.
-    const std::string* m_ptitle;  //!< Title of the poll for indexing/mapping purposes.
-    std::string m_title;          //!< Original title of the poll for display purposes.
-    int64_t m_timestamp;          //!< Timestamp of the poll transaction.
-    uint32_t m_duration_days;     //!< Number of days the poll remains active.
-    std::vector<uint256> m_votes; //!< Hashes of the linked vote transactions.
+    uint256 m_txid;                             //!< Hash of the poll transaction.
+    uint32_t m_payload_version;                 //!< Version of the poll (payload).
+    PollType m_type;                            //!< Type of the poll.
+    mutable PollWeightType m_weight_type;       //!< Weight type of the poll.
+    const std::string* m_ptitle;                //!< Title of the poll for indexing/mapping purposes.
+    std::string m_title;                        //!< Original title of the poll for display purposes.
+    mutable int64_t m_timestamp;                //!< Timestamp of the poll transaction.
+    uint32_t m_duration_days;                   //!< Number of days the poll remains active.
+    std::vector<uint256> m_votes;               //!< Hashes of the linked vote transactions.
+    mutable Fraction m_magnitude_weight_factor; //!< Magnitude weight factor for the poll (defined at poll start).
+    mutable bool m_expiration_warn_notified;    //!< Flag to indicate whether the expiration warning was sent.
 }; // PollReference
 
 //!

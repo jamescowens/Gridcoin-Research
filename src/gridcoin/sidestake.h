@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2024 The Gridcoin developers
+// Copyright (c) 2014-2025 The Gridcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -83,14 +83,14 @@ public:
     Allocation operator*(const int64_t& rhs) const;
     Allocation operator/(const Allocation& rhs) const;
     Allocation operator/(const int64_t& rhs) const;
-    Allocation operator+=(const Allocation& rhs);
-    Allocation operator+=(const int64_t& rhs);
-    Allocation operator-=(const Allocation& rhs);
-    Allocation operator-=(const int64_t& rhs);
-    Allocation operator*=(const Allocation& rhs);
-    Allocation operator*=(const int64_t& rhs);
-    Allocation operator/=(const Allocation& rhs);
-    Allocation operator/=(const int64_t& rhs);
+    Allocation& operator+=(const Allocation& rhs);
+    Allocation& operator+=(const int64_t& rhs);
+    Allocation& operator-=(const Allocation& rhs);
+    Allocation& operator-=(const int64_t& rhs);
+    Allocation& operator*=(const Allocation& rhs);
+    Allocation& operator*=(const int64_t& rhs);
+    Allocation& operator/=(const Allocation& rhs);
+    Allocation& operator/=(const int64_t& rhs);
     bool operator==(const Allocation& rhs) const;
     bool operator!=(const Allocation& rhs) const;
     bool operator<=(const Allocation& rhs) const;
@@ -886,6 +886,8 @@ private:
     PendingSideStakeMap m_pending_sidestake_entries {};   //!< Not used. Only to satisfy the template.
 
     std::set<SideStake> m_expired_sidestake_entries {};   //!< Not used. Only to satisfy the template.
+
+    MandatorySideStakeMap m_sidestake_first_entries {};   //!< Not used. Only to satisfy the template.
 
     SideStakeDB m_sidestake_db;                           //!< The internal sidestake db object for leveldb persistence.
 

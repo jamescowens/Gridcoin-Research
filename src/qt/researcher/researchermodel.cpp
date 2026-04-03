@@ -1,8 +1,9 @@
-// Copyright (c) 2014-2021 The Gridcoin developers
+// Copyright (c) 2014-2025 The Gridcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
 #include <key_io.h>
+#include "chainparams.h"
 #include "main.h"
 #include "gridcoin/beacon.h"
 #include "gridcoin/boinc.h"
@@ -12,13 +13,17 @@
 #include "gridcoin/researcher.h"
 #include "gridcoin/scraper/scraper.h"
 #include "gridcoin/superblock.h"
+#include "gridcoin/support/xml.h"
 #include "node/ui_interface.h"
+#include "util/strencodings.h"
+#include <util/string.h>
 
 #include "qt/bitcoinunits.h"
 #include "qt/guiutil.h"
 #include "qt/researcher/researchermodel.h"
 #include "qt/researcher/researcherwizard.h"
 
+#include <QApplication>
 #include <QIcon>
 #include <QMessageBox>
 #include <QTimer>
@@ -84,6 +89,7 @@ BeaconStatus MapAdvertiseBeaconError(const BeaconError error)
         case BeaconError::NOT_NEEDED:         return BeaconStatus::ERROR_NOT_NEEDED;
         case BeaconError::PENDING:            return BeaconStatus::PENDING;
         case BeaconError::TX_FAILED:          return BeaconStatus::ERROR_TX_FAILED;
+        case BeaconError::V14_NOT_ENABLED:    return BeaconStatus::ERROR_TX_FAILED;
         case BeaconError::WALLET_LOCKED:      return BeaconStatus::ERROR_WALLET_LOCKED;
         case BeaconError::ALEADY_IN_MEMPOOL:  return BeaconStatus::ALREADY_IN_MEMPOOL;
         }
@@ -98,7 +104,7 @@ BeaconStatus MapAdvertiseBeaconError(const BeaconError error)
 
 ResearcherModel::ResearcherModel()
     : m_beacon_status(BeaconStatus::UNKNOWN)
-    , m_configured_for_investor_mode(false)
+    , m_configured_for_noncruncher_mode(false)
     , m_wizard_open(false)
     , m_out_of_sync(true)
     , m_split_cpid(false)
@@ -110,8 +116,8 @@ ResearcherModel::ResearcherModel()
     resetResearcher(Researcher::Get());
     subscribeToCoreSignals();
 
-    if (GRC::Researcher::ConfiguredForInvestorMode()) {
-        m_configured_for_investor_mode = true;
+    if (GRC::Researcher::ConfiguredForNoncruncherMode()) {
+        m_configured_for_noncruncher_mode = true;
     }
 
     QTimer *refresh_timer = new QTimer(this);
@@ -137,6 +143,8 @@ QString ResearcherModel::mapBeaconStatus(const BeaconStatus status)
             return tr("Current beacon is not renewable yet.");
         case BeaconStatus::ERROR_TX_FAILED:
             return tr("Unable to send beacon transaction. See debug.log");
+        case BeaconStatus::ERROR_INVALID_PROOF_XML:
+            return tr("Invalid ownership proof XML. Verify the pasted content.");
         case BeaconStatus::ERROR_WALLET_LOCKED:
             return tr("Unlock wallet fully to send a beacon transaction.");
         case BeaconStatus::NO_BEACON:
@@ -177,6 +185,7 @@ QIcon ResearcherModel::mapBeaconStatusIcon(const BeaconStatus status) const
         case BeaconStatus::ERROR_MISSING_KEY:        return make_icon(danger);
         case BeaconStatus::ERROR_NOT_NEEDED:         return make_icon(success);
         case BeaconStatus::ERROR_TX_FAILED:          return make_icon(danger);
+        case BeaconStatus::ERROR_INVALID_PROOF_XML: return make_icon(danger);
         case BeaconStatus::ERROR_WALLET_LOCKED:      return make_icon(danger);
         case BeaconStatus::NO_BEACON:                return make_icon(inactive);
         case BeaconStatus::NO_CPID:                  return make_icon(inactive);
@@ -197,12 +206,21 @@ void ResearcherModel::showWizard(WalletModel* wallet_model)
         return;
     }
 
+    if (outOfSync()) {
+        QMessageBox::warning(QApplication::activeWindow(),
+            QObject::tr("Wallet Not In Sync"),
+            QObject::tr("The wallet must be in sync to manage beacons. Please wait "
+               "for synchronization to complete before using the researcher "
+               "and beacon configuration wizard."));
+        return;
+    }
+
     m_wizard_open = true;
 
     ResearcherWizard *wizard = new ResearcherWizard(nullptr, this, wallet_model);
 
-    if (configuredForInvestorMode()) {
-        wizard->setStartId(ResearcherWizard::PageInvestor);
+    if (configuredForNoncruncherMode()) {
+        wizard->setStartId(ResearcherWizard::PageNoncruncher);
     } else if (detectedPoolMode()) {
         wizard->setStartId(ResearcherWizard::PagePoolSummary);
     } else if (hasSplitCpid()) {
@@ -233,9 +251,9 @@ void ResearcherModel::setMaskCpidMagnitudeAccrual(bool privacy)
     refresh();
 }
 
-bool ResearcherModel::configuredForInvestorMode() const
+bool ResearcherModel::configuredForNoncruncherMode() const
 {
-    return m_configured_for_investor_mode;
+    return m_configured_for_noncruncher_mode;
 }
 
 bool ResearcherModel::outOfSync() const
@@ -254,7 +272,7 @@ bool ResearcherModel::actionNeeded() const
         return false;
     }
 
-    if (configuredForInvestorMode()) {
+    if (configuredForNoncruncherMode()) {
         return false;
     }
 
@@ -411,7 +429,7 @@ QString ResearcherModel::formatStatus() const
 
 QString ResearcherModel::formatBoincPath() const
 {
-    return QString::fromStdString(GetBoincDataDir().string());
+    return GUIUtil::boostPathToQString(GetBoincDataDir());
 }
 
 BeaconStatus ResearcherModel::getBeaconStatus() const
@@ -486,7 +504,7 @@ std::vector<ProjectRow> ResearcherModel::buildProjectTable(bool extended) const
     // projects behave in the network.
     //
 
-    const WhitelistSnapshot whitelist = GetWhitelist().Snapshot();
+    const WhitelistSnapshot whitelist = GetWhitelist().Snapshot(ProjectEntry::ProjectFilterFlag::ALL_BUT_DELETED);
     std::vector<std::string> excluded_projects;
 
     {
@@ -529,11 +547,28 @@ std::vector<ProjectRow> ResearcherModel::buildProjectTable(bool extended) const
         // between local projects and whitelisted projects:
         //
         if (const ProjectEntry* whitelist_project = project.TryWhitelist(whitelist)) {
-            if (std::find(excluded_projects.begin(), excluded_projects.end(), whitelist_project->m_name)
-                != excluded_projects.end()) {
-                row.m_whitelisted = ProjectRow::WhiteListStatus::Greylisted;
-                row.m_error = tr("Greylisted");
+            if (whitelist_project->m_status == ProjectEntryStatus::MAN_GREYLISTED) {
+                row.m_whitelisted = ProjectRow::WhiteListStatus::Manually_Greylisted;
+                row.m_error = tr("Manually Greylisted");
+            } else if (whitelist_project->m_status == ProjectEntryStatus::AUTO_GREYLISTED) {
+                row.m_whitelisted = ProjectRow::WhiteListStatus::Automatically_Greylisted;
+                row.m_error = tr("Automatically Greylisted");
+                   // Only mark as excluded if the project is not greylisted. A greylisted project will
+                   // have the same effect on statistics from a CPID perspective whether the project is
+                   // excluded by the scrapers.
+            } else if (std::find(excluded_projects.begin(), excluded_projects.end(), whitelist_project->m_name)
+                       != excluded_projects.end()
+                       && !(whitelist_project->m_status == ProjectEntryStatus::AUTO_GREYLISTED)
+                       && !(whitelist_project->m_status == ProjectEntryStatus::MAN_GREYLISTED)) {
+                row.m_whitelisted = ProjectRow::WhiteListStatus::Excluded;
+                row.m_error = tr("Excluded");
+                   // an unknown status should never happen for a project record on the main chain, but to be
+                   // thorough, handle that here.
+            } else if (whitelist_project->m_status == ProjectEntryStatus::UNKNOWN){
+                row.m_whitelisted = ProjectRow::WhiteListStatus::False;
             } else {
+                // This covers the remaining REG_ACTIVE and AUTO_GREYLIST_OVERRIDE, which is the same
+                // as the whitelist filter of ACTIVE.
                 row.m_whitelisted = ProjectRow::WhiteListStatus::True;
             }
 
@@ -565,7 +600,7 @@ std::vector<ProjectRow> ResearcherModel::buildProjectTable(bool extended) const
 
     // Add any whitelisted projects not detected from the local BOINC client:
     //
-    for (const auto& project : GetWhitelist().Snapshot()) {
+    for (const auto& project : GetWhitelist().Snapshot(ProjectEntry::ProjectFilterFlag::ALL_BUT_DELETED)) {
         if (rows.find(project.m_name) != rows.end()) {
             continue;
         }
@@ -576,19 +611,43 @@ std::vector<ProjectRow> ResearcherModel::buildProjectTable(bool extended) const
         row.m_name = QString::fromStdString(project.DisplayName()).toLower();
         row.m_magnitude = 0.0;
 
-        if (std::find(external_adapter_projects.begin(),
-                      external_adapter_projects.end(),
-                      project.m_name) == external_adapter_projects.end()) {
-            row.m_error = tr("Not attached");
-        } else {
+        // the external adapter code below only appears here because if the project is in BOINC it does not need
+        // an external adapter.
+
+        bool project_requires_external_adapter = (project.RequiresExtAdapter().has_value() && project.RequiresExtAdapter().value());
+
+        bool legacy_external_adapter_project_found = (std::find(external_adapter_projects.begin(),
+                                                              external_adapter_projects.end(),
+                                                              project.m_name) != external_adapter_projects.end());
+
+        if (project_requires_external_adapter || legacy_external_adapter_project_found) {
             row.m_error = tr("Uses external adapter");
+        } else {
+            row.m_error = tr("Not attached");
         }
 
-        if (std::find(excluded_projects.begin(), excluded_projects.end(), project.m_name)
-            != excluded_projects.end()) {
-            row.m_whitelisted = ProjectRow::WhiteListStatus::Greylisted;
-            row.m_error = tr("Greylisted");
+        if (project.m_status == ProjectEntryStatus::MAN_GREYLISTED) {
+            row.m_whitelisted = ProjectRow::WhiteListStatus::Manually_Greylisted;
+            row.m_error = tr("Manually Greylisted");
+        } else if (project.m_status == ProjectEntryStatus::AUTO_GREYLISTED) {
+            row.m_whitelisted = ProjectRow::WhiteListStatus::Automatically_Greylisted;
+            row.m_error = tr("Automatically Greylisted");
+               // Only mark as excluded if the project is not greylisted. A greylisted project will
+               // have the same effect on statistics from a CPID perspective whether the project is
+               // excluded by the scrapers.
+        } else if (std::find(excluded_projects.begin(), excluded_projects.end(), project.m_name)
+                       != excluded_projects.end()
+                   && !(project.m_status == ProjectEntryStatus::AUTO_GREYLISTED)
+                   && !(project.m_status == ProjectEntryStatus::MAN_GREYLISTED)) {
+            row.m_whitelisted = ProjectRow::WhiteListStatus::Excluded;
+            row.m_error = tr("Excluded");
+               // an unknown status should never happen for a project record on the main chain, but to be
+               // thorough, handle that here.
+        } else if (project.m_status == ProjectEntryStatus::UNKNOWN){
+            row.m_whitelisted = ProjectRow::WhiteListStatus::False;
         } else {
+            // This covers the remaining REG_ACTIVE and AUTO_GREYLIST_OVERRIDE, which is the same
+            // as the whitelist filter of ACTIVE.
             row.m_whitelisted = ProjectRow::WhiteListStatus::True;
         }
 
@@ -652,23 +711,23 @@ void ResearcherModel::resetResearcher(ResearcherPtr researcher)
 
 bool ResearcherModel::switchToSolo(const QString& email)
 {
-    m_configured_for_investor_mode = false;
+    m_configured_for_noncruncher_mode = false;
 
     return m_researcher->ChangeMode(ResearcherMode::SOLO, email.toStdString());
 }
 
 bool ResearcherModel::switchToPool()
 {
-    m_configured_for_investor_mode = false;
+    m_configured_for_noncruncher_mode = false;
 
     return m_researcher->ChangeMode(ResearcherMode::POOL, std::string());
 }
 
-bool ResearcherModel::switchToInvestor()
+bool ResearcherModel::switchToNoncruncher()
 {
-    m_configured_for_investor_mode = true;
+    m_configured_for_noncruncher_mode = true;
 
-    return m_researcher->ChangeMode(ResearcherMode::INVESTOR, std::string());
+    return m_researcher->ChangeMode(ResearcherMode::NONCRUNCHER, std::string());
 }
 
 void ResearcherModel::updateBeacon()
@@ -677,11 +736,15 @@ void ResearcherModel::updateBeacon()
 
     if (!cpid) {
         commitBeacon(BeaconStatus::NO_CPID);
+        emit beaconChanged();
+        emit researcherChanged();
         return;
     }
 
     if (outOfSync()) {
         commitBeacon(BeaconStatus::UNKNOWN);
+        emit beaconChanged();
+        emit researcherChanged();
         return;
     }
 
@@ -726,6 +789,9 @@ void ResearcherModel::updateBeacon()
             commitBeacon(BeaconStatus::ACTIVE, beacon, pending_beacon);
         }
     }
+
+    emit beaconChanged();
+    emit researcherChanged();
 }
 
 BeaconStatus ResearcherModel::advertiseBeacon()
@@ -735,8 +801,135 @@ BeaconStatus ResearcherModel::advertiseBeacon()
     return MapAdvertiseBeaconError(result.Error());
 }
 
+bool ResearcherModel::isV14Enabled() const
+{
+    return IsV14Enabled(nBestHeight);
+}
+
+bool ResearcherModel::hasV3CapableProjects() const
+{
+    return !GetProjectsWithOwnershipProofSupport().empty();
+}
+
+std::vector<std::pair<QString, QString>> ResearcherModel::buildV3ProjectList() const
+{
+    const std::set<std::string> v3_urls = GetProjectsWithOwnershipProofSupport();
+
+    if (v3_urls.empty()) {
+        return {};
+    }
+
+    const WhitelistSnapshot whitelist = GetWhitelist().Snapshot(
+        ProjectEntry::ProjectFilterFlag::ALL_BUT_DELETED);
+
+    std::vector<std::pair<QString, QString>> result;
+
+    for (const auto& project : whitelist) {
+        std::string base_url = project.BaseUrl();
+
+        // Normalize: ensure trailing slash for comparison.
+        if (!base_url.empty() && base_url.back() != '/') {
+            base_url += '/';
+        }
+
+        if (v3_urls.count(base_url) > 0) {
+            result.emplace_back(
+                QString::fromStdString(project.DisplayName()),
+                QString::fromStdString(project.DisplayUrl()));
+        }
+    }
+
+    return result;
+}
+
+QString ResearcherModel::generateBeaconKeyForV3()
+{
+    const CpidOption cpid = m_researcher->Id().TryCpid();
+
+    // The wizard flow requires a CPID before reaching the beacon page, so
+    // this is not reachable in practice. Defensive check only.
+    if (!cpid) {
+        return QString();
+    }
+
+    AdvertiseBeaconResult result = GenerateBeaconKey(*cpid);
+
+    if (auto public_key = result.TryPublicKey()) {
+        m_cached_beacon_pubkey_hex = QString::fromStdString(HexStr(*public_key));
+        return m_cached_beacon_pubkey_hex;
+    }
+
+    return QString();
+}
+
+BeaconStatus ResearcherModel::advertiseBeaconV3(const QString& ownership_proof_xml)
+{
+    const CpidOption cpid = m_researcher->Id().TryCpid();
+
+    if (!cpid) {
+        return BeaconStatus::NO_CPID;
+    }
+
+    const std::string xml = ownership_proof_xml.toStdString();
+
+    const std::string master_url = TrimString(ExtractXML(xml, "<master_url>", "</master_url>"));
+    const std::string msg = TrimString(ExtractXML(xml, "<msg>", "</msg>"));
+    const std::string sig_b64 = TrimString(ExtractXML(xml, "<signature>", "</signature>"));
+
+    if (master_url.empty() || msg.empty() || sig_b64.empty()) {
+        return BeaconStatus::ERROR_INVALID_PROOF_XML;
+    }
+
+    // Parse the msg field: "{account_id} {beacon_public_key_hex}"
+    const size_t space_pos = msg.find(' ');
+
+    if (space_pos == std::string::npos || space_pos + 1 >= msg.size()) {
+        return BeaconStatus::ERROR_INVALID_PROOF_XML;
+    }
+
+    uint32_t account_id = 0;
+    if (!ParseUInt32(msg.substr(0, space_pos), &account_id) || account_id == 0) {
+        return BeaconStatus::ERROR_INVALID_PROOF_XML;
+    }
+
+    const std::string public_key_hex = msg.substr(space_pos + 1);
+    const std::vector<uint8_t> pubkey_bytes = ParseHex(public_key_hex);
+    CPubKey beacon_pubkey(pubkey_bytes);
+
+    if (!beacon_pubkey.IsValid()) {
+        return BeaconStatus::ERROR_INVALID_PROOF_XML;
+    }
+
+    if (!pwalletMain->HaveKey(beacon_pubkey.GetID())) {
+        return BeaconStatus::ERROR_MISSING_KEY;
+    }
+
+    bool b64_invalid = false;
+    const std::vector<uint8_t> rsa_sig_bytes = DecodeBase64(sig_b64.c_str(), &b64_invalid);
+
+    if (b64_invalid || rsa_sig_bytes.empty()) {
+        return BeaconStatus::ERROR_INVALID_PROOF_XML;
+    }
+
+    Beacon beacon(beacon_pubkey);
+    OwnershipProof proof;
+    proof.m_master_url = master_url;
+    proof.m_account_id = account_id;
+    proof.m_rsa_signature = rsa_sig_bytes;
+
+    AdvertiseBeaconResult result = SendBeaconContractV3(*cpid, beacon, std::move(proof));
+
+    return MapAdvertiseBeaconError(result.Error());
+}
+
+QString ResearcherModel::cachedBeaconPubKeyHex() const
+{
+    return m_cached_beacon_pubkey_hex;
+}
+
 void ResearcherModel::onWizardClose()
 {
+    m_cached_beacon_pubkey_hex.clear();
     m_wizard_open = false;
 }
 
@@ -779,5 +972,6 @@ void ResearcherModel::commitBeacon(
 
     if (changed) {
         emit beaconChanged();
+        emit researcherChanged();
     }
 }

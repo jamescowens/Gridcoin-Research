@@ -151,10 +151,10 @@ void TrafficGraphWidget::updateRates()
     }
 
     float tmax = 0.0f;
-    for (float f : vSamplesIn) {
+    for (float f : std::as_const(vSamplesIn)) {
         if(f > tmax) tmax = f;
     }
-    for (float f : vSamplesOut) {
+    for (float f : std::as_const(vSamplesOut)) {
         if(f > tmax) tmax = f;
     }
     fMax = tmax;
