@@ -421,6 +421,18 @@ if(APPLE)
         list(APPEND _deploy_cmd -translations-dir "${_qt_translations_dir}")
     endif()
 
+    # Code signing: macdeployqtplus reads APPLE_SIGNING_IDENTITY directly
+    # from the environment (inherited from the CI step or shell).  We do
+    # NOT pass it through cmake -E env because the identity string
+    # contains parentheses that /bin/sh cannot handle.  When the env var
+    # is not set, macdeployqtplus falls back to ad-hoc signing on macOS.
+    if(DEFINED ENV{APPLE_SIGNING_IDENTITY})
+        set(_entitlements "${CMAKE_SOURCE_DIR}/contrib/macdeploy/entitlements.plist")
+        if(EXISTS "${_entitlements}")
+            list(APPEND _deploy_cmd -entitlements "${_entitlements}")
+        endif()
+    endif()
+
     add_custom_target(deploy
         COMMAND ${CMAKE_COMMAND} -E env "QTDIR=${_qt_prefix_dir}" ${_deploy_cmd}
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"

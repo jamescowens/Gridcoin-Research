@@ -301,6 +301,49 @@ jobs:
           python3 -m venv "${RUNNER_TEMP}/venv"
           "${RUNNER_TEMP}/venv/bin/pip" install ds_store mac_alias
 
+      - name: Import Code Signing Certificate
+        env:
+          APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          if [ -z "$APPLE_CERTIFICATE_P12" ]; then
+            echo "No signing certificate configured, skipping import."
+            exit 0
+          fi
+
+          KEYCHAIN_PATH="${RUNNER_TEMP}/build.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -hex 32)"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          CERT_PATH="${RUNNER_TEMP}/certificate.p12"
+          echo "$APPLE_CERTIFICATE_P12" | base64 --decode > "$CERT_PATH"
+          security import "$CERT_PATH" \
+            -k "$KEYCHAIN_PATH" \
+            -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security
+          rm -f "$CERT_PATH"
+
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
+
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+
+      - name: Set Signing Identity
+        run: |
+          if [ -n "$IDENTITY" ]; then
+            echo "APPLE_SIGNING_IDENTITY=$IDENTITY" >> $GITHUB_ENV
+            echo "Signing identity configured."
+          else
+            echo "No signing identity configured, will use ad-hoc signing."
+          fi
+        env:
+          IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+
       - name: Configure CMake
         run: |
           export CC_LAUNCHER='-DCMAKE_C_COMPILER_LAUNCHER=ccache'
@@ -370,9 +413,12 @@ jobs:
           echo "Deployed frameworks:"
           ls "$APP/Contents/Frameworks/"
 
-          # Verify ad-hoc code signature
-          if codesign --verify --deep "$APP" 2>&1; then
+          # Verify code signature
+          if codesign --verify --strict --verbose=2 "$APP" 2>&1; then
             echo "PASS: Code signature valid"
+            codesign --display --verbose=2 "$APP" 2>&1 | grep -q "runtime" \
+              && echo "PASS: Hardened runtime enabled" \
+              || echo "INFO: Hardened runtime not enabled (ad-hoc build)"
           else
             echo "WARNING: Code signature verification failed (ad-hoc signing may not verify on CI)"
           fi
@@ -398,6 +444,10 @@ jobs:
           name: gridcoin-macos-arm64-dmg
           path: build/gridcoin-*.dmg
           retention-days: 5
+
+      - name: Cleanup Signing Keychain
+        if: ${{ always() && env.KEYCHAIN_PATH != '' }}
+        run: security delete-keychain "$KEYCHAIN_PATH" || true
 
   macos-native-intel:
     name: macOS Intel (Homebrew Qt6)
@@ -435,6 +485,49 @@ jobs:
         run: |
           arch -x86_64 /usr/local/bin/python3 -m venv "${RUNNER_TEMP}/venv"
           "${RUNNER_TEMP}/venv/bin/pip" install ds_store mac_alias
+
+      - name: Import Code Signing Certificate
+        env:
+          APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          if [ -z "$APPLE_CERTIFICATE_P12" ]; then
+            echo "No signing certificate configured, skipping import."
+            exit 0
+          fi
+
+          KEYCHAIN_PATH="${RUNNER_TEMP}/build.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -hex 32)"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          CERT_PATH="${RUNNER_TEMP}/certificate.p12"
+          echo "$APPLE_CERTIFICATE_P12" | base64 --decode > "$CERT_PATH"
+          security import "$CERT_PATH" \
+            -k "$KEYCHAIN_PATH" \
+            -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security
+          rm -f "$CERT_PATH"
+
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
+
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+
+      - name: Set Signing Identity
+        run: |
+          if [ -n "$IDENTITY" ]; then
+            echo "APPLE_SIGNING_IDENTITY=$IDENTITY" >> $GITHUB_ENV
+            echo "Signing identity configured."
+          else
+            echo "No signing identity configured, will use ad-hoc signing."
+          fi
+        env:
+          IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
 
       - name: Configure CMake
         run: |
@@ -506,9 +599,12 @@ jobs:
           echo "Deployed frameworks:"
           ls "$APP/Contents/Frameworks/"
 
-          # Verify ad-hoc code signature
-          if codesign --verify --deep "$APP" 2>&1; then
+          # Verify code signature
+          if codesign --verify --strict --verbose=2 "$APP" 2>&1; then
             echo "PASS: Code signature valid"
+            codesign --display --verbose=2 "$APP" 2>&1 | grep -q "runtime" \
+              && echo "PASS: Hardened runtime enabled" \
+              || echo "INFO: Hardened runtime not enabled (ad-hoc build)"
           else
             echo "WARNING: Code signature verification failed (ad-hoc signing may not verify on CI)"
           fi
@@ -534,6 +630,10 @@ jobs:
           name: gridcoin-macos-intel-dmg
           path: build/gridcoin-*.dmg
           retention-days: 5
+
+      - name: Cleanup Signing Keychain
+        if: ${{ always() && env.KEYCHAIN_PATH != '' }}
+        run: security delete-keychain "$KEYCHAIN_PATH" || true
 
   # ----------------------------------------------------------------------
   # JOB 2b: AMD64 Native Build (for Docker)
@@ -853,11 +953,93 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/gridcoinresearch:latest
 
   # ----------------------------------------------------------------------
-  # JOB 4: Deploy (GitHub Release)
+  # JOB 4: Notarize macOS DMGs (tag pushes only)
+  # ----------------------------------------------------------------------
+  notarize-macos:
+    name: Notarize and Staple macOS DMGs
+    needs: [macos-native-arm64, macos-native-intel]
+    runs-on: macos-14
+    if: startsWith(github.ref, 'refs/tags/')
+    env:
+      APPLE_NOTARY_APPLE_ID: ${{ secrets.APPLE_NOTARY_APPLE_ID }}
+      APPLE_NOTARY_PASSWORD: ${{ secrets.APPLE_NOTARY_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    steps:
+      - name: Download ARM64 DMG
+        uses: actions/download-artifact@v5
+        with:
+          name: gridcoin-macos-arm64-dmg
+          path: dmgs
+
+      - name: Download Intel DMG
+        uses: actions/download-artifact@v5
+        with:
+          name: gridcoin-macos-intel-dmg
+          path: dmgs
+
+      - name: Submit, Wait, and Staple
+        run: |
+          cd dmgs
+          mkdir -p ../notarized
+
+          for DMG in *.dmg; do
+            echo "=== Submitting: $DMG ==="
+            SUBMIT_OUTPUT=$(xcrun notarytool submit "$DMG" \
+              --apple-id "$APPLE_NOTARY_APPLE_ID" \
+              --password "$APPLE_NOTARY_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" \
+              --output-format json 2>&1) || {
+              echo "WARNING: Submit failed for $DMG, skipping."
+              echo "$SUBMIT_OUTPUT"
+              continue
+            }
+            SUBMISSION_ID=$(echo "$SUBMIT_OUTPUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+            echo "  Submission ID: $SUBMISSION_ID"
+
+            echo "=== Waiting for notarization (up to 2 hours) ==="
+            if xcrun notarytool wait "$SUBMISSION_ID" \
+              --apple-id "$APPLE_NOTARY_APPLE_ID" \
+              --password "$APPLE_NOTARY_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" \
+              --timeout 120m; then
+
+              echo "=== Stapling: $DMG ==="
+              xcrun stapler staple "$DMG"
+              xcrun stapler validate "$DMG"
+
+              # Copy stapled DMG with -notarized suffix for the release
+              NOTARIZED_NAME="${DMG%.dmg}-notarized.dmg"
+              cp "$DMG" "../notarized/$NOTARIZED_NAME"
+              echo "=== Done: $NOTARIZED_NAME ==="
+            else
+              echo "WARNING: Notarization timed out or failed for $DMG."
+              echo "The signed (non-notarized) DMG will still be published."
+              echo "You can manually notarize and staple later."
+            fi
+          done
+
+      - name: Upload Notarized ARM64 DMG
+        if: ${{ hashFiles('notarized/*arm64*') != '' }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: gridcoin-macos-arm64-dmg-notarized
+          path: notarized/*arm64*.dmg
+          retention-days: 5
+
+      - name: Upload Notarized Intel DMG
+        if: ${{ hashFiles('notarized/*x86_64*') != '' }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: gridcoin-macos-intel-dmg-notarized
+          path: notarized/*x86_64*.dmg
+          retention-days: 5
+
+  # ----------------------------------------------------------------------
+  # JOB 5: Deploy (GitHub Release)
   # ----------------------------------------------------------------------
   deploy:
     name: Create Release
-    needs: [depends-builds, macos-native-arm64, macos-native-intel, flatpak-build]
+    needs: [depends-builds, notarize-macos, flatpak-build]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
@@ -866,20 +1048,19 @@ jobs:
       - name: Download All Artifacts
         uses: actions/download-artifact@v5
         with:
-          pattern: gridcoin-*
-          merge-multiple: true
-          path: release_assets
+          path: artifacts
 
-      - name: Flatten and Checksum
-        working-directory: release_assets
+      - name: Assemble Release Assets
         run: |
-          # Move any nested files to the current directory
-          find . -mindepth 2 -type f -exec mv {} . \; || true
+          mkdir -p release_assets
 
-          # Clean up empty directories
-          find . -type d -empty -delete || true
+          # Copy all artifacts into release_assets
+          for dir in artifacts/gridcoin-*/; do
+            cp "$dir"* release_assets/ 2>/dev/null || true
+          done
 
-          # Generate checksums for the now-flattened files
+          cd release_assets
+          ls -la
           sha256sum * > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
