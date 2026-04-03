@@ -1,4 +1,4 @@
-<TS language="ca@valencia" version="2.0">
+<TS language="ca@valencia" version="2.1">
 <context>
     <name>AddressBookPage</name>
     <message>
@@ -218,15 +218,11 @@
         <source>%n active connection(s) to the Gridcoin network</source>
         <translation type="unfinished">
             <numerusform />
-            <numerusform />
-            <numerusform />
         </translation>
     </message>
     <message numerus="yes">
         <source>Processed %n block(s) of transaction history.</source>
         <translation type="unfinished">
-            <numerusform />
-            <numerusform />
             <numerusform />
         </translation>
     </message>
@@ -234,15 +230,11 @@
         <source>%n second(s) ago</source>
         <translation type="unfinished">
             <numerusform />
-            <numerusform />
-            <numerusform />
         </translation>
     </message>
     <message numerus="yes">
         <source>%n minute(s) ago</source>
         <translation type="unfinished">
-            <numerusform />
-            <numerusform />
             <numerusform />
         </translation>
     </message>
@@ -250,15 +242,11 @@
         <source>%n hour(s) ago</source>
         <translation type="unfinished">
             <numerusform />
-            <numerusform />
-            <numerusform />
         </translation>
     </message>
     <message numerus="yes">
         <source>%n day(s) ago</source>
         <translation type="unfinished">
-            <numerusform />
-            <numerusform />
             <numerusform />
         </translation>
     </message>
@@ -416,14 +404,12 @@
         <source>New key generation failed.</source>
         <translation>Ha fallat la generació d'una nova clau.</translation>
     </message>
-</context>
+    </context>
 <context>
     <name>Intro</name>
     <message numerus="yes">
         <source>%n GB of free space available</source>
         <translation type="unfinished">
-            <numerusform />
-            <numerusform />
             <numerusform />
         </translation>
     </message>
@@ -431,15 +417,11 @@
         <source>(of %n GB needed)</source>
         <translation type="unfinished">
             <numerusform />
-            <numerusform />
-            <numerusform />
         </translation>
     </message>
     <message numerus="yes">
         <source>(%n GB needed for full chain)</source>
         <translation type="unfinished">
-            <numerusform />
-            <numerusform />
             <numerusform />
         </translation>
     </message>
@@ -544,15 +526,11 @@
         <source>%n second(s)</source>
         <translation type="unfinished">
             <numerusform />
-            <numerusform />
-            <numerusform />
         </translation>
     </message>
     <message numerus="yes">
         <source>%n minute(s)</source>
         <translation type="unfinished">
-            <numerusform />
-            <numerusform />
             <numerusform />
         </translation>
     </message>
@@ -560,15 +538,11 @@
         <source>%n hour(s)</source>
         <translation type="unfinished">
             <numerusform />
-            <numerusform />
-            <numerusform />
         </translation>
     </message>
     <message numerus="yes">
         <source>%n day(s)</source>
         <translation type="unfinished">
-            <numerusform />
-            <numerusform />
             <numerusform />
         </translation>
     </message>
@@ -576,15 +550,11 @@
         <source>%n week(s)</source>
         <translation type="unfinished">
             <numerusform />
-            <numerusform />
-            <numerusform />
         </translation>
     </message>
     <message numerus="yes">
         <source>%n year(s)</source>
         <translation type="unfinished">
-            <numerusform />
-            <numerusform />
             <numerusform />
         </translation>
     </message>
@@ -887,8 +857,6 @@
         <source>Open for %n more block(s)</source>
         <translation type="unfinished">
             <numerusform />
-            <numerusform />
-            <numerusform />
         </translation>
     </message>
     <message>
@@ -918,8 +886,6 @@
     <message numerus="yes">
         <source>, broadcast through %n node(s)</source>
         <translation type="unfinished">
-            <numerusform />
-            <numerusform />
             <numerusform />
         </translation>
     </message>
@@ -958,8 +924,6 @@
     <message numerus="yes">
         <source>matures in %n more block(s)</source>
         <translation type="unfinished">
-            <numerusform />
-            <numerusform />
             <numerusform />
         </translation>
     </message>
@@ -1020,8 +984,6 @@
     <message numerus="yes">
         <source>Open for %n more block(s)</source>
         <translation type="unfinished">
-            <numerusform />
-            <numerusform />
             <numerusform />
         </translation>
     </message>
@@ -1107,26 +1069,6 @@
     <message>
         <source>Range...</source>
         <translation>Rang...</translation>
-    </message>
-    <message>
-        <source>Received with</source>
-        <translation>Rebut amb</translation>
-    </message>
-    <message>
-        <source>Sent to</source>
-        <translation>Enviat a</translation>
-    </message>
-    <message>
-        <source>To yourself</source>
-        <translation>A un mateix</translation>
-    </message>
-    <message>
-        <source>Mined</source>
-        <translation>Minat</translation>
-    </message>
-    <message>
-        <source>Other</source>
-        <translation>Altres</translation>
     </message>
     <message>
         <source>Min amount</source>

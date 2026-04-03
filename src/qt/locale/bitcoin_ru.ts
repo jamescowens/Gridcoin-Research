@@ -1,11 +1,20 @@
-<TS language="ru" version="2.0">
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1" language="ru">
 <context>
     <name>AboutDialog</name>
     <message>
+        <location filename="../forms/aboutdialog.ui" line="+14"/>
         <source>About Gridcoin</source>
         <translation>О Gridcoin</translation>
     </message>
     <message>
+        <location line="+39"/>
+        <source>&lt;b&gt;Gridcoin&lt;/b&gt; </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+58"/>
         <source>
 This is experimental software.
 
@@ -19,18 +28,36 @@ This product includes software developed by the OpenSSL Project for use in the O
 Этот продукт включает программное обеспечение, разработанное OpenSSL Project для использования в OpenSSL Toolkit (https://www.openssl.org/), и программное обеспечение для криптографии, написанное Эриком Янгом (eay@cryptsoft.com), и программное обеспечение UPnP, написанное Томасом Бернардом.
 </translation>
     </message>
+    <message>
+        <location line="+46"/>
+        <source>Version Information</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../aboutdialog.cpp" line="+37"/>
+        <source>Version information and update check has been disabled by config or startup parameter.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Version information is not available on testnet.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AdditionalFieldsTableDataModel</name>
     <message>
+        <location filename="../voting/additionalfieldstablemodel.cpp" line="+23"/>
         <source>Name</source>
         <translation>Имя</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Value</source>
         <translation>Значение</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Required</source>
         <translation>Необходимый</translation>
     </message>
@@ -38,83 +65,113 @@ This product includes software developed by the OpenSSL Project for use in the O
 <context>
     <name>AddressBookPage</name>
     <message>
+        <location filename="../forms/addressbookpage.ui" line="+127"/>
         <source>Create a new address</source>
         <translation>Создать новый адрес</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>&amp;New</source>
         <translation>&amp;Новый</translation>
     </message>
     <message>
+        <location line="+11"/>
+        <source>Add an existing address owned by this wallet to the address book</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Add &amp;Existing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
         <source>Copy the currently selected address to the system clipboard</source>
         <translation>Скопировать выбранный адрес в системный буфер обмена.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>&amp;Copy</source>
         <translation>&amp;Скопировать</translation>
     </message>
     <message>
+        <location line="+11"/>
         <source>Show &amp;QR Code</source>
         <translation>Показать &amp;QR код</translation>
     </message>
     <message>
+        <location line="+11"/>
         <source>Sign a message to prove you own a Gridcoin address</source>
         <translation>Подпишите сообщение, чтобы доказать, что вы владеете адресом Gridcoin</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Sign &amp;Message</source>
         <translation>Подписать &amp;Сообщение</translation>
     </message>
     <message>
+        <location line="+11"/>
         <source>Verify a message to ensure it was signed with a specified Gridcoin address</source>
         <translation>Проверить сообщение, чтобы убедиться, что оно было подписано указанным адресом Gridcoin.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>&amp;Verify Message</source>
         <translation>&amp;Проверить сообщение</translation>
     </message>
     <message>
+        <location line="+11"/>
         <source>Delete the currently selected address from the list</source>
         <translation>Удалить выбранный адрес из списка</translation>
     </message>
     <message>
+        <location line="-194"/>
         <source>Address Book</source>
         <translation>Адресная Книга</translation>
     </message>
     <message>
+        <location line="+45"/>
         <source>These are your Gridcoin addresses for receiving payments. You may want to give a different one to each sender so you can keep track of who is paying you.</source>
         <translation>Здесь ваши адреса Gridcoin для приема платежей. Вы можете дать каждому отправителю разный адрес, чтобы вы могли отслеживать, кто вам платит.</translation>
     </message>
     <message>
+        <location line="+16"/>
         <source>Double-click to edit label</source>
         <translation>Двойной щелчок для изменения метки</translation>
     </message>
     <message>
+        <location line="+136"/>
         <source>&amp;Delete</source>
         <translation>&amp;Удалить</translation>
     </message>
     <message>
+        <location filename="../addressbookpage.cpp" line="+75"/>
         <source>Copy &amp;Label</source>
         <translation>Копировать &amp;Метку</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>&amp;Edit</source>
         <translation>&amp;Редактировать</translation>
     </message>
     <message>
+        <location line="+267"/>
         <source>Export Address Book Data</source>
         <translation>Экспортировать Данные Адресной Книги</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Comma separated file</source>
         <comment>Name of CSV file format</comment>
         <translation>Файл с разделителями-запятыми</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>Error exporting</source>
         <translation>Не удалось экспортировать</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Could not write to file %1.</source>
         <translation>Не удалось записать в файл %1.</translation>
     </message>
@@ -122,14 +179,17 @@ This product includes software developed by the OpenSSL Project for use in the O
 <context>
     <name>AddressTableModel</name>
     <message>
+        <location filename="../addresstablemodel.cpp" line="+149"/>
         <source>Label</source>
         <translation>Метка</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Address</source>
         <translation>Адрес</translation>
     </message>
     <message>
+        <location line="+38"/>
         <source>(no label)</source>
         <translation>(без метки)</translation>
     </message>
@@ -137,102 +197,150 @@ This product includes software developed by the OpenSSL Project for use in the O
 <context>
     <name>AskPassphraseDialog</name>
     <message>
+        <location filename="../forms/askpassphrasedialog.ui" line="+26"/>
         <source>Passphrase Dialog</source>
         <translation>Диалог ввода пароля</translation>
     </message>
     <message>
+        <location line="+21"/>
         <source>Enter passphrase</source>
         <translation>Введите пароль</translation>
     </message>
     <message>
+        <location line="+14"/>
         <source>New passphrase</source>
         <translation>Новый пароль</translation>
     </message>
     <message>
+        <location line="+14"/>
         <source>Repeat new passphrase</source>
         <translation>Повторите новый пароль</translation>
     </message>
     <message>
+        <location line="+30"/>
         <source>Serves to disable the trivial sendmoney when OS account compromised. Provides no real security.</source>
         <translation>Служит для отключения тривиальной отправки денег при компрометации учетной записи ОС. Не обеспечивает реальной безопасности.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>For staking only</source>
         <translation>Только для стейкинга</translation>
     </message>
     <message>
+        <location filename="../askpassphrasedialog.cpp" line="+41"/>
         <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
         <translation>Введите новый пароль кошелька.&lt;br/&gt;Используйте пароль, состоящий из &lt;b&gt;десяти или более случайных символов&lt;/b&gt;, или &lt;b&gt;восьми или более слов&lt;/b&gt;.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Encrypt wallet</source>
         <translation>Зашифровать кошелёк</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>This operation needs your wallet passphrase to unlock the wallet.</source>
         <translation>Для выполнения операции требуется пароль вашего кошелька.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Unlock wallet</source>
         <translation>Разблокировать кошелёк</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Change passphrase</source>
         <translation>Сменить пароль</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Enter the old and new passphrase to the wallet.</source>
         <translation>Введите старый и придумайте новый пароль для кошелька.</translation>
     </message>
     <message>
+        <location line="+44"/>
         <source>Confirm wallet encryption</source>
         <translation>Подтвердите шифрование кошелька</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR COINS&lt;/b&gt;!</source>
         <translation>Предупреждение: Если вы зашифруете свой кошелёк и потеряете пароль, вы &lt;b&gt; ПОТЕРЯЕТЕ ВСЕ ВАШИ ДЕНЬГИ&lt;/b&gt;!</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Are you sure you wish to encrypt your wallet?</source>
         <translation>Вы уверены, что хотите зашифровать ваш кошелёк?</translation>
     </message>
     <message>
+        <location line="+6"/>
+        <location line="+54"/>
         <source>Wallet encrypted</source>
         <translation>Кошелёк зашифрован</translation>
     </message>
     <message>
+        <location line="-52"/>
         <source>Gridcoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your coins from being stolen by malware infecting your computer.</source>
         <translation>Сейчас программа закроется для завершения процесса шифрования. Помните, что шифрование вашего кошелька не может полностью защитить ваши средства от кражи с помощью инфицирования вашего компьютера вредоносным ПО.</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>IMPORTANT: Any previous backups you have made of your wallet file should be replaced with the newly generated, encrypted wallet file. For security reasons, previous backups of the unencrypted wallet file will become useless as soon as you start using the new, encrypted wallet.</source>
         <translation>ВАЖНО: все предыдущие резервные копии вашего кошелька должны быть заменены новым зашифрованным файлом. В целях безопасности предыдущие резервные копии незашифрованного кошелька станут бесполезны, как только вы начнёте использовать новый зашифрованный кошелёк.</translation>
     </message>
     <message>
+        <location line="+8"/>
+        <location line="+5"/>
+        <location line="+57"/>
         <source>Wallet encryption failed</source>
         <translation>Не удалось зашифровать кошелёк</translation>
     </message>
     <message>
+        <location line="-61"/>
         <source>Wallet encryption failed due to an internal error. Your wallet was not encrypted.</source>
         <translation>Шифрование кошелька не удалось из-за внутренней ошибки. Ваш кошелёк не был зашифрован.</translation>
     </message>
     <message>
+        <location line="+5"/>
+        <location line="+57"/>
         <source>The supplied passphrases do not match.</source>
         <translation>Введённые пароли не совпадают.</translation>
     </message>
     <message>
+        <location line="-46"/>
+        <location line="+3"/>
         <source>Wallet unlock failed</source>
         <translation>Разблокировка кошелька не удалась</translation>
     </message>
     <message>
+        <location line="-2"/>
+        <location line="+31"/>
         <source>The passphrase entered for the wallet decryption was incorrect.</source>
         <translation>Неверный пароль для расшифровки кошелька.</translation>
     </message>
     <message>
+        <location line="-28"/>
+        <source>The passphrase entered for the wallet decryption is incorrect. It contains a null character (ie - a zero byte). If the passphrase was set with a version of this software prior to 5.4.6, please try again with only the characters up to — but not including — the first null character. If this is successful, please set a new passphrase to avoid this issue in the future.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
         <source>Wallet passphrase was successfully changed.</source>
         <translation>Пароль кошелька успешно изменён.</translation>
     </message>
     <message>
+        <location line="+7"/>
+        <location line="+3"/>
+        <source>Passphrase change failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The old passphrase entered for the wallet decryption is incorrect. It contains a null character (ie - a zero byte). If the passphrase was set with a version of this software prior to 5.4.6, please try again with only the characters up to — but not including — the first null character.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+46"/>
+        <location line="+24"/>
         <source>Warning: The Caps Lock key is on!</source>
         <translation>Внимание: Caps Lock включен!</translation>
     </message>
@@ -240,10 +348,12 @@ This product includes software developed by the OpenSSL Project for use in the O
 <context>
     <name>BanTableModel</name>
     <message>
+        <location filename="../bantablemodel.cpp" line="+88"/>
         <source>IP/Netmask</source>
         <translation>IP/Маска подсети</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Banned Until</source>
         <translation>Заблокирован До</translation>
     </message>
@@ -251,270 +361,390 @@ This product includes software developed by the OpenSSL Project for use in the O
 <context>
     <name>BitcoinGUI</name>
     <message>
+        <location filename="../bitcoin.cpp" line="+244"/>
         <source>A fatal error occurred. Gridcoin can no longer continue safely and will quit.</source>
         <translation>Произошла неисправимая ошибка. Gridcoin не может безопасно продолжать работу и будет закрыт.</translation>
     </message>
     <message>
+        <location filename="../bitcoingui.cpp" line="+170"/>
         <source>Wallet</source>
         <translation>Кошелёк</translation>
     </message>
     <message>
+        <location line="+0"/>
+        <source>Gridcoin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+151"/>
         <source>&amp;Overview</source>
         <translation>&amp;Обзор</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Show general overview of wallet</source>
         <translation>Показать общий обзор кошелька</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>&amp;Send</source>
         <translation>&amp;Отправить</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Send coins to a Gridcoin address</source>
         <translation>Отправить монеты на адрес Gridcoin</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>&amp;Receive</source>
         <translation>&amp;Получить</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Show the list of addresses for receiving payments</source>
         <translation>Показать список адресов для приема платежей</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>&amp;History</source>
         <translation>&amp;История</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Browse transaction history</source>
         <translation>Показать историю транзакций</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>&amp;Favorites</source>
         <translation>&amp;Избранное</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Edit the list of stored addresses and labels</source>
         <translation>Редактирование списка сохраненных адресов и меток</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>&amp;Voting</source>
         <translation>&amp;Голосование</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Voting</source>
         <translation>Голосование</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>&amp;Block Explorer</source>
         <translation>&amp;Обзор Блоков</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Block Explorer</source>
         <translation>Обзор Блоков</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>&amp;Exchange</source>
         <translation>&amp;Биржа</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <location line="+4"/>
         <source>Web Site</source>
         <translation>Веб-Сайт</translation>
     </message>
     <message>
+        <location line="-1"/>
         <source>&amp;Web Site</source>
         <translation>&amp;Веб-Сайт</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>&amp;GRC Chat Room</source>
         <translation>&amp;GRC Чат</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>GRC Chatroom</source>
         <translation>GRC Чат</translation>
     </message>
     <message>
+        <location line="+3"/>
+        <source>&amp;BOINC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Gridcoin rewards distributed computing with BOINC</source>
         <translation>Gridcoin вознаграждает распределенные вычисления выполняемые для BOINC</translation>
     </message>
     <message>
+        <location line="+3"/>
+        <source>Gridcoin &amp;Wiki</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Open the Gridcoin Wiki</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>&amp;FAQ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Open the Gridcoin FAQ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>&amp;Guides</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Open the Gridcoin Guides</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
         <source>E&amp;xit</source>
         <translation>В&amp;ыход</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Quit application</source>
         <translation>Закрыть приложение</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>&amp;About Gridcoin</source>
         <translation>&amp;О Gridcoin</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Show information about Gridcoin</source>
         <translation>Показать информацию о Gridcoin</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>&amp;Diagnostics</source>
         <translation>&amp;Диагностика</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Diagnostics</source>
         <translation>Диагностика</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>&amp;Options...</source>
         <translation>&amp;Параметры...</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Modify configuration options for Gridcoin</source>
         <translation>Изменение параметров конфигурации Gridcoin</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Open config &amp;file...</source>
         <translation>Открыть &amp;файл конфигурации ...</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Open the config file in your standard editor</source>
         <translation>Открыть файл конфигурации в вашем стандартном редакторе</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>&amp;Researcher Wizard...</source>
         <translation>&amp;Мастер Исследования...</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Open BOINC and beacon settings for Gridcoin</source>
         <translation>Откройте настройки BOINC и маяка для Gridcoin</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>&amp;Show / Hide</source>
         <translation>&amp;Показать / Скрыть</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>&amp;Encrypt Wallet...</source>
         <translation>&amp;Зашифровать кошелёк...</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Encrypt wallet</source>
         <translation>Зашифровать кошелёк</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>&amp;Backup Wallet/Config...</source>
         <translation>&amp;Бэкап Кошелька/Настроек...</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Backup wallet/config to another location</source>
         <translation>Бэкап кошелька/настроек в другое место</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>&amp;Change Passphrase...</source>
         <translation>&amp;Изменить Пароль...</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Change the passphrase used for wallet encryption</source>
         <translation>Изменить пароль, используемый для шифрования кошелька</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>&amp;Unlock Wallet...</source>
         <translation>&amp;Разблокировать Кошелёк...</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Unlock wallet</source>
         <translation>Разблокировать кошелёк</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>&amp;Lock Wallet</source>
         <translation>&amp;Заблокировать Кошелёк</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Lock wallet</source>
         <translation>Заблокировать кошелёк</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Sign &amp;message...</source>
         <translation>Подпись &amp;sсообщения...</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>&amp;Verify message...</source>
         <translation>&amp;Проверить сообщение...</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>&amp;Export...</source>
         <translation>&amp;Экспорт...</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Export the data in the current tab to a file</source>
         <translation>Экспорт данных из текущей вкладки в файл</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>&amp;Debug window</source>
         <translation>&amp;Окно отладки</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Open debugging and diagnostic console</source>
         <translation>Открыть консоль отладки и диагностики</translation>
     </message>
     <message>
+        <location line="+3"/>
+        <source>&amp;Snapshot Download</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Download and apply latest snapshot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>&amp;Reset blockchain data</source>
         <translation>&amp;Сбросить данные блокчейна</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Remove blockchain data and start chain from zero</source>
         <translation>Удалите данные блокчейна и начните цепочку с нуля</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>&amp;Mask values</source>
         <translation>&amp;Замаскировать значения</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Mask the values in the Overview screen</source>
         <translation>Маскирует значения на Обзорном экране.</translation>
     </message>
     <message>
+        <location line="+111"/>
         <source>&amp;File</source>
         <translation>&amp;Файл</translation>
     </message>
     <message>
+        <location line="+28"/>
         <source>&amp;Settings</source>
         <translation>&amp;Настройки</translation>
     </message>
     <message>
+        <location line="+14"/>
         <source>&amp;Community</source>
         <translation>&amp;Сообщество</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>&amp;Help</source>
         <translation>&amp;Помощь</translation>
     </message>
     <message>
+        <location line="+39"/>
         <source>Open menu.</source>
         <translation>Открыть меню.</translation>
     </message>
     <message>
+        <location line="+15"/>
         <source>Toggle light/dark mode.</source>
         <translation>Переключить светлый/темный режим.</translation>
     </message>
     <message>
+        <location line="+85"/>
         <source>Not staking: Miner is not initialized.</source>
         <translation>Без стекинга: Майнер не инициализирован.</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Not staking: Disabled by configuration.</source>
         <translation>Без стекинга: отключено настройкой.</translation>
     </message>
     <message>
+        <location line="+16"/>
+        <location line="+7"/>
         <source>[testnet]</source>
         <translation>[тестовая сеть]</translation>
     </message>
     <message>
+        <location line="+0"/>
+        <location line="+142"/>
         <source>Gridcoin client</source>
         <translation>Gridcoin клиент</translation>
     </message>
     <message>
+        <location line="+145"/>
         <source>No active connections to the Gridcoin network. If this persists more than a few minutes, please check your configuration and your network connectivity.</source>
         <translation>Нет активных подключений к сети Gridcoin. Если это продолжается более пары минут, проверьте свои настройки и подключение к сети.</translation>
     </message>
     <message numerus="yes">
+        <location line="+6"/>
         <source>%n active connection(s) to the Gridcoin network</source>
         <translation>
             <numerusform>%n активное подключение к сети Gridcoin</numerusform>
@@ -523,10 +753,12 @@ This product includes software developed by the OpenSSL Project for use in the O
         </translation>
     </message>
     <message>
+        <location line="+14"/>
         <source>Sync: no connections.</source>
         <translation>Синхронизация: нет подключений.</translation>
     </message>
     <message numerus="yes">
+        <location line="+6"/>
         <source>Processed %n block(s) of transaction history.</source>
         <translation>
             <numerusform>Обработано %n блок(ов) истории транзакций.</numerusform>
@@ -535,6 +767,7 @@ This product includes software developed by the OpenSSL Project for use in the O
         </translation>
     </message>
     <message numerus="yes">
+        <location line="+13"/>
         <source>%n second(s) ago</source>
         <translation>
             <numerusform>%n секунд(у) назад</numerusform>
@@ -543,6 +776,7 @@ This product includes software developed by the OpenSSL Project for use in the O
         </translation>
     </message>
     <message numerus="yes">
+        <location line="+4"/>
         <source>%n minute(s) ago</source>
         <translation>
             <numerusform>%n минут(у) назад</numerusform>
@@ -551,6 +785,7 @@ This product includes software developed by the OpenSSL Project for use in the O
         </translation>
     </message>
     <message numerus="yes">
+        <location line="+4"/>
         <source>%n hour(s) ago</source>
         <translation>
             <numerusform>%n час(ов) назад</numerusform>
@@ -559,6 +794,7 @@ This product includes software developed by the OpenSSL Project for use in the O
         </translation>
     </message>
     <message numerus="yes">
+        <location line="+4"/>
         <source>%n day(s) ago</source>
         <translation>
             <numerusform>%n день назад</numerusform>
@@ -567,34 +803,42 @@ This product includes software developed by the OpenSSL Project for use in the O
         </translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>Up to date</source>
         <translation>Синхронизировано</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>Catching up...</source>
         <translation>Синхронизируется...</translation>
     </message>
     <message>
+        <location line="+11"/>
         <source>Last received block was generated %1.</source>
         <translation>Последний полученный блок был сгенерирован %1.</translation>
     </message>
     <message>
+        <location line="+123"/>
         <source>This transaction is over the size limit.  You can still send it for a fee of %1, which goes to the nodes that process your transaction and helps to support the network.  Do you want to pay the fee?</source>
         <translation>Транзакция превышает разрешенный лимит. Вы можете отправить её за комиссию в размере %1, которая отправляется узлам, обрабатывающим вашу транзакцию, и помогает поддерживать сеть. Вы хотите заплатить комиссию?</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Confirm transaction fee</source>
         <translation>Подтвердите комиссию за транзакцию</translation>
     </message>
     <message>
+        <location line="+29"/>
         <source>Sent transaction</source>
         <translation>Исходящая транзакция</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Incoming transaction</source>
         <translation>Входящая транзакция</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Date: %1
 Amount: %2
 Type: %3
@@ -605,130 +849,191 @@ Address: %4</source>
 Адрес: %4</translation>
     </message>
     <message>
+        <location line="+17"/>
         <source>Do you wish to download and apply the latest snapshot? If yes the wallet will shutdown and perform the task.</source>
         <translation>Вы хотите загрузить и применить последний снимок состояния? Если да, кошелек отключится и выполнит задачу.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Warning: Canceling after stage 2 will result in sync from 0 or corrupted blockchain files.</source>
         <translation>Внимание: отмена после этапа 2 приведет к синхронизации с 0 или поврежденными файлами цепочки блоков.</translation>
     </message>
     <message>
+        <location line="+34"/>
         <source>Do you want to delete blockchain data and sync from zero?</source>
         <translation>Вы хотите удалить данные блокчейна и выполнить синхронизацию с нуля?</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Warning: After the blockchain data is deleted, the wallet will shutdown and when restarted will begin syncing from zero. Your balance will temporarily show as 0 GRC while syncing.</source>
         <translation>Внимание: после удаления данных блокчейна кошелек отключится, а при перезапуске начнется синхронизация с нуля. Ваш баланс временно будет отображаться как 0 GRC пока синхронизируется.</translation>
     </message>
     <message>
+        <location line="+50"/>
         <source>Close Confirmation</source>
         <translation>Подтверждение Закрытия</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Exit the Gridcoin wallet?</source>
         <translation>Выйти из Gridcoin кошелька?</translation>
     </message>
     <message>
+        <location line="+132"/>
+        <location line="+25"/>
+        <source>Wallet Not In Sync</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-24"/>
+        <source>The wallet is not yet in sync with the network. Your balance may be inaccurate, and transactions created while out of sync may not confirm properly.
+
+Are you sure you want to proceed?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>The wallet must be in sync to access the voting system. Please wait for synchronization to complete.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <location line="+15"/>
         <source>URI handling</source>
         <translation>Обработка URI</translation>
     </message>
     <message>
+        <location line="-15"/>
+        <location line="+15"/>
         <source>URI can not be parsed! This can be caused by an invalid Gridcoin address or malformed URI parameters.</source>
         <translation>URI не может быть проанализирован! Это может быть вызвано неправильным адресом Gridcoin или неправильными параметрами URI.</translation>
     </message>
     <message>
+        <location line="+9"/>
         <source>Wallet is &lt;b&gt;not encrypted&lt;/b&gt;!</source>
         <translation>Кошелёк &lt;b&gt;не зашифрован&lt;/b&gt;!</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently %1 </source>
         <translation>Кошелёк &lt;b&gt;зашифрован&lt;/b&gt; и сейчас %1 </translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>&lt;b&gt;unlocked for staking only&lt;/b&gt;</source>
         <translation>&lt;b&gt;разблокирован только для стейкинга&lt;/b&gt;</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>&lt;b&gt;fully unlocked&lt;/b&gt;</source>
         <translation>&lt;b&gt;полностью разблокирован&lt;/b&gt;</translation>
     </message>
     <message>
+        <location line="+11"/>
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;locked&lt;/b&gt;</source>
         <translation>Кошелёк &lt;b&gt;зашифрован&lt;/b&gt; и в настоящее время &lt;b&gt;заблокирован&lt;/b&gt;</translation>
     </message>
     <message>
+        <location line="+27"/>
         <source>Backup Wallet</source>
         <translation>Бэкап Кошелька</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Wallet Data (*.dat)</source>
         <translation>Данные Кошелька (*.dat)</translation>
     </message>
     <message>
+        <location line="+3"/>
+        <location line="+6"/>
         <source>Backup Failed</source>
         <translation>Резервное копирование не удалось</translation>
     </message>
     <message>
+        <location line="-6"/>
+        <location line="+6"/>
         <source>There was an error trying to save the wallet data to the new location.</source>
         <translation>Произошла ошибка при попытке сохранить данные кошелька в новом месте.</translation>
     </message>
     <message>
+        <location line="-3"/>
         <source>Backup Config</source>
         <translation>Бэкап Конфигурации</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Wallet Config (*.conf)</source>
         <translation>Конфигурация Кошелька (*.conf)</translation>
     </message>
     <message>
+        <location line="+85"/>
         <source>not available</source>
         <translation>недоступно</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>year</source>
         <translation>год</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>month</source>
         <translation>месяц</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>day</source>
         <translation>день</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>hour</source>
         <translation>час</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>%1 times per %2</source>
         <translation>%1 раз за %2</translation>
     </message>
     <message>
+        <location line="+17"/>
         <source>Staking.&lt;br&gt;Your weight is %1&lt;br&gt;Network weight is %2&lt;br&gt;&lt;b&gt;Estimated&lt;/b&gt; staking frequency is %3.</source>
         <translation>Стейкинг.&lt;br&gt;Ваш вес %1&lt;br&gt;Вес сети %2&lt;br&gt;&lt;b&gt;Примерная&lt;/b&gt; частота стейкинга %3.</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>Unable to stake: %1</source>
         <translation>Невозможно стейкить: %1</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>Not staking currently: %1, &lt;b&gt;Estimated&lt;/b&gt; staking frequency is %2.</source>
         <translation>В настоящее время нет стейка: %1, &lt;b&gt;Примерная&lt;/b&gt; частота стейкинга %2.</translation>
     </message>
     <message>
+        <location line="+32"/>
+        <location line="+17"/>
+        <location line="+9"/>
+        <source>none</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Scraper: waiting on wallet to sync.</source>
         <translation>Scraper: ожидание синхронизации кошелька.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Scraper: superblock not needed - inactive.</source>
         <translation>Scraper: суперблок не нужен - неактивен.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Scraper: downloading and processing stats.</source>
         <translation>Scraper: загрузка и обработка статистики.</translation>
     </message>
     <message>
+        <location line="+9"/>
         <source>Scraper: Convergence achieved, date/time %1 UTC. 
 Project(s) excluded: %2. 
 Scrapers included: %3. 
@@ -736,27 +1041,31 @@ Scraper(s) excluded: %4.
 Scraper(s) not publishing: %5.</source>
         <translation>Scraper: Схождение достигнуто, дата/время %1 UTC.
 Проект(ов) исключено: %2.
-Scraper'ов включено: %3.
+Scraper&apos;ов включено: %3.
 Scraper(ов) исключено: %4.
 Scraper(ов) не публикуются: %5.</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>Scraper: Convergence achieved, date/time %1 UTC. 
  Project(s) excluded: %2.</source>
         <translation>Scraper: схождение достигнуто, дата/время %1 UTC.
 Проект(ов) исключено: %2.</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>Scraper: No convergence able to be achieved. Will retry in a few minutes.</source>
         <translation>Scraper: Невозможно достичь схождения. Повторная попытка через несколько минут.</translation>
     </message>
     <message>
+        <location line="+20"/>
         <source>CPID: %1
-Time left to activate: %2%3</source>
-        <translation>CPID: %1
-Осталось времени для активации: %2%3</translation>
+Time left to activate: %2
+%3</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>CPID: %1
 Beacon age: %2
 Current beacon expired!
@@ -767,6 +1076,7 @@ Current beacon expired!
 %3</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>CPID: %1
 Beacon age: %2
 Expires: %3
@@ -777,192 +1087,261 @@ Expires: %3
 %4</translation>
     </message>
     <message>
+        <location line="+22"/>
         <source>New Poll</source>
         <translation>Новый Опрос</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>A new poll is available. Open Gridcoin to vote.</source>
         <translation>Доступен новый опрос. Откройте Gridcoin для голосования.</translation>
+    </message>
+    <message>
+        <location line="+46"/>
+        <source>The following poll(s) are about to expire:
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Open Gridcoin to vote.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Poll(s) about to expire</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>ClientModel</name>
     <message>
+        <location filename="../clientmodel.cpp" line="+166"/>
         <source>Network Alert</source>
         <translation>Сетевая Тревога</translation>
     </message>
     <message>
+        <location line="+52"/>
         <source>Low difficulty!; </source>
         <translation>Низкая сложность!;</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Miner: </source>
-        <translation>Майнер:</translation>
+        <translation>Майнер: </translation>
     </message>
 </context>
 <context>
     <name>CoinControlDialog</name>
     <message>
+        <location filename="../forms/coincontroldialog.ui" line="+42"/>
         <source>Quantity:</source>
         <translation>Количество:</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Bytes:</source>
         <translation>Байт:</translation>
     </message>
     <message>
+        <location line="+39"/>
         <source>Amount:</source>
         <translation>Сумма:</translation>
     </message>
     <message>
+        <location line="+39"/>
         <source>Fee:</source>
         <translation>Комиссия:</translation>
     </message>
     <message>
+        <location line="-129"/>
         <source>Coin Control</source>
         <translation>Управление монетами</translation>
     </message>
     <message>
+        <location line="+155"/>
         <source>Low Output:</source>
         <translation>Малый Выход:</translation>
     </message>
     <message>
+        <location line="+42"/>
         <source>After Fee:</source>
         <translation>После комиссии:</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Change:</source>
         <translation>Сдача:</translation>
     </message>
     <message>
+        <location line="+41"/>
         <source>Toggles between selecting all and selecting none.</source>
         <translation>Переключение между выбором всего и очисткой выбора.</translation>
     </message>
     <message>
+        <location line="+3"/>
+        <location filename="../coincontroldialog.cpp" line="+224"/>
         <source>Select All</source>
         <translation>Выбрать Всё</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>Tree &amp;mode</source>
         <translation>Режим &amp;дерева</translation>
     </message>
     <message>
+        <location line="+40"/>
         <source>Select inputs</source>
         <translation>Выбор поступлений</translation>
     </message>
     <message>
+        <location line="+10"/>
+        <source>&lt;=</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
         <source>Filters the already selected inputs.</source>
         <translation>Фильтрует уже выбранные поступления.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Filter</source>
         <translation>Фильтровать</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Pushing this button after making a input selection either manually or with the filter will present a destination address list where you specify a single address as the destination for the consolidated output. The send (Pay To) entry will be filled in with this address and you can finish the consolidation by pressing the send button.</source>
         <translation>Нажатие этой кнопки после выбора поступлений вручную или с помощью фильтра представит список адресов назначения, в котором вы укажете один адрес в качестве места назначения для объединенной отправки. Запись отправки (Получателю) будет заполнена этим адресом, и вы можете завершить объединение, нажав кнопку отправки.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Consolidate</source>
         <translation>Объеденить</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>The consolidation transaction is ready to send to self. Please press the ok button to go to the send dialog.</source>
         <translation>Транзакция объединения готова к отправке самому себе. Пожалуйста, нажмите кнопку OK, чтобы перейти к диалоговому окну отправки.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Ready to consolidate</source>
         <translation>Готово к объединению</translation>
     </message>
     <message>
+        <location line="+43"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
+        <location line="+15"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Confirmations</source>
         <translation>Подтверждения</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Confirmed</source>
         <translation>Подтверждено</translation>
     </message>
     <message>
+        <location line="-18"/>
         <source>Label</source>
         <translation>Метка</translation>
     </message>
     <message>
+        <location line="-128"/>
         <source>&amp;List mode</source>
         <translation>&amp;Режим списка</translation>
     </message>
     <message>
+        <location line="+133"/>
         <source>Address</source>
         <translation>Адрес</translation>
     </message>
     <message>
+        <location filename="../coincontroldialog.cpp" line="-177"/>
         <source>Copy address</source>
         <translation>Копировать адрес</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Copy label</source>
         <translation>Копировать метку</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <location line="+26"/>
         <source>Copy amount</source>
         <translation>Копировать сумму</translation>
     </message>
     <message>
+        <location line="-25"/>
         <source>Copy transaction ID</source>
         <translation>Копировать ID транзакции</translation>
     </message>
     <message>
+        <location line="+24"/>
         <source>Copy quantity</source>
         <translation>Копировать количество</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Copy fee</source>
         <translation>Копировать комиссию</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Copy after fee</source>
         <translation>Копировать после комиссии</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Copy bytes</source>
         <translation>Копировать байты</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Copy low output</source>
         <translation>Копировать малый выход</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Copy change</source>
         <translation>Копировать сдачу</translation>
     </message>
     <message>
+        <location line="+58"/>
         <source>Flips the filter mode between selecting inputs less than or equal to the provided value (&lt;=) and greater than or equal to the provided value (&gt;=). The filter also automatically limits the number of inputs to %1, in ascending order for &lt;= and descending order for &gt;=.</source>
         <translation>Переворачивает режим фильтрации между выбором поступлений, меньших или равных указанному значению (&lt;=) и больше или равных предоставленному значению (&gt;=). Фильтр также автоматически ограничивает количество входов до %1 в порядке возрастания для &lt;= и порядке убывания для &gt;=.</translation>
     </message>
     <message>
+        <location line="+90"/>
         <source>Select None</source>
         <translation>Очистить Выбор</translation>
     </message>
     <message>
+        <location line="+529"/>
         <source>DUST</source>
         <translation>ПЫЛЬ</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>yes</source>
         <translation>да</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>no</source>
         <translation>нет</translation>
     </message>
     <message>
+        <location line="+9"/>
         <source>This label turns red, if the transaction size is bigger than 10000 bytes.
 
  This means a fee of at least %1 per kb is required.
@@ -975,6 +1354,7 @@ Expires: %3
  Может варьироваться +/- 1 байт на вход.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>This label turns red, if any recipient receives an amount smaller than %1.
 
  This means a fee of at least %2 is required. 
@@ -987,6 +1367,7 @@ Expires: %3
 Суммы, превышающие  в 0,546 раза минимальную комиссию за отправку, отображаются как ПЫЛЬ.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>This label turns red, if the change is smaller than %1.
 
  This means a fee of at least %2 is required.</source>
@@ -995,14 +1376,18 @@ Expires: %3
  Это означает, что требуется комиссия не менее %2.</translation>
     </message>
     <message>
+        <location line="+36"/>
+        <location line="+57"/>
         <source>(no label)</source>
         <translation>(нет метки)</translation>
     </message>
     <message>
+        <location line="-10"/>
         <source>change from %1 (%2)</source>
         <translation>сдача с %1 (%2)</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>(change)</source>
         <translation>(сдача)</translation>
     </message>
@@ -1010,22 +1395,27 @@ Expires: %3
 <context>
     <name>ConsolidateUnspentDialog</name>
     <message>
+        <location filename="../forms/consolidateunspentdialog.ui" line="+14"/>
         <source>Consolidate Unspent Outputs (UTXOs)</source>
         <translation>Объединение Неизрасходованных Выводов (UTXO-ов)</translation>
     </message>
     <message>
+        <location line="+25"/>
         <source>Select Destination Address for Consolidation</source>
         <translation>Выберите Адрес Назначения для Объединения</translation>
     </message>
     <message>
+        <location line="+60"/>
         <source>Label</source>
         <translation>Метка</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Address</source>
         <translation>Адрес</translation>
     </message>
     <message>
+        <location filename="../consolidateunspentdialog.cpp" line="+27"/>
         <source>Note: The number of inputs selected for consolidation has been limited to %1 to prevent a transaction failure due to too many inputs.</source>
         <translation>Примечание: Количество поступлений, выбранных для объединения, ограничено %1 во избежание сбоя транзакции из-за слишком большого количества поступлений.</translation>
     </message>
@@ -1033,6 +1423,7 @@ Expires: %3
 <context>
     <name>ConsolidateUnspentWizard</name>
     <message>
+        <location filename="../forms/consolidateunspentwizard.ui" line="+20"/>
         <source>Consolidate Unspent Transaction Outputs (UTXOs)</source>
         <translation>Объединение Неизрасходованных Выводов Транзакции (UTXO-ов)</translation>
     </message>
@@ -1040,26 +1431,34 @@ Expires: %3
 <context>
     <name>ConsolidateUnspentWizardSelectDestinationPage</name>
     <message>
+        <location filename="../forms/consolidateunspentwizardselectdestinationpage.ui" line="+20"/>
         <source>WizardPage</source>
         <translation>СтраницаМастера</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>Step 2: Select the destination address for the consolidation transaction. Note that all of the selected inputs will be consolidated to an output on this address. If there is a very small amount of change (due to uncertainty in the fee calculation), it will also be sent to this address. If you selected inputs only from a particular address on the previous page, then that address will already be selected by default.</source>
         <translation>Шаг 2: Выберите адрес назначения для операции объединения. Обратите внимание, что все выбранные поступления будут объединены в вывод по этому адресу. Если сумма сдачи очень мала (из-за неопределенности в расчете комиссии), она также будет отправлена на этот адрес. Если на предыдущей странице вы выбрали поступления только с определенного адреса, то этот адрес уже будет выбран по умолчанию.</translation>
     </message>
     <message>
+        <location line="+37"/>
+        <location line="+28"/>
         <source>Label</source>
         <translation>Метка</translation>
     </message>
     <message>
+        <location line="-23"/>
+        <location line="+43"/>
         <source>Address</source>
         <translation>Адрес</translation>
     </message>
     <message>
+        <location line="-31"/>
         <source>Currently selected:</source>
         <translation>Выбрано:</translation>
     </message>
     <message>
+        <location line="+40"/>
         <source>isComplete</source>
         <translation>завершено</translation>
     </message>
@@ -1067,106 +1466,144 @@ Expires: %3
 <context>
     <name>ConsolidateUnspentWizardSelectInputsPage</name>
     <message>
+        <location filename="../forms/consolidateunspentwizardselectinputspage.ui" line="+20"/>
         <source>WizardPage</source>
         <translation>СтраницаМастера</translation>
     </message>
     <message>
+        <location line="+16"/>
         <source>Step 1: Select the inputs to be consolidated. Remember that the inputs to the consolidation are your unspent outputs (UTXOs) in your wallet.</source>
         <translation>Шаг 1: Выберите поступления для объединения. Помните, что поступлениями для объединения являются ваши неизрасходованные выводы (UTXO) в вашем кошельке.</translation>
     </message>
     <message>
+        <location line="+14"/>
+        <location filename="../consolidateunspentwizardselectinputspage.cpp" line="+141"/>
         <source>Select All</source>
         <translation>Выбрать Всё</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Tree Mode</source>
         <translation>Режим Дерева</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>List Mode</source>
         <translation>Режим Списка</translation>
     </message>
     <message>
+        <location line="+27"/>
         <source>Select inputs</source>
         <translation>Выбор поступлений</translation>
     </message>
     <message>
+        <location line="+10"/>
+        <source>&lt;=</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
         <source>Filters the already selected inputs.</source>
         <translation>Фильтрует уже выбранные поступления.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Filter</source>
         <translation>Фильтровать</translation>
     </message>
     <message>
+        <location line="+43"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Label</source>
         <translation>Метка</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Address</source>
         <translation>Адрес</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Confirmations</source>
         <translation>Подтверждения</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Confirmed</source>
         <translation>Подтверждено</translation>
     </message>
     <message>
+        <location line="+75"/>
         <source>Quantity</source>
         <translation>Количество</translation>
     </message>
     <message>
+        <location line="+7"/>
+        <source>99999</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
         <source>Fee</source>
         <translation>Комиссия</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>99.9999</source>
         <translation>99,9999</translation>
     </message>
     <message>
+        <location line="+20"/>
         <source>After Fee Amount</source>
         <translation>Сумма После Комиссии</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>999999999.9999</source>
         <translation>999999999,9999</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>isComplete</source>
         <translation>Завершено</translation>
     </message>
     <message>
+        <location filename="../consolidateunspentwizardselectinputspage.cpp" line="-71"/>
         <source>Note: The number of inputs selected for consolidation has been limited to %1 to prevent a transaction failure due to too many inputs.</source>
         <translation>Примечание: Количество поступлений, выбранных для объединения, ограничено %1 во избежание сбоя транзакции из-за слишком большого количества поступлений.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Note: The number of inputs selected for consolidation is currently more than the limit of %1. Please use the filter or manual selection to reduce the number of inputs to %1 or less to prevent a transaction failure due to too many inputs.</source>
         <translation>Примечание: Количество поступлений, выбранных для объединения, в настоящее время превышает ограничение %1. Пожалуйста, используйте фильтр или ручной выбор, чтобы уменьшить количество входных данных до %1 или меньше, чтобы предотвратить сбой транзакции из-за слишком большого количества поступлений.</translation>
     </message>
     <message>
+        <location line="+72"/>
         <source>Select None</source>
         <translation>Очистить Выбор</translation>
     </message>
     <message>
+        <location line="+404"/>
+        <location line="+57"/>
         <source>(no label)</source>
         <translation>(нет метки)</translation>
     </message>
     <message>
+        <location line="-10"/>
         <source>change from %1 (%2)</source>
         <translation>сдача с %1 (%2)</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>(change)</source>
         <translation>(сдача)</translation>
     </message>
@@ -1174,46 +1611,62 @@ Expires: %3
 <context>
     <name>ConsolidateUnspentWizardSendPage</name>
     <message>
+        <location filename="../forms/consolidateunspentwizardsendpage.ui" line="+20"/>
         <source>WizardPage</source>
         <translation>СтраницаМастера</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>Step 3: Confirm Consolidation Transaction Details. Transaction will be ready to send when Finish is pressed.</source>
-        <translation>Шаг 3: Подтвердите детали транзакции объединения. Транзакция будет готова к отправке после нажатия кнопки "Завершить".</translation>
+        <translation>Шаг 3: Подтвердите детали транзакции объединения. Транзакция будет готова к отправке после нажатия кнопки &quot;Завершить&quot;.</translation>
     </message>
     <message>
+        <location line="+14"/>
         <source>Number of Inputs</source>
         <translation>Количество Поступлений</translation>
     </message>
     <message>
+        <location line="+7"/>
+        <source>999999</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Transaction Fee</source>
         <translation>Комиссия за Транзакцию</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>99.9999</source>
         <translation>99,9999</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>999999999.9999</source>
         <translation>999999999,9999</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Destination Address</source>
         <translation>Адрес Назначения</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>address</source>
         <translation>адрес</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Destination Address Label</source>
         <translation>Метка Адреса Назначения</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>label</source>
         <translation>Метка</translation>
     </message>
@@ -1221,98 +1674,123 @@ Expires: %3
 <context>
     <name>DiagnosticsDialog</name>
     <message>
+        <location filename="../forms/diagnosticsdialog.ui" line="+14"/>
+        <location line="+350"/>
         <source>Diagnostics</source>
         <translation>Диагностика</translation>
     </message>
     <message>
+        <location line="-302"/>
         <source>Verify outbound port works</source>
         <translation>Проверка работы исходящего порта</translation>
     </message>
     <message>
+        <location line="+20"/>
         <source>Check total connections</source>
         <translation>Проверка общего количества соединений</translation>
     </message>
     <message>
+        <location line="+177"/>
         <source>Verify CPID has active beacon</source>
         <translation>Проверка CPID на наличие активного маяка</translation>
     </message>
     <message>
+        <location line="+14"/>
         <source>Verify BOINC path</source>
         <translation>Проверка каталога BOINC</translation>
     </message>
     <message>
+        <location line="+148"/>
         <source>Check outbound connections</source>
         <translation>Проверка исходящих подключений</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Check difficulty</source>
         <translation>Проверка сложности</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Verify CPID has RAC</source>
         <translation>Проверка CPID на наличие RAC</translation>
     </message>
     <message>
+        <location line="-360"/>
         <source>Overall Result</source>
         <translation>Итоговый Результат</translation>
     </message>
     <message>
+        <location line="+64"/>
         <source>Verify wallet is synced</source>
         <translation>Проверка синхронизации кошелька</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Verify CPID is valid</source>
         <translation>Проверка CPID на корректность</translation>
     </message>
     <message>
+        <location line="+120"/>
         <source>Verify clock</source>
         <translation>Проверка часов</translation>
     </message>
     <message>
+        <location line="+204"/>
         <source>Check client version</source>
         <translation>Проверка версии клиента</translation>
     </message>
     <message>
+        <location line="-415"/>
         <source>Check estimated time to stake </source>
         <translation>Проверка расчетного времени для стейкинга</translation>
     </message>
     <message>
+        <location line="+469"/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
     <message>
+        <location line="+16"/>
         <source>Test</source>
         <translation>Проверить</translation>
     </message>
     <message>
+        <location filename="../diagnosticsdialog.cpp" line="+80"/>
         <source>Testing...</source>
         <translation>Проверка...</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>N/A</source>
         <translation>Нет данных</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Passed</source>
         <translation>Пройдено</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Warning</source>
         <translation>Внимание</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Failed</source>
         <translation>Неудачно</translation>
     </message>
     <message>
+        <location line="+150"/>
         <source>One or more tests have generated a warning status. Wallet operation may be degraded. Please see the individual test tooltips for details and recommended action(s).</source>
-        <translation>Один или несколько тестов выдали статус "Внимание". Работа кошелька может ухудшиться. Подробные сведения и рекомендуемые действия смотрите в подсказках для отдельных(ого) тестов.</translation>
+        <translation>Один или несколько тестов выдали статус &quot;Внимание&quot;. Работа кошелька может ухудшиться. Подробные сведения и рекомендуемые действия смотрите в подсказках для отдельных(ого) тестов.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>One or more tests have failed. Proper wallet operation may be significantly degraded or impossible. Please see the individual test tooltips for details and recommended action(s).</source>
         <translation>Один или несколько тестов неудачны. Корректная работа кошелька может быть значительно нарушена или невозможна. Дополнительные сведения и рекомендуемые(ое) действия смотрите во всплывающих подсказках для отдельных тестов.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>All tests passed. Your wallet operation is normal.</source>
         <translation>Все тесты пройдены. Ваш кошелек работает нормально.</translation>
     </message>
@@ -1320,65 +1798,149 @@ Expires: %3
 <context>
     <name>EditAddressDialog</name>
     <message>
+        <location filename="../forms/editaddressdialog.ui" line="+14"/>
         <source>Edit Address</source>
         <translation>Изменить Адрес</translation>
     </message>
     <message>
+        <location line="+11"/>
         <source>&amp;Label</source>
         <translation>&amp;Метка</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>The label associated with this address book entry</source>
         <translation>Метка, связанная с этой записью адресной книги</translation>
     </message>
     <message>
+        <location line="+17"/>
         <source>The address associated with this address book entry. This can only be modified for sending addresses.</source>
         <translation>Адрес, связанный с этой записью адресной книги. Можно изменить только для посылаемых адресов.</translation>
     </message>
     <message>
+        <location line="-10"/>
         <source>&amp;Address</source>
         <translation>&amp;Адрес</translation>
     </message>
     <message>
+        <location filename="../editaddressdialog.cpp" line="+28"/>
         <source>New receiving address</source>
         <translation>Новый адрес получения</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>New sending address</source>
         <translation>Новый адрес отправки</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Edit receiving address</source>
         <translation>Изменить адрес получения</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Edit sending address</source>
         <translation>Изменить адрес отправки</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Gridcoin address.</source>
+        <location line="+3"/>
+        <source>Add existing receiving address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+87"/>
+        <source>The entered address &quot;%1&quot; is not a valid Gridcoin address.</source>
         <translation>Введенный адрес «%1» не является допустимым адресом Gridcoin.</translation>
     </message>
     <message>
-        <source>The entered address "%1" is already in the address book.</source>
-        <translation>Введённый адрес "%1" уже находится в адресной книге.</translation>
+        <location line="+5"/>
+        <source>The entered address &quot;%1&quot; is already in the address book.</source>
+        <translation>Введённый адрес &quot;%1&quot; уже находится в адресной книге.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Could not unlock wallet.</source>
         <translation>Не удается разблокировать кошелёк.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>New key generation failed.</source>
         <translation>Генерация нового ключа не удалась.</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>The entered address &quot;%1&quot; is not owned by this wallet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>EditSideStakeDialog</name>
+    <message>
+        <location filename="../forms/editsidestakedialog.ui" line="+14"/>
+        <source>Add or Edit SideStake</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Address</source>
+        <translation type="unfinished">Адрес</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Allocation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Status</source>
+        <translation type="unfinished">Статус</translation>
+    </message>
+    <message>
+        <location filename="../editsidestakedialog.cpp" line="+28"/>
+        <source>New SideStake</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Edit SideStake</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+93"/>
+        <source>The entered address &quot;%1&quot; is not a valid Gridcoin address.</source>
+        <translation type="unfinished">Введенный адрес «%1» не является допустимым адресом Gridcoin.</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>The entered address &quot;%1&quot; already has a local sidestake entry.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>The entered allocation is not valid. Check to make sure that the allocation is greater than zero and when added to the other allocations totals less than 100.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>The entered description is not valid. Check to make sure that the description only contains letters, numbers, spaces, periods, or underscores.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>FavoritesPage</name>
     <message>
+        <location filename="../forms/favoritespage.ui" line="+14"/>
+        <location line="+63"/>
         <source>Favorites</source>
         <translation>Избранное</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Search by address or label</source>
         <translation>Поиск по адресу или метке</translation>
     </message>
@@ -1386,6 +1948,7 @@ Expires: %3
 <context>
     <name>Form</name>
     <message>
+        <location filename="../forms/voting/additionalfieldstableview.ui" line="+14"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
@@ -1393,18 +1956,22 @@ Expires: %3
 <context>
     <name>FreespaceChecker</name>
     <message>
+        <location filename="../intro.cpp" line="+73"/>
         <source>A new data directory will be created.</source>
         <translation>Будет создан новый каталог данных.</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Directory already exists. If this directory contains valid data, it will be used.</source>
         <translation>Каталог уже существует. Если этот каталог содержит действительные данные, он будет использован.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Path already exists, and is not a directory.</source>
         <translation>Путь уже существует и не является каталогом.</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Cannot create data directory here.</source>
         <translation>Невозможно здесь создать каталог данных.</translation>
     </message>
@@ -1412,57 +1979,80 @@ Expires: %3
 <context>
     <name>GUIUtil::HelpMessageBox</name>
     <message>
+        <location filename="../guiutil.cpp" line="+705"/>
         <source>version</source>
         <translation>версия</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Usage:</source>
         <translation>Использование:</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>command-line options</source>
         <translation>опции командной строки</translation>
     </message>
-    </context>
+    <message>
+        <location line="+4"/>
+        <source>Gridcoin</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
 <context>
     <name>Intro</name>
     <message>
+        <location filename="../forms/intro.ui" line="+14"/>
         <source>Welcome</source>
         <translation>Добро пожаловать</translation>
     </message>
     <message>
+        <location line="+16"/>
         <source>Welcome to %1.</source>
         <translation>Добро пожаловать в %1.</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>As this is the first time the program is launched, you can choose where %1 will store its data.</source>
         <translation>Поскольку это первый запуск программы, вы можете выбрать, где %1 будет хранить свои данные.</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>Use the default data directory</source>
         <translation>Использовать каталог данных по умолчанию</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Use a custom data directory:</source>
         <translation>Используйте настраиваемый каталог данных:</translation>
     </message>
     <message>
+        <location line="+133"/>
         <source>When you click OK, %1 will begin to download and process the full %4 block chain (~%2GB), either from genesis in %3, or the last synchronized block, if this was a preexisting data directory.</source>
         <translation>Когда вы нажмете OK, %1 начнет загружать и обрабатывать всю цепочку блоков %4 (~%2GB), либо из генезиса в %3, либо из последнего синхронизированного блока, если этот каталог уже существовал.</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>The synchronization is very demanding, and may expose hardware problems with your computer that had previously gone unnoticed. Each time you run %1, it will continue downloading where it left off.</source>
         <translation>Синхронизация очень требовательна и может выявить проблемы с оборудованием вашего компьютера, которые ранее оставались незамеченными. Каждый раз, когда вы запускаете %1, загрузка будет продолжаться с того места, где она была остановлена.</translation>
     </message>
     <message>
-        <source>Error: Specified data directory "%1" cannot be created.</source>
-        <translation>Ошибка: Невозможно создать указанный каталог "%1".</translation>
+        <location filename="../intro.cpp" line="+22"/>
+        <source>Gridcoin</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+102"/>
+        <source>Error: Specified data directory &quot;%1&quot; cannot be created.</source>
+        <translation>Ошибка: Невозможно создать указанный каталог &quot;%1&quot;.</translation>
+    </message>
+    <message>
+        <location line="+33"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
     <message numerus="yes">
+        <location line="+18"/>
         <source>%n GB of free space available</source>
         <translation>
             <numerusform>%n ГБ доступно свободного места</numerusform>
@@ -1471,53 +2061,63 @@ Expires: %3
         </translation>
     </message>
     <message numerus="yes">
+        <location line="+2"/>
         <source>(of %n GB needed)</source>
         <translation>
-            <numerusform>(необходимо %n ГБ)</numerusform>
-            <numerusform>(необходимо %n ГБ)</numerusform>
-            <numerusform>(необходимо %n ГБ)</numerusform>
+            <numerusform>(необходимо %n&#xa0;ГБ)</numerusform>
+            <numerusform>(необходимо %n&#xa0;ГБ)</numerusform>
+            <numerusform>(необходимо %n&#xa0;ГБ)</numerusform>
         </translation>
     </message>
     <message numerus="yes">
+        <location line="+3"/>
         <source>(%n GB needed for full chain)</source>
         <translation>
-            <numerusform>(для полной цепочки требуется %n ГБ)</numerusform>
-            <numerusform>(для полной цепочки требуется %n ГБ)</numerusform>
-            <numerusform>(для полной цепочки требуется %n ГБ)</numerusform>
+            <numerusform>(для полной цепочки требуется %n&#xa0;ГБ)</numerusform>
+            <numerusform>(для полной цепочки требуется %n&#xa0;ГБ)</numerusform>
+            <numerusform>(для полной цепочки требуется %n&#xa0;ГБ)</numerusform>
         </translation>
     </message>
 </context>
 <context>
     <name>MRCModel</name>
     <message>
+        <location filename="../mrcmodel.cpp" line="+273"/>
         <source>You must have a mature balance of at least 1 GRC to submit an MRC.</source>
         <translation>Чтобы отправить MRC, у вас должен быть зрелый баланс не менее 1 GRC.</translation>
     </message>
     <message>
-        <source>Too soon since your last research rewards payment.</source>
-        <translation>Слишком рано с момента вашей последней выплаты вознаграждения за исследование.</translation>
+        <location line="+34"/>
+        <source>Too soon to submit an MRC request. At least 14 days must elapse from your original beacon advertisement or last research reward payment, whether by stake or MRC, whichever is later.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>The total fee (the minimum fee + fee boost) is greater than the rewards due.</source>
         <translation>Общая сумма комиссии (минимальная комиссия + повышение комиссии) превышает причитающиеся вознаграждения.</translation>
     </message>
     <message>
-        <source>Your MRC was successfully submitted earlier but has now become stale without being bound to the just received block by a staker. This may be because your MRC was submitted just before the block was staked and the MRC didn't make it to the staker in time, or your MRC was pushed down in the queue past the pay limit. Please wait for the next block to clear the queue and try again.</source>
+        <location line="+79"/>
+        <source>Your MRC was successfully submitted earlier but has now become stale without being bound to the just received block by a staker. This may be because your MRC was submitted just before the block was staked and the MRC didn&apos;t make it to the staker in time, or your MRC was pushed down in the queue past the pay limit. Please wait for the next block to clear the queue and try again.</source>
         <translation>Ваш MRC был успешно отправлен ранее, но теперь устарел без привязки к только что полученному блоку стейкером. Это может быть связано с тем, что ваш MRC был отправлен непосредственно перед тем, как блок был поставлен, и MRC не дошел до стейкера вовремя, или ваш MRC был перемещен в очередь после превышения лимита выплат. Подождите, пока следующий блок очистит очередь, и повторите попытку.</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>You have a pending MRC request.</source>
         <translation>У вас есть ожидающий запрос MRC.</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Your MRC was successfully submitted, but other MRCs with higher fees have pushed your MRC down in the queue past the pay limit, and your MRC will be canceled. Wait until the next block is received and the queue clears and try again. Your fee for the canceled MRC will be refunded.</source>
         <translation>Ваш MRC был успешно отправлен, но другие MRC с более высокой оплатой отодвинули ваш MRC в очередь на превышение предела оплаты, и ваш MRC будет аннулирован. Подождите, пока не будет получен следующий блок и очередь не очистится, и повторите попытку. Плата за отмененный MRC будет возвращена.</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>The MRC queue is full. You can try boosting your fee to put your MRC request in the queue and displace another MRC request.</source>
         <translation>Очередь MRC заполнена. Вы можете попробовать увеличить свою плату, чтобы поместить свой запрос MRC в очередь и заменить другой запрос MRC.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>The wallet is locked.</source>
         <translation>Кошелёк заблокирован.</translation>
     </message>
@@ -1525,110 +2125,160 @@ Expires: %3
 <context>
     <name>MRCRequestPage</name>
     <message>
+        <location filename="../forms/mrcrequestpage.ui" line="+20"/>
         <source>MRC Requests</source>
         <translation>Запросы MRC</translation>
     </message>
     <message>
+        <location line="+24"/>
         <source>Please wait.</source>
         <translation>Пожалуйста, подождите.</translation>
     </message>
     <message>
+        <location line="+43"/>
         <source>MRC Fee @ Pay Limit Position in Queue</source>
         <translation>Оплата MRC @ Позиция в Очереди с Ограничением по Оплате</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>MRC Fee @ Tail of Queue</source>
         <translation>Оплата MRC @ Хвост Очереди</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Your projected or actual position among MRCs in the memory pool ordered by MRC fee in descending order</source>
         <translation>Ваша прогнозируемая или фактическая позиция среди MRC в пуле памяти, упорядоченная по плате MRC в порядке убывания</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>Number of All MRC Requests in Queue</source>
         <translation>Количество Всех Запросов MRC в Очереди</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>The number of MRCs in the memory pool</source>
         <translation>Количество MRC в пуле памяти</translation>
     </message>
     <message>
+        <location line="+10"/>
+        <location filename="../mrcrequestpage.cpp" line="+205"/>
+        <location line="+27"/>
+        <location line="+20"/>
         <source>Your Projected MRC Request Position in Queue</source>
         <translation>Предполагаемая Позиция в Очереди Вашего Запроса MRC</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>The MRC fee being paid by the MRC in the last position within the pay limit in the memory pool</source>
         <translation>Комиссия MRC, уплачиваемая MRC на последней позиции в пределах лимита выплат в пуле памяти</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>MRC Request Pay Limit per Block</source>
         <translation>Лимит Запросов Оплат MRC за Блок</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Your MRC Calculated Minimum Fee</source>
         <translation>Минимальная Расчетная Комиссия за Ваш MRC</translation>
     </message>
     <message>
-        <source>The calculated minimum fee for the MRC. This may not be sufficient to submit the MRC if the queue is already full. In that case, you need to use the MRC fee boost to raise the fee to get your MRC in the queue.</source>
-        <translation>Расчетная минимальная плата за MRC. Этого может быть недостаточно для отправки MRC, если очередь уже заполнена. В этом случае вам нужно использовать повышение комиссии MRC, чтобы поднять комиссию, чтобы ваш MRC оказался в очереди.</translation>
+        <location line="+7"/>
+        <source>The calculated minimum fee for the MRC. This may not be sufficient to submit the MRC if the queue is already full. In that case, the MRC Fee Boost field will appear and you need to use it to raise the fee to get your MRC in the queue.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>The lowest MRC fee being paid of MRCs in the memory pool</source>
         <translation>Самая низкая плата MRC, выплачиваемая MRC в пуле памяти.</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>The maximum number of MRCs that can be paid per block</source>
         <translation>Максимальное количество MRC, которые можно заплатить за блок</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>The highest MRC fee being paid of MRCs in the memory pool</source>
         <translation>Самая высокая комиссия MRC, выплачиваемая MRC в пуле памяти</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>MRC Fee @ Head of Queue</source>
         <translation>Оплата MRC @ Голова Очереди</translation>
     </message>
     <message>
+        <location line="+24"/>
         <source>MRC Fee Boost</source>
         <translation>Повышение Платы за MRC</translation>
     </message>
     <message>
+        <location line="+10"/>
+        <source>This will automatically boost the MRC fee you are paying to get your MRC request in the queue.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Raise to Minimum For Submit</source>
         <translation>Увеличить Минимум Для Отправки</translation>
     </message>
     <message>
+        <location line="+7"/>
+        <source>This appears if the queue is full and you need to boost the fee you will pay out of your rewards to displace someone else in the queue. It is NOT the amount of reward to be redeemed!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
         <source>Update</source>
         <translation>Обновить</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Submit</source>
         <translation>Отправить</translation>
     </message>
     <message>
+        <location filename="../mrcrequestpage.cpp" line="-133"/>
+        <location line="+6"/>
+        <location line="+6"/>
+        <location line="+19"/>
+        <location line="+19"/>
+        <location line="+19"/>
+        <location line="+16"/>
+        <location line="+27"/>
+        <location line="+3"/>
         <source>N/A</source>
         <translation>Н/Д</translation>
     </message>
     <message>
+        <location line="-86"/>
+        <location line="+19"/>
+        <location line="+19"/>
         <source>Your Submitted MRC Request Position in Queue</source>
         <translation>Позиция в Очереди Вашего Отправленного Запроса MRC</translation>
     </message>
     <message>
+        <location line="+89"/>
         <source>You must have an active beacon and the wallet must be in solo mode to submit MRCs.</source>
         <translation>Для отправки MRC у вас должен быть активный маяк, а кошелёк находиться в одиночном режиме.</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>The block version must be v12 or higher to submit MRCs.</source>
         <translation>Версия блока должна быть v12 или выше, чтобы отправить MRC.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>The wallet must be in sync to submit MRCs.</source>
         <translation>Для отправки MRC кошелёк должен быть синхронизирован.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>A block update must have occurred after wallet start or sync to submit MRCs.</source>
         <translation>Обновление блока должно произойти после запуска кошелька или синхронизации для отправки MRC.</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>You must have a mature balance of at least 1 GRC to submit an MRC.</source>
         <translation>Чтобы отправить MRC, у вас должен быть зрелый баланс не менее 1 GRC.</translation>
     </message>
@@ -1636,22 +2286,28 @@ Expires: %3
 <context>
     <name>NoResult</name>
     <message>
+        <location filename="../forms/noresult.ui" line="+20"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
     <message>
+        <location line="+25"/>
+        <location filename="../noresult.cpp" line="+51"/>
         <source>Nothing here yet...</source>
         <translation>Здесь пока ничего нет ...</translation>
     </message>
     <message>
+        <location filename="../noresult.cpp" line="+5"/>
         <source>No results available.</source>
         <translation>Нет результатов</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Loading...</source>
         <translation>Загрузка ...</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Privacy Enabled...</source>
         <translation>Приватность Включена…</translation>
     </message>
@@ -1659,369 +2315,546 @@ Expires: %3
 <context>
     <name>OptionsDialog</name>
     <message>
+        <location filename="../forms/optionsdialog.ui" line="+14"/>
         <source>Options</source>
         <translation>Параметры</translation>
     </message>
     <message>
+        <location line="+16"/>
         <source>&amp;Main</source>
         <translation>&amp;Главная</translation>
     </message>
     <message>
+        <location line="+107"/>
         <source>&amp;Network</source>
         <translation>&amp;Сеть</translation>
     </message>
     <message>
+        <location line="+9"/>
         <source>Map port using &amp;UPnP</source>
         <translation>Пробросить порт через &amp;UPnP</translation>
     </message>
     <message>
+        <location line="-110"/>
         <source>Reserved amount secures a balance in wallet that can be spendable at anytime. However reserve will secure utxo(s) of any size to respect this setting.</source>
         <translation>Зарезервированная сумма обеспечивает баланс в кошельке, который можно потратить в любое время. Однако резервирование обеспечит защиту UTXO(ов) любого размера в соответствии с этой настройкой.</translation>
     </message>
     <message>
+        <location line="+15"/>
         <source>Reser&amp;ve</source>
         <translation>Резер&amp;в</translation>
     </message>
     <message>
+        <location line="+33"/>
         <source>Automatically start Gridcoin after logging in to the system.</source>
         <translation>Автоматически запускать Gridcoin после входа в систему.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>&amp;Start Gridcoin on system login</source>
         <translation>&amp;Запуск Gridcoin при входе в систему</translation>
     </message>
     <message>
+        <location line="+56"/>
         <source>Automatically open the Gridcoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
         <translation>Автоматически открывать клиентский порт Gridcoin на маршрутизаторе. Работает в том случае, если ваш маршрутизатор поддерживает UPnP и включен.</translation>
     </message>
     <message>
+        <location line="+22"/>
+        <source>Pro&amp;xy IP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
         <source>IP address of the proxy (e.g. 127.0.0.1)</source>
         <translation>Ip адресс прокси (например 127.0.0.1)</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>&amp;Port:</source>
         <translation>По&amp;рт: </translation>
     </message>
     <message>
+        <location line="+19"/>
         <source>Port of the proxy (e.g. 9050)</source>
         <translation>Порт прокси-сервера (например, 9050)</translation>
     </message>
     <message>
+        <location line="+36"/>
         <source>Staking</source>
         <translation>Стейкинг</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>This enables or disables staking (the default is enabled). Note that a change to this setting will permanently override the config file with an entry in the settings file.</source>
         <translation>Это включает или отключает стейкинг (по умолчанию включено). Обратите внимание, что изменение этого параметра навсегда переопределит файл конфигурации с записью в файле настроек.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Enable Staking</source>
         <translation>Включить Стейкинг</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>This enables or disables splitting of stake outputs to optimize staking (default disabled). Note that a change to this setting will permanently override the config file with an entry in the settings file.</source>
         <translation>Включает или отключает разделение отправок для оптимизации стейкинга (по умолчанию отключено). Обратите внимание, что изменение этого параметра навсегда переопределит файл конфигурации с записью в файле настроек.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Enable Stake Splitting</source>
         <translation>Включить Разделённый Стейкинг</translation>
     </message>
     <message>
+        <location line="+9"/>
         <source>Target Efficiency</source>
         <translation>Целевая Эффективность</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Valid values are between 75 and 98 percent. Note that a change to this setting will permanently override the config file with an entry in the settings file.</source>
         <translation>Допустимые значения находятся в диапазоне от 75 до 98 процентов. Обратите внимание, что изменение этого параметра навсегда переопределит файл конфигурации с записью в файле настроек.</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Min Post Split UTXO</source>
         <translation>Позиция Мин. Деления UTXO</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Valid values are 800 or greater. Note that a change to this setting will permanently override the config file with an entry in the settings file.</source>
         <translation>Допустимые значения: 800 или больше. Обратите внимание, что изменение этого параметра навсегда переопределит файл конфигурации с записью в файле настроек.</translation>
     </message>
     <message>
+        <location line="+22"/>
+        <source>Enable Locally Specified Sidestaking</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>New</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+45"/>
         <source>Minimize instead of exit the application when the window is closed. When this option is enabled, the application will be closed only after selecting Quit in the menu.</source>
         <translation>Сворачивать вместо закрытия. Если данная опция будет выбрана — приложение закроется только после выбора соответствующего пункта в меню.</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>&amp;Confirm on close</source>
         <translation>&amp;Подтверждать при закрытии</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Disable Transaction Notifications</source>
         <translation>Отключить Уведомления о Транзакциях</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Disable Poll Notifications</source>
         <translation>Отключить Уведомления об Опросах</translation>
     </message>
     <message>
+        <location line="+9"/>
+        <source>Hours before poll expiry reminder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Valid values are between 0.25 and 168.0 hours.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+57"/>
         <source>The user interface language can be set here. This setting will take effect after restarting Gridcoin.</source>
         <translation>Язык интерфейса пользователя можно установить здесь. Этот параметр вступает в силу после перезапуска Gridcoin.</translation>
     </message>
     <message>
+        <location line="+35"/>
         <source>Style:</source>
         <translation>Стиль:</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Choose a stylesheet to change the look of the wallet.</source>
         <translation>Выбрать шаблон, для изменения внешнего вида кошелька.</translation>
     </message>
     <message>
+        <location line="+9"/>
         <source>Whether to show Gridcoin addresses in the transaction list or not.</source>
         <translation>Отображать ли адреса Gridcoin в списке транзакций или нет.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>&amp;Display addresses in transaction list</source>
         <translation>&amp;Показывать адреса в списке транзакций</translation>
     </message>
     <message>
+        <location line="-167"/>
         <source>&amp;Window</source>
         <translation>&amp;Окно</translation>
     </message>
     <message>
+        <location line="+270"/>
         <source>&amp;Apply</source>
         <translation>&amp;Подтвердить</translation>
     </message>
     <message>
+        <location line="-264"/>
         <source>Show only a tray icon after minimizing the window.</source>
         <translation>Показывать только иконку в системном лотке после сворачивания окна.</translation>
     </message>
     <message>
+        <location line="-304"/>
         <source>Start minimized</source>
         <translation>Запуск в свернутом виде</translation>
     </message>
     <message>
+        <location line="+12"/>
         <source>Allow regular checks for updates</source>
         <translation>Разрешить регулярную проверку обновлений</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Disable &amp;update checks</source>
         <translation>Отключить &amp;проверку обновлений</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Return change to an input address for contract transactions</source>
         <translation>Возвращает изменение на входной адрес для транзакций контракта</translation>
     </message>
     <message>
+        <location line="+37"/>
         <source>Connect to the Gridcoin network through a SOCKS5 proxy (e.g. when connecting through Tor).</source>
         <translation>Подключитесь к сети Gridcoin через прокси-сервер SOCKS5 (например, при подключении через Tor).</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>&amp;Connect through SOCKS5 proxy:</source>
         <translation>&amp;Подключение через SOCKS5 прокси:</translation>
     </message>
     <message>
+        <location line="+245"/>
         <source>&amp;Minimize to the tray instead of the taskbar</source>
         <translation>&amp;Cворачивать в системный лоток вместо панели задач</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>M&amp;inimize on close</source>
         <translation>С&amp;ворачивать при закрытии</translation>
     </message>
     <message>
+        <location line="+73"/>
         <source>&amp;Display</source>
         <translation>О&amp;тображение</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>User Interface &amp;language:</source>
         <translation>&amp;Язык интерфейса:</translation>
     </message>
     <message>
+        <location line="+24"/>
         <source>&amp;Unit to show amounts in:</source>
         <translation>&amp;Отображать суммы в единицах: </translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>Choose the default subdivision unit to show in the interface and when sending coins.</source>
         <translation>Выберите единицу измерения монет при отображении и отправке.</translation>
     </message>
     <message>
+        <location line="+39"/>
         <source>Only display transactions on or after </source>
         <translation>Отображение только транзакций на или после</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Setting this will cause the transaction table to only display transactions created on or after this date.</source>
         <translation>Установка этого параметра приведет к тому, что в таблице транзакций будут отображаться только транзакции, созданные на эту дату или после нее.</translation>
     </message>
     <message>
+        <location line="+70"/>
+        <source>&amp;OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>&amp;Cancel</source>
         <translation>&amp;Отмена</translation>
     </message>
     <message>
+        <location filename="../optionsdialog.cpp" line="+83"/>
         <source>default</source>
         <translation>по умолчанию</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Dark</source>
         <translation>Тёмный</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Light</source>
         <translation>Лайт</translation>
     </message>
     <message>
+        <location line="+240"/>
+        <location line="+23"/>
+        <source>Error</source>
+        <translation type="unfinished">Ошибка</translation>
+    </message>
+    <message>
+        <location line="-23"/>
+        <source>You can only edit one sidestake at a time.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>You can only delete one sidestake at a time.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <location line="+10"/>
         <source>Warning</source>
         <translation>Внимание</translation>
     </message>
     <message>
+        <location line="-10"/>
+        <location line="+10"/>
         <source>This setting will take effect after restarting Gridcoin.</source>
         <translation>Этот параметр вступает в силу после перезапуска Gridcoin.</translation>
     </message>
     <message>
+        <location line="+89"/>
         <source>The supplied proxy address is invalid.</source>
         <translation>Адрес прокси неверен.</translation>
     </message>
     <message>
+        <location line="+19"/>
         <source>The supplied target staking efficiency is invalid.</source>
         <translation>Указанная целевая эффективность стейкинга недействительна.</translation>
     </message>
     <message>
+        <location line="+19"/>
         <source>The supplied minimum post stake-split UTXO size is invalid.</source>
         <translation>Указанный минимальный размер UTXO после разделения ставки недействителен.</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>The supplied time for notification before poll expires must be between 0.25 and 24 hours.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+140"/>
+        <source>The entered allocation is not valid and is reverted. Check to make sure that the allocation is greater than or equal to zero and when added to the other allocations totals less than 100.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>The entered description is not valid. Check to make sure that the description only contains letters, numbers, spaces, periods, or underscores.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>OverviewPage</name>
     <message>
+        <location filename="../forms/overviewpage.ui" line="+32"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
     <message>
+        <location line="+446"/>
         <source>Available:</source>
         <translation>Доступно:</translation>
     </message>
     <message>
+        <location line="-86"/>
         <source>Your current spendable balance</source>
         <translation>Ваш текущий баланс для трат</translation>
     </message>
     <message>
+        <location line="+125"/>
         <source>Immature:</source>
         <translation>Незрелые:</translation>
     </message>
     <message>
+        <location line="-194"/>
         <source>Wallet</source>
         <translation>Кошелёк</translation>
     </message>
     <message>
+        <location line="+23"/>
+        <location line="+694"/>
         <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Gridcoin network after a connection is established, but this process has not completed yet.</source>
         <translation>Отображаемая информация может быть устаревшей. Ваш кошелёк автоматически синхронизируется с сетью Gridcoin после установления соединения, но этот процесс еще не завершен.</translation>
     </message>
     <message>
+        <location line="-626"/>
         <source>Total of transactions that have yet to be confirmed, and do not yet count toward the current balance</source>
         <translation>Общее количество транзакций, которые еще не подтверждены и не учитываются в текущем балансе</translation>
     </message>
     <message>
+        <location line="-41"/>
         <source>Total:</source>
         <translation>Итого:</translation>
     </message>
     <message>
+        <location line="+300"/>
         <source>Coin Weight:</source>
         <translation>Вес Монеты:</translation>
     </message>
     <message>
+        <location line="+192"/>
         <source>Pending Reward:</source>
         <translation>Ожидаемая Награда:</translation>
     </message>
     <message>
+        <location line="-95"/>
         <source>Open the researcher/beacon configuration wizard.</source>
         <translation>Открыть мастер настройки исследователя/маяка.</translation>
     </message>
     <message>
+        <location line="-7"/>
         <source>Action Needed</source>
         <translation>Требуется Действие</translation>
     </message>
     <message>
+        <location line="-269"/>
         <source>Total mined coins that have not yet matured.</source>
         <translation>Количество добытых (еще не созревших) монет.</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>Immature Stake:</source>
         <translation>Незрелая Доля:</translation>
     </message>
     <message>
+        <location line="-71"/>
         <source>Amount staked for a recent block that must wait for 110 confirmations to mature before you can spend it.</source>
         <translation>Сумма доли последнего блока, которая должна дождаться 110 подтверждений, прежде чем сможете ее потратить.</translation>
     </message>
     <message>
+        <location line="-341"/>
         <source>Account Overview</source>
         <translation>Обзор Аккаунта</translation>
     </message>
     <message>
+        <location line="+15"/>
+        <source>CPID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+59"/>
+        <location line="+48"/>
         <source>0.00</source>
         <translation>0,00</translation>
     </message>
     <message>
+        <location line="-38"/>
         <source>Magnitude</source>
         <translation>Магнитуда</translation>
     </message>
     <message>
+        <location line="+48"/>
         <source>Available (GRC)</source>
         <translation>Доступно (GRC)</translation>
     </message>
     <message>
+        <location line="+222"/>
         <source>Unconfirmed:</source>
         <translation>Не подтверждено:</translation>
     </message>
     <message>
+        <location line="+16"/>
         <source>Your current total balance</source>
         <translation>Ваш текущий общий баланс</translation>
     </message>
     <message>
+        <location line="+93"/>
         <source>Staking</source>
         <translation>Стейкинг</translation>
     </message>
     <message>
+        <location line="+37"/>
         <source>Blocks:</source>
         <translation>Блоки:</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Difficulty:</source>
         <translation>Сложность:</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Net Weight:</source>
         <translation>Вес Сети:</translation>
     </message>
     <message>
+        <location line="+83"/>
         <source>Researcher</source>
         <translation>Исследователь</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Open the Manual Reward Claim (MRC) request page</source>
         <translation>Открыть страницу запроса на Ручное Получение Вознаграждения (MRC).</translation>
     </message>
     <message>
+        <location line="+41"/>
         <source>Magnitude:</source>
         <translation>Магнитуда:</translation>
     </message>
     <message>
+        <location line="+61"/>
         <source>Status:</source>
         <translation>Состояние:</translation>
     </message>
     <message>
-        <source>You are approaching the accrual limit of 16384 GRC. If you have a relatively low balance, you should request payment via MRC so that you do not lose earned rewards.</source>
-        <translation>Вы приближаетесь к лимиту накопления в 16384 GRC. Если у вас относительно низкий баланс, вам следует запросить оплату через MRC, чтобы не потерять заработанные вознаграждения.</translation>
+        <location line="+26"/>
+        <source>You are approaching the accrual limit. If you have a relatively low balance, you should request payment via MRC so that you do not lose earned rewards.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+124"/>
         <source>Recent Transactions</source>
         <translation>Последние Транзакции</translation>
     </message>
     <message>
+        <location line="-77"/>
         <source>Current Polls</source>
         <translation>Текущие Опросы</translation>
     </message>
     <message>
+        <location filename="../overviewpage.cpp" line="+175"/>
+        <location line="+1"/>
         <source>Out of Sync</source>
         <translation>Не синхронизировано</translation>
     </message>
     <message>
+        <location line="+13"/>
+        <source>Copy amount</source>
+        <translation type="unfinished">Копировать сумму</translation>
+    </message>
+    <message>
+        <location line="+311"/>
         <source>Pool</source>
         <translation>Пул</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Staking Only</source>
         <translation>Только Стейкинг</translation>
     </message>
@@ -2029,97 +2862,131 @@ Expires: %3
 <context>
     <name>PeerTableModel</name>
     <message>
+        <location filename="../peertablemodel.cpp" line="+109"/>
         <source>Node ID</source>
         <translation>ID Узла</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Node/Service</source>
         <translation>Узел/Сервис</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Ping</source>
         <translation>Пинг</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Sent</source>
         <translation>Отправлено</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Received</source>
         <translation>Получено</translation>
     </message>
-    </context>
+    <message>
+        <location line="+0"/>
+        <source>User Agent</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
 <context>
     <name>PollCard</name>
     <message>
+        <location filename="../forms/voting/pollcard.ui" line="+14"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
     <message>
+        <location line="+141"/>
         <source>Votes:</source>
         <translation>Голосов:</translation>
     </message>
     <message>
+        <location line="+14"/>
         <source>Expiration:</source>
         <translation>Окончание:</translation>
     </message>
     <message>
+        <location line="-35"/>
         <source>Top Answer:</source>
         <translation>Популярный ответ:</translation>
     </message>
     <message>
+        <location line="-27"/>
         <source>Total Weight:</source>
         <translation>Общий вес:</translation>
     </message>
     <message>
+        <location line="-14"/>
         <source>Poll Type</source>
         <translation>Тип Опроса</translation>
     </message>
     <message>
+        <location line="+55"/>
         <source>% of AVW:</source>
         <translation>% ВАГ:</translation>
     </message>
     <message>
+        <location line="-7"/>
         <source>AVW:</source>
         <translation>ВАГ:</translation>
     </message>
     <message>
-        <source>Your Last Vote:</source>
-        <translation>Ваш Последний Голос:</translation>
+        <location line="+63"/>
+        <source>Your Vote(s):</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Your Vote Weight:</source>
-        <translation>Вес Вашего Голоса:</translation>
+        <location line="+7"/>
+        <source>Your Vote Weight(s):</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+14"/>
         <source>Your % of AVW:</source>
         <translation>Ваш % AVW:</translation>
     </message>
     <message>
+        <location line="+52"/>
         <source>Balance</source>
         <translation>Баланс</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Magnitude</source>
         <translation>Магнитуда</translation>
     </message>
     <message>
+        <location line="+20"/>
+        <source>Stale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Validated</source>
         <translation>Подтверждён</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Invalid</source>
         <translation>Недействительный</translation>
     </message>
     <message>
+        <location line="+20"/>
+        <location filename="../voting/pollcard.cpp" line="+125"/>
         <source>Voting finished.</source>
         <translation>Голосование завершено.</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Vote</source>
         <translation>Голосовать</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Details</source>
         <translation>Подробнее</translation>
     </message>
@@ -2127,6 +2994,7 @@ Expires: %3
 <context>
     <name>PollCardView</name>
     <message>
+        <location filename="../forms/voting/pollcardview.ui" line="+14"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
@@ -2134,14 +3002,17 @@ Expires: %3
 <context>
     <name>PollDetails</name>
     <message>
+        <location filename="../forms/voting/polldetails.ui" line="+14"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
     <message>
+        <location line="+89"/>
         <source>Additional Fields</source>
         <translation>Дополнительные Поля</translation>
     </message>
     <message>
+        <location line="+15"/>
         <source>Top Answer:</source>
         <translation>Популярный ответ:</translation>
     </message>
@@ -2149,10 +3020,12 @@ Expires: %3
 <context>
     <name>PollResultChoiceItem</name>
     <message>
+        <location filename="../forms/voting/pollresultchoiceitem.ui" line="+14"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
     <message>
+        <location line="+49"/>
         <source>Weight:</source>
         <translation>Вес:</translation>
     </message>
@@ -2160,10 +3033,12 @@ Expires: %3
 <context>
     <name>PollResultDialog</name>
     <message>
+        <location filename="../forms/voting/pollresultdialog.ui" line="+14"/>
         <source>Poll Details</source>
         <translation>Детали Опроса</translation>
     </message>
     <message>
+        <location line="+112"/>
         <source>Poll ID</source>
         <translation>ID опроса</translation>
     </message>
@@ -2171,22 +3046,27 @@ Expires: %3
 <context>
     <name>PollTab</name>
     <message>
+        <location filename="../forms/voting/polltab.ui" line="+14"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
     <message>
-        <source>Press "Refresh" to update the list.</source>
-        <translation>Нажмите "Обновить" для обновления списка.</translation>
+        <location filename="../voting/polltab.cpp" line="+25"/>
+        <source>Press &quot;Refresh&quot; to update the list.</source>
+        <translation>Нажмите &quot;Обновить&quot; для обновления списка.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>This may take several minutes.</source>
         <translation>Это может занять пару минут.</translation>
     </message>
     <message>
+        <location line="+254"/>
         <source>Show Results</source>
         <translation>Показать результаты</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Vote</source>
         <translation>Голосовать</translation>
     </message>
@@ -2194,49 +3074,65 @@ Expires: %3
 <context>
     <name>PollTableDataModel</name>
     <message>
+        <location filename="../voting/polltablemodel.cpp" line="+24"/>
         <source>Title</source>
         <translation>Заголовок</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Poll Type</source>
         <translation>Тип Опроса</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Duration</source>
         <translation>Длительность</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Expiration</source>
         <translation>Окончание</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Weight Type</source>
         <translation>Тип Веса</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Votes</source>
         <translation>Голосов</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Total Weight</source>
         <translation>Общий Вес</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>% of Active Vote Weight</source>
         <translation>% Веса Активных Голосов</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Validated</source>
         <translation>Подтверждён</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Top Answer</source>
         <translation>Популярный Ответ</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stale Results</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>PollWizard</name>
     <message>
+        <location filename="../forms/voting/pollwizard.ui" line="+20"/>
         <source>Create a Poll</source>
         <translation>Создание Опроса</translation>
     </message>
@@ -2244,82 +3140,113 @@ Expires: %3
 <context>
     <name>PollWizardDetailsPage</name>
     <message>
+        <location filename="../forms/voting/pollwizarddetailspage.ui" line="+38"/>
         <source>Poll Details</source>
         <translation>Детали Опроса</translation>
     </message>
     <message>
+        <location line="+14"/>
         <source>Some fields are locked for the selected poll type.</source>
         <translation>Некоторые поля заблокированы для выбранного типа опроса.</translation>
     </message>
     <message>
+        <location line="+28"/>
         <source>Poll Type:</source>
         <translation>Тип Опроса:</translation>
     </message>
     <message>
+        <location line="+25"/>
         <source>Duration:</source>
         <translation>Длительность:</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source> days</source>
         <translation> дней</translation>
     </message>
     <message>
+        <location line="+9"/>
         <source>Title:</source>
         <translation>Заголовок:</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>Question:</source>
         <translation>Вопрос:</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>Discussion URL:</source>
         <translation>URL обсуждения:</translation>
     </message>
     <message>
+        <location line="+18"/>
         <source>A link to the main discussion thread on GitHub or Reddit.</source>
         <translation>Ссылка на основную ветку обсуждения на GitHub или Reddit.</translation>
     </message>
     <message>
+        <location line="+12"/>
         <source>Weight Type:</source>
         <translation>Тип Веса:</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>Response Type:</source>
         <translation>Тип Ответа:</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>Choices:</source>
         <translation>Варианты выбора:</translation>
     </message>
     <message>
+        <location line="+21"/>
         <source>A poll with a yes/no/abstain response type cannot include any additional custom choices.</source>
-        <translation>Опрос с типом ответа "Yes/No/Abstain" не может включать какие-либо дополнительные настраиваемые варианты.</translation>
+        <translation>Опрос с типом ответа &quot;Yes/No/Abstain&quot; не может включать какие-либо дополнительные настраиваемые варианты.</translation>
     </message>
     <message>
+        <location line="+102"/>
         <source>Additional Fields:</source>
         <translation>Дополнительные Поля:</translation>
     </message>
     <message>
+        <location filename="../voting/pollwizarddetailspage.cpp" line="+175"/>
+        <location line="+168"/>
         <source>Create Poll</source>
         <translation>Создать Опрос</translation>
     </message>
     <message>
+        <location line="-149"/>
         <source>Balance</source>
         <translation>Баланс</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Magnitude+Balance</source>
         <translation>Магнитуда+Баланс</translation>
     </message>
     <message>
+        <location line="+2"/>
+        <source>Yes/No/Abstain</source>
+        <translation type="unfinished">Да/Нет/Воздержаться</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Single Choice</source>
         <translation>Единственный Выбор</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Multiple Choice</source>
         <translation>Множественный Выбор</translation>
     </message>
     <message>
+        <location line="+34"/>
+        <source>Cannot have more than 20 choices in a poll.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+111"/>
         <source>This poll will cost %1 plus a transaction fee. Continue?</source>
         <translation>Этот опрос будет стоить %1 плюс комиссия за транзакцию. Продолжить?</translation>
     </message>
@@ -2327,34 +3254,42 @@ Expires: %3
 <context>
     <name>PollWizardProjectPage</name>
     <message>
+        <location filename="../forms/voting/pollwizardprojectpage.ui" line="+38"/>
         <source>Project Listing Proposal</source>
         <translation>Предложение о включении в список проектов</translation>
     </message>
     <message>
+        <location line="+17"/>
         <source>Add an unlisted project</source>
         <translation>Добавить проект не в списке</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Remove a listed project</source>
         <translation>Удалить проект из списка</translation>
     </message>
     <message>
+        <location line="+38"/>
         <source>Proposals must follow community guidelines for validation. Please review the wiki and verify that the prerequisites have been fulfilled:</source>
         <translation>Предложения должны соответствовать правилам сообщества для проверки. Пожалуйста, просмотрите вики и убедитесь, что выполнены предварительные требования:</translation>
     </message>
     <message>
+        <location line="+51"/>
         <source>Project Name:</source>
         <translation>Название Проекта:</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>This project satisfies the Gridcoin listing criteria.</source>
         <translation>Этот проект соответствует критериям включения в список Gridcoin.</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>Project URL</source>
         <translation>URL проекта</translation>
     </message>
     <message>
+        <location line="+43"/>
         <source>Choose a project to delist:</source>
         <translation>Выберите проект для исключения:</translation>
     </message>
@@ -2362,14 +3297,17 @@ Expires: %3
 <context>
     <name>PollWizardSummaryPage</name>
     <message>
+        <location filename="../forms/voting/pollwizardsummarypage.ui" line="+61"/>
         <source>Poll Created</source>
         <translation>Опрос Создан</translation>
     </message>
     <message>
+        <location line="+52"/>
         <source>The poll will activate with the next block.</source>
         <translation>Опрос будет активирован со следующего блока.</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Copy ID</source>
         <translation>Копировать ID</translation>
     </message>
@@ -2377,14 +3315,17 @@ Expires: %3
 <context>
     <name>PollWizardTypePage</name>
     <message>
+        <location filename="../forms/voting/pollwizardtypepage.ui" line="+38"/>
         <source>Create a Poll</source>
         <translation>Создание Опроса</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>The Gridcoin community established guidelines for polls with requirements for each type. Please read the wiki for more information:</source>
         <translation>Сообщество Gridcoin установило правила для опросов с требованиями для каждого типа. Пожалуйста, прочтите wiki для получения дополнительной информации:</translation>
     </message>
     <message>
+        <location line="+46"/>
         <source>Choose a poll type:</source>
         <translation>Выберите тип опроса:</translation>
     </message>
@@ -2392,33 +3333,45 @@ Expires: %3
 <context>
     <name>ProjectTableModel</name>
     <message>
+        <location filename="../researcher/projecttablemodel.cpp" line="+131"/>
         <source>Name</source>
         <translation>Имя</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Eligible</source>
         <translation>Доступно</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Whitelist</source>
         <translation>Белый список</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Has GDPR Controls</source>
         <translation>Есть Контроль GDPR</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Magnitude</source>
         <translation>Магнитуда</translation>
     </message>
     <message>
-        <source>Avg. Credit</source>
-        <translation>Сред. Кредит</translation>
+        <location line="+1"/>
+        <source>Recent Avg. Credit</source>
+        <translation type="unfinished"></translation>
     </message>
-    </context>
+    <message>
+        <location line="+1"/>
+        <source>CPID</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
 <context>
     <name>QObject</name>
     <message>
+        <location filename="../bitcoin.cpp" line="+74"/>
         <source>Error: Cannot parse command line arguments. Please check the arguments and ensure they are valid and formatted correctly: 
 
 </source>
@@ -2427,42 +3380,53 @@ Expires: %3
 </translation>
     </message>
     <message>
+        <location line="+115"/>
         <source>Error: Cannot read configuration file. Please check the path and format of the file.</source>
         <translation>Ошибка: Не удается прочитать файл конфигурации. Пожалуйста, проверьте путь и формат файла.</translation>
     </message>
     <message>
-        <source>Error: Specified data directory "%1" does not exist.</source>
-        <translation>Ошибка: Указанная директория "%1" не существует.</translation>
+        <location line="+15"/>
+        <source>Error: Specified data directory &quot;%1&quot; does not exist.</source>
+        <translation>Ошибка: Указанная директория &quot;%1&quot; не существует.</translation>
     </message>
     <message>
+        <location line="+16"/>
         <source>Error: Cannot obtain a lock on the specified data directory. An instance is probably already using that directory.</source>
         <translation>Ошибка: Не удается заблокировать указанный каталог данных. Вероятно этот каталог уже занят.</translation>
     </message>
     <message>
+        <location line="+11"/>
         <source>Error: Cannot parse configuration file: %1.</source>
         <translation>Ошибка: Не удается проанализировать файл конфигурации: %1.</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>Error initializing settings: %1</source>
         <translation>Ошибка инициализации настроек: %1</translation>
     </message>
     <message>
-        <source>%1 didn't yet exit safely...</source>
+        <location line="+223"/>
+        <source>%1 didn&apos;t yet exit safely...</source>
         <translation>%1 еще не был благополучно завершен...</translation>
     </message>
     <message>
+        <location filename="../guiutil.cpp" line="-657"/>
         <source>N/A</source>
         <translation>Нет данных</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>%1 ms</source>
         <translation>%1 мс</translation>
     </message>
     <message>
+        <location line="+5"/>
+        <location line="+76"/>
         <source>%1 s</source>
         <translation>%1 с</translation>
     </message>
     <message numerus="yes">
+        <location line="-57"/>
         <source>%n second(s)</source>
         <translation>
             <numerusform>%n секунд(у)</numerusform>
@@ -2471,6 +3435,7 @@ Expires: %3
         </translation>
     </message>
     <message numerus="yes">
+        <location line="+4"/>
         <source>%n minute(s)</source>
         <translation>
             <numerusform>%n минут(у)</numerusform>
@@ -2479,6 +3444,7 @@ Expires: %3
         </translation>
     </message>
     <message numerus="yes">
+        <location line="+4"/>
         <source>%n hour(s)</source>
         <translation>
             <numerusform>%n час(ов)</numerusform>
@@ -2487,6 +3453,7 @@ Expires: %3
         </translation>
     </message>
     <message numerus="yes">
+        <location line="+4"/>
         <source>%n day(s)</source>
         <translation>
             <numerusform>%n день</numerusform>
@@ -2495,6 +3462,8 @@ Expires: %3
         </translation>
     </message>
     <message numerus="yes">
+        <location line="+4"/>
+        <location line="+8"/>
         <source>%n week(s)</source>
         <translation>
             <numerusform>%n неделю</numerusform>
@@ -2503,10 +3472,12 @@ Expires: %3
         </translation>
     </message>
     <message>
+        <location line="-2"/>
         <source>%1 and %2</source>
         <translation>%1 и %2</translation>
     </message>
     <message numerus="yes">
+        <location line="+1"/>
         <source>%n year(s)</source>
         <translation>
             <numerusform>%n год</numerusform>
@@ -2515,77 +3486,175 @@ Expires: %3
         </translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>%1 B</source>
         <translation>%1 Б</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>%1 KB</source>
         <translation>%1 КБ</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>%1 MB</source>
         <translation>%1 МБ</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>%1 GB</source>
         <translation>%1 ГБ</translation>
     </message>
     <message>
+        <location line="+12"/>
         <source>%1 d</source>
         <translation>%1 д</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>%1 h</source>
         <translation>%1 ч</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>%1 m</source>
         <translation>%1 м</translation>
     </message>
     <message>
+        <location line="+43"/>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../voting/pollcard.cpp" line="+8"/>
         <source>%1 remaining.</source>
         <translation>Осталось %1.</translation>
+    </message>
+    <message>
+        <location filename="../researcher/researchermodel.cpp" line="+211"/>
+        <source>Wallet Not In Sync</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The wallet must be in sync to manage beacons. Please wait for synchronization to complete before using the researcher and beacon configuration wizard.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../transactionrecord.cpp" line="+376"/>
+        <source>Other</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mined</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sent to Address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sent to Other</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Received with Address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Received from Other</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Self</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Beacon Advertisements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Polls</source>
+        <translation type="unfinished">Опросы</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Votes</source>
+        <translation type="unfinished">Голосов</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>MRCs</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QRCodeDialog</name>
     <message>
+        <location filename="../forms/qrcodedialog.ui" line="+14"/>
+        <source>QR Code Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+62"/>
         <source>Request Payment</source>
         <translation>Запрос платежа</translation>
     </message>
     <message>
+        <location line="+12"/>
         <source>Label:</source>
         <translation>Метка:</translation>
     </message>
     <message>
+        <location line="+19"/>
         <source>Message:</source>
         <translation>Сообщение:</translation>
     </message>
     <message>
+        <location line="+25"/>
         <source>Amount:</source>
         <translation>Сумма:</translation>
     </message>
     <message>
+        <location line="+46"/>
         <source>&amp;Save As...</source>
         <translation>&amp;Сохранить как...</translation>
     </message>
     <message>
+        <location filename="../qrcodedialog.cpp" line="+63"/>
         <source>Error encoding URI into QR Code.</source>
         <translation>Ошибка кодирования URI в QR-код.</translation>
     </message>
     <message>
+        <location line="+40"/>
         <source>The entered amount is invalid, please check.</source>
         <translation>Введенная сумма неверна, пожалуйста, перепроверьте.</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Resulting URI too long, try to reduce the text for label / message.</source>
         <translation>Получившийся URI слишком длинный, попробуйте сократить текст метки / сообщения.</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Save QR Code</source>
         <translation>Сохранить QR-код</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>PNG Image</source>
         <comment>Name of PNG file format</comment>
         <translation>PNG Изображение</translation>
@@ -2594,302 +3663,433 @@ Expires: %3
 <context>
     <name>RPCConsole</name>
     <message>
+        <location filename="../forms/rpcconsole.ui" line="+46"/>
+        <location line="+7"/>
+        <location line="+36"/>
+        <location line="+40"/>
+        <location line="+16"/>
+        <location line="+23"/>
+        <location line="+36"/>
+        <location line="+16"/>
+        <location line="+30"/>
+        <location line="+58"/>
+        <location line="+43"/>
+        <location line="+42"/>
+        <location line="+435"/>
+        <location line="+23"/>
+        <location line="+23"/>
+        <location line="+23"/>
+        <location line="+23"/>
+        <location line="+23"/>
+        <location line="+23"/>
+        <location line="+23"/>
+        <location line="+23"/>
+        <location line="+23"/>
+        <location line="+23"/>
+        <location line="+23"/>
+        <location line="+23"/>
+        <location line="+23"/>
+        <location line="+23"/>
+        <location line="+26"/>
+        <location line="+23"/>
+        <location line="+23"/>
+        <location filename="../rpcconsole.cpp" line="+493"/>
         <source>N/A</source>
         <translation>Н/Д</translation>
     </message>
     <message>
+        <location line="-1064"/>
         <source>Client version</source>
         <translation>Версия клиента</translation>
     </message>
     <message>
+        <location line="-128"/>
         <source>&amp;Information</source>
         <translation>&amp;Информация</translation>
     </message>
     <message>
+        <location line="+268"/>
         <source>Startup time</source>
         <translation>Время запуска</translation>
     </message>
     <message>
+        <location line="-192"/>
         <source>Number of connections</source>
         <translation>Число подключений</translation>
     </message>
     <message>
+        <location line="+222"/>
         <source>Block chain</source>
         <translation>Цепь блоков</translation>
     </message>
     <message>
+        <location line="-58"/>
         <source>Current number of blocks</source>
         <translation>Текущее число блоков</translation>
     </message>
     <message>
+        <location line="-201"/>
+        <source>&amp;Show</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+125"/>
+        <source>Gridcoin Core:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+46"/>
         <source>Qt version</source>
         <translation>Версия Qt</translation>
     </message>
     <message>
+        <location line="+37"/>
         <source>Difficulty</source>
         <translation>Сложность</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Last block time</source>
         <translation>Время последнего блока</translation>
     </message>
     <message>
+        <location line="+96"/>
         <source>&amp;Open</source>
         <translation>&amp;Открыть</translation>
     </message>
     <message>
+        <location line="+79"/>
         <source>&amp;Clear</source>
         <translation>&amp;Очистить</translation>
     </message>
     <message>
+        <location line="+198"/>
         <source>&amp;Peers</source>
         <translation>&amp;Пиры</translation>
     </message>
     <message>
+        <location line="+74"/>
         <source>Banned peers</source>
         <translation>Заблокированные пиры</translation>
     </message>
     <message>
+        <location line="+69"/>
+        <location filename="../rpcconsole.cpp" line="+380"/>
         <source>Select a peer to view detailed information.</source>
         <translation>Выберите пир для просмотра подробной информации.</translation>
     </message>
     <message>
+        <location line="+18"/>
         <source>Whitelisted</source>
         <translation>Внесен в белый список</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Direction</source>
         <translation>Направление</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Version</source>
         <translation>Версия</translation>
     </message>
     <message>
+        <location line="+23"/>
+        <source>User Agent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
         <source>Services</source>
         <translation>Службы</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Starting Block</source>
         <translation>Начальный Блок</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Synced Headers</source>
         <translation>Синхронизированные Заголовки</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Synced Blocks</source>
         <translation>Синхронизированные Блоки</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Ban Score</source>
         <translation>Заблокированный Счет</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Connection Time</source>
         <translation>Время Подключения</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Last Send</source>
         <translation>Последняя Отправка</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Last Receive</source>
         <translation>Последнее Получение</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Sent</source>
         <translation>Отправить</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Received</source>
         <translation>Получить</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Ping Time</source>
         <translation>Время Пинга</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>The duration of a currently outstanding ping.</source>
         <translation>Продолжительность незавершенного в данный момент пинга.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Ping Wait</source>
         <translation>Ожидание Пинга</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Min Ping</source>
         <translation>Минимальный Пинг</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Time Offset</source>
         <translation>Смещение Времени</translation>
     </message>
     <message>
+        <location line="+43"/>
         <source>&amp;Console</source>
         <translation>Консоль</translation>
     </message>
     <message>
+        <location line="+79"/>
+        <source>&amp;Scraper</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-927"/>
         <source>&amp;Network Traffic</source>
         <translation>Сетевой &amp;трафик</translation>
     </message>
     <message>
+        <location line="+65"/>
         <source>Totals</source>
         <translation>Всего</translation>
     </message>
     <message>
+        <location line="+64"/>
         <source>In:</source>
         <translation>Вход:</translation>
     </message>
     <message>
+        <location line="+80"/>
         <source>Out:</source>
         <translation>Выход:</translation>
     </message>
     <message>
+        <location line="-353"/>
         <source>Debug log file</source>
         <translation>Отладочный лог-файл</translation>
     </message>
     <message>
+        <location line="+1048"/>
         <source>Clear console</source>
         <translation>Очистить консоль</translation>
     </message>
     <message>
+        <location line="-1297"/>
         <source>Gridcoin - Debug Console</source>
         <translation>Gridcoin - Консоль отладки</translation>
     </message>
     <message>
+        <location line="+307"/>
         <source>Boost version</source>
         <translation>Boost версия</translation>
     </message>
     <message>
+        <location line="-30"/>
         <source>Network:</source>
         <translation>Сеть:</translation>
     </message>
     <message>
+        <location line="-252"/>
         <source>On testnet</source>
         <translation>На тестовой сети</translation>
     </message>
     <message>
+        <location line="+325"/>
         <source>Estimated total blocks</source>
         <translation>Установленое число блоков</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>Open the Gridcoin debug log file from the current data directory. This can take a few seconds for large log files.</source>
         <translation>Откройте файл журнала отладки Gridcoin из текущего каталога данных. Может занять продолжительное время для больших файлов журнала.</translation>
     </message>
     <message>
+        <location line="-278"/>
         <source>Command-line options</source>
         <translation>Параметры командной строки</translation>
     </message>
     <message>
+        <location line="-33"/>
         <source>Show the Gridcoin help message to get a list with possible Gridcoin command-line options.</source>
         <translation>Показать сообщение справки Gridcoin чтобы получить возможный список комманд Gridcoin.</translation>
     </message>
     <message>
+        <location line="+16"/>
         <source>OpenSSL version</source>
         <translation>OpenSSL версия</translation>
     </message>
     <message>
+        <location line="+154"/>
         <source>Client name</source>
         <translation>Имя клиента</translation>
     </message>
     <message>
+        <location filename="../rpcconsole.cpp" line="-534"/>
         <source>&amp;Disconnect</source>
         <translation>&amp;Отключить</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <location line="+1"/>
+        <location line="+1"/>
+        <location line="+1"/>
         <source>Ban for</source>
         <translation>Заблокировать на</translation>
     </message>
     <message>
+        <location line="-3"/>
         <source>1 &amp;hour</source>
         <translation>1 &amp;час</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>1 &amp;day</source>
         <translation>1 &amp;день</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>1 &amp;week</source>
         <translation>1 &amp;неделя</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>1 &amp;year</source>
         <translation>1 &amp;год</translation>
     </message>
     <message>
+        <location line="+37"/>
         <source>&amp;Unban</source>
         <translation>&amp;Разблокировать</translation>
     </message>
     <message>
+        <location line="+24"/>
         <source>Yes</source>
         <translation>Да</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>No</source>
         <translation>Нет</translation>
     </message>
     <message>
+        <location line="+56"/>
         <source>Welcome to the Gridcoin RPC console! </source>
         <translation>Добро пожаловать в Gridcoin RPC консоль! </translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Use up and down arrows to navigate history, and &lt;b&gt;Ctrl-L&lt;/b&gt; to clear screen.</source>
         <translation>Используйте стрелки вверх и вниз для просмотра истории и &lt;b&gt;Ctrl-L&lt;/b&gt; для очистки экрана.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Type &lt;b&gt;help&lt;/b&gt; for an overview of available commands.</source>
         <translation>Напишите &lt;b&gt;help&lt;/b&gt; для просмотра доступных команд.</translation>
     </message>
     <message>
+        <location line="+116"/>
         <source>%1 B</source>
         <translation>%1 Б</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>%1 KB</source>
         <translation>%1 КБ</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>%1 MB</source>
         <translation>%1 МБ</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>%1 GB</source>
         <translation>%1 ГБ</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>%1 m</source>
         <translation>%1 мин</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>%1 h</source>
         <translation>%1 ч</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>%1 h %2 m</source>
         <translation>%1 ч %2 мин</translation>
     </message>
     <message>
+        <location line="+125"/>
         <source>(node id: %1)</source>
         <translation>(id узла: %1)</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>via %1</source>
         <translation>через %1</translation>
     </message>
     <message>
+        <location line="+3"/>
+        <location line="+1"/>
         <source>never</source>
         <translation>никогда</translation>
     </message>
     <message>
+        <location line="+15"/>
         <source>Inbound</source>
         <translation>Входящий</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Outbound</source>
         <translation>Исходящий</translation>
     </message>
     <message>
+        <location line="+16"/>
+        <location line="+6"/>
         <source>Unknown</source>
         <translation>Неизвестно</translation>
     </message>
@@ -2897,10 +4097,13 @@ Expires: %3
 <context>
     <name>ReceiveCoinsPage</name>
     <message>
+        <location filename="../forms/receivecoinspage.ui" line="+14"/>
+        <location line="+63"/>
         <source>Receive Payment</source>
         <translation>Получение Платежа</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Search by address or label</source>
         <translation>Поиск по адресу или метке</translation>
     </message>
@@ -2908,66 +4111,111 @@ Expires: %3
 <context>
     <name>ResearcherModel</name>
     <message>
+        <location filename="../researcher/researchermodel.cpp" line="-75"/>
         <source>Beacon is active.</source>
         <translation>Маяк активен.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Balance too low to send a beacon contract.</source>
         <translation>Баланс слишком низок для отправки контракта на маяк.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Beacon private key missing or invalid.</source>
         <translation>Закрытый ключ маяка отсутствует или недействителен.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Current beacon is not renewable yet.</source>
         <translation>Текущий маяк еще не обновился.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Unable to send beacon transaction. See debug.log</source>
         <translation>Не удалось отправить транзакцию маяка. Смотрите debug.log</translation>
     </message>
     <message>
+        <location line="+2"/>
+        <source>Invalid ownership proof XML. Verify the pasted content.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Unlock wallet fully to send a beacon transaction.</source>
         <translation>Разблокируйте кошелек полностью, чтобы отправить транзакцию маяка.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>No active beacon.</source>
         <translation>Нет активного маяка.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>No CPID detected.</source>
         <translation>CPID не обнаружен.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Zero magnitude in the last superblock.</source>
         <translation>Нулевая магнитуда в последнем суперблоке.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Pending beacon is awaiting network confirmation.</source>
         <translation>Маяка ожидает подтверждения сети.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Beacon expires soon. Renew immediately.</source>
         <translation>Срок действия маяка скоро истекает. Немедленно продлите.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Beacon eligible for renewal.</source>
         <translation>Возможно обновление маяка.</translation>
     </message>
     <message>
+        <location line="+2"/>
+        <source>Beacon advertisement transaction already in mempool.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+258"/>
         <source>Waiting for sync...</source>
         <translation>Ожидание синхронизации...</translation>
     </message>
     <message>
+        <location line="+129"/>
+        <location line="+79"/>
+        <source>Manually Greylisted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-76"/>
+        <location line="+79"/>
+        <source>Automatically Greylisted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-70"/>
+        <location line="+79"/>
+        <source>Excluded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-49"/>
         <source>Not whitelisted</source>
         <translation>Нет в белом списке</translation>
     </message>
     <message>
+        <location line="+32"/>
         <source>Not attached</source>
         <translation>Не прикреплен</translation>
     </message>
     <message>
+        <location line="-2"/>
         <source>Uses external adapter</source>
         <translation>Использует внешний адаптер</translation>
     </message>
@@ -2975,10 +4223,12 @@ Expires: %3
 <context>
     <name>ResearcherWizard</name>
     <message>
+        <location filename="../forms/researcherwizard.ui" line="+20"/>
         <source>Researcher Configuration</source>
         <translation>Конфигурация Исследователя</translation>
     </message>
     <message>
+        <location filename="../researcher/researcherwizard.cpp" line="+96"/>
         <source>&amp;Start Over</source>
         <translation>&amp;Начать Сначала</translation>
     </message>
@@ -2986,71 +4236,83 @@ Expires: %3
 <context>
     <name>ResearcherWizardAuthPage</name>
     <message>
+        <location filename="../forms/researcherwizardauthpage.ui" line="+20"/>
+        <location line="+3"/>
         <source>Beacon Verification</source>
         <translation>Проверка маяка</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Gridcoin needs to verify your BOINC account CPID. Please follow the instructions below to change your BOINC account username. The network needs 24 to 48 hours to verify a new CPID.</source>
         <translation>Gridcoin необходимо подтвердить CPID вашего аккаунта BOINC. Пожалуйста, следуйте инструкциям ниже, чтобы изменить имя пользователя вашего аккаунта BOINC. Сети необходимо от 24 до 48 часов, чтобы проверить новый CPID.</translation>
     </message>
     <message>
+        <location line="+27"/>
         <source>1. Sign in to your account at the website for a whitelisted BOINC project.</source>
         <translation>1. Войдите в свой аккаунт на сайте проекта BOINC из белого списка.</translation>
     </message>
     <message>
-        <source>2. Visit the settings page to change your username. Many projects label it as "other account info".</source>
-        <translation>2. Посетите страницу настроек, чтобы сменить имя пользователя. Многие проекты помечают это как "other account info".</translation>
+        <location line="+13"/>
+        <source>2. Visit the settings page to change your username. Many projects label it as &quot;other account info&quot;.</source>
+        <translation>2. Посетите страницу настроек, чтобы сменить имя пользователя. Многие проекты помечают это как &quot;other account info&quot;.</translation>
     </message>
     <message>
-        <source>3. Change your "name" (real name or nickname) to the following verification code:</source>
-        <translation>3. Измените свое "имя" (реальное или никнейм) на следующий код подтверждения:</translation>
+        <location line="+13"/>
+        <source>3. Change your &quot;name&quot; (real name or nickname) to the following verification code:</source>
+        <translation>3. Измените свое &quot;имя&quot; (реальное или никнейм) на следующий код подтверждения:</translation>
     </message>
     <message>
+        <location line="+54"/>
         <source>Copy the verification code to the system clipboard</source>
         <translation>Скопируйте проверочный код в буфер обмена</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>&amp;Copy</source>
         <translation>&amp;Копировать</translation>
     </message>
     <message>
-        <source>4. Some projects will not export your statistics by default. If available, enable the privacy setting that gives consent to the project to export your statistics data. Many projects place this setting on the "Preferences for this Project" page and label it as "Do you consent to exporting your data to BOINC statistics aggregation web sites?"</source>
-        <translation>4. Некоторые проекты по умолчанию не экспортируют вашу статистику. Если возможно, включите настройку конфиденциальности, которая дает согласие проекту на экспорт ваших статистических данных. Многие проекты помещают этот параметр на странице как "Preferences for this Project" и обозначают его как "Do you consent to exporting your data to BOINC statistics aggregation web sites?"</translation>
+        <location line="+26"/>
+        <source>4. Some projects will not export your statistics by default. If available, enable the privacy setting that gives consent to the project to export your statistics data. Many projects place this setting on the &quot;Preferences for this Project&quot; page and label it as &quot;Do you consent to exporting your data to BOINC statistics aggregation web sites?&quot;</source>
+        <translation>4. Некоторые проекты по умолчанию не экспортируют вашу статистику. Если возможно, включите настройку конфиденциальности, которая дает согласие проекту на экспорт ваших статистических данных. Многие проекты помещают этот параметр на странице как &quot;Preferences for this Project&quot; и обозначают его как &quot;Do you consent to exporting your data to BOINC statistics aggregation web sites?&quot;</translation>
     </message>
     <message>
-        <source>5. Wait 24 to 48 hours for the verification process to finish (beacon status will change to "active").</source>
-        <translation>5. Подождите от 24 до 48 часов, пока завершится процесс проверки (статус маяка изменится на "активный")</translation>
+        <location line="+13"/>
+        <source>5. Wait 24 to 48 hours for the verification process to finish (beacon status will change to &quot;active&quot;).</source>
+        <translation>5. Подождите от 24 до 48 часов, пока завершится процесс проверки (статус маяка изменится на &quot;активный&quot;)</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>6. After that, you may change the username back to your preference.</source>
         <translation>6. После этого вы можете изменить имя пользователя.</translation>
     </message>
     <message>
+        <location line="+32"/>
         <source>&lt;html&gt;
 &lt;head/&gt;
 &lt;body&gt;
-&lt;h4 style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;
-&lt;span style=" font-size:medium; font-weight:600;"&gt;Remember:&lt;/span&gt;
+&lt;h4 style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;
+&lt;span style=&quot; font-size:medium; font-weight:600;&quot;&gt;Remember:&lt;/span&gt;
 &lt;/h4&gt;
-&lt;ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 0;"&gt;
-&lt;li style=" margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;The network only needs to verify the code above at a single whitelisted BOINC project even when you participate in multiple projects. &lt;/li&gt;
-&lt;li style=" margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;The verification code expires after three days pass. &lt;/li&gt;
-&lt;li style=" margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;A beacon expires after six months pass. &lt;/li&gt;&lt;li style=" margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;A beacon becomes eligible for renewal after five months pass. The wallet will remind you to renew the beacon. &lt;/li&gt;
-&lt;li style=" margin-top:6px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;You will not need to change your username again to renew a beacon unless it expires. &lt;/li&gt;
+&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 0;&quot;&gt;
+&lt;li style=&quot; margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The network only needs to verify the code above at a single whitelisted BOINC project even when you participate in multiple projects. &lt;/li&gt;
+&lt;li style=&quot; margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The verification code expires after three days pass. &lt;/li&gt;
+&lt;li style=&quot; margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;A beacon expires after six months pass. &lt;/li&gt;&lt;li style=&quot; margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;A beacon becomes eligible for renewal after five months pass. The wallet will remind you to renew the beacon. &lt;/li&gt;
+&lt;li style=&quot; margin-top:6px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;You will not need to change your username again to renew a beacon unless it expires. &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/body&gt;
 &lt;/html&gt;</source>
         <translation>&lt;html&gt;
 &lt;head/&gt;
 &lt;body&gt;
-&lt;h4 style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;
-&lt;span style=" font-size:medium; font-weight:600;"&gt;Запомните&lt;/span&gt;
+&lt;h4 style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;
+&lt;span style=&quot; font-size:medium; font-weight:600;&quot;&gt;Запомните&lt;/span&gt;
 &lt;/h4&gt;
-&lt;ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 0;"&gt;
-&lt;li style=" margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Сети необходимо проверить приведенный выше код только в одном проекте BOINC из белого списка, даже если вы участвуете в нескольких проектах.&lt;/li&gt;
-&lt;li style=" margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Срок действия проверочного кода истекает через три дня.&lt;/li&gt;
-&lt;li style=" margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Срок службы маяка истекает через шесть месяцев.&lt;/li&gt;&lt;li style=" margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Через пять месяцев маяк можно продлить. Кошелёк напомнит вам о необходимости обновления маяка.&lt;/li&gt;
-&lt;li style=" margin-top:6px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Вам не нужно будет менять имя пользователя, чтобы продлить маяк, если срок его действия не истечет.&lt;/li&gt;
+&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 0;&quot;&gt;
+&lt;li style=&quot; margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Сети необходимо проверить приведенный выше код только в одном проекте BOINC из белого списка, даже если вы участвуете в нескольких проектах.&lt;/li&gt;
+&lt;li style=&quot; margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Срок действия проверочного кода истекает через три дня.&lt;/li&gt;
+&lt;li style=&quot; margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Срок службы маяка истекает через шесть месяцев.&lt;/li&gt;&lt;li style=&quot; margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Через пять месяцев маяк можно продлить. Кошелёк напомнит вам о необходимости обновления маяка.&lt;/li&gt;
+&lt;li style=&quot; margin-top:6px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Вам не нужно будет менять имя пользователя, чтобы продлить маяк, если срок его действия не истечет.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/body&gt;
 &lt;/html&gt;</translation>
@@ -3059,133 +4321,171 @@ Expires: %3
 <context>
     <name>ResearcherWizardBeaconPage</name>
     <message>
+        <location filename="../forms/researcherwizardbeaconpage.ui" line="+20"/>
+        <location line="+3"/>
         <source>Beacon Advertisement</source>
         <translation>Объявление Маяка</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>A beacon links your BOINC accounts to your wallet. After sending a beacon, the network tracks your BOINC statistics to calculate research rewards.</source>
         <translation>Маяк связывает ваши учетные записи BOINC с вашим кошельком. После отправки маяка сеть отслеживает вашу статистику BOINC для расчета вознаграждения за исследования.</translation>
     </message>
     <message>
+        <location line="+87"/>
+        <source>Choose verification method:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Classic verification (change BOINC username)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Account ownership proof (recommended if available)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+44"/>
+        <location filename="../researcher/researcherwizardbeaconpage.cpp" line="+196"/>
         <source>&amp;Advertise Beacon</source>
         <translation>&amp;Объявление Маяка</translation>
     </message>
     <message>
-        <source>Press "Next" to continue.</source>
-        <translation>Нажмите "Далее", чтобы продолжить.</translation>
+        <location line="+122"/>
+        <source>Press &quot;Next&quot; to continue.</source>
+        <translation>Нажмите &quot;Далее&quot;, чтобы продолжить.</translation>
+    </message>
+    <message>
+        <location filename="../researcher/researcherwizardbeaconpage.cpp" line="-129"/>
+        <source>Account ownership proof requires block version 14 (not yet active).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>No whitelisted projects currently support account ownership proof.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+89"/>
+        <source>Beacon key generated. Press &quot;Next&quot; to continue.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>&amp;Generate Beacon Key</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>ResearcherWizardEmailPage</name>
     <message>
+        <location filename="../forms/researcherwizardemailpage.ui" line="+20"/>
+        <location line="+3"/>
         <source>BOINC Email Address</source>
         <translation>Адрес Email BOINC</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Enter the email address that you use for your BOINC project accounts. Gridcoin uses this email address to find BOINC projects on your computer.</source>
         <translation>Введите адрес электронной почты, который вы используете для своих учетных записей проекта BOINC. Gridcoin использует этот адрес электронной почты для поиска проектов BOINC на вашем компьютере.</translation>
     </message>
     <message>
+        <location line="+30"/>
         <source>Email Address:</source>
         <translation>Адрес Email:</translation>
     </message>
     <message>
+        <location line="+30"/>
         <source>The wallet will never transmit your email address.</source>
         <translation>Кошелек никогда не передаст ваш адрес электронной почты.</translation>
     </message>
 </context>
 <context>
-    <name>ResearcherWizardInvestorPage</name>
-    <message>
-        <source>Summary</source>
-        <translation>Суммарно</translation>
-    </message>
-    <message>
-        <source>Investor Mode</source>
-        <translation>Режим Инвестора</translation>
-    </message>
-    <message>
-        <source>You opted out of research rewards and will earn staking rewards only.</source>
-        <translation>Вы отказались от вознаграждений за исследования и будете получать только вознаграждения за стейкинг.</translation>
-    </message>
-    <message>
-        <source>Press "Start Over" if you want to switch modes.</source>
-        <translation>Нажмите "Начать сначала", если хотите изменить режимы.</translation>
-    </message>
-</context>
-<context>
     <name>ResearcherWizardModeDetailPage</name>
     <message>
+        <location filename="../forms/researcherwizardmodedetailpage.ui" line="+20"/>
         <source>Select Researcher Mode</source>
         <translation>Выберите Режим Исследователя</translation>
     </message>
     <message>
+        <location line="+15"/>
         <source>How can I participate?</source>
         <translation>Как мне принять участие?</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>&lt;html&gt;
 &lt;head/&gt;
 &lt;body&gt;
-&lt;p&gt;You can participate as either a miner or investor. &lt;span style=" font-weight:600;"&gt;Miners&lt;/span&gt; earn Gridcoin by participating in whitelisted BOINC projects. To redeem their rewards, miners must stake blocks. &lt;span style=" font-weight:600;"&gt;Solo Miners&lt;/span&gt; stake blocks on their own which typically requires a balance of at least 5000 GRC. &lt;span style=" font-weight:600;"&gt;Pool Miners&lt;/span&gt; avoid this upfront investment by letting a third party (the pool) stake blocks on their behalf. Pool mining is recommended for new users with a low initial balance. &lt;span style=" font-weight:600;"&gt;Investors&lt;/span&gt; own Gridcoin but do not participate in BOINC mining. By using their balance to stake blocks, investors help to secure the network and are rewarded 10 GRC per block.&lt;/p&gt;
+&lt;p&gt;You can participate as either a miner or non-cruncher. &lt;span style=&quot; font-weight:600;&quot;&gt;Miners&lt;/span&gt; earn Gridcoin by participating in whitelisted BOINC projects. To redeem their rewards, miners must stake blocks. &lt;span style=&quot; font-weight:600;&quot;&gt;Solo Miners&lt;/span&gt; stake blocks on their own which typically requires a balance of at least 5000 GRC. &lt;span style=&quot; font-weight:600;&quot;&gt;Pool Miners&lt;/span&gt; avoid this upfront investment by letting a third party (the pool) stake blocks on their behalf. Pool mining is recommended for new users with a low initial balance. &lt;span style=&quot; font-weight:600;&quot;&gt;Non-crunchers&lt;/span&gt; own Gridcoin but do not participate in BOINC mining. By using their balance to stake blocks, non-crunchers help to secure the network and are rewarded 10 GRC per block.&lt;/p&gt;
 &lt;/body&gt;
 &lt;/html&gt;</source>
-        <translation>&lt;html&gt;
-&lt;head/&gt;
-&lt;body&gt;
-&lt;p&gt;Вы можете участвовать как майнер или инвестор. &lt;span style=" font-weight:600;"&gt;Майнеры&lt;/span&gt; зарабатывают Gridcoin, участвуя в проектах BOINC из белого списка. Чтобы получить вознаграждение, майнеры должны стейкить блоки. &lt;span style=" font-weight:600;"&gt;Соло-Майнеры&lt;/span&gt; стейкят блоки самостоятельно, что обычно требует баланса не менее 5000 GRC. &lt;span style=" font-weight:600;"&gt;Майнеры Пула&lt;/span&gt; избегают этих авансовых вложений, позволяя третьей стороне (пулу) стейкить блоки от своего имени. Майнинг в пуле рекомендуется для новых пользователей с низким начальным балансом. &lt;span style=" font-weight:600;"&gt;Инвесторы&lt;/span&gt; имеют Gridcoin, но не участвуют в майнинге BOINC. Используя свой баланс для стейкинга блоков, инвесторы помогают защитить сеть и получают вознаграждение в размере 10 GRC за блок.&lt;/p&gt;
-&lt;/body&gt;
-&lt;/html&gt;</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+52"/>
         <source>Earn 10 GRC Block Reward</source>
         <translation>Получение 10 GRC за блок</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Ability to Vote</source>
         <translation>Возможность голосовать</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Decentralized</source>
         <translation>Децентрализовано</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Helps Secure Network</source>
         <translation>Помогает Защищать Сеть</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Keep 100% of Rewards</source>
         <translation>Сохраняйте 100% вознаграждений</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Earn BOINC Rewards</source>
         <translation>Получать награды BOINC</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>No Upfront Investment</source>
         <translation>Без Предварительных Вложений</translation>
     </message>
     <message>
+        <location line="+22"/>
         <source>My Choice:</source>
         <translation>Мой Выбор:</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>BOINC Leaderboards</source>
         <translation>Таблица лидеров BOINC</translation>
     </message>
     <message>
+        <location line="+85"/>
         <source>Pool</source>
         <translation>Пул</translation>
     </message>
     <message>
+        <location line="+91"/>
         <source>Solo</source>
         <translation>Соло</translation>
     </message>
     <message>
-        <source>Investor</source>
-        <translation>Инвестор</translation>
+        <location line="+78"/>
+        <source>Non-cruncher</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+88"/>
         <source>Pool Only</source>
         <translation>Только Пул</translation>
     </message>
@@ -3193,81 +4493,215 @@ Expires: %3
 <context>
     <name>ResearcherWizardModePage</name>
     <message>
+        <location filename="../forms/researcherwizardmodepage.ui" line="+20"/>
         <source>Select Researcher Mode</source>
         <translation>Выбрать Режим Исследователя.</translation>
     </message>
     <message>
+        <location line="+62"/>
         <source>How would you like to participate?</source>
         <translation>Как бы вы хотели участвовать?</translation>
     </message>
     <message>
+        <location line="+31"/>
         <source>Solo</source>
         <translation>Самостоятельно</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>Pool</source>
         <translation>Пул</translation>
     </message>
     <message>
-        <source>Investor</source>
-        <translation>Инвестор</translation>
+        <location line="+49"/>
+        <source>Non-cruncher</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+12"/>
         <source>Help me choose...</source>
         <translation>Помогите мне выбрать...</translation>
     </message>
 </context>
 <context>
+    <name>ResearcherWizardNoncruncherPage</name>
+    <message>
+        <location filename="../forms/researcherwizardnoncruncherpage.ui" line="+20"/>
+        <source>Summary</source>
+        <translation type="unfinished">Суммарно</translation>
+    </message>
+    <message>
+        <location line="+56"/>
+        <source>Non-cruncher Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>You opted out of research rewards and will earn staking rewards only.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Press &quot;Start Over&quot; if you want to switch modes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ResearcherWizardOwnershipProofPage</name>
+    <message>
+        <location filename="../forms/researcherwizardownershipproofpage.ui" line="+20"/>
+        <location line="+3"/>
+        <source>BOINC Account Ownership Proof</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Prove ownership of a BOINC account by obtaining a cryptographic signature from a supporting project website.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Your beacon public key:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+42"/>
+        <source>Copy the beacon public key to the system clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>&amp;Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+42"/>
+        <source>Projects supporting account ownership proof:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+48"/>
+        <source>1. Sign in to one of the projects listed above and visit the account ownership proof page.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>2. Enter your beacon public key (shown above) where the project asks for it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>3. Copy the entire XML block the project returns and paste it below:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>Paste the ownership proof XML here...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>&amp;Send Beacon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+82"/>
+        <source>&lt;html&gt;
+&lt;head/&gt;
+&lt;body&gt;
+&lt;h4 style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;
+&lt;span style=&quot; font-size:medium; font-weight:600;&quot;&gt;Remember:&lt;/span&gt;
+&lt;/h4&gt;
+&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 0;&quot;&gt;
+&lt;li style=&quot; margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The network only needs to verify the ownership proof from a single project even when you participate in multiple projects. &lt;/li&gt;
+&lt;li style=&quot; margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;A beacon expires after six months pass. &lt;/li&gt;
+&lt;li style=&quot; margin-top:6px; margin-bottom:0px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;A beacon becomes eligible for renewal after five months pass. The wallet will remind you to renew the beacon. &lt;/li&gt;
+&lt;li style=&quot; margin-top:6px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This method does not require changing your BOINC username. &lt;/li&gt;
+&lt;/ul&gt;
+&lt;/body&gt;
+&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../researcher/researcherwizardownershipproofpage.cpp" line="+70"/>
+        <source>No projects currently support this method.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+46"/>
+        <source>Please paste the ownership proof XML from the project website.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ResearcherWizardPoolPage</name>
     <message>
+        <location filename="../forms/researcherwizardpoolpage.ui" line="+20"/>
         <source>Summary</source>
         <translation>Суммарно</translation>
     </message>
     <message>
+        <location line="+56"/>
         <source>Pool Mode</source>
         <translation>Режим Пула</translation>
     </message>
     <message>
-        <source>In this mode, a pool will take care of staking research rewards for you. Your wallet can still earn standard staking rewards on your balance. You do not need a BOINC account, CPID, or beacon. Please choose a pool and follow the instructions on the website to sign up and connect the pool's account manager to BOINC:</source>
+        <location line="+13"/>
+        <source>In this mode, a pool will take care of staking research rewards for you. Your wallet can still earn standard staking rewards on your balance. You do not need a BOINC account, CPID, or beacon. Please choose a pool and follow the instructions on the website to sign up and connect the pool&apos;s account manager to BOINC:</source>
         <translation>В этом режиме пул позаботится о том, чтобы получить за вас вознаграждение за исследования. Ваш кошелек по-прежнему может получать стандартные вознаграждения за стейкинг на ваш баланс. Вам не нужна учетная запись BOINC, CPID или маяк. Пожалуйста, выберите пул и следуйте инструкциям на сайте, чтобы зарегистрироваться и подключить менеджера аккаунта пула к BOINC:</translation>
     </message>
     <message>
+        <location line="+54"/>
+        <source>grcpool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Arikado Pool</source>
         <translation>Пул Arikado</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Website URL</source>
         <translation>URL веб-сайта</translation>
     </message>
     <message>
+        <location line="+31"/>
         <source>As you sign up, the pool may ask for a payment address to send earnings to. Press the button below to generate an address.</source>
         <translation>При регистрации пул может запросить платежный адрес для отправки прибыли. Нажмите на кнопку ниже, чтобы создать адрес.</translation>
     </message>
     <message>
+        <location line="+18"/>
         <source>New &amp;Address</source>
         <translation>Новый &amp;Адрес</translation>
     </message>
     <message>
+        <location line="+41"/>
         <source>&amp;Copy</source>
         <translation>&amp;Копировать</translation>
     </message>
     <message>
-        <source>Press "Next" when you are done.</source>
-        <translation>Нажмите "Далее", когда закончите.</translation>
+        <location line="+22"/>
+        <source>Press &quot;Next&quot; when you are done.</source>
+        <translation>Нажмите &quot;Далее&quot;, когда закончите.</translation>
     </message>
     <message>
+        <location filename="../researcher/researcherwizardpoolpage.cpp" line="+89"/>
         <source>Address Label</source>
         <translation>Метка Адреса</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Label:</source>
         <translation>Метка:</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Pool Receiving Address</source>
         <translation>Адрес Получения Пула</translation>
     </message>
     <message>
+        <location line="+11"/>
         <source>Error: failed to generate a new address.</source>
         <translation>Ошибка: не удалось сгенерировать новый адрес.</translation>
     </message>
@@ -3275,34 +4709,42 @@ Expires: %3
 <context>
     <name>ResearcherWizardPoolSummaryPage</name>
     <message>
+        <location filename="../forms/researcherwizardpoolsummarypage.ui" line="+20"/>
         <source>BOINC CPID Detection</source>
         <translation>Обнаружение CPID BOINC</translation>
     </message>
     <message>
+        <location line="+56"/>
         <source>Pool Mode</source>
         <translation>Режим Пула</translation>
     </message>
     <message>
+        <location line="+36"/>
         <source>BOINC Folder:</source>
         <translation>Каталог BOINC:</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Pool Status:</source>
         <translation>Состояние Пула:</translation>
     </message>
     <message>
+        <location line="+82"/>
         <source>Re-scan the BOINC projects on your computer.</source>
         <translation>Пересканируйте проекты BOINC на своем компьютере.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>&amp;Refresh</source>
         <translation>&amp;Обновить</translation>
     </message>
     <message>
+        <location filename="../researcher/researcherwizardpoolsummarypage.cpp" line="+82"/>
         <source>Pool projects detected</source>
         <translation>Обнаружены проекты пула</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>No pool projects detected</source>
         <translation>Проекты пула не обнаружены</translation>
     </message>
@@ -3310,34 +4752,43 @@ Expires: %3
 <context>
     <name>ResearcherWizardProjectsPage</name>
     <message>
+        <location filename="../forms/researcherwizardprojectspage.ui" line="+20"/>
+        <location line="+3"/>
         <source>BOINC CPID Detection</source>
         <translation>Обнаружение BOINC CPID</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Gridcoin scans the BOINC projects on your computer to find an eligible cross-project identifier (CPID). The network tracks CPIDs to allocate research rewards.</source>
         <translation>Gridcoin сканирует проекты BOINC на вашем компьютере, чтобы найти подходящий межпроектный идентификатор (CPID). Сеть отслеживает CPID для распределения вознаграждений за исследования.</translation>
     </message>
     <message>
+        <location line="+87"/>
         <source>Email Address:</source>
         <translation>Адрес Email:</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>BOINC Folder:</source>
         <translation>Каталог BOINC:</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Selected CPID:</source>
         <translation>Выбранный CPID:</translation>
     </message>
     <message>
+        <location line="+82"/>
         <source>Re-scan the BOINC projects on your computer.</source>
         <translation>Пересканируйте проекты BOINC на своем компьютере.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>&amp;Refresh</source>
         <translation>&amp;Обновить</translation>
     </message>
     <message>
+        <location filename="../researcher/researcherwizardprojectspage.cpp" line="+63"/>
         <source>An error occurred while saving the email address to the configuration file. Please see debug.log for details.</source>
         <translation>Произошла ошибка при сохранении адреса электронной почты в файле конфигурации. Подробности смотрите в файле debug.log.</translation>
     </message>
@@ -3345,98 +4796,123 @@ Expires: %3
 <context>
     <name>ResearcherWizardSummaryPage</name>
     <message>
+        <location filename="../forms/researcherwizardsummarypage.ui" line="+20"/>
         <source>Researcher Summary</source>
         <translation>Резюме исследователя</translation>
     </message>
     <message>
+        <location line="+25"/>
         <source>S&amp;ummary</source>
         <translation>Р&amp;езюме</translation>
     </message>
     <message>
+        <location line="+124"/>
+        <location filename="../researcher/researcherwizardsummarypage.cpp" line="+145"/>
         <source>Everything looks good.</source>
         <translation>Все выглядит хорошо.</translation>
     </message>
     <message>
+        <location line="+34"/>
         <source>Review Beacon Verification</source>
         <translation>Обзор Проверки Маяка</translation>
     </message>
     <message>
+        <location line="+104"/>
         <source>Status:</source>
         <translation>Состояние:</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Magnitude:</source>
         <translation>Магнитуда:</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Pending Reward:</source>
         <translation>Ожидаемое Вознаграждение:</translation>
     </message>
     <message>
+        <location line="+120"/>
         <source>Beacon:</source>
         <translation>Маяк:</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Age:</source>
         <translation>Возраст:</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Expires:</source>
         <translation>Истекает через:</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Address:</source>
         <translation>Адрес:</translation>
     </message>
     <message>
+        <location line="+46"/>
         <source>&amp;Renew</source>
         <translation>&amp;Продлить</translation>
     </message>
     <message>
+        <location line="+45"/>
         <source>&amp;Projects</source>
         <translation>&amp;Проекты</translation>
     </message>
     <message>
+        <location line="+29"/>
         <source>Email Address:</source>
         <translation>Адрес Email:</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>BOINC Folder:</source>
         <translation>Каталог BOINC:</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Selected CPID:</source>
         <translation>Выбранный CPID:</translation>
     </message>
     <message>
+        <location line="+82"/>
         <source>Re-scan the BOINC projects on your computer.</source>
         <translation>Пересканируйте проекты BOINC на компьютере.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>&amp;Refresh</source>
         <translation>&amp;Обновить</translation>
     </message>
     <message>
+        <location filename="../researcher/researcherwizardsummarypage.cpp" line="-20"/>
         <source>Waiting for sync...</source>
         <translation>Ожидание синхронизации...</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Beacon awaiting confirmation.</source>
         <translation>Маяк ожидает подтверждения.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Beacon renewal available.</source>
         <translation>Доступно обновление маяка.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Split CPID or mismatched email.</source>
         <translation>Разделенный CPID или несоответствующий адрес электронной почты.</translation>
     </message>
     <message>
-        <source>Your projects either refer to more than one CPID or your projects' email do not match what you used to configure Gridcoin here. Please ensure all of your projects are attached using the same email address, the email address matches what was configured here, and if you added a project recently, update that project and then all other projects using the update button in the BOINC manager, then restart the client and recheck.</source>
+        <location line="+1"/>
+        <source>Your projects either refer to more than one CPID or your projects&apos; email do not match what you used to configure Gridcoin here. Please ensure all of your projects are attached using the same email address, the email address matches what was configured here, and if you added a project recently, update that project and then all other projects using the update button in the BOINC manager, then restart the client and recheck.</source>
         <translation>Ваши проекты либо ссылаются на несколько CPID, либо адреса электронной почты ваших проектов не соответствуют тому, что вы использовали здесь для настройки Gridcoin. Пожалуйста, убедитесь, что все ваши проекты прикреплены с использованием одного и того же адреса электронной почты, адрес электронной почты соответствует тому, что было настроено здесь, и если вы недавно добавили проект, обновите этот проект, а затем все остальные проекты, используя кнопку обновления в диспетчере BOINC, затем перезапустите клиент и перепроверьте.</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Waiting for magnitude.</source>
         <translation>Ожидание магнитуды.</translation>
     </message>
@@ -3444,202 +4920,283 @@ Expires: %3
 <context>
     <name>SendCoinsDialog</name>
     <message>
+        <location filename="../forms/sendcoinsdialog.ui" line="+14"/>
+        <location filename="../sendcoinsdialog.cpp" line="+195"/>
+        <location line="+5"/>
+        <location line="+5"/>
+        <location line="+5"/>
+        <location line="+6"/>
+        <location line="+7"/>
+        <location line="+5"/>
+        <location line="+5"/>
         <source>Send Coins</source>
         <translation>Отправить Монеты</translation>
     </message>
     <message>
+        <location line="+63"/>
         <source>Send Payment</source>
         <translation>Отправить Платёж</translation>
     </message>
     <message>
+        <location line="+44"/>
         <source>0.00</source>
         <translation>0,00</translation>
     </message>
     <message>
+        <location line="+10"/>
+        <location filename="../sendcoinsdialog.cpp" line="+156"/>
+        <location line="+11"/>
         <source>Available (%1)</source>
         <translation>Доступно (%1)</translation>
     </message>
     <message>
+        <location line="+57"/>
         <source>Coin Control Features (Advanced)</source>
         <translation>Функции Управления Монетами (Расширенные)</translation>
     </message>
     <message>
+        <location line="+14"/>
+        <location filename="../sendcoinsdialog.cpp" line="+241"/>
         <source>Inactive</source>
         <translation>Неактивно</translation>
     </message>
     <message>
+        <location line="+38"/>
         <source>Inputs...</source>
         <translation>Поступления...</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>automatically selected</source>
         <translation>выбирается автоматически</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>Insufficient funds!</source>
         <translation>Недостаточно средств!</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>Reset</source>
         <translation>Сброс</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Consolidate Wizard</source>
         <translation>Мастер Объединения</translation>
     </message>
     <message>
+        <location line="+80"/>
         <source>Quantity:</source>
         <translation>Количество:</translation>
     </message>
     <message>
+        <location line="+16"/>
+        <location line="+26"/>
+        <source>0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-13"/>
         <source>Bytes:</source>
         <translation>Байт:</translation>
     </message>
     <message>
+        <location line="+42"/>
         <source>Amount:</source>
         <translation>Сумма:</translation>
     </message>
     <message>
+        <location line="+16"/>
+        <location line="+45"/>
+        <location line="+68"/>
+        <location line="+23"/>
         <source>0.00 GRC</source>
         <translation>0,00 GRC</translation>
     </message>
     <message>
+        <location line="-107"/>
         <source>Fee:</source>
         <translation>Комиссия:</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Low Output:</source>
         <translation>Малый выход:</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>no</source>
         <translation>нет</translation>
     </message>
     <message>
+        <location line="+29"/>
         <source>After Fee:</source>
         <translation>После комиссии:</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Change</source>
         <translation>Изменение</translation>
     </message>
     <message>
+        <location line="+44"/>
         <source>custom change address</source>
         <translation>измененный адрес вручную</translation>
     </message>
     <message>
+        <location line="+145"/>
         <source>Remove all transaction fields</source>
         <translation>Очистить все поля транзакции</translation>
     </message>
     <message>
+        <location line="-23"/>
         <source>Send to multiple recipients at once</source>
         <translation>Отправить сразу нескольким получателям</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Add &amp;Recipient</source>
         <translation>Добавить &amp;получателя</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Clear &amp;All</source>
         <translation>Очистить &amp;Всё</translation>
     </message>
     <message>
+        <location line="+36"/>
         <source>Confirm the send action</source>
         <translation>Подтвердить отправку</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>S&amp;end</source>
         <translation>О&amp;тправить</translation>
     </message>
     <message>
+        <location line="-171"/>
         <source>Enter a Gridcoin address (e.g. S67nL4vELWwdDVzjgtEP4MxryarTZ9a8GB)</source>
         <translation>Введите Gridcoin адрес (например S67nL4vELWwdDVzjgtEP4MxryarTZ9a8GB)</translation>
     </message>
     <message>
+        <location filename="../sendcoinsdialog.cpp" line="-582"/>
         <source>Copy quantity</source>
         <translation>Копировать количество</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Copy amount</source>
         <translation>Копировать сумму</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Copy fee</source>
         <translation>Копировать комиссию</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Copy after fee</source>
         <translation>Копировать после комиссии</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Copy bytes</source>
         <translation>Копировать байты</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Copy low output</source>
         <translation>Копировать малый выход</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Copy change</source>
         <translation>Копировать сдачу</translation>
     </message>
     <message>
+        <location line="+93"/>
+        <source>(minus fee)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>&lt;b&gt;%1&lt;/b&gt; to %2 (%3)</source>
         <translation>&lt;b&gt;%1&lt;/b&gt; для %2 (%3)</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>Confirm send coins</source>
         <translation>Подтвердите отправку монет</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Are you sure you want to send %1?</source>
         <translation>Вы уверены, что хотите послать %1?</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source> and </source>
         <translation> и </translation>
     </message>
     <message>
+        <location line="+29"/>
         <source>The recipient address is not valid, please recheck.</source>
         <translation>Адрес получателя неверный, пожалуйста, перепроверьте.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>The amount to pay must be larger than 0.</source>
         <translation>Сумма к оплате должна быть больше 0.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>The amount exceeds your balance.</source>
         <translation>Сумма превышает ваш баланс.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>The total exceeds your balance when the %1 transaction fee is included.</source>
         <translation>Сумма с учётом комиссии %1 превысит ваш баланс.</translation>
     </message>
     <message>
+        <location line="+6"/>
+        <source>The transaction fee (%1) exceeds the amount being sent to a recipient with &apos;Subtract fee from amount&apos; enabled. Please enter a larger amount.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Duplicate address found, can only send to each address once per send operation.</source>
         <translation>Обнаружен повторяющийся адрес, на каждый адрес можно отправить только один раз за операцию отправки.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Error: Transaction creation failed.</source>
         <translation>Ошибка: Не удалось создать транзакцию.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Error: The transaction was rejected. This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.</source>
         <translation>Ошибка: Транзакция отклонена. Это может произойти, если некоторые из монет в вашем кошельке уже были потрачены, например, если вы использовали старую копию wallet.dat и монеты были потрачены в копии, но не отмечены здесь как потраченные.</translation>
     </message>
     <message>
+        <location line="+291"/>
+        <location line="+49"/>
         <source>(no label)</source>
         <translation>(без метки)</translation>
     </message>
     <message>
+        <location line="-13"/>
         <source>WARNING: Invalid Gridcoin address</source>
         <translation>ВНИМАНИЕ: Неверный адрес Gridcoin</translation>
     </message>
     <message>
+        <location line="+17"/>
         <source>WARNING: unknown change address</source>
         <translation>ВНИМАНИЕ: неизвестное изменение адреса</translation>
     </message>
     <message>
+        <location line="+58"/>
         <source>Active</source>
         <translation>Активно</translation>
     </message>
@@ -3647,188 +5204,326 @@ Expires: %3
 <context>
     <name>SendCoinsEntry</name>
     <message>
+        <location filename="../forms/sendcoinsentry.ui" line="+159"/>
         <source>A&amp;mount:</source>
         <translation>К&amp;оличество:</translation>
     </message>
     <message>
+        <location line="-116"/>
         <source>Pay &amp;To:</source>
         <translation>&amp;Получатель:</translation>
     </message>
     <message>
+        <location line="+77"/>
         <source>Message:</source>
         <translation>Сообщение:</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>&amp;Label:</source>
         <translation>&amp;Метка:</translation>
     </message>
     <message>
+        <location line="-132"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
     <message>
+        <location line="+47"/>
         <source>The address to send the payment to  (e.g. Sjz75uKHzUQJnSdzvpiigEGxseKkDhQToX)</source>
         <translation>Адрес получателя (например Sjz75uKHzUQJnSdzvpiigEGxseKkDhQToX)</translation>
     </message>
     <message>
+        <location line="+19"/>
+        <source>Alt+A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Paste address from clipboard</source>
         <translation>Вставить адрес из буфера обмена</translation>
     </message>
     <message>
+        <location line="+10"/>
+        <source>Alt+P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+39"/>
+        <source>The transaction fee will be deducted from the amount sent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Subtract fee from amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+41"/>
         <source>Send Custom Message to a Gridcoin Recipient</source>
         <translation>Отправить Пользовательское Сообщение Получателю Gridcoin</translation>
     </message>
     <message>
+        <location line="-106"/>
         <source>Choose address from address book</source>
         <translation>Выберите адрес из адресной книги</translation>
     </message>
     <message>
+        <location line="+30"/>
         <source>Remove this recipient</source>
         <translation>Удалить получателя</translation>
     </message>
     <message>
+        <location line="-73"/>
+        <location line="+3"/>
         <source>Enter a label for this address to add it to your address book</source>
         <translation>Введите метку для этого адреса, чтобы добавить его в адресную книгу</translation>
     </message>
     <message>
+        <location line="+33"/>
         <source>Enter a Gridcoin address (e.g. S67nL4vELWwdDVzjgtEP4MxryarTZ9a8GB)</source>
         <translation>Введите адрес Gridcoin (например  S67nL4vELWwdDVzjgtEP4MxryarTZ9a8GB)</translation>
     </message>
 </context>
 <context>
+    <name>SideStakeTableModel</name>
+    <message>
+        <location filename="../sidestaketablemodel.cpp" line="+116"/>
+        <source>Address</source>
+        <translation type="unfinished">Адрес</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Allocation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Status</source>
+        <translation type="unfinished">Статус</translation>
+    </message>
+</context>
+<context>
     <name>SignVerifyMessageDialog</name>
     <message>
+        <location filename="../forms/signverifymessagedialog.ui" line="+14"/>
         <source>Signatures - Sign / Verify a Message</source>
         <translation>Подписи - Подписать / Проверить Сообщение</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>&amp;Sign Message</source>
         <translation>&amp;Подписать сообщение</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>You can sign messages with your addresses to prove you own them. Be careful not to sign anything vague, as phishing attacks may try to trick you into signing your identity over to them. Only sign fully-detailed statements you agree to.</source>
         <translation>Вы можете подписывать сообщения своими адресами, чтобы доказать, что они вам принадлежат. Будьте осторожны, не подписывайте что-то неопределённое, так как фишинговые атаки могут обманным путём заставить вас подписать нежелательные сообщения. Подписывайте только те сообщения, с которыми вы согласны вплоть до мелочей.</translation>
     </message>
     <message>
+        <location line="+18"/>
         <source>The address to sign the message with (e.g. Sjz75uKHzUQJnSdzvpiigEGxseKkDhQToX)</source>
         <translation>Адрес для подписи сообщения (например Sjz75uKHzUQJnSdzvpiigEGxseKkDhQToX)</translation>
     </message>
     <message>
+        <location line="+13"/>
+        <location line="+189"/>
         <source>Choose an address from the address book</source>
         <translation>Выберите адрес из адресной книги</translation>
     </message>
     <message>
+        <location line="-179"/>
+        <location line="+189"/>
+        <source>Alt+A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-182"/>
         <source>Paste address from clipboard</source>
         <translation>Вставить адрес из буфера обмена</translation>
     </message>
     <message>
+        <location line="+10"/>
+        <source>Alt+P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Enter the message you want to sign here</source>
         <translation>Введите здесь сообщение, которое хотите подписать</translation>
     </message>
     <message>
+        <location line="+22"/>
         <source>Copy the current signature to the system clipboard</source>
         <translation>Скопировать текущую подпись в системный буфер обмена</translation>
     </message>
     <message>
+        <location line="+18"/>
         <source>Sign the message to prove you own this Gridcoin address</source>
         <translation>Подпишите сообщение, чтобы доказать, что вы являетесь владельцем этого адреса Gridcoin</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Sign &amp;Message</source>
         <translation>Подписать &amp;Сообщение</translation>
     </message>
     <message>
+        <location line="+14"/>
         <source>Reset all sign message fields</source>
         <translation>Сбросить все поля подписываемого сообщения</translation>
     </message>
     <message>
+        <location line="+3"/>
+        <location line="+144"/>
         <source>Clear &amp;All</source>
         <translation>Очистить &amp;Всё</translation>
     </message>
     <message>
+        <location line="-91"/>
+        <location line="+74"/>
         <source>&amp;Verify Message</source>
         <translation>&amp;Проверить Сообщение</translation>
     </message>
     <message>
+        <location line="-68"/>
         <source>Enter the signing address, message (ensure you copy line breaks, spaces, tabs, etc. exactly) and signature below to verify the message. Be careful not to read more into the signature than what is in the signed message itself, to avoid being tricked by a man-in-the-middle attack.</source>
-        <translation>Введите адрес подписи, сообщение (убедитесь, что вы точно скопировали разрывы строк, пробелы, табуляции и т.д.) и подпись ниже, чтобы проверить сообщение. Будьте осторожны! Убедитесь, что не скопировали лишнего в подпись, по сравнению с самим подписываемым сообщением, чтобы не стать жертвой атаки "man-in-the-middle".</translation>
+        <translation>Введите адрес подписи, сообщение (убедитесь, что вы точно скопировали разрывы строк, пробелы, табуляции и т.д.) и подпись ниже, чтобы проверить сообщение. Будьте осторожны! Убедитесь, что не скопировали лишнего в подпись, по сравнению с самим подписываемым сообщением, чтобы не стать жертвой атаки &quot;man-in-the-middle&quot;.</translation>
     </message>
     <message>
+        <location line="+21"/>
         <source>The address the message was signed with (e.g. Sjz75uKHzUQJnSdzvpiigEGxseKkDhQToX)</source>
         <translation>Адрес, которым было подписано сообщение (например Sjz75uKHzUQJnSdzvpiigEGxseKkDhQToX)</translation>
     </message>
     <message>
+        <location line="+44"/>
         <source>Verify the message to ensure it was signed with the specified Gridcoin address</source>
         <translation>Проверьте сообщение, чтобы убедиться, что оно подписано указанным адресом Gridcoin.</translation>
     </message>
     <message>
+        <location line="+17"/>
         <source>Reset all verify message fields</source>
         <translation>Сбросить все поля проверки сообщения</translation>
     </message>
     <message>
+        <location line="-244"/>
+        <location line="+189"/>
         <source>Enter a Gridcoin address (e.g. S67nL4vELWwdDVzjgtEP4MxryarTZ9a8GB)</source>
         <translation>Введите адрес Gridcoin (например S67nL4vELWwdDVzjgtEP4MxryarTZ9a8GB)</translation>
     </message>
     <message>
-        <source>Click "Sign Message" to generate signature</source>
-        <translation>Нажмите "Подписать Сообщение", чтобы создать подпись</translation>
+        <location line="-131"/>
+        <source>Click &quot;Sign Message&quot; to generate signature</source>
+        <translation>Нажмите &quot;Подписать Сообщение&quot;, чтобы создать подпись</translation>
     </message>
     <message>
+        <location line="+160"/>
         <source>Enter Gridcoin signature</source>
         <translation>Введите подпись Gridcoin</translation>
     </message>
     <message>
+        <location filename="../signverifymessagedialog.cpp" line="+110"/>
+        <location line="+83"/>
         <source>The entered address is invalid.</source>
         <translation>Введен неверный адрес.</translation>
     </message>
     <message>
+        <location line="-83"/>
+        <location line="+8"/>
+        <location line="+75"/>
+        <location line="+8"/>
         <source>Please check the address and try again.</source>
         <translation>Пожалуйста, проверьте адрес и попробуйте ещё раз.</translation>
     </message>
     <message>
+        <location line="-83"/>
+        <location line="+83"/>
         <source>The entered address does not refer to a key.</source>
         <translation>Введённый адрес не связан с ключом.</translation>
     </message>
     <message>
+        <location line="-75"/>
         <source>Wallet unlock was cancelled.</source>
         <translation>Разблокировка кошелька была отменена.</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>Private key for the entered address is not available.</source>
         <translation>Закрытый ключ для введенного адреса недоступен.</translation>
     </message>
     <message>
+        <location line="+12"/>
         <source>Message signing failed.</source>
         <translation>Не удалось подписать сообщение.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Message signed.</source>
         <translation>Сообщение подписано.</translation>
     </message>
     <message>
+        <location line="+61"/>
         <source>The signature could not be decoded.</source>
         <translation>Не удалось расшифровать подпись .</translation>
     </message>
     <message>
+        <location line="+0"/>
+        <location line="+13"/>
         <source>Please check the signature and try again.</source>
         <translation>Пожалуйста, проверьте подпись и попробуйте ещё раз.</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>The signature did not match the message digest.</source>
         <translation>Подпись не соответствует отпечатку сообщения.</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Message verification failed.</source>
         <translation>Сообщение не прошло проверку.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Message verified.</source>
         <translation>Сообщение проверено.</translation>
     </message>
 </context>
 <context>
+    <name>SyncOverlay</name>
+    <message>
+        <location filename="../syncoverlay.cpp" line="+48"/>
+        <source>Wallet is syncing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <location line="+89"/>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Gridcoin network after a connection is established, but this process has not completed yet.
+
+Operations such as beacon management, voting, and sending transactions should not be performed until synchronization is complete.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-77"/>
+        <source>Hide</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+65"/>
+        <source>The wallet is currently synchronizing with the Gridcoin network. Progress: %1 of %2 blocks (%3%).
+
+Operations such as beacon management, voting, and sending transactions should not be performed until synchronization is complete.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>TransactionDesc</name>
     <message numerus="yes">
+        <location filename="../transactiondesc.cpp" line="+36"/>
         <source>Open for %n more block(s)</source>
         <translation>
             <numerusform>Открыть еще на %n блок(ов)</numerusform>
@@ -3837,34 +5532,42 @@ Expires: %3
         </translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Open until %1</source>
         <translation>Открыто до %1</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>conflicted</source>
         <translation>в противоречии</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>%1/offline</source>
         <translation>%1/отключен</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>%1/unconfirmed</source>
         <translation>%1/не подтверждено</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>%1 confirmations</source>
         <translation>%1 подтверждений</translation>
     </message>
     <message>
+        <location line="+38"/>
         <source>Status</source>
         <translation>Статус</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>, has not been successfully broadcast yet</source>
         <translation>, ещё не было успешно разослано</translation>
     </message>
     <message numerus="yes">
+        <location line="+3"/>
         <source>, broadcast through %n node(s)</source>
         <translation>
             <numerusform>, трансляция через %n узел (узлов)</numerusform>
@@ -3873,86 +5576,116 @@ Expires: %3
         </translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
+        <location line="+4"/>
+        <location line="+5"/>
         <source>Source</source>
         <translation>Источник</translation>
     </message>
     <message>
+        <location line="-5"/>
         <source>Generated in CoinBase</source>
         <translation>Сгенерировано в CoinBase</translation>
     </message>
     <message>
+        <location line="+12"/>
         <source>Mined - PoS</source>
         <translation>Майнер - PoS</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Mined - PoS+RR</source>
         <translation>Майнер - PoS+RR</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Mined - Orphaned</source>
         <translation>Майнер - Orphaned</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>PoS Side Stake Received</source>
         <translation>Побочная Ставка PoS Получена</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>PoS+RR Side Stake Received</source>
         <translation>Побочная Ставка PoS+RR Получена</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>PoS Side Stake Sent</source>
         <translation>Побочная Ставка PoS Отправлена</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>PoS+RR Side Stake Sent</source>
         <translation>Побочная Ставка PoS+RR Отправлена</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>MRC Payment Received</source>
         <translation>MRC Платёж Получен</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>MRC Payment Sent</source>
         <translation>MRC Платёж Отправлен</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Mined - Superblock</source>
         <translation>Майнер - Суперблок</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Mined - Unknown</source>
         <translation>Майнер - неизвестно</translation>
     </message>
     <message>
+        <location line="+8"/>
+        <location line="+18"/>
         <source>From</source>
         <translation>От</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>unknown</source>
         <translation>неизвестно</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <location line="+25"/>
+        <location line="+63"/>
         <source>To</source>
         <translation>Для</translation>
     </message>
     <message>
+        <location line="-84"/>
+        <location line="+3"/>
         <source>own address</source>
         <translation>свой адрес</translation>
     </message>
     <message>
+        <location line="-3"/>
         <source>label</source>
         <translation>метка</translation>
     </message>
     <message>
+        <location line="+40"/>
+        <location line="+14"/>
+        <location line="+50"/>
+        <location line="+20"/>
+        <location line="+63"/>
         <source>Credit</source>
         <translation>Кредит</translation>
     </message>
     <message numerus="yes">
+        <location line="-144"/>
         <source>matures in %n more block(s)</source>
         <translation>
             <numerusform>созревает еще %n блок(ов)</numerusform>
@@ -3961,62 +5694,87 @@ Expires: %3
         </translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>not accepted</source>
         <translation>не принято</translation>
     </message>
     <message>
+        <location line="+48"/>
+        <location line="+9"/>
+        <location line="+16"/>
+        <location line="+63"/>
         <source>Debit</source>
         <translation>Дебет</translation>
     </message>
     <message>
+        <location line="-72"/>
         <source>Transaction fee</source>
         <translation>Комиссия</translation>
     </message>
     <message>
+        <location line="+18"/>
         <source>Net amount</source>
         <translation>Чистая сумма</translation>
     </message>
     <message>
+        <location line="+4"/>
+        <location line="+20"/>
         <source>Message</source>
         <translation>Сообщение</translation>
     </message>
     <message>
+        <location line="-17"/>
         <source>Comment</source>
         <translation>Комментарий</translation>
     </message>
     <message>
+        <location line="+2"/>
+        <source>TX ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <location line="+3"/>
         <source>Block Hash</source>
         <translation>Хэш Блока</translation>
     </message>
     <message>
+        <location line="+14"/>
         <source>Transaction Stake Data</source>
         <translation>Данные о Транзакциях</translation>
     </message>
     <message>
-        <source>Gridcoin generated coins must mature 110 blocks before they can be spent. When you generated this block, it was broadcast to the network to be added to the block chain. If it fails to get into the chain, its state will change to "not accepted" and it won't be spendable. This may occasionally happen if another node generates a block within a few seconds of yours.</source>
+        <location line="+13"/>
+        <source>Gridcoin generated coins must mature 110 blocks before they can be spent. When you generated this block, it was broadcast to the network to be added to the block chain. If it fails to get into the chain, its state will change to &quot;not accepted&quot; and it won&apos;t be spendable. This may occasionally happen if another node generates a block within a few seconds of yours.</source>
         <translation>Сгенерированные гридкойн-монеты должны созреть до значения в 110 блоков, прежде чем их можно будет потратить. Когда вы сгенерировали блок, он будет передан в сеть для добавления в цепочку блоков. Если он не сможет попасть в цепочку, его состояние изменится на «не принято», в таком случае вы не сможете потратить монеты. Это может произойти, если другой узел генерирует блок в течение нескольких секунд после вашего.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Transaction Debits/Credits</source>
         <translation>Дебеты/Кредиты Транзакции</translation>
     </message>
     <message>
+        <location line="+12"/>
         <source>Transaction Data</source>
         <translation>Данные Транзакции</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Transaction Inputs</source>
         <translation>Входящие Транзакции</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>true</source>
         <translation>истина</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>false</source>
         <translation>ложь</translation>
     </message>
@@ -4024,14 +5782,17 @@ Expires: %3
 <context>
     <name>TransactionDescDialog</name>
     <message>
+        <location filename="../forms/transactiondescdialog.ui" line="+20"/>
         <source>Transaction details</source>
         <translation>Детали транзакции</translation>
     </message>
     <message>
+        <location line="+9"/>
         <source>This pane shows a detailed description of the transaction</source>
         <translation>Эта панель отображает детальное описание транзакции.</translation>
     </message>
     <message>
+        <location line="+25"/>
         <source>C&amp;lose</source>
         <translation>З&amp;акрыть</translation>
     </message>
@@ -4039,22 +5800,27 @@ Expires: %3
 <context>
     <name>TransactionTableModel</name>
     <message>
+        <location filename="../transactiontablemodel.cpp" line="+263"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Address</source>
         <translation>Адрес</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message numerus="yes">
+        <location line="+63"/>
         <source>Open for %n more block(s)</source>
         <translation>
             <numerusform>Открыто еще %n блок(ов)</numerusform>
@@ -4063,142 +5829,277 @@ Expires: %3
         </translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Open until %1</source>
         <translation>Открыто до %1</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Offline</source>
         <translation>Отключен</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Unconfirmed</source>
         <translation>Не подтверждено</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Confirming (%1 of %2 recommended confirmations)&lt;br&gt;</source>
         <translation>Подтверждение (%1 из %2 гарантированных подтверждений)&lt;br&gt;</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Confirmed (%1 confirmations)</source>
         <translation>Подтверждено (%1 подтверждений)</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Conflicted</source>
         <translation>В противоречии</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Immature (%1 confirmations, will be available after %2)&lt;br&gt;</source>
         <translation>Незрелые (%1 подтверждения будут доступны после%2)&lt;br&gt;</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>This block was not received by any other nodes&lt;br&gt; and will probably not be accepted!</source>
         <translation>Этот блок не был получен никакими другими узлами и, вероятно, не будет принят!</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Generated but not accepted</source>
         <translation>Сгенерировано, но не принято</translation>
     </message>
     <message>
+        <location line="+44"/>
         <source>Received with</source>
         <translation>Получено на</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Received from</source>
         <translation>Получено от</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Sent to</source>
         <translation>Отправлено на</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Payment to yourself</source>
         <translation>Отправлено себе</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>Mined - PoS</source>
         <translation>Майнер - PoS</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Mined - PoS+RR</source>
         <translation>Майнер - PoS+RR</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Mined - Orphaned</source>
         <translation>Майнер - Orphaned</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>PoS Side Stake Received</source>
         <translation>Побочная Ставка PoS Получена</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>PoS+RR Side Stake Received</source>
         <translation>Побочная Ставка PoS+RR Получена</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>PoS Side Stake Sent</source>
         <translation>Побочная Ставка PoS Отправлена</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>PoS+RR Side Stake Sent</source>
         <translation>Побочная Ставка PoS+RR Отправлена</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>MRC Payment Received</source>
         <translation>MRC Платёж Получен</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>MRC Payment Sent</source>
         <translation>MRC Платёж Отправлен</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Mined - Superblock</source>
         <translation>Майнер - Суперблок</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Mined - Unknown</source>
         <translation>Майнер - неизвестно</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Beacon Advertisement</source>
         <translation>Объявление Маяка</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Poll</source>
         <translation>Опрос</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Vote</source>
         <translation>Голос</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Manual Rewards Claim Request</source>
         <translation>Ручной Запрос Заявки на Вознаграждение</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Message</source>
         <translation>Сообщение</translation>
     </message>
     <message>
+        <location line="+75"/>
         <source>(n/a)</source>
         <translation>(недоступно)</translation>
     </message>
     <message>
+        <location line="+96"/>
+        <source>Earned by staking a block (Proof of Stake).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Earned by staking a block with BOINC research rewards (Proof of Stake + Research Rewards).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Earned by staking a superblock.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>This staked block was orphaned and did not become part of the chain.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Side stake received from another staker&apos;s Proof of Stake reward.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Side stake received from another staker&apos;s research reward.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Your staking reward automatically allocated this side stake; no manual send occurred.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Your research staking reward automatically allocated this side stake; no manual send occurred.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>MRC payment received from a staker who included your MRC claim.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Your staked block automatically paid this MRC claim; no manual send occurred.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Mined transaction of unknown type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Funds sent to another address.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Funds received.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Payment to yourself (e.g. change consolidation).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Beacon advertisement linking your CPID to your wallet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>On-chain poll creation transaction.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>On-chain vote transaction.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>On-chain message transaction.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Manual Rewards Claim request submitted to the network.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Transaction with mixed inputs and outputs.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+112"/>
         <source>Transaction status. Hover over this field to show number of confirmations.</source>
         <translation>Статус транзакции. Подведите курсор к этому полю, чтобы увидеть количество подтверждений.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Date and time that the transaction was received.</source>
         <translation>Дата и время получения транзакции.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Type of transaction.</source>
         <translation>Тип транзакции.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Destination address of transaction.</source>
         <translation>Адрес назначения транзакции.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Amount removed from or added to balance.</source>
         <translation>Снятая или добавленная к балансу сумма.</translation>
     </message>
@@ -4206,154 +6107,194 @@ Expires: %3
 <context>
     <name>TransactionView</name>
     <message>
+        <location filename="../transactionview.cpp" line="+51"/>
         <source>Transaction History</source>
         <translation>История Транзакций</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>Search by address or label</source>
         <translation>Поиск по адресу или метке</translation>
     </message>
     <message>
+        <location line="+15"/>
         <source>All Time</source>
         <translation>Всё Время</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Today</source>
         <translation>Сегодня</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>This week</source>
         <translation>На этой неделе</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>This month</source>
         <translation>В этом месяце</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Last month</source>
         <translation>В прошлом месяце</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>This year</source>
         <translation>В этом году</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Range...</source>
         <translation>Диапазон...</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>All Types</source>
         <translation>Все Типы</translation>
     </message>
     <message>
-        <source>Received with</source>
-        <translation>Получено на</translation>
-    </message>
-    <message>
-        <source>Sent to</source>
-        <translation>Отправлено на</translation>
-    </message>
-    <message>
-        <source>To yourself</source>
-        <translation>Себе</translation>
-    </message>
-    <message>
-        <source>Mined</source>
-        <translation>Добыто</translation>
-    </message>
-    <message>
-        <source>Other</source>
-        <translation>Другое</translation>
-    </message>
-    <message>
+        <location line="+12"/>
         <source>Min amount</source>
         <translation>Мин. сумма</translation>
     </message>
     <message>
+        <location line="+37"/>
         <source>Copy address</source>
         <translation>Копировать адрес</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Copy label</source>
         <translation>Копировать метку</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Copy amount</source>
         <translation>Копировать сумму</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Copy transaction ID</source>
         <translation>Копировать ID транзакции</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Edit label</source>
         <translation>Изменить метку</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Show transaction details</source>
         <translation>Показать подробности транзакции</translation>
     </message>
     <message>
+        <location line="+143"/>
         <source>Export Transaction Data</source>
         <translation>Экспорт Данных Транзакции</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Comma separated file</source>
         <comment>Name of CSV file format</comment>
         <translation>Файл с разделителями-запятыми</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>Confirmed</source>
         <translation>Подтверждено</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Label</source>
         <translation>Метка</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Address</source>
         <translation>Адрес</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Error exporting</source>
         <translation>Ошибка экспорта</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Could not write to file %1.</source>
         <translation>Не удалось записать в файл %1.</translation>
     </message>
     <message>
+        <location line="+100"/>
         <source>Range:</source>
         <translation>Диапазон:</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>to</source>
         <translation>до</translation>
     </message>
 </context>
 <context>
+    <name>UpdateDialog</name>
+    <message>
+        <location filename="../forms/updatedialog.ui" line="+14"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>version</source>
+        <translation type="unfinished">версия</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>changelog</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>UpgradeQt</name>
     <message>
+        <location filename="../upgradeqt.cpp" line="+70"/>
         <source>E&amp;xit</source>
         <translation>В&amp;ыход</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Quit application</source>
         <translation>Закрыть приложение</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>&amp;File</source>
         <translation>&amp;Файл</translation>
     </message>
@@ -4361,6 +6302,7 @@ Expires: %3
 <context>
     <name>VoteWizard</name>
     <message>
+        <location filename="../forms/voting/votewizard.ui" line="+20"/>
         <source>Vote</source>
         <translation>Голосовать</translation>
     </message>
@@ -4368,6 +6310,7 @@ Expires: %3
 <context>
     <name>VoteWizardBallotPage</name>
     <message>
+        <location filename="../voting/votewizardballotpage.cpp" line="+37"/>
         <source>Submit Vote</source>
         <translation>Отправить Голос</translation>
     </message>
@@ -4375,14 +6318,17 @@ Expires: %3
 <context>
     <name>VoteWizardSummaryPage</name>
     <message>
+        <location filename="../forms/voting/votewizardsummarypage.ui" line="+61"/>
         <source>Vote Submitted</source>
         <translation>Голос Отправлен</translation>
     </message>
     <message>
+        <location line="+65"/>
         <source>Your vote will tally with the next block.</source>
         <translation>Ваш голос будет соответствовать следующему блоку.</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Copy ID</source>
         <translation>Копировать ID</translation>
     </message>
@@ -4390,14 +6336,18 @@ Expires: %3
 <context>
     <name>VotingModel</name>
     <message>
+        <location filename="../voting/votingmodel.cpp" line="+489"/>
+        <location line="+40"/>
         <source>Please unlock the wallet.</source>
         <translation>Пожалуйста, разблокируйте кошелек.</translation>
     </message>
     <message>
+        <location line="-16"/>
         <source>Poll not found.</source>
         <translation>Опрос не найден.</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>Failed to load poll from disk</source>
         <translation>Не удалось загрузить опрос с диска</translation>
     </message>
@@ -4405,46 +6355,68 @@ Expires: %3
 <context>
     <name>VotingPage</name>
     <message>
+        <location filename="../forms/voting/votingpage.ui" line="+14"/>
         <source>Voting</source>
         <translation>Голосование</translation>
     </message>
     <message>
+        <location line="+63"/>
         <source>Polls</source>
         <translation>Опросы</translation>
     </message>
     <message>
+        <location line="+23"/>
         <source>Search by title</source>
         <translation>Поиск по заголовку</translation>
     </message>
     <message>
+        <location line="+31"/>
         <source>View as list.</source>
         <translation>В виде списка.</translation>
     </message>
     <message>
+        <location line="+3"/>
+        <location line="+10"/>
+        <source>Alt+T</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-3"/>
         <source>View as table.</source>
         <translation>В виде таблицы.</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>Sort by...</source>
         <translation>Сортировать по...</translation>
     </message>
     <message>
+        <location line="+3"/>
+        <source>Alt+S</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
         <source>&amp;Refresh</source>
         <translation>&amp;Обновить</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Create &amp;Poll</source>
         <translation>Создать &amp;Опрос</translation>
     </message>
     <message>
-        <source>A new poll is available. Press "Refresh" to load it.</source>
-        <translation>Доступен новый опрос. Нажмите "Обновить" чтобы загрузить его.</translation>
+        <location line="+10"/>
+        <source>A new poll is available. Press &quot;Refresh&quot; to load it.</source>
+        <translation>Доступен новый опрос. Нажмите &quot;Обновить&quot; чтобы загрузить его.</translation>
     </message>
     <message>
+        <location line="+29"/>
         <source>&amp;Active</source>
         <translation>&amp;Активно</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>&amp;Completed</source>
         <translation>&amp;Завершено</translation>
     </message>
@@ -4452,6 +6424,7 @@ Expires: %3
 <context>
     <name>WalletModel</name>
     <message>
+        <location filename="../walletmodel.cpp" line="+338"/>
         <source>Sending...</source>
         <translation>Отправка...</translation>
     </message>
@@ -4459,822 +6432,1197 @@ Expires: %3
 <context>
     <name>bitcoin-core</name>
     <message>
+        <location filename="../bitcoinstrings.cpp" line="+33"/>
         <source>An error occurred while setting up the RPC port %u for listening on IPv6, falling back to IPv4: %s</source>
         <translation>Произошла ошибка при открытии на прослушивание IPv6 RCP-порта %u, возвращаемся к IPv4: %s</translation>
     </message>
     <message>
+        <location line="-2"/>
         <source>An error occurred while setting up the RPC port %u for listening on IPv4: %s</source>
         <translation>Произошла ошибка при открытии RPC-порта %u для прослушивания на IPv4: %s</translation>
     </message>
     <message>
+        <location line="+457"/>
         <source>Usage:</source>
         <translation>Использование:</translation>
     </message>
     <message>
+        <location line="-109"/>
         <source>List commands</source>
         <translation>Список команд</translation>
     </message>
     <message>
+        <location line="-367"/>
+        <location line="+344"/>
+        <source>Gridcoin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-342"/>
+        <source>The Gridcoin developers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
         <source>A poll with a yes/no/abstain response type cannot include any additional custom choices.</source>
-        <translation>Опрос с типом ответа "Да/Нет/Воздержаться" не может включать какие-либо дополнительные настраиваемые варианты.</translation>
+        <translation>Опрос с типом ответа &quot;Да/Нет/Воздержаться&quot; не может включать какие-либо дополнительные настраиваемые варианты.</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>Cannot obtain a lock on data directory %s. %s is probably already running and using that directory.</source>
-        <translation>Не удается заблокировать каталог данных %s. Вероятно %s уже используется.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Cannot obtain a lock on data directory %s. %s is probably already running.</source>
         <translation>Не удается заблокировать каталог данных %s. Вероятно %s уже используется.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Check that BOINC is installed and that you have the correct path in the config file if you installed it to a nonstandard location.</source>
         <translation>Убедитесь, что BOINC установлен и что указан правильный путь в файле конфигурации, если вы установили его в нестандартное место.</translation>
     </message>
     <message>
+        <location line="+6"/>
+        <source>ERROR: Checkpoint mismatch: Blockchain data may be corrupted.
+
+Gridcoin detected bad index entries. This may occur because of a late software upgrade, unexpected exit, or a power failure. Please run gridcoinresearchd with the -resetblockchaindata parameter. Your wallet will re-download the blockchain. Your balance may appear incorrect until the synchronization finishes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>ERROR: Checkpoint mismatch: Blockchain data may be corrupted.
+
+Gridcoin detected bad index entries. This may occur because of a late software upgrade, unexpected exit, or a power failure. Your blockchain data is being reset and your wallet will resync from genesis when you restart. Your balance may appear incorrect until the synchronization finishes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
         <source>Error: Clock skew is 5 minutes or greater. Please check your clock settings.</source>
         <translation>Ошибка: расхождение часов составляет 5 минут или больше. Пожалуйста, проверьте настройки часов.</translation>
     </message>
     <message>
+        <location line="+2"/>
+        <source>Error: The mandatory sidestake transaction was rejected. There is already a mandatory sidestake transaction in the mempool. Wait until that transaction is bound in a block.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <source>Error: The transaction was rejected. This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.</source>
         <translation>Ошибка: Транзакция отклонена. Это может произойти, если некоторые монеты в вашем кошельке уже были потрачены, например, если вы использовали копию wallet.dat, и монеты были потрачены в этой копии, но не отмечены здесь как потраченные.</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds </source>
         <translation>Ошибка: Эта транзакция требует комиссии за транзакцию в размере не менее %s из-за ее суммы, сложности или использования недавно полученных средств</translation>
     </message>
     <message>
+        <location line="+8"/>
+        <source>Failed: 80 block difficulty is less than %1. This wallet is almost certainly forked.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <source>For initiatives related to the Gridcoin community not covered by other poll types.</source>
         <translation>Для инициатив, связанных с сообществом Gridcoin, не охватываемых другими типами опросов.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>For polls about community representation, public relations, and communications.</source>
         <translation>Для опросов о представлении сообщества, связях с общественностью и коммуникации.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Please check your network and also check the config file and ensure your addnode entries are up-to-date. If you recently started the wallet, you may want to wait another few minutes for connections to build up and test again. Please see https://gridcoin.us/wiki/config-file.html and https://addnodes.cycy.me/.</source>
         <translation>Пожалуйста, проверьте свою сеть, а также проверьте файл конфигурации и убедитесь, что ваши записи надстроек обновлены. Если вы недавно запустили кошелек, вы можете подождать еще несколько минут, пока не установится соединение, и снова повторите тестирование. Пожалуйста посмотрите https://gridcoin.us/wiki/config-file.html и https://addnodes.cycy.me/.</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>Please ensure that you have followed the process to advertise and verify your beacon. You can use the research wizard (the beacon button on the overview screen).</source>
         <translation>Убедитесь, что вы выполнили процедуру объявления и проверки маяка. Вы можете использовать мастер исследований (кнопка маяка на обзорном экране).</translation>
     </message>
     <message>
-        <source>Poll additional field value "%s" for field name "%s" exceeds %s characters.</source>
-        <translation>Значение дополнительного поля опроса "%s" для имени поля "%s" превышает %s символов.</translation>
+        <location line="+4"/>
+        <source>Poll additional field value &quot;%s&quot; for field name &quot;%s&quot; exceeds %s characters.</source>
+        <translation>Значение дополнительного поля опроса &quot;%s&quot; для имени поля &quot;%s&quot; превышает %s символов.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Proposals related to Gridcoin management like poll requirements and funding.</source>
         <translation>Предложения, связанные с управлением Gridcoin, такие как требования к опросу и финансирование.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Propose additions or removals of computing projects for research reward eligibility.</source>
         <translation>Предлагайте добавления или удаления вычислительных проектов для получения награды за исследования.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>The IP for the port test site is unable to be resolved. This could mean your DNS is not working correctly. The wallet may operate without DNS, but it could be severely degraded, especially if the wallet is new and a database of prior successful connections has not been built up. Please check your computer and ensure name resolution is operating correctly.</source>
         <translation>Не возможно определить IP-адрес тестового порта. Это может означать, что ваш DNS работает неправильно. Кошелек может работать без DNS, но это может серьезно ухудшить его работу, особенно если кошелек новый и база данных предыдущих успешных подключений не была создана. Пожалуйста, проверьте свой компьютер и убедитесь, что обработка доменных имен работает правильно.</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>The connection to the port test site was refused. This could be a transient problem with the port test site, but could also be an issue with your firewall. If you are also failing the connection test, your firewall is most likely blocking network communications from the Gridcoin client.</source>
         <translation>В соединении с тестовым портом было отказано. Это может быть временная проблема с тестовым портом, но это также может быть и с вашим брандмауэром. Если вы также не проходите проверку подключения, ваш брандмауэр, скорее всего, блокирует сетевые подключения от клиента Gridcoin.</translation>
     </message>
     <message>
+        <location line="+5"/>
+        <source>The data directory path &apos;%s&apos; contains characters that cannot be represented in the system code page, and Windows 8.3 short filename generation is not available on this volume. Please choose a data directory path using only characters supported by your system locale, or enable 8.3 filename generation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <source>The network has experienced a low-level error and this probably means your IP address or other network connection parameters are not configured correctly. Please check your network configuration on your computer.</source>
         <translation>В сети произошла низкоуровневая ошибка, которая, вероятно, означает, что ваш IP-адрес или другие параметры сетевого подключения настроены неправильно. Пожалуйста, проверьте конфигурацию сети на вашем компьютере.</translation>
     </message>
     <message>
-        <source>The network is reporting an unspecified socket error. If you also are failing the connection test, then please check your computer's network configuration.</source>
+        <location line="+4"/>
+        <source>The network is reporting an unspecified socket error. If you also are failing the connection test, then please check your computer&apos;s network configuration.</source>
         <translation>Сеть сообщает о неизвестной ошибке сокета. Если вы также не проходите тест на подключение, проверьте сетевые параметры вашего компьютера.</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>The port test site is closed on port. This could be a transient problem with the port test site, but could also be an issue with your firewall. If you are also failing the connection test, your firewall is most likely blocking network communications from the Gridcoin client.</source>
         <translation>Тестовый порт не доступен. Это может быть временная проблема с тестовым портом, но также может быть и с вашим брандмауэром. Если вы также не проходите проверку на подключение, то ваш брандмауэр, скорее всего, блокирует сетевые подключения от клиента Gridcoin.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>The wallet has less than five connections to the network and is unable to connect to an NTP server to check your computer clock. This is not necessarily a problem. You can wait a few minutes and try the test again.</source>
         <translation>Кошелек имеет менее пяти подключений к сети и не может подключиться к NTP-серверу, чтобы проверить часы вашего компьютера. Это не обязательно является проблемой. Вы можете подождать несколько минут и попробовать пройти тест еще раз.</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>The wallet will now shutdown. Please start your wallet to begin sync from zero</source>
-        <translation>Кошелек будет закрыт. Пожалуйста, запустите свой кошелек, чтобы начать синхронизацию с нуля</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>There is a new leisure version available and you should upgrade as soon as practical.</source>
         <translation>Доступна новая версия, и вам следует обновить её, как только у вас появится на это время.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>There is a new mandatory version available and you should upgrade as soon as possible to ensure your wallet remains in consensus with the network.</source>
         <translation>Доступна новая обязательная версия, и вам следует обновить её как можно скорее, чтобы обеспечить согласованность вашего кошелька с сетью.</translation>
     </message>
     <message>
+        <location line="+9"/>
         <source>Verify (1) that you have BOINC installed correctly, (2) that you have attached at least one whitelisted project, (3) that you advertised your beacon with the same email as you use for your BOINC project(s), and (4) that the CPID on the overview screen matches the CPID when you login to your BOINC project(s) online.</source>
         <translation>Убедитесь, что (1) у вас правильно установлен BOINC, (2) что вы прикрепили хотя бы один проект из белого списка, (3) что вы объявили свой маяк с помощью того же адреса электронной почты, который вы используете для своих проект(ов) BOINC, и (4), что CPID на главном экране совпадает с CPID при входе в проект(ы) BOINC.</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>Verify that you have actually completed workunits for the projects you have attached and that you have authorized the export of statistics. Please see https://gridcoin.us/guides/whitelist.htm.</source>
         <translation>Убедитесь, что вы действительно включили рабочие единицы для прикрепленных проектов и разрешили экспорт статистики. Пожалуйста, посмотрите https://gridcoin.us/guides/whitelist.htm.</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>WARNING: A mandatory release is available. Please upgrade as soon as possible.</source>
         <translation>ВНИМАНИЕ! Доступен обязательный выпуск. Пожалуйста, обновитесь как можно скорее.</translation>
     </message>
     <message>
+        <location line="+3"/>
+        <source>WARNING: You are running a version that is higher than the latest release.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Warning: 80 block difficulty is less than %1. This wallet is probably forked.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Warning: Clock skew is between 3 and 5 minutes. Please check your clock settings.</source>
         <translation>Внимание: Расхождение часов составляет от 3 до 5 минут. Пожалуйста, проверьте настройки часов.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Warning: ETTS is &gt; 90 days. It will take a very long time to receive your research rewards by staking - increase balance or use MRC</source>
         <translation>Внимание: ETTS &gt; 90 дней. Получение вознаграждения за исследования путём стейкинга займет очень много времени — увеличьте баланс или используйте MRC.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Warning: ETTS is infinite. No coins to stake - increase balance or use MRC</source>
         <translation>Внимание: ETTS бесконечен. Нет монет для стейкинга - увеличьте баланс или используйте MRC</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Warning: Ending this process after Stage 2 will result in syncing from 0 or an incomplete/corrupted blockchain.</source>
         <translation>Внимание: Завершение этого процесса после Этапа 2 приведет к синхронизации с 0 или неполной/поврежденной цепочке блоков.</translation>
     </message>
     <message>
+        <location line="+13"/>
         <source>You have no balance and will be unable to retrieve your research rewards when solo crunching by staking. You can use MRC to retrieve your rewards, or you should acquire GRC to stake so you can retrieve your research rewards. Please see https://gridcoin.us/guides/boinc-install.htm.</source>
         <translation>У вас нулевой баланс и вы не сможете получать свои награды за исследования в одиночку. Вы можете использовать MRC для получения своих наград, или вам следует приобрести GRC, чтобы стейкать и для возможности получать свои награды за исследования. Смотрите https://gridcoin.us/guides/boinc-install.htm.</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>You will not be able to stake because you have less than %1 connection(s). Please check your network and also check the config file and ensure your addnode entries are up-to-date. If you recently started the wallet, you may want to wait another few minutes for connections to build up and then test again. Please see https://gridcoin.us/wiki/config-file.html and https://addnodes.cycy.me/.</source>
         <translation>Вы не сможете стейкать, потому что у вас менее %1 соединения(ий). Пожалуйста, проверьте свою сеть, а также проверьте файл конфигурации и убедитесь, что ваши записи надстроек обновлены. Если вы недавно запустили кошелек, вы можете подождать еще несколько минут, пока установится соединение, а затем повторите тестирование. Пожалуйста посмотрите https://gridcoin.us/wiki/config-file.html и https://addnodes.cycy.me/.</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Your balance is low given the current network difficulty to stake in a reasonable period of time to retrieve your research rewards when solo crunching. You should consider acquiring more GRC to stake more often, or else use MRC to retrieve your rewards.</source>
         <translation>Ваш баланс низкий, учитывая текущую сложность сети, чтобы стейкить в разумный период времени, для получения вознаграждений за исследования при одиночной работе. Вам следует подумать о приобретении большего количества GRC, чтобы стейкить чаще, или же использовать MRC для получения вознаграждения.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Your balance is too low given the current network difficulty to stake in a reasonable period of time to retrieve your research rewards when solo crunching. You can use MRC  to retrieve your rewards, or you should acquire more GRC to stake more often.</source>
         <translation>Ваш баланс слишком мал, учитывая текущую сложность сети, чтобы делать ставки в течение разумного периода времени, чтобы получить свои исследовательские награды при одиночной работе. Вы можете использовать MRC, чтобы получить свои награды, или вам следует приобретать больше GRC, чтобы стейкить чаще.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Your clock in your computer is significantly off from UTC or network time and this may seriously degrade the operation of the wallet, including maintaining connection to the network. You should check your time and time zone settings for your computer. A very common problem is the off by one hour caused by a time zone issue or problems with daylight savings time.</source>
         <translation>Ваши часы на вашем компьютере значительно отличаются от UTC или сетевого времени, и это может серьезно ухудшить работу кошелька, включая подключения к сети. Вам следует проверить настройки времени и часового пояса на вашем компьютере. Очень распространенной проблемой является отклонение на один час из-за проблем с часовым поясом или с переходом на летнее время.</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>Your difficulty is extremely low and your wallet is almost certainly forked. Please ensure you are running the latest version and try removing the blockchain database and resyncing from genesis using the menu option. (Note this will take 2-4 hours.)</source>
         <translation>Ваша сложность чрезвычайно низка, и ваш кошелек скорее всего раздвоен. Пожалуйста, убедитесь, что вы используете последнюю версию, и попробуйте удалить базу данных блокчейна и выполнить повторную синхронизацию, используя соответствующий пункт меню. (Обратите внимание, что это займет 2-4 часа.)</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Your difficulty is low but your wallet is still in initial sync. Please recheck it later to see if this passes.</source>
         <translation>Ваша сложность мала, но ваш кошелек все еще находится в начальной стадии синхронизации. Пожалуйста, повторите проверку позже, чтобы увидеть, пройдет ли этот пункт проверку.</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Your difficulty is very low and your wallet is probably forked. Please ensure you are running the latest version and try removing the blockchain database and resyncing from genesis using the menu option. (Note this will take 2-4 hours.)</source>
         <translation>Ваша сложность очень низкая, и ваш кошелек, вероятно, раздвоен. Пожалуйста, убедитесь, что вы используете последнюю версию, и попробуйте удалить базу данных блокчейна и выполнить повторную синхронизацию, используя соответствующий пункт меню. (Обратите внимание, что это займет 2-4 часа.)</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Your outbound connection count is critically low. Please check your the config file and ensure your addnode entries are up-to-date. If you recently started the wallet, you may want to wait another few minutes for connections to build up and then test again. Please see https://gridcoin.us/wiki/config-file.html and https://addnodes.cycy.me/.</source>
         <translation>Ваше количество исходящих подключений критически мало. Пожалуйста, проверьте файл конфигурации и убедитесь, что ваши записи надстроек обновлены. Если вы недавно запустили кошелек, вы можете подождать еще несколько минут, пока установится соединение, а затем повторить проверку. Пожалуйста прочитайте https://gridcoin.us/wiki/config-file.html и https://addnodes.cycy.me/.</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>Your outbound connection count is low. Please check your the config file and ensure your addnode entries are up-to-date. If you recently started the wallet, you may want to wait another few minutes for connections to build up and then test again. Please see https://gridcoin.us/wiki/config-file.html and https://addnodes.cycy.me/.</source>
         <translation>Ваше количество исходящих подключений мало. Пожалуйста, проверьте файл конфигурации и убедитесь, что ваши записи надстроек обновлены. Если вы недавно запустили кошелек, вы можете подождать еще несколько минут, пока установятся соединения, а затем повторить проверку. Пожалуйста прочитайте https://gridcoin.us/wiki/config-file.html и https://addnodes.cycy.me/.</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>Your wallet is not in sync and has not previously been in sync during this run, please wait for the wallet to sync and retest. If there are other failures preventing the wallet from syncing, please correct those items and retest to see if this test passes.</source>
         <translation>Ваш кошелек не синхронизирован и ранее не был синхронизирован во время этого запуска, пожалуйста, дождитесь синхронизации кошелька и повторите проверку. Если есть другие сбои, препятствующие синхронизации кошелька, исправьте их и повторите проверку,  чтобы увидеть, проходит ли этот тест.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Your wallet is out of sync with the network but was in sync before. If this fails there is likely a severe problem that is preventing the wallet from syncing. If the lack of sync is due to network connection issues, you will see failures on the network connection test(s). If the network connections pass, but your wallet fails this test, and continues to fail this test on repeated attempts with a few minutes in between, this could indicate a more serious issue. In that case you should check the debug log to see if it sheds light on the cause for no sync.</source>
         <translation>Ваш кошелек не синхронизирован с сетью, но раньше был синхронизирован. Если это не удается, вероятно, возникла серьезная проблема, которая не позволяет кошельку синхронизоваться. Если отсутствие синхронизации связано с проблемами сетевого подключения, вы увидите сбои в тесте(ах) сетевого подключения. Если сетевые подключения проходят успешно, но ваш кошелек не проходит этот тест и продолжает не проходить этот тест при повторных попытках с интервалом в несколько минут, это может указывать на более серьезную проблему. В этом случае вы должны проверить debug.log, чтобы увидеть, указывает ли он на причину отсутствия синхронизации.</translation>
     </message>
     <message>
+        <location line="+9"/>
         <source>Your wallet is still in initial sync. If this is a sync from the beginning (genesis), the sync process can take from 2 to 4 hours, or longer on a slow computer. If you have synced your wallet before but you just started the wallet up, then wait a few more minutes and retry the diagnostics again.</source>
         <translation>Ваш кошелек все еще находится в начальной синхронизации. Если это синхронизация с самого начала (создания), то процесс синхронизации может занять от 2 до 4 часов, а на медленном компьютере дольше. Если вы уже синхронизировали свой кошелек раньше, но только что его запустили, подождите еще несколько минут и повторите попытку диагностики еще раз.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>A poll choice cannot be empty.</source>
         <translation>Вариант опроса не может быть пустым.</translation>
     </message>
     <message>
-        <source>Are you sure you want to cancel the snapshot operation?</source>
-        <translation>Вы уверены, что хотите отменить операцию по созданию снимка?</translation>
+        <location line="+1"/>
+        <source>Active by Greylist Override</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Active</source>
+        <translation type="unfinished">Активно</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Are you sure you want to cancel the snapshot operation?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Authorized</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Automatically Greylisted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Balance too low to create a contract.</source>
         <translation>Баланс слишком мал для создания контракта.</translation>
     </message>
     <message>
+        <location line="+9"/>
         <source>CPID Count</source>
         <translation>Счетчик CPID</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>CPID count polls are not supported.</source>
         <translation>Опросы с подсчетом CPID не поддерживаются.</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>CPID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Cancel snapshot operation?</source>
-        <translation>Отменить операцию снимка?</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Cancel</source>
-        <translation>Отменить</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Cannot write to data directory '%s'; check permissions.</source>
-        <translation>Не удается записать в каталог '%s'; проверьте права.</translation>
+        <location line="+4"/>
+        <source>Cannot write to data directory &apos;%s&apos;; check permissions.</source>
+        <translation>Не удается записать в каталог &apos;%s&apos;; проверьте права.</translation>
     </message>
     <message>
-        <source>Click "Show Details" to view changes in latest update.</source>
-        <translation>Нажмите "Подробнее", чтобы просмотреть изменения в последнем обновлении.</translation>
+        <location line="+1"/>
+        <source>Checking block index...</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Community</source>
         <translation>Сообщество</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Could not create transaction. See debug.log.</source>
         <translation>Не удалось создать транзакцию. Смотрите debug.log.</translation>
     </message>
     <message>
+        <location line="+2"/>
+        <source>Deleted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Duplicate poll additional field: %s</source>
         <translation>Повторяющееся дополнительное поле опроса: %s</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Duplicate poll choice: %s</source>
         <translation>Повторяющийся выбор опроса: %s</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Duplicate response for poll choice: %s</source>
         <translation>Повторяющийся ответ для выбора опроса: %s</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Entire balance reserved</source>
         <translation>Зарезервирован весь баланс</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Error loading %s: Wallet corrupted</source>
         <translation>Ошибка при загрузке %s: Кошелёк поврежден</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Error: Transaction creation failed.</source>
         <translation>Ошибка: Не удалось создать транзакцию.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Exceeded the number of choices in the poll: %s</source>
         <translation>Превышено количество вариантов в опросе: %s</translation>
     </message>
     <message>
-        <source>Failed to download snapshot.zip; See debug.log</source>
-        <translation>Не удалось загрузить snapshot.zip; Смотрите debug.log</translation>
+        <location line="+1"/>
+        <source>Expired while pending</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Explorer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Failed to download snapshot.zip; See debug.log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Failed to rename bootstrap file to .old for backup purposes.</source>
         <translation>Не удалось переименовать файл начальной загрузки в .old для резервного копирования.</translation>
     </message>
     <message>
-        <source>Failed: 80 block difficulty is less than</source>
-        <translation>Неудачно: сложность 80 блоков меньше</translation>
+        <location line="+1"/>
+        <source>Failed: Count = %1</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Failed: Count =</source>
-        <translation>Неудачно: Количество =</translation>
-    </message>
-    <message>
+        <location line="+1"/>
         <source>Fees Collected</source>
         <translation>Сборы Собраны</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Files:</source>
         <translation>Файлы:</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>For opinion or casual polls without any particular requirements.</source>
         <translation>Для опросов общественного мнения или случайных опросов без каких-либо особых требований.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>GB)</source>
         <translation>ГБ)</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>GB/</source>
         <translation>ГБ/</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Get help for a command</source>
         <translation>Получить помощь по команде</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Governance</source>
         <translation>Управление</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Gridcoin Update Available</source>
         <translation>Доступно Обновление Gridcoin</translation>
     </message>
     <message>
-        <source>Initializing beacon registry from stored history...</source>
-        <translation>Инициализация реестра маяка из сохраненной истории…</translation>
+        <location line="+6"/>
+        <source>Inactive</source>
+        <translation type="unfinished">Неактивно</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Initializing local researcher context...</source>
         <translation>Инициализация локального контекста исследователя…</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Initializing registry from stored history for contract type </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Initializing research reward accounting...</source>
         <translation>Инициализация учета вознаграждения за исследования…</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Insufficient funds.</source>
         <translation>Недостаточно средств.</translation>
     </message>
     <message>
+        <location line="+11"/>
         <source>KB/s</source>
         <translation>КБ/с</translation>
     </message>
     <message>
-        <source>Loading beacon history...</source>
-        <translation>Загрузка истории маяка...</translation>
+        <location line="+7"/>
+        <source>Loading history for contract type </source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Loading superblock cache...</source>
         <translation>Загрузка кэша суперблоков...</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Local version: </source>
-        <translation>Локальная версия</translation>
+        <translation>Локальная версия: </translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>MB/s</source>
         <translation>МБ/с</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Magnitude+Balance</source>
         <translation>Магнитуда+Баланс</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Magnitude-only polls are not supported.</source>
         <translation>Опросы только по магнитуде не поддерживаются.</translation>
     </message>
     <message>
+        <location line="+2"/>
+        <source>Mandatory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Manually Greylisted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Marketing</source>
         <translation>Маркетинг</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Multiple Choice</source>
         <translation>Множественный Выбор</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>N/A</source>
         <translation>Нет данных</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>No UTXOs available due to reserve balance</source>
         <translation>Нет доступных UTXO из-за зарезервированного баланса</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>No address contains %s GRC in %s UTXOs or fewer.</source>
         <translation>Ни один адрес не содержит %s GRC в %s UTXO или меньшем количестве.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>No coins</source>
         <translation>Нет монет</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>No eligible outputs greater than 1 GRC.</source>
         <translation>Нет подходящих выходов выше 1 GRC.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>No mature coins</source>
         <translation>Нет зрелых монет</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>No wallet available.</source>
         <translation>Кошелек недоступен.</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Not authorized</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Outbound communication to TCP port %1 appears to be blocked. </source>
         <translation>Исходящая связь с TCP-портом %1, по-видимому, заблокирована.</translation>
     </message>
     <message>
-        <source>Outbound communication to TCP port</source>
-        <translation>Исходящая связь с TCP-портом</translation>
-    </message>
-    <message>
+        <location line="+1"/>
         <source>Outreach</source>
         <translation>Охват</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Participant Count</source>
         <translation>Количество Участников</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Participant count polls are not supported.</source>
         <translation>Опросы с подсчетом участников не поддерживаются.</translation>
     </message>
     <message>
-        <source>Passed: 80 block difficulty is</source>
-        <translation>Пройдено: сложность 80 блоков составляет</translation>
+        <location line="+1"/>
+        <source>Passed: 80 block difficulty is %1.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Passed: Count =</source>
-        <translation>Пройдено: Количество =</translation>
+        <location line="+1"/>
+        <source>Passed: Count = %1</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Passed: ETTS =</source>
-        <translation>Пройдено: ETTS =</translation>
+        <location line="+1"/>
+        <source>Passed: ETTS = %1 &lt;= 45 days</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Pending</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Please enter a poll discussion website URL.</source>
         <translation>Пожалуйста, введите URL веб-сайта для обсуждения опроса.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Please enter a poll title.</source>
         <translation>Пожалуйста, введите название опроса.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Please enter at least one response.</source>
         <translation>Пожалуйста, введите хотя бы один ответ.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Please enter at least two poll choices.</source>
         <translation>Введите не менее двух вариантов опроса.</translation>
     </message>
     <message>
-        <source>Poll additional field name "%s" exceeds %s characters.</source>
-        <translation>Имя дополнительного поля опроса "%s" содержит более %s символов.</translation>
+        <location line="+1"/>
+        <source>Poll additional field name &quot;%s&quot; exceeds %s characters.</source>
+        <translation>Имя дополнительного поля опроса &quot;%s&quot; содержит более %s символов.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Poll cannot contain more than %s additional fields</source>
         <translation>Опрос не может содержать более %s дополнительных полей</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Poll cannot contain more than %s choices.</source>
         <translation>Опрос не может содержать более %s вариантов.</translation>
     </message>
     <message>
-        <source>Poll choice "%s" exceeds %s characters.</source>
-        <translation>Выбор опроса "%s" превышает количество символов %s.</translation>
+        <location line="+1"/>
+        <source>Poll choice &quot;%s&quot; exceeds %s characters.</source>
+        <translation>Выбор опроса &quot;%s&quot; превышает количество символов %s.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Poll discussion URL cannot exceed %s characters.</source>
         <translation>URL обсуждения опроса не может превышать %s символов.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Poll duration cannot exceed %s days.</source>
         <translation>Продолжительность опроса не может превышать %s дней.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Poll duration must be at least %s days.</source>
         <translation>Продолжительность опроса должна быть не менее %s дней.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Poll has already finished.</source>
         <translation>Опрос уже завершен.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Poll only allows a single choice.</source>
         <translation>Опрос позволяет сделать только один выбор.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Poll question cannot exceed %s characters.</source>
         <translation>Вопрос опроса не может превышать %s символов.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Poll signature failed. See debug.log.</source>
         <translation>Не удалось подписать опрос. Смотрите debug.log.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Poll title cannot exceed %s characters.</source>
         <translation>Название опроса не может превышать %s символов.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Poll with that title already exists. Please choose another title.</source>
         <translation>Опрос с таким названием уже существует. Пожалуйста, выберите другое название.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Pool</source>
         <translation>Пул</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Project Listing</source>
         <translation>Список Проектов</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Propose a change to Gridcoin at the protocol level.</source>
         <translation>Предложите изменение Gridcoin на уровне протокола.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Propose marketing initiatives like ad campaigns.</source>
         <translation>Предлагайте маркетинговые инициативы, такие как рекламные кампании.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Protocol Development</source>
         <translation>Разработка Протокола</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Quorum Hash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Reindexing blockchain from on disk block data files...</source>
         <translation>Реиндексация блокчейна из блоков файлов на диске...</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Renewal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Replaying contracts...</source>
         <translation>Переигрывание контрактов...</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Rescanning for MRC requests...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Reset Blockchain Data: Blockchain data removal failed.</source>
-        <translation>Сброс Данных Блокчейна: не удалось удалить данные Блокчейна.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Reset Blockchain Data: Blockchain data removal was a success</source>
-        <translation>Сброс Данных Блокчейна: Удаление данных блокчейна прошло успешно</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Send command to -server or gridcoinresearchd</source>
         <translation>Отправьте команду -server или gridcoinresearchd</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Snapshot extraction failed! Cleaning up any extracted data</source>
-        <translation>Не удалось извлечь снимок! Удаление извлеченных данных</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Snapshot operation canceled due to an invalid snapshot zip.</source>
-        <translation>Операция создания снимка отменена из-за неверного файла snapshot.zip.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Snapshot operation canceled.</source>
-        <translation>Операция создания снимка отменена.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Snapshot operation successful!</source>
-        <translation>Операция создания снимка прошла успешно!</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Stage (1/4): Downloading snapshot.zip: Speed </source>
-        <translation>Этап (1/4): Загрузка snapshot.zip: Скорость</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Stage (2/4): Verify SHA256SUM of snapshot.zip</source>
-        <translation>Этап (2/4): Проверка SHA256SUM snapshot.zip</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Stage (3/4): Cleanup blockchain data</source>
-        <translation>Стадия (3/4): Очистка данных блокчейна</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Stage (4/4): Extracting snapshot.zip</source>
-        <translation>Этап (4/4): Распаковка snapshot.zip</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+4"/>
+        <source>Staking Only - Non-cruncher Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Survey</source>
         <translation>Опрос</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>The field is not well-formed.</source>
         <translation>Поле сформировано неправильно.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>The field list is not well-formed.</source>
         <translation>Список полей сформирован неправильно.</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>The latest release is </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>The wallet is now shutting down. Please restart your wallet.</source>
-        <translation>Сейчас кошелек закрывается. Пожалуйста, перезапустите свой кошелек.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>The wallet will now shutdown.</source>
-        <translation>Кошелек сейчас будет закрыт.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>This wallet is almost certainly forked.</source>
-        <translation>Этот кошелек скорее всего раздвоен.</translation>
+        <location line="+4"/>
+        <source>Unable to create the PID file &apos;%s&apos;: %s</source>
+        <translation>Не удалось создать PID файл &apos;%s&apos;: %s</translation>
     </message>
     <message>
-        <source>This wallet is probably forked.</source>
-        <translation>Этот кошелек, вероятно, раздвоен.</translation>
-    </message>
-    <message>
-        <source>Unable to create the PID file '%s': %s</source>
-        <translation>Не удалось создать PID файл '%s': %s</translation>
-    </message>
-    <message>
+        <location line="+4"/>
         <source>Unknown poll type. This should never happen.</source>
         <translation>Неизвестный тип опроса. Это никогда не должно случаться.</translation>
     </message>
     <message>
-        <source>Warning: 45 days &lt; ETTS =</source>
-        <translation>Внимание: 45 дней &lt; ETTS =</translation>
+        <location line="+11"/>
+        <source>Warning: 45 days &lt; ETTS = %1 &lt;= 90 days</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Warning: 80 block difficulty is less than</source>
-        <translation>Внимание: сложность 80 блоков меньше</translation>
+        <location line="+1"/>
+        <source>Warning: 80 block difficulty is less than %1.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Warning: Cannot connect to NTP server</source>
         <translation>Внимание: Невозможно подключиться к NTP серверу</translation>
     </message>
     <message>
-        <source>Warning: Count =</source>
-        <translation>Внимание: Количество =</translation>
+        <location line="+1"/>
+        <source>Warning: Count = %1 (Pass = 8+)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Warning: Count = %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Wrong Payload version specified for current block height.</source>
         <translation>Неверная версия полезной нагрузки указана для текущей высоты блока.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Yes/No/Abstain</source>
         <translation>Да/Нет/Воздержаться</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>You are running the latest release.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>You should check your time and time zone settings for your computer.</source>
         <translation>Вам следует проверить настройки времени и часового пояса на вашем компьютере.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>You will need to delete the following.</source>
         <translation>Вам потребуется удалить следующее.</translation>
     </message>
     <message>
-        <source>"%s" is not a valid poll choice.</source>
-        <translation>"%s" не является допустимым выбором для опроса.</translation>
+        <location line="+1"/>
+        <source>&quot;%s&quot; is not a valid poll choice.</source>
+        <translation>&quot;%s&quot; не является допустимым выбором для опроса.</translation>
     </message>
     <message>
-        <source>appears to be blocked.</source>
-        <translation>похоже, что он заблокирован.</translation>
+        <location line="+1"/>
+        <source>beacon</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>claim</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>leisure</source>
         <translation>свободное время</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>mandatory</source>
         <translation>обязательный</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>message</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>mrc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>poll</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>protocol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>scraper</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>sidestake</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>unknown</source>
         <translation>неизвестный</translation>
     </message>
     <message>
+        <location line="-224"/>
         <source>Balance</source>
         <translation>Баланс</translation>
     </message>
     <message>
+        <location line="-281"/>
         <source>The %s developers</source>
         <translation>Разработчики %s</translation>
     </message>
     <message>
-        <source>Error: Unsupported argument -socks found. Setting SOCKS version isn't possible anymore, only SOCKS5 proxies are supported.</source>
+        <location line="+72"/>
+        <source>Error: Unsupported argument -socks found. Setting SOCKS version isn&apos;t possible anymore, only SOCKS5 proxies are supported.</source>
         <translation>Ошибка: найден неподдерживаемый аргумент -socks. Установка версии SOCKS больше невозможна, поддерживаются только SOCKS5 прокси.</translation>
     </message>
     <message>
+        <location line="+210"/>
         <source>Block Version</source>
         <translation>Версия Блока</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Block file load progress </source>
         <translation>Заблокировать процесс загрузки файла</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Block not in index</source>
         <translation>Блок не в индексе</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Block read failed</source>
         <translation>Не удалось прочитать блок</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Blocks Loaded</source>
         <translation>Блоков Загружено</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Blocks Verified</source>
         <translation>Блоки Проверены</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Boinc Reward</source>
         <translation>Награда BOINC</translation>
     </message>
     <message>
+        <location line="+11"/>
         <source>Client Version</source>
         <translation>Версия Клиента</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Datadir: </source>
-        <translation>Каталог данных:</translation>
+        <translation>Каталог данных: </translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Difficulty</source>
         <translation>Сложность</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Directories:</source>
         <translation>Каталоги:</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Disabled by configuration</source>
         <translation>Отключено конфигурацией</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>ERROR</source>
         <translation>ОШИБКА</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Eligible for Research Rewards</source>
         <translation>Право на получение наград за исследования</translation>
     </message>
     <message>
+        <location line="+11"/>
         <source>Error: Wallet locked, unable to create transaction.</source>
         <translation>Ошибка: Кошелёк заблокирован, невозможно создать транзакцию.</translation>
     </message>
     <message>
+        <location line="+16"/>
         <source>GitHub version: </source>
-        <translation>Версия на GitHub:</translation>
+        <translation>Версия на GitHub: </translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Height</source>
         <translation>Высота</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Importing blockchain data file(s).</source>
         <translation>Импорт файла(ов) данных блокчейна.</translation>
     </message>
     <message>
+        <location line="+9"/>
         <source>Interest</source>
         <translation>Интерес</translation>
     </message>
     <message>
-        <source>Invalid amount for -peertimeout=&lt;amount&gt;: '%s'</source>
-        <translation>Неверная сумма для -peertimeout=&lt;amount&gt;: '%s'</translation>
+        <location line="+5"/>
+        <source>Invalid amount for -peertimeout=&lt;amount&gt;: &apos;%s&apos;</source>
+        <translation>Неверная сумма для -peertimeout=&lt;amount&gt;: &apos;%s&apos;</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Invalid team</source>
         <translation>Недействительная команда</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Is Superblock</source>
         <translation>Суперблок</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Latest Version GitHub data response:</source>
         <translation>Ответ последней версии GitHub:</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Loading Network Averages...</source>
         <translation>Загрузка Средних показателей Сети...</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Loading banlist...</source>
         <translation>Загрузка банлиста...</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Magnitude</source>
         <translation>Магнитуда</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Malformed CPID</source>
         <translation>Неправильный CPID</translation>
     </message>
     <message>
+        <location line="+15"/>
         <source>Organization</source>
         <translation>Организация</translation>
     </message>
     <message>
+        <location line="+28"/>
         <source>Project email mismatch</source>
         <translation>Несоответствие электронной почты проекта</translation>
     </message>
     <message>
+        <location line="-251"/>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
         <translation>Внимание: установлено очень большое значение -paytxfee. Это комиссия, которую вы заплатите при проведении транзакции.</translation>
     </message>
     <message>
+        <location line="+22"/>
         <source>Warning: wallet.dat corrupt, data salvaged! Original wallet.dat saved as wallet.{timestamp}.bak in %s; if your balance or transactions are incorrect you should restore from a backup.</source>
         <translation>Внимание: wallet.dat повреждён, данные восстановлены! Оригинальный wallet.dat сохранён как wallet.{timestamp}.bak в %s; если ваш баланс или транзакции некорректны, вы должны восстановить файл из резервной копии.</translation>
     </message>
     <message>
+        <location line="-3"/>
         <source>Warning: error reading wallet.dat! All keys read correctly, but transaction data or address book entries might be missing or incorrect.</source>
         <translation>Внимание: ошибка чтения wallet.dat! Все ключи прочитаны верно, но данные транзакций или записи адресной книги могут отсутствовать или быть неправильными.</translation>
     </message>
     <message>
+        <location line="+130"/>
         <source>Error: Transaction creation failed  </source>
         <translation>Ошибка: Не удалось создать транзакцию  </translation>
     </message>
     <message>
+        <location line="-262"/>
         <source>Error: The transaction was rejected.  This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.</source>
         <translation>Ошибка: транзакция была отклонена! Это могло произойти в случае, если некоторые монеты в вашем кошельке уже были потрачены, например, если вы используете копию wallet.dat, и монеты были использованы в копии, но не отмечены как потраченные здесь.</translation>
     </message>
     <message>
+        <location line="+272"/>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
         <translation>Не удалось начать прослушивание на порту. Используйте -listen=0 если вас это устраивает.</translation>
     </message>
     <message>
+        <location line="+107"/>
         <source>Single Choice</source>
         <translation>Единственный Выбор</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Snapshot Process Complete!</source>
         <translation>Процесс создания Снимка Завершен!</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Snapshot Process Has Begun.</source>
         <translation>Процесс создания Снимка Начался.</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>To use the %s option</source>
         <translation>Чтобы использовать опцию %s</translation>
     </message>
     <message>
+        <location line="-463"/>
         <source>%s, you must set a rpcpassword in the configuration file:
  %s
 It is recommended you use the following random password:
@@ -5284,7 +7632,7 @@ rpcpassword=%s
 The username and password MUST NOT be the same.
 If the file does not exist, create it with owner-readable-only file permissions.
 It is also recommended to set alertnotify so you are notified of problems;
-for example: alertnotify=echo %%s | mail -s "Gridcoin Alert" admin@foo.com
+for example: alertnotify=echo %%s | mail -s &quot;Gridcoin Alert&quot; admin@foo.com
 </source>
         <translation>%s, вы должны установить опцию rpcpassword в конфигурационном файле:
  %s
@@ -5295,48 +7643,31 @@ rpcpassword=%s
 Имя и пароль ДОЛЖНЫ различаться.
 Если файл не существует, создайте его и установите права доступа только для владельца, только для чтения.
 Также рекомендуется включить alertnotify для оповещения о проблемах;
-Например: alertnotify=echo %%s | mail -s "DigiByte Alert" admin@foo.com
+Например: alertnotify=echo %%s | mail -s &quot;DigiByte Alert&quot; admin@foo.com
 </translation>
     </message>
     <message>
+        <location line="+29"/>
         <source>Due to the failure to delete the blockchain data you will be required to manually delete the data before starting your wallet.</source>
         <translation>Из-за невозможности удалить данные блокчейна вам потребуется вручную удалить данные перед запуском кошелька.</translation>
     </message>
     <message>
+        <location line="+44"/>
         <source>Failed to download snapshot as mandatory client is available for download.</source>
         <translation>Не удалось загрузить снимок, так как доступен обязательный клиент.</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Failure to do so will result in undefined behaviour or failure to start wallet.</source>
         <translation>Невыполнение этого требования приведет к неопределенному поведению или невозможности запуска кошелька.</translation>
     </message>
     <message>
+        <location line="+72"/>
         <source>Unable to download a snapshot, as the wallet has detected that a new mandatory version is available for install. The mandatory upgrade must be installed before the snapshot can be downloaded and applied.</source>
         <translation>Не удалось загрузить снимок, так как кошелек обнаружил, что доступна новая обязательная версия для установки . Обязательное обновление должно быть установлено до загрузки и применения снимка.</translation>
     </message>
     <message>
-        <source>WARNING: Blockchain data may be corrupted.
-
-Gridcoin detected bad index entries. This may occur because of an unexpected exit, a power failure, or a late software upgrade.
-
-Please exit Gridcoin, open the data directory, and delete:
- - the blk****.dat files
- - the txleveldb folder
-
-Your wallet will re-download the blockchain. Your balance may appear incorrect until the synchronization finishes.
-</source>
-        <translation>ВНИМАНИЕ: Данные блокчейна могут быть повреждены.
-
-Gridcoin обнаружил неверные записи в индексе. Это может произойти из-за неожиданного завершения работы, сбоя питания или несвоевременного обновления программного обеспечения.
-
-Выйдите из Gridcoin, откройте каталог данных и удалите:
-- файлы blk****.dat
-- папку txleveldb
-
-Ваш кошелек повторно загрузит блокчейн. Ваш баланс может отображаться неправильно, пока не завершится синхронизация.
-</translation>
-    </message>
-    <message>
+        <location line="+50"/>
         <source>You must set rpcpassword=&lt;password&gt; in the configuration file:
 %s
 If the file does not exist, create it with owner-readable-only file permissions.</source>
@@ -5345,242 +7676,302 @@ If the file does not exist, create it with owner-readable-only file permissions.
 Если файл не существует, создайте его и установите права доступа только для владельца.</translation>
     </message>
     <message>
+        <location line="+140"/>
         <source>Gridcoin version</source>
         <translation>Gridcoin версия</translation>
     </message>
     <message>
+        <location line="+92"/>
         <source>Resetting block chain index to prepare for reindexing...</source>
         <translation>Сброс индекса цепочки блоков для подготовки к переиндексации...</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>Stage (1/4): Downloading snapshot.zip:         </source>
-        <translation>Этап (1/4): Загрузка snapshot.zip:</translation>
+        <translation>Этап (1/4): Загрузка snapshot.zip: </translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Stage (2/4): Verify SHA256SUM of snapshot.zip: </source>
-        <translation>Этап (2/4): Проверка SHA256SUM snapshot.zip:</translation>
+        <translation>Этап (2/4): Проверка SHA256SUM snapshot.zip: </translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Stage (3/4): Cleanup blockchain data:          </source>
-        <translation>Стадия (3/4): Очистка данных блокчейна:</translation>
+        <translation>Стадия (3/4): Очистка данных блокчейна: </translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Stage (4/4): Extracting snapshot.zip:          </source>
-        <translation>Этап (4/4): Распаковка snapshot.zip:</translation>
+        <translation>Этап (4/4): Распаковка snapshot.zip: </translation>
     </message>
     <message>
-        <source>Staking Only - Investor Mode</source>
-        <translation>Только Стейкинг — Режим Инвестора</translation>
-    </message>
-    <message>
+        <location line="+1"/>
         <source>Staking Only - No Eligible Research Projects</source>
         <translation>Только Стейкинг — Нет Подходящих Исследовательских Проектов</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>Testnet-only version</source>
         <translation>Версия только для тестовой сети</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>Unknown error</source>
         <translation>Неизвестная ошибка</translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>Unknown</source>
         <translation>Неизвестный</translation>
     </message>
     <message>
+        <location line="-21"/>
         <source>Staking Only - No active beacon</source>
         <translation>Только Стейкинг — Нет активного маяка</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Staking Only - Pool Detected</source>
         <translation>Только Стейкинг — Обнаружен Пул</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Superblock Binary Size</source>
         <translation>Двоичный Размер Суперблока</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>This update is </source>
-        <translation>Это обновление</translation>
+        <translation>Это обновление </translation>
     </message>
     <message>
+        <location line="+6"/>
         <source>Unknown poll response type.</source>
         <translation>Неизвестный тип ответа на опрос.</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Unknown poll type.</source>
         <translation>Неизвестный тип опроса.</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Unknown poll weight type.</source>
         <translation>Неизвестный тип веса опроса.</translation>
     </message>
     <message>
+        <location line="-85"/>
         <source>No current polls</source>
         <translation>Нет текущих опросов</translation>
     </message>
     <message>
-        <source>Invalid amount for -paytxfee=&lt;amount&gt;: '%s'</source>
-        <translation>Неверная сумма в параметре -paytxfee=&lt;кол-во&gt;: '%s'</translation>
+        <location line="-30"/>
+        <source>Invalid amount for -paytxfee=&lt;amount&gt;: &apos;%s&apos;</source>
+        <translation>Неверная сумма в параметре -paytxfee=&lt;кол-во&gt;: &apos;%s&apos;</translation>
     </message>
     <message>
-        <source>Invalid amount for -mininput=&lt;amount&gt;: '%s'</source>
-        <translation>Недопустимая сумма для -mininput = &lt;amount&gt;: '%s'</translation>
+        <location line="-1"/>
+        <source>Invalid amount for -mininput=&lt;amount&gt;: &apos;%s&apos;</source>
+        <translation>Недопустимая сумма для -mininput = &lt;amount&gt;: &apos;%s&apos;</translation>
     </message>
     <message>
+        <location line="-9"/>
         <source>Initialization sanity check failed. Gridcoin is shutting down.</source>
         <translation>Инициализация проверки работоспособности не удалась. Gridcoin закрывается.</translation>
     </message>
     <message>
+        <location line="+131"/>
         <source>Wallet %s resides outside data directory %s.</source>
         <translation>Кошелёк %s располагается вне каталога %s.</translation>
     </message>
     <message>
+        <location line="-2"/>
         <source>Verifying database integrity...</source>
         <translation>Проверка целостности базы данных...</translation>
     </message>
     <message>
+        <location line="-428"/>
         <source>Error initializing database environment %s! To recover, BACKUP THAT DIRECTORY, then remove everything from it except for wallet.dat.</source>
         <translation>Ошибка инициализации среды базы данных %s! Чтобы восстановить, СДЕЛАЙТЕ БЕКАП ДАННОЙ ДИРЕКТОРИИ, затем удалите все, кроме него, за исключением wallet.dat.</translation>
     </message>
     <message>
+        <location line="+457"/>
+        <source>vote</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>wallet.dat corrupt, salvage failed</source>
         <translation>wallet.dat повреждён, восстановление не удалось</translation>
     </message>
     <message>
-        <source>Invalid -proxy address: '%s'</source>
-        <translation>Неверный адрес -proxy: '%s'</translation>
+        <location line="-152"/>
+        <source>Invalid -proxy address: &apos;%s&apos;</source>
+        <translation>Неверный адрес -proxy: &apos;%s&apos;</translation>
     </message>
     <message>
-        <source>Invalid -tor address: '%s'</source>
-        <translation>Недопустимый адрес -tor: '%s'</translation>
+        <location line="+1"/>
+        <source>Invalid -tor address: &apos;%s&apos;</source>
+        <translation>Недопустимый адрес -tor: &apos;%s&apos;</translation>
     </message>
     <message>
-        <source>Cannot resolve -bind address: '%s'</source>
-        <translation>Не удаётся разрешить адрес в параметре -bind: '%s'</translation>
+        <location line="-62"/>
+        <source>Cannot resolve -bind address: &apos;%s&apos;</source>
+        <translation>Не удаётся разрешить адрес в параметре -bind: &apos;%s&apos;</translation>
     </message>
     <message>
-        <source>Cannot resolve -externalip address: '%s'</source>
-        <translation>Не удаётся разрешить адрес в параметре -externalip: '%s'</translation>
+        <location line="+1"/>
+        <source>Cannot resolve -externalip address: &apos;%s&apos;</source>
+        <translation>Не удаётся разрешить адрес в параметре -externalip: &apos;%s&apos;</translation>
     </message>
     <message>
+        <location line="+65"/>
         <source>Invalid amount for -reservebalance=&lt;amount&gt;</source>
         <translation>Недопустимая сумма для -reservebalance = &lt;amount&gt;</translation>
     </message>
     <message>
+        <location line="-45"/>
         <source>Error loading blkindex.dat</source>
         <translation>Ошибка при загрузке blkindex.dat</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Error loading wallet.dat: Wallet corrupted</source>
         <translation>Ошибка загрузки wallet.dat: Кошелёк поврежден</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Error loading wallet.dat: Wallet requires newer version of Gridcoin</source>
         <translation>Ошибка загрузки wallet.dat: Кошелёк требует более новой версии Gridcoin</translation>
     </message>
     <message>
+        <location line="+75"/>
         <source>Offline</source>
         <translation>Не в сети</translation>
     </message>
     <message>
+        <location line="+83"/>
         <source>Verifying checkpoints...</source>
         <translation>Проверка контрольных точек...</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Wallet locked</source>
         <translation>Кошелёк заблокирован</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Wallet needed to be rewritten: restart Gridcoin to complete</source>
         <translation>Необходимо перезаписать кошелёк: перезапустите Gridcoin для завершения операции</translation>
     </message>
     <message>
+        <location line="-165"/>
         <source>Error loading wallet.dat</source>
         <translation>Ошибка при загрузке wallet.dat</translation>
     </message>
     <message>
+        <location line="+30"/>
         <source>Importing bootstrap blockchain data file.</source>
         <translation>Импорт файла данных блокировки bootstrap.</translation>
     </message>
     <message>
+        <location line="+22"/>
         <source>Loading addresses...</source>
         <translation>Загрузка адресов...</translation>
     </message>
     <message>
+        <location line="-43"/>
         <source>Error: could not start node</source>
         <translation>Ошибка: не удалось запустить узел</translation>
     </message>
     <message>
+        <location line="-175"/>
         <source>Unable to bind to %s on this computer. Gridcoin is probably already running.</source>
         <translation>Невозможно забиндиться %s на этом компьютере. Gridcoin вероятно уже запущен.</translation>
     </message>
     <message>
+        <location line="+316"/>
         <source>Unable to bind to %s on this computer (bind returned error %d, %s)</source>
         <translation>Невозможно привязаться к %s на этом компьютере (bind вернул ошибку %d, %s)</translation>
     </message>
     <message>
+        <location line="-144"/>
         <source>Error: Wallet locked, unable to create transaction  </source>
         <translation>Ошибка: кошелёк заблокирован, невозможно создать транзакцию  </translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Error: Wallet unlocked for staking only, unable to create transaction.</source>
         <translation>Ошибка: Кошелёк разблокирован только для стейкинга, невозможно создать транзакцию.</translation>
     </message>
     <message>
+        <location line="-258"/>
         <source>Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds  </source>
         <translation>Ошибка: эта транзакция требует комиссию как минимум %s из-за суммы, сложности или использования недавно полученных средств  </translation>
     </message>
     <message>
+        <location line="+370"/>
         <source>Sending...</source>
         <translation>Отправка...</translation>
     </message>
     <message>
+        <location line="-75"/>
         <source>Invalid amount</source>
         <translation>Неверная сумма</translation>
     </message>
     <message>
-        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong Gridcoin will not work properly.</source>
+        <location line="-174"/>
+        <source>Warning: Please check that your computer&apos;s date and time are correct! If your clock is wrong Gridcoin will not work properly.</source>
         <translation>Внимание: убедитесь, что дата и время на Вашем компьютере выставлены верно. Если Ваши часы идут неправильно, Gridcoin будет работать некорректно.</translation>
     </message>
     <message>
+        <location line="+291"/>
         <source>Vote signature failed. See debug.log.</source>
         <translation>Не удалось подписать голос. Смотрите debug.log.</translation>
     </message>
     <message>
+        <location line="+9"/>
         <source>Warning: Disk space is low!</source>
         <translation>Внимание: Недостаточно места на диске!</translation>
     </message>
     <message>
-        <source>Unknown network specified in -onlynet: '%s'</source>
-        <translation>В параметре -onlynet указана неизвестная сеть: '%s'</translation>
+        <location line="-18"/>
+        <source>Unknown network specified in -onlynet: &apos;%s&apos;</source>
+        <translation>В параметре -onlynet указана неизвестная сеть: &apos;%s&apos;</translation>
     </message>
     <message>
+        <location line="-117"/>
         <source>Insufficient funds</source>
         <translation>Недостаточно монет</translation>
     </message>
     <message>
+        <location line="+18"/>
         <source>Loading block index...</source>
         <translation>Загрузка индекса блоков...</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Loading wallet...</source>
         <translation>Загрузка кошелька...</translation>
     </message>
     <message>
+        <location line="-77"/>
         <source>Cannot write default address</source>
         <translation>Не удаётся записать адрес по умолчанию</translation>
     </message>
     <message>
+        <location line="+135"/>
         <source>Rescanning...</source>
         <translation>Сканирование...</translation>
     </message>
     <message>
+        <location line="-124"/>
         <source>Done loading</source>
         <translation>Загрузка завершена</translation>
     </message>
     <message>
+        <location line="+12"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
