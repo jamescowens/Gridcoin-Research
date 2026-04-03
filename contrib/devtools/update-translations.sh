@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+export LC_ALL=C
 # Copyright (c) 2026 The Gridcoin developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/licenses/mit-license.php.
@@ -77,7 +78,7 @@ find_qt_tool() {
 # Read the Transifex API token from ~/.transifexrc.
 get_tx_token() {
     local rc="${HOME}/.transifexrc"
-    [ -f "${rc}" ] || err "~/.transifexrc not found. See doc/translation_process.md."
+    [ -f "${rc}" ] || err "$HOME/.transifexrc not found. See doc/translation_process.md."
     # Try 'token' first (new CLI format), then fall back to 'password' (old format).
     local token
     token=$(grep -E '^\s*token\s*=' "${rc}" | head -1 | sed 's/.*=\s*//' | tr -d '[:space:]')
