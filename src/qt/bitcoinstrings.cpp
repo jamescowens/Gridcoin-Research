@@ -9,8 +9,9 @@
 #define UNUSED
 #endif
 static const char UNUSED *bitcoin_strings[] = {
-QT_TRANSLATE_NOOP("bitcoin-core", "None"),
+QT_TRANSLATE_NOOP("bitcoin-core", "Gridcoin"),
 QT_TRANSLATE_NOOP("bitcoin-core", "The %s developers"),
+QT_TRANSLATE_NOOP("bitcoin-core", "The Gridcoin developers"),
 QT_TRANSLATE_NOOP("bitcoin-core", ""
 "%s, you must set a rpcpassword in the configuration file:\n"
 " %s\n"
@@ -127,6 +128,12 @@ QT_TRANSLATE_NOOP("bitcoin-core", ""
 "problem with the port test site, but could also be an issue with your "
 "firewall. If you are also failing the connection test, your firewall is most "
 "likely blocking network communications from the Gridcoin client."),
+QT_TRANSLATE_NOOP("bitcoin-core", ""
+"The data directory path '%s' contains characters that cannot be represented "
+"in the system code page, and Windows 8.3 short filename generation is not "
+"available on this volume. Please choose a data directory path using only "
+"characters supported by your system locale, or enable 8.3 filename "
+"generation."),
 QT_TRANSLATE_NOOP("bitcoin-core", ""
 "The network has experienced a low-level error and this probably means your "
 "IP address or other network connection parameters are not configured "
