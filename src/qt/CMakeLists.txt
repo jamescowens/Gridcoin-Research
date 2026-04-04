@@ -221,6 +221,9 @@ add_executable(gridcoinresearch bitcoin.cpp ${GRIDCOIN_RC})
 set(MACOSX_BUNDLE_RESOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/res/icons/gridcoin.icns")
 if(APPLE)
     target_sources(gridcoinresearch PRIVATE ${MACOSX_BUNDLE_RESOURCE_FILES})
+    set_target_properties(gridcoinresearch PROPERTIES
+        RESOURCE ${MACOSX_BUNDLE_RESOURCE_FILES}
+    )
 endif()
 
 target_link_libraries(gridcoinresearch PRIVATE
@@ -281,7 +284,6 @@ set_target_properties(gridcoinresearch PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/share/qt/Info.plist.cmake.in"
-    RESOURCE ${MACOSX_BUNDLE_RESOURCE_FILES}
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
@@ -302,7 +304,7 @@ endif()
 if(UNIX AND NOT APPLE)
     include(GNUInstallDirs)
     install(TARGETS gridcoinresearch COMPONENT gui
-        DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
     )
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/share/icons" COMPONENT gui
         DESTINATION "${CMAKE_INSTALL_DATADIR}"
