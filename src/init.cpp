@@ -271,13 +271,8 @@ void AddLoggingArgs(ArgsManager& argsman)
                    ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-logtimestamps", strprintf("Prepend debug output with timestamp (default: %u)", DEFAULT_LOGTIMESTAMPS),
                    ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
-#ifdef HAVE_THREAD_LOCAL
-    argsman.AddArg("-logthreadnames", strprintf("Prepend debug output with name of the originating thread (only available on"
-                                                " platforms supporting thread_local) (default: %u)", DEFAULT_LOGTHREADNAMES),
+    argsman.AddArg("-logthreadnames", strprintf("Prepend debug output with name of the originating thread (default: %u)", DEFAULT_LOGTHREADNAMES),
                    ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
-#else
-    argsman.AddHiddenArgs({"-logthreadnames"});
-#endif
     argsman.AddArg("-logtimemicros", strprintf("Add microsecond precision to debug timestamps (default: %u)",
                                                DEFAULT_LOGTIMEMICROS),
                    ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::DEBUG_TEST);
