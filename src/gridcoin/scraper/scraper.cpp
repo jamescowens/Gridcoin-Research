@@ -101,7 +101,6 @@ std::vector<std::pair<std::string, std::string>> vuserpass;
  * in one project will have, in general, a different ID, than another project.
  */
 std::vector<std::pair<std::string, int64_t>> vprojectteamids;
-std::vector<std::string> vauthenicationetags;
 int64_t ndownloadsize = 0;
 int64_t nuploadsize = 0;
 
@@ -562,11 +561,6 @@ void DownloadProjectPublicKeys(const WhitelistSnapshot& projectWhitelist);
 bool ProcessProjectRacFileByCPID(const std::string& project, const fs::path& file, const std::string& etag,
                                  BeaconConsensus& Consensus, ScraperVerifiedBeacons& GlobalVerifiedBeaconsCopy,
                                  ScraperVerifiedBeacons& IncomingVerifiedBeacons, double& all_cpid_total_credit);
-/**
- * @brief Clears the authentication ETag auth.dat file
- */
-void AuthenticationETagClear();
-
 // Need to access from rpcblockchain.cpp
 extern UniValue SuperblockToJson(const Superblock& superblock);
 
@@ -1659,8 +1653,6 @@ void Scraper(bool bSingleShot)
                 }
             }
 
-            AuthenticationETagClear();
-
             // Note a lock on cs_StructScraperFileManifest is taken in StoreBeaconList,
             // and the block hash for the consensus block height is updated in the struct.
             if (!StoreBeaconList(pathScraper / "BeaconList.csv.gz"))
@@ -2039,13 +2031,6 @@ bool ScraperDirectoryAndConfigSanity()
     return true;
 }
 
-void AuthenticationETagClear()
-{
-    fs::path file = fs::current_path() / "auth.dat";
-
-    if (fs::exists(file))
-        fs::remove(file);
-}
 
 bool UserpassPopulated()
 {
