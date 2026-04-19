@@ -27,6 +27,7 @@ import logging
 import os
 import re
 import sys
+import threading
 import time
 from collections import defaultdict
 from contextlib import asynccontextmanager
@@ -36,6 +37,7 @@ import duckdb
 import httpx
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -352,6 +354,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Compress responses over ~1 KB. The history endpoints return JSON
+# that compresses ~5x; the network-status payload ~3-4x.
+app.add_middleware(GZipMiddleware, minimum_size=1024)
+
 
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
@@ -418,9 +424,55 @@ def _history_query(sql: str, params: tuple = ()) -> list[dict]:
     return out
 
 
-def _history_response(data: list[dict]) -> JSONResponse:
-    return JSONResponse(
-        content={"data": data},
+# Response cache for the history endpoints.
+#
+# Keyed by (endpoint_name, *param_values). The stored value is the
+# already-JSON-encoded response body, so cache hits skip both the DuckDB
+# query AND serialization (the 29k-row per-project payload alone takes
+# ~100-300 ms to json.dumps on the t2.medium target host).
+#
+# Entries are invalidated when either:
+#   * the cache TTL has elapsed, or
+#   * the analytics DB file's mtime has advanced since we cached (i.e.
+#     the daily refresh has run).
+_history_cache: dict[tuple, tuple[float, bytes]] = {}
+_history_cache_lock = threading.Lock()
+
+
+def _analytics_db_mtime() -> float:
+    try:
+        return Path(STATS_DB_PATH).stat().st_mtime
+    except FileNotFoundError:
+        return 0.0
+
+
+def _cached_history_response(cache_key: tuple, sql: str, params: tuple = ()) -> Response:
+    """Serve a cached JSON body if fresh, otherwise run the query, cache,
+    and return. Always sends `Cache-Control: public, max-age=N` so
+    browsers / intermediaries can keep a copy for `HISTORY_CACHE_TTL` s."""
+    db_mtime = _analytics_db_mtime()
+    now = time.time()
+
+    with _history_cache_lock:
+        entry = _history_cache.get(cache_key)
+    if entry is not None:
+        cached_at, body = entry
+        if cached_at >= db_mtime and (now - cached_at) <= HISTORY_CACHE_TTL:
+            return Response(
+                content=body,
+                media_type="application/json",
+                headers={"Cache-Control": f"public, max-age={HISTORY_CACHE_TTL}"},
+            )
+
+    data = _history_query(sql, params)
+    body = json.dumps({"data": data}).encode("utf-8")
+
+    with _history_cache_lock:
+        _history_cache[cache_key] = (now, body)
+
+    return Response(
+        content=body,
+        media_type="application/json",
         headers={"Cache-Control": f"public, max-age={HISTORY_CACHE_TTL}"},
     )
 
@@ -429,17 +481,20 @@ def _history_response(data: list[dict]) -> JSONResponse:
 @limiter.limit("30/minute")
 async def history_cpid_churn(request: Request):
     """Daily time series of CPID activity — active count plus churn in/out."""
-    return _history_response(_history_query("""
-        SELECT obs_date,
-               active_cpids,
-               new_cpids,
-               returning_cpids,
-               churn_in,
-               churn_out,
-               departing_cpids
-        FROM summary_cpid_churn
-        ORDER BY obs_date
-    """))
+    return _cached_history_response(
+        cache_key=("cpid-churn",),
+        sql="""
+            SELECT obs_date,
+                   active_cpids,
+                   new_cpids,
+                   returning_cpids,
+                   churn_in,
+                   churn_out,
+                   departing_cpids
+            FROM summary_cpid_churn
+            ORDER BY obs_date
+        """,
+    )
 
 
 @app.get("/api/v1/history/project-active-cpids")
@@ -447,12 +502,15 @@ async def history_cpid_churn(request: Request):
 async def history_project_active_cpids(request: Request):
     """Daily time series of active (magnitude-positive) CPID counts per
     project. One row per (obs_date, project)."""
-    return _history_response(_history_query("""
-        SELECT obs_date, project, active_cpids, contributing_cpids,
-               total_rac, total_mag
-        FROM summary_project_active_cpids
-        ORDER BY obs_date, project
-    """))
+    return _cached_history_response(
+        cache_key=("project-active-cpids",),
+        sql="""
+            SELECT obs_date, project, active_cpids, contributing_cpids,
+                   total_rac, total_mag
+            FROM summary_project_active_cpids
+            ORDER BY obs_date, project
+        """,
+    )
 
 
 @app.get("/api/v1/history/project-churn")
@@ -460,11 +518,14 @@ async def history_project_active_cpids(request: Request):
 async def history_project_churn(request: Request):
     """Daily time series of projects in the superblock — total count
     plus day-over-day in/out counts (NULL on gap-adjacent days)."""
-    return _history_response(_history_query("""
-        SELECT obs_date, total_projects, projects_in, projects_out
-        FROM summary_project_churn
-        ORDER BY obs_date
-    """))
+    return _cached_history_response(
+        cache_key=("project-churn",),
+        sql="""
+            SELECT obs_date, total_projects, projects_in, projects_out
+            FROM summary_project_churn
+            ORDER BY obs_date
+        """,
+    )
 
 
 @app.get("/api/v1/history/projects")
@@ -472,16 +533,19 @@ async def history_project_churn(request: Request):
 async def history_projects(request: Request):
     """List of all projects ever seen in the history, with first/last
     seen dates. Used to populate the per-project filter dropdown."""
-    return _history_response(_history_query("""
-        SELECT project                 AS name,
-               min(obs_date)           AS first_seen,
-               max(obs_date)           AS last_seen,
-               count(DISTINCT obs_date) AS days_observed
-        FROM fact_stats
-        WHERE stats_type = 'byProject' AND project IS NOT NULL
-        GROUP BY project
-        ORDER BY project
-    """))
+    return _cached_history_response(
+        cache_key=("projects",),
+        sql="""
+            SELECT project                 AS name,
+                   min(obs_date)           AS first_seen,
+                   max(obs_date)           AS last_seen,
+                   count(DISTINCT obs_date) AS days_observed
+            FROM fact_stats
+            WHERE stats_type = 'byProject' AND project IS NOT NULL
+            GROUP BY project
+            ORDER BY project
+        """,
+    )
 
 
 @app.get("/api/v1/history/top-cpids")
@@ -508,22 +572,23 @@ async def history_top_cpids(
         raise HTTPException(status_code=400, detail=f"order_by must be one of {sorted(allowed_orders)}")
 
     if project:
-        rows = _history_query(
-            f"""
-            SELECT cpid, project, first_seen, last_seen,
-                   days_active, days_observed, days_elapsed,
-                   lifetime_mag_sum, lifetime_mag_avg_active,
-                   lifetime_mag_avg_elapsed, lifetime_rac_max, lifetime_tc_max
-            FROM summary_cpid_project_lifetime
-            WHERE project = ?
-            ORDER BY {order_by} DESC NULLS LAST
-            LIMIT ?
+        return _cached_history_response(
+            cache_key=("top-cpids-by-project", project, limit, order_by),
+            sql=f"""
+                SELECT cpid, project, first_seen, last_seen,
+                       days_active, days_observed, days_elapsed,
+                       lifetime_mag_sum, lifetime_mag_avg_active,
+                       lifetime_mag_avg_elapsed, lifetime_rac_max, lifetime_tc_max
+                FROM summary_cpid_project_lifetime
+                WHERE project = ?
+                ORDER BY {order_by} DESC NULLS LAST
+                LIMIT ?
             """,
-            (project, limit),
+            params=(project, limit),
         )
-    else:
-        rows = _history_query(
-            f"""
+    return _cached_history_response(
+        cache_key=("top-cpids", limit, order_by),
+        sql=f"""
             SELECT cpid, first_seen, last_seen,
                    days_active, days_observed, days_elapsed,
                    lifetime_mag_sum, lifetime_mag_avg_active,
@@ -531,10 +596,9 @@ async def history_top_cpids(
             FROM summary_cpid_lifetime
             ORDER BY {order_by} DESC NULLS LAST
             LIMIT ?
-            """,
-            (limit,),
-        )
-    return _history_response(rows)
+        """,
+        params=(limit,),
+    )
 
 
 @app.get("/health")
