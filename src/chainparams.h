@@ -10,6 +10,7 @@
 #include "chainparamsbase.h"
 #include "consensus/params.h"
 #include "protocol.h"
+#include "util/system.h" // for gArgs (IsV15Enabled override)
 
 #include <memory>
 #include <stdexcept>
@@ -177,6 +178,13 @@ inline bool IsSuperblockV3Enabled(int nHeight)
 inline bool IsV14Enabled(int nHeight)
 {
     return nHeight >= Params().GetConsensus().BlockV14Height;
+}
+
+inline bool IsV15Enabled(int nHeight)
+{
+    // Argument-driven override to facilitate isolated testnet testing
+    // before the mainnet/testnet activation heights are scheduled.
+    return nHeight >= gArgs.GetArg("-blockv15height", Params().GetConsensus().BlockV15Height);
 }
 
 inline bool IsProjectV4Enabled(int nHeight)
