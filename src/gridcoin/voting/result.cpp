@@ -2,6 +2,7 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
+#include "chainparams.h"
 #include "gridcoin/protocol.h"
 #include "main.h"
 #include "gridcoin/beacon.h"
@@ -130,6 +131,17 @@ public:
         return PackVoteMessage(Vote(), m_tx);
     }
 
+    //!
+    //! \brief Get the inputs of the transaction that contains the vote.
+    //!
+    //! Exposed for VoteResolver so it can detect balance-claim outpoints
+    //! that were consumed by the vote transaction itself (v15+).
+    //!
+    const std::vector<CTxIn>& Vin() const
+    {
+        return m_tx.vin;
+    }
+
 private:
     const CTransaction m_tx;         //!< Transaction that contains a vote.
     const Contract& m_contract;      //!< The vote contract.
@@ -145,12 +157,18 @@ public:
     //!
     //! \brief Initialize a vote resolver for the specified poll.
     //!
-    //! \param txdb Used to resolve balance claim amounts.
-    //! \param poll The poll to resolve voting weight for.
+    //! \param txdb         Used to resolve balance claim amounts.
+    //! \param poll         The poll to resolve voting weight for.
+    //! \param poll_height  Block height that contains the poll contract.
+    //! Used to gate post-v15 balance-claim semantics (see the comment in
+    //! Resolve(const COutPoint&, const CTxDestination&)). Pass 0 for
+    //! "height unknown" — the resolver will then fall back to the legacy
+    //! behaviour, which is the safe default.
     //!
-    VoteResolver(CTxDB& txdb, const Poll& poll)
+    VoteResolver(CTxDB& txdb, const Poll& poll, int poll_height)
         : m_txdb(txdb)
         , m_poll(poll)
+        , m_poll_height(poll_height)
         , m_superblock(SuperblockPtr::Empty())
     {
     }
@@ -180,6 +198,17 @@ public:
         const Vote& vote = candidate.Vote();
         const ClaimMessage message = candidate.PackMessage();
 
+        // Collect the inputs of the vote transaction itself. At v15+ the
+        // leaf Resolve uses this set to treat a claim outpoint that the
+        // vote transaction consumed as its own input as "still valid for
+        // balance-weight purposes" — otherwise a voter whose wallet has
+        // only a single UTXO would always resolve to zero weight, because
+        // the vote tx spends its own claim's supporting outpoint.
+        m_current_vote_inputs.clear();
+        for (const auto& txin : candidate.Vin()) {
+            m_current_vote_inputs.insert(txin.prevout);
+        }
+
         VoteDetail detail;
         detail.m_amount = Resolve(vote.m_claim.m_balance_claim, message);
         detail.m_ismine = candidate.IsMine();
@@ -196,6 +225,7 @@ public:
 private:
     CTxDB& m_txdb;              //!< Used to resolve unspent amount claims.
     const Poll& m_poll;         //!< The poll to resolve voting weight for.
+    int m_poll_height;          //!< Block height of the poll contract.
     SuperblockPtr m_superblock; //!< Used to determine magnitude weight.
 
     //!
@@ -203,6 +233,15 @@ private:
     //! claims to filter duplicate weight claims.
     //!
     std::unordered_set<COutPoint, OutPointHasher> m_seen_txos;
+
+    //!
+    //! \brief Inputs of the vote transaction currently being resolved.
+    //!
+    //! Populated at the top of Resolve(VoteCandidate). Used only by the
+    //! leaf Resolve(COutPoint, CTxDestination) at v15+ to short-circuit
+    //! the "spent" check when the consuming transaction is the vote itself.
+    //!
+    std::unordered_set<COutPoint, OutPointHasher> m_current_vote_inputs;
 
     //!
     //! \brief Remembers the CPID claimed by a vote contract for magnitude
@@ -445,6 +484,18 @@ private:
         if (tx_index.vSpent[txo.n].IsNull()) {
             m_seen_txos.emplace(txo);
             return output.nValue; // txo is unspent
+        }
+
+        // v15+: if the only thing that spent this outpoint is the vote
+        // transaction itself (the coin was consumed as an input to carry
+        // the vote contract and pay its burn fee), treat the claim as
+        // valid for balance weight. Otherwise a single-UTXO voter always
+        // resolves to zero weight because the sole supporting outpoint
+        // is necessarily consumed by the vote tx. Pre-v15 this branch is
+        // skipped, preserving the historical tally for existing polls.
+        if (IsV15Enabled(m_poll_height) && m_current_vote_inputs.count(txo)) {
+            m_seen_txos.emplace(txo);
+            return output.nValue;
         }
 
         return ResolveAmount(address, tx_index.vSpent[txo.n], output.nValue);
@@ -755,13 +806,15 @@ public:
     //!
     //! \brief Initialize a vote counter for the specified poll.
     //!
-    //! \param txdb Used to fetch vote contracts from disk.
-    //! \param poll Poll to count votes for.
+    //! \param txdb        Used to fetch vote contracts from disk.
+    //! \param poll        Poll to count votes for.
+    //! \param poll_height Block height that contains the poll contract.
+    //! Used to gate v15+ balance-claim behaviour in the resolver.
     //!
-    VoteCounter(CTxDB& txdb, const Poll& poll)
+    VoteCounter(CTxDB& txdb, const Poll& poll, int poll_height)
         : m_txdb(txdb)
         , m_poll(poll)
-        , m_resolver(txdb, poll)
+        , m_resolver(txdb, poll, poll_height)
         , m_legacy(poll)
     {
     }
@@ -1200,7 +1253,12 @@ PollResultOption PollResult::BuildFor(const PollReference& poll_ref)
     if (PollOption poll = poll_ref.TryReadFromDisk()) {
         CTxDB txdb("r");
         PollResult result(std::move(*poll));
-        VoteCounter counter(txdb, result.m_poll);
+        // GetStartingHeight() returns nullopt only for skeleton poll
+        // references (which shouldn't appear here). Fall back to 0 so
+        // that IsV15Enabled() deterministically reports false — the
+        // legacy resolver behaviour is the safe default on unknown data.
+        const int poll_height = poll_ref.GetStartingHeight().value_or(0);
+        VoteCounter counter(txdb, result.m_poll, poll_height);
 
         if (result.m_poll.IncludesMagnitudeWeight()) {
             SuperblockPtr superblock;
