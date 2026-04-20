@@ -361,7 +361,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1024)
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     # Positional args required by FastAPI's exception-handler signature;
     # the response body is generic, so neither is referenced.
-    del request, exc
+    _ = request, exc
     return JSONResponse(
         status_code=429,
         content={"error": "Rate limit exceeded. Try again later."},
@@ -372,7 +372,7 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
 @limiter.limit("30/minute")
 async def network_status(request: Request):
     """Return current Gridcoin network status including project data."""
-    del request  # required by @limiter.limit; body reads only from cache
+    _ = request  # required by @limiter.limit; body reads only from cache
     data = await get_cached_status(RPC_URL, RPC_AUTH, SCRAPER_DATA_DIR)
 
     # Strip internal cache metadata.
@@ -483,7 +483,7 @@ def _cached_history_response(cache_key: tuple, sql: str, params: tuple = ()) -> 
 @limiter.limit("30/minute")
 async def history_cpid_churn(request: Request):
     """Daily time series of CPID activity — active count plus churn in/out."""
-    del request  # required by @limiter.limit
+    _ = request  # required by @limiter.limit
     return _cached_history_response(
         cache_key=("cpid-churn",),
         sql="""
@@ -505,7 +505,7 @@ async def history_cpid_churn(request: Request):
 async def history_project_active_cpids(request: Request):
     """Daily time series of active (magnitude-positive) CPID counts per
     project. One row per (obs_date, project)."""
-    del request  # required by @limiter.limit
+    _ = request  # required by @limiter.limit
     return _cached_history_response(
         cache_key=("project-active-cpids",),
         sql="""
@@ -522,7 +522,7 @@ async def history_project_active_cpids(request: Request):
 async def history_project_churn(request: Request):
     """Daily time series of projects in the superblock — total count
     plus day-over-day in/out counts (NULL on gap-adjacent days)."""
-    del request  # required by @limiter.limit
+    _ = request  # required by @limiter.limit
     return _cached_history_response(
         cache_key=("project-churn",),
         sql="""
@@ -538,7 +538,7 @@ async def history_project_churn(request: Request):
 async def history_projects(request: Request):
     """List of all projects ever seen in the history, with first/last
     seen dates. Used to populate the per-project filter dropdown."""
-    del request  # required by @limiter.limit
+    _ = request  # required by @limiter.limit
     return _cached_history_response(
         cache_key=("projects",),
         sql="""
@@ -565,7 +565,7 @@ async def history_top_cpids(
     """Top CPIDs by lifetime magnitude. `project` filter switches the
     source table from network-wide to per-project rollup. `order_by`
     must be one of the allowed column names (prevents SQL injection)."""
-    del request  # required by @limiter.limit
+    _ = request  # required by @limiter.limit
     limit = max(1, min(500, limit))
     allowed_orders = {
         "lifetime_mag_avg_active",
