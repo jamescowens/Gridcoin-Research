@@ -554,6 +554,56 @@ async def history_projects(request: Request):
     )
 
 
+@app.get("/api/v1/history/cpids")
+@limiter.limit("30/minute")
+async def history_cpids(request: Request):
+    """List of all CPIDs ever seen in the history, with compact rollup
+    fields. Used by the sand-chart page to populate a CPID autocomplete
+    input. Sorted by cpid hex for stable browser datalist ordering."""
+    _ = request  # required by @limiter.limit
+    return _cached_history_response(
+        cache_key=("cpids",),
+        sql="""
+            SELECT cpid,
+                   first_seen,
+                   last_seen,
+                   days_active,
+                   lifetime_mag_sum
+            FROM summary_cpid_lifetime
+            ORDER BY cpid
+        """,
+    )
+
+
+@app.get("/api/v1/history/cpid-project-magnitude")
+@limiter.limit("30/minute")
+async def history_cpid_project_magnitude(request: Request, cpid: str):
+    """Per-day magnitude breakdown of a single CPID across projects.
+    Drives the stacked-area (sand) chart that visualises how a
+    researcher's magnitude was distributed across projects over time.
+
+    The `cpid` query parameter is validated to 32 lowercase hex chars to
+    keep the cache key tight and eliminate an SQL-injection surface."""
+    _ = request
+    if not (len(cpid) == 32 and all(c in "0123456789abcdef" for c in cpid)):
+        raise HTTPException(
+            status_code=400,
+            detail="cpid must be exactly 32 lowercase hex characters.",
+        )
+    return _cached_history_response(
+        cache_key=("cpid-project-magnitude", cpid),
+        sql="""
+            SELECT obs_date, project, mag
+            FROM fact_stats
+            WHERE stats_type = 'byCPIDbyProject'
+              AND cpid = ?
+              AND project IS NOT NULL
+            ORDER BY obs_date, project
+        """,
+        params=(cpid,),
+    )
+
+
 @app.get("/api/v1/history/top-cpids")
 @limiter.limit("30/minute")
 async def history_top_cpids(
