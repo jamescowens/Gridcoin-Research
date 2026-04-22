@@ -64,6 +64,12 @@ STATS_DB_PATH = os.getenv(
 # Cache-Control max-age for history endpoints. The data only changes once a
 # day when the refresh service runs, so long caches are fine.
 HISTORY_CACHE_TTL = int(os.getenv("HISTORY_CACHE_TTL", "3600"))
+# GitHub releases metadata source for the release-annotation overlay on the
+# analytics charts. Cached aggressively; releases are infrequent and the
+# unauth'd GitHub rate limit is tight (60 req/hour per IP).
+GITHUB_REPO = os.getenv("GITHUB_REPO", "gridcoin-community/Gridcoin-Research")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")  # optional; lifts rate limit to 5000/hr
+RELEASES_CACHE_TTL = int(os.getenv("RELEASES_CACHE_TTL", "21600"))  # 6 hours
 
 logging.basicConfig(
     level=logging.INFO,
@@ -655,6 +661,128 @@ async def history_top_cpids(
             LIMIT ?
         """,
         params=(limit,),
+    )
+
+
+# ---------------------------------------------------------------------------
+# GitHub releases (for chart-annotation overlay)
+# ---------------------------------------------------------------------------
+#
+# Separate from the analytics DB history endpoints because the source is the
+# GitHub API, not DuckDB. Cache body is keyed on a constant (no parameters);
+# TTL is long because releases publish infrequently. On upstream error we
+# serve stale cache if available, only 502 if we've never fetched.
+
+_releases_cache: dict[str, tuple[float, bytes]] = {}
+_releases_cache_lock = threading.Lock()
+
+
+def _classify_release(tag: str, name: str) -> str:
+    """Return 'mandatory', 'leisure', or 'unknown' based on tag/name suffix.
+
+    Gridcoin release naming convention (verified against 102 releases back to
+    2016): mandatory releases carry '-mandatory' in the tag or release name;
+    casual releases carry '-leisure'. Anything else (older releases pre-dating
+    the convention, oddly-named entries) falls through to 'unknown'.
+    """
+    combined = f"{tag or ''} {name or ''}".lower()
+    if "mandatory" in combined:
+        return "mandatory"
+    if "leisure" in combined:
+        return "leisure"
+    return "unknown"
+
+
+async def _fetch_releases_from_github() -> list[dict]:
+    """Pull all releases from the GitHub repo with pagination, drop
+    prereleases (testnet tags), and return the slim shape the front-end
+    needs for chart annotations. Sorted oldest-first."""
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    if GITHUB_TOKEN:
+        headers["Authorization"] = f"Bearer {GITHUB_TOKEN}"
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/releases"
+    raw: list[dict] = []
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        page = 1
+        while True:
+            resp = await client.get(url, headers=headers,
+                                    params={"per_page": 100, "page": page})
+            resp.raise_for_status()
+            batch = resp.json()
+            if not batch:
+                break
+            raw.extend(batch)
+            if len(batch) < 100:
+                break
+            page += 1
+
+    slim: list[dict] = []
+    for rel in raw:
+        if rel.get("prerelease"):
+            continue
+        tag = rel.get("tag_name", "") or ""
+        name = rel.get("name", "") or ""
+        slim.append({
+            "tag": tag,
+            "name": name,
+            "published_at": rel.get("published_at"),
+            "type": _classify_release(tag, name),
+            "html_url": rel.get("html_url"),
+        })
+    slim.sort(key=lambda x: x.get("published_at") or "")
+    return slim
+
+
+@app.get("/api/v1/history/releases")
+@limiter.limit("60/minute")
+async def history_releases(request: Request):
+    """Published (non-prerelease) Gridcoin-Research releases, annotated with
+    mandatory/leisure/unknown type derived from the tag+name suffix. Used by
+    the analytics page to overlay release markers on the historical charts."""
+    _ = request  # required by @limiter.limit
+    now = time.time()
+    cache_key = "releases"
+
+    with _releases_cache_lock:
+        entry = _releases_cache.get(cache_key)
+    if entry is not None:
+        cached_at, body = entry
+        if (now - cached_at) <= RELEASES_CACHE_TTL:
+            return Response(
+                content=body,
+                media_type="application/json",
+                headers={"Cache-Control": f"public, max-age={RELEASES_CACHE_TTL}"},
+            )
+
+    try:
+        data = await _fetch_releases_from_github()
+    except httpx.HTTPError as e:
+        log.warning("Failed to fetch releases from GitHub: %s", e)
+        # Serve stale cache rather than 502 if we have anything at all.
+        with _releases_cache_lock:
+            entry = _releases_cache.get(cache_key)
+        if entry is not None:
+            _, stale_body = entry
+            return Response(
+                content=stale_body,
+                media_type="application/json",
+                headers={"Cache-Control": "public, max-age=60"},
+            )
+        raise HTTPException(
+            status_code=502,
+            detail="Unable to fetch release metadata from GitHub.",
+        ) from e
+
+    body = json.dumps({"data": data}).encode("utf-8")
+    with _releases_cache_lock:
+        _releases_cache[cache_key] = (now, body)
+    return Response(
+        content=body,
+        media_type="application/json",
+        headers={"Cache-Control": f"public, max-age={RELEASES_CACHE_TTL}"},
     )
 
 
