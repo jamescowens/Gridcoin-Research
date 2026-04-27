@@ -506,6 +506,35 @@ async def history_cpid_churn(request: Request):
     )
 
 
+@app.get("/api/v1/history/mrc-daily")
+@limiter.limit("30/minute")
+async def history_mrc_daily(request: Request):
+    """Daily time series of MRC (Manual Research Claim) payment activity.
+
+    One row per UTC day; days with zero MRC activity are present in the
+    series with all-zero metrics (ingestion writes a row for every day
+    that has a known [first_height, next_day.first_height-1] bracket).
+    Sourced from the mrc_daily table populated by ingest_mrc.py.
+    """
+    _ = request  # required by @limiter.limit
+    return _cached_history_response(
+        cache_key=("mrc-daily",),
+        sql="""
+            SELECT obs_date,
+                   mrcs_paid,
+                   mrcs_fee_boosted,
+                   gross_research,
+                   net_to_researcher,
+                   foundation_fees,
+                   staker_fees,
+                   calc_min_fees,
+                   fee_boost
+            FROM mrc_daily
+            ORDER BY obs_date
+        """,
+    )
+
+
 @app.get("/api/v1/history/project-active-cpids")
 @limiter.limit("30/minute")
 async def history_project_active_cpids(request: Request):
