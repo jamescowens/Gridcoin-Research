@@ -264,16 +264,12 @@ _cache: dict = {}
 _cache_lock = asyncio.Lock()
 
 
-async def get_cached_status(rpc_url: str, rpc_auth: tuple,
-                             scraper_dir: str) -> dict:
-    """Return cached network status, refreshing if stale."""
+_refresh_inflight: asyncio.Task | None = None
+
+
+async def _do_refresh(rpc_url: str, rpc_auth: tuple, scraper_dir: str) -> dict:
+    """Actually fetch and update the cache. Caller is the single-flight winner."""
     global _cache
-
-    async with _cache_lock:
-        now = time.time()
-        if _cache and now - _cache.get("_fetched_at", 0) < CACHE_TTL:
-            return _cache
-
     try:
         data = await collect_network_status(rpc_url, rpc_auth, scraper_dir)
         data["_fetched_at"] = time.time()
@@ -289,6 +285,44 @@ async def get_cached_status(rpc_url: str, rpc_auth: tuple,
             log.info("Serving stale cache.")
             return _cache
         raise
+
+
+async def get_cached_status(rpc_url: str, rpc_auth: tuple,
+                             scraper_dir: str) -> dict:
+    """Return cached network status, refreshing if stale.
+
+    Refreshes are single-flighted: when the entry expires, the first
+    request creates an asyncio.Task to do the wallet RPC + scraper
+    read. Subsequent requests that arrive while that task is in flight
+    await the same task instead of triggering parallel RPCs against
+    the wallet. Without this, a burst of requests right after TTL
+    expiry would multiply wallet load and head-of-line block each
+    other for the same data.
+    """
+    global _refresh_inflight
+
+    async with _cache_lock:
+        now = time.time()
+        if _cache and now - _cache.get("_fetched_at", 0) < CACHE_TTL:
+            return _cache
+        # Stale or missing — coalesce concurrent refreshes onto a
+        # single task. The task itself updates _cache and clears the
+        # in-flight slot before returning.
+        if _refresh_inflight is None or _refresh_inflight.done():
+            _refresh_inflight = asyncio.create_task(
+                _do_refresh(rpc_url, rpc_auth, scraper_dir)
+            )
+        task = _refresh_inflight
+
+    try:
+        return await task
+    finally:
+        # First waiter to finish clears the slot so the next stale
+        # period starts a fresh task (the `done()` check on entry
+        # handles the case where someone else already reset it).
+        async with _cache_lock:
+            if _refresh_inflight is task:
+                _refresh_inflight = None
 
 
 # ---------------------------------------------------------------------------
