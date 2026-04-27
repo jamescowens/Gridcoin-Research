@@ -54,7 +54,7 @@ SCRAPER_DATA_DIR = os.getenv(
     "SCRAPER_DATA_DIR",
     str(Path.home() / ".GridcoinResearch" / "Scraper"),
 )
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "https://gridcoin.us").split(",")
+CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "https://gridcoin.us").split(",") if o.strip()]
 LISTEN_HOST = os.getenv("LISTEN_HOST", "127.0.0.1")
 LISTEN_PORT = int(os.getenv("LISTEN_PORT", "5000"))
 CACHE_TTL = int(os.getenv("CACHE_TTL", "300"))
