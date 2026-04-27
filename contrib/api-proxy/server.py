@@ -25,7 +25,6 @@ import gzip
 import json
 import logging
 import os
-import sys
 import threading
 import time
 from collections import defaultdict
