@@ -90,30 +90,34 @@ log = logging.getLogger("gridcoin-api-proxy")
 
 
 def read_wallet_config(conf_path: str) -> dict:
-    """Parse rpcuser, rpcpassword, rpcport from the wallet config file."""
+    """Parse rpcuser, rpcpassword, rpcport from the wallet config file.
+
+    Raises FileNotFoundError if the file is missing and ValueError if
+    rpcuser or rpcpassword are absent. The module's startup hook
+    catches these and surfaces them via FastAPI's lifespan, so an
+    interactive `import server` (e.g. for tests, REPL, doc tooling)
+    does not abort the process the way a bare `sys.exit()` would.
+    """
     config = {"rpcport": 15715}
-    try:
-        with open(conf_path, "r", encoding="utf8") as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith("#") or "=" not in line:
-                    continue
-                key, _, value = line.partition("=")
-                key = key.strip()
-                value = value.strip()
-                if key == "rpcuser":
-                    config["rpcuser"] = value
-                elif key == "rpcpassword":
-                    config["rpcpassword"] = value
-                elif key == "rpcport":
-                    config["rpcport"] = int(value)
-    except FileNotFoundError:
-        log.error("Wallet config not found: %s", conf_path)
-        sys.exit(1)
+    with open(conf_path, "r", encoding="utf8") as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            key = key.strip()
+            value = value.strip()
+            if key == "rpcuser":
+                config["rpcuser"] = value
+            elif key == "rpcpassword":
+                config["rpcpassword"] = value
+            elif key == "rpcport":
+                config["rpcport"] = int(value)
 
     if "rpcuser" not in config or "rpcpassword" not in config:
-        log.error("rpcuser/rpcpassword not found in %s", conf_path)
-        sys.exit(1)
+        raise ValueError(
+            f"rpcuser/rpcpassword not found in {conf_path}"
+        )
 
     return config
 
@@ -347,9 +351,11 @@ async def background_refresh(rpc_url: str, rpc_auth: tuple,
 # FastAPI application
 # ---------------------------------------------------------------------------
 
-wallet_conf = read_wallet_config(GRIDCOIN_CONF)
-RPC_URL = f"http://127.0.0.1:{wallet_conf['rpcport']}/"
-RPC_AUTH = (wallet_conf["rpcuser"], wallet_conf["rpcpassword"])
+# Resolved at startup inside lifespan() so an unreadable wallet
+# config raises through FastAPI/Uvicorn rather than exiting the
+# process at import time.
+RPC_URL: str | None = None
+RPC_AUTH: tuple | None = None
 
 limiter = Limiter(key_func=get_remote_address)
 
@@ -357,7 +363,14 @@ limiter = Limiter(key_func=get_remote_address)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Start background cache refresh on startup."""
-    global _refresh_task
+    global _refresh_task, RPC_URL, RPC_AUTH
+
+    # Wallet config — read here rather than at module import so a
+    # missing/bad config raises cleanly through Uvicorn's startup
+    # path instead of a bare sys.exit() during `import server`.
+    wallet_conf = read_wallet_config(GRIDCOIN_CONF)
+    RPC_URL = f"http://127.0.0.1:{wallet_conf['rpcport']}/"
+    RPC_AUTH = (wallet_conf["rpcuser"], wallet_conf["rpcpassword"])
 
     # Initial cache population.
     log.info("Populating initial cache...")
