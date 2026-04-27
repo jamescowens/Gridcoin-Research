@@ -1012,7 +1012,7 @@ async def health():
     age = time.time() - _cache.get("_fetched_at", 0) if has_cache else None
     return {
         "status": "ok" if has_cache else "no_data",
-        "cache_age_seconds": round(age) if age else None,
+        "cache_age_seconds": round(age) if age is not None else None,
         "cache_ttl": CACHE_TTL,
     }
 
