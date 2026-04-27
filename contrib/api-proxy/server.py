@@ -57,6 +57,12 @@ SCRAPER_DATA_DIR = os.getenv(
 CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "https://gridcoin.us").split(",") if o.strip()]
 LISTEN_HOST = os.getenv("LISTEN_HOST", "127.0.0.1")
 LISTEN_PORT = int(os.getenv("LISTEN_PORT", "5000"))
+# Trusted reverse-proxy source IPs for X-Forwarded-* honoring. Comma-
+# separated, default loopback-only since the typical deployment puts a
+# Caddy/nginx terminator on the same host. Set to "*" only if you fully
+# trust whatever upstream is rewriting client headers — otherwise a
+# rate-limit key spoof becomes trivial.
+FORWARDED_ALLOW_IPS = os.getenv("FORWARDED_ALLOW_IPS", "127.0.0.1")
 CACHE_TTL = int(os.getenv("CACHE_TTL", "300"))
 STATS_DB_PATH = os.getenv(
     "STATS_DB_PATH",
@@ -1033,9 +1039,16 @@ async def health():
 
 if __name__ == "__main__":
     import uvicorn
+    # proxy_headers + forwarded_allow_ips make uvicorn rewrite the ASGI
+    # scope's `client` tuple based on the trusted upstream's
+    # X-Forwarded-For header, so `request.client.host` (and therefore
+    # slowapi's per-IP rate-limit key) reflects the real client rather
+    # than the loopback peer Caddy/nginx presents to us.
     uvicorn.run(
         "server:app",
         host=LISTEN_HOST,
         port=LISTEN_PORT,
         log_level="info",
+        proxy_headers=True,
+        forwarded_allow_ips=FORWARDED_ALLOW_IPS,
     )
