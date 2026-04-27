@@ -535,6 +535,40 @@ async def history_mrc_daily(request: Request):
     )
 
 
+@app.get("/api/v1/history/block-version-activations")
+@limiter.limit("30/minute")
+async def history_block_version_activations(request: Request):
+    """Dates each new block version first appeared in the chain, derived
+    empirically from the block_version recorded alongside each day's
+    first_height in daily_block_boundaries.
+
+    Filtered to versions whose predecessor we also observed — without
+    that filter we'd return the start of our data window as an
+    "activation", which would be misleading (the data starts at v12
+    activation, but v12 itself activated earlier).
+    """
+    _ = request  # required by @limiter.limit
+    return _cached_history_response(
+        cache_key=("block-version-activations",),
+        sql="""
+            WITH version_first_seen AS (
+                SELECT block_version AS version,
+                       MIN(obs_date) AS activation_date
+                FROM daily_block_boundaries
+                WHERE block_version IS NOT NULL
+                GROUP BY block_version
+            )
+            SELECT version, activation_date
+            FROM version_first_seen vfs
+            WHERE EXISTS (
+                SELECT 1 FROM version_first_seen vp
+                WHERE vp.version = vfs.version - 1
+            )
+            ORDER BY version
+        """,
+    )
+
+
 @app.get("/api/v1/history/project-active-cpids")
 @limiter.limit("30/minute")
 async def history_project_active_cpids(request: Request):
