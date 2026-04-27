@@ -20,6 +20,7 @@ Configuration via environment variables:
 
 import asyncio
 import csv
+import datetime as _dt
 import gzip
 import json
 import logging
@@ -673,6 +674,141 @@ async def history_cpid_project_magnitude(request: Request, cpid: str):
     )
 
 
+_TOP_CPIDS_PERIODS = {
+    "all":     None,    # use the precomputed summary table
+    "week":    7,
+    "month":   30,
+    "quarter": 90,
+    "year":    365,
+}
+
+_TOP_CPIDS_ALLOWED_ORDERS = {
+    "lifetime_mag_avg_active",
+    "lifetime_mag_avg_elapsed",
+    "lifetime_mag_sum",
+    "lifetime_rac_max",
+    "lifetime_tc_max",
+    "days_active",
+}
+
+
+def _top_cpids_resolve_window(
+    period: str | None,
+    start_date: str | None,
+    end_date: str | None,
+) -> tuple[_dt.date, _dt.date, bool] | None:
+    """Resolve the requested window, if any.
+
+    Returns (start, end, is_canned) or None for "all time" (precomputed
+    summary path). `is_canned` is True for period= queries (cacheable)
+    and False for explicit start_date/end_date (not cacheable — the
+    caller bypasses the in-process cache to bound cardinality).
+
+    Raises HTTPException 400 on invalid combinations.
+    """
+    if start_date or end_date:
+        if period and period != "all":
+            raise HTTPException(
+                status_code=400,
+                detail="period and start_date/end_date are mutually exclusive",
+            )
+        if not (start_date and end_date):
+            raise HTTPException(status_code=400, detail="start_date and end_date must both be provided")
+        try:
+            start = _dt.date.fromisoformat(start_date)
+            end = _dt.date.fromisoformat(end_date)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=f"invalid ISO date: {e}")
+        if end < start:
+            raise HTTPException(status_code=400, detail="end_date must be >= start_date")
+        return (start, end, False)
+
+    period = period or "all"
+    if period not in _TOP_CPIDS_PERIODS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"period must be one of {sorted(_TOP_CPIDS_PERIODS)}",
+        )
+    days = _TOP_CPIDS_PERIODS[period]
+    if days is None:
+        return None  # all-time — use precomputed summary
+    end = _dt.datetime.now(_dt.timezone.utc).date()
+    start = end - _dt.timedelta(days=days - 1)  # inclusive on both ends
+    return (start, end, True)
+
+
+def _top_cpids_range_response(
+    project: str | None,
+    limit: int,
+    order_by: str,
+    start: _dt.date,
+    end: _dt.date,
+    is_canned: bool,
+) -> Response:
+    """Run the on-demand range aggregation against fact_stats and
+    return a JSON response. Cached only for canned periods."""
+    days_elapsed = (end - start).days + 1
+
+    if project:
+        cache_key = ("top-cpids-range-by-project", project, limit, order_by, start.isoformat(), end.isoformat())
+        sql = f"""
+            SELECT cpid,
+                   ? AS project,
+                   MIN(obs_date)                     AS first_seen,
+                   MAX(obs_date)                     AS last_seen,
+                   COUNT(*) FILTER (WHERE mag > 0)   AS days_active,
+                   COUNT(*)                          AS days_observed,
+                   ?                                 AS days_elapsed,
+                   COALESCE(SUM(mag), 0)             AS lifetime_mag_sum,
+                   AVG(mag) FILTER (WHERE mag > 0)   AS lifetime_mag_avg_active,
+                   COALESCE(SUM(mag), 0) / ?         AS lifetime_mag_avg_elapsed,
+                   MAX(rac)                          AS lifetime_rac_max,
+                   MAX(tc)                           AS lifetime_tc_max
+            FROM fact_stats
+            WHERE stats_type = 'byCPIDbyProject'
+              AND project = ?
+              AND obs_date BETWEEN ? AND ?
+            GROUP BY cpid
+            ORDER BY {order_by} DESC NULLS LAST
+            LIMIT ?
+        """
+        params = (project, days_elapsed, days_elapsed, project, start, end, limit)
+    else:
+        cache_key = ("top-cpids-range", limit, order_by, start.isoformat(), end.isoformat())
+        sql = f"""
+            SELECT cpid,
+                   MIN(obs_date)                     AS first_seen,
+                   MAX(obs_date)                     AS last_seen,
+                   COUNT(*) FILTER (WHERE mag > 0)   AS days_active,
+                   COUNT(*)                          AS days_observed,
+                   ?                                 AS days_elapsed,
+                   COALESCE(SUM(mag), 0)             AS lifetime_mag_sum,
+                   AVG(mag) FILTER (WHERE mag > 0)   AS lifetime_mag_avg_active,
+                   COALESCE(SUM(mag), 0) / ?         AS lifetime_mag_avg_elapsed,
+                   MAX(rac)                          AS lifetime_rac_max,
+                   MAX(tc)                           AS lifetime_tc_max
+            FROM fact_stats
+            WHERE stats_type = 'byCPID'
+              AND obs_date BETWEEN ? AND ?
+            GROUP BY cpid
+            ORDER BY {order_by} DESC NULLS LAST
+            LIMIT ?
+        """
+        params = (days_elapsed, days_elapsed, start, end, limit)
+
+    if is_canned:
+        return _cached_history_response(cache_key=cache_key, sql=sql, params=tuple(params))
+
+    # Custom range: live query, no in-process cache, no public caching.
+    data = _history_query(sql, tuple(params))
+    body = json.dumps({"data": data}).encode("utf-8")
+    return Response(
+        content=body,
+        media_type="application/json",
+        headers={"Cache-Control": "no-store"},
+    )
+
+
 @app.get("/api/v1/history/top-cpids")
 @limiter.limit("30/minute")
 async def history_top_cpids(
@@ -680,23 +816,43 @@ async def history_top_cpids(
     project: str | None = None,
     limit: int = 100,
     order_by: str = "lifetime_mag_sum",
+    period: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ):
-    """Top CPIDs by lifetime magnitude. `project` filter switches the
-    source table from network-wide to per-project rollup. `order_by`
-    must be one of the allowed column names (prevents SQL injection)."""
+    """Top CPIDs ranked over a configurable date window.
+
+    Default behavior (`period` omitted or `period=all`) reads the
+    precomputed `summary_cpid_lifetime` / `summary_cpid_project_lifetime`
+    tables — same data as before this endpoint grew range support.
+
+    For any other `period` (week, month, quarter, year) the endpoint
+    runs an on-demand aggregation against the `fact_stats` table over
+    the resolved [today-N+1 .. today] UTC window. Canned periods are
+    cached.
+
+    Custom ranges via `start_date` and `end_date` (both ISO YYYY-MM-DD,
+    inclusive) bypass the in-process cache and return
+    `Cache-Control: no-store` to keep cache cardinality bounded.
+    `period` and `start_date`/`end_date` are mutually exclusive.
+
+    `order_by` must be one of the allowed column names (prevents SQL
+    injection in the LIMIT clause).
+    """
     _ = request  # required by @limiter.limit
     limit = max(1, min(500, limit))
-    allowed_orders = {
-        "lifetime_mag_avg_active",
-        "lifetime_mag_avg_elapsed",
-        "lifetime_mag_sum",
-        "lifetime_rac_max",
-        "lifetime_tc_max",
-        "days_active",
-    }
-    if order_by not in allowed_orders:
-        raise HTTPException(status_code=400, detail=f"order_by must be one of {sorted(allowed_orders)}")
+    if order_by not in _TOP_CPIDS_ALLOWED_ORDERS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"order_by must be one of {sorted(_TOP_CPIDS_ALLOWED_ORDERS)}",
+        )
 
+    window = _top_cpids_resolve_window(period, start_date, end_date)
+    if window is not None:
+        start, end, is_canned = window
+        return _top_cpids_range_response(project, limit, order_by, start, end, is_canned)
+
+    # All-time — precomputed summary tables.
     if project:
         return _cached_history_response(
             cache_key=("top-cpids-by-project", project, limit, order_by),
