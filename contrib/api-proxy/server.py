@@ -382,12 +382,22 @@ async def network_status(request: Request):
     _ = request  # required by @limiter.limit; body reads only from cache
     data = await get_cached_status(RPC_URL, RPC_AUTH, SCRAPER_DATA_DIR)
 
+    # Derive remaining freshness from the cached `_fetched_at`. When the
+    # refresh failed and we're serving stale data (age >= CACHE_TTL),
+    # tell clients/intermediaries not to cache it — otherwise they'd
+    # treat already-stale data as fresh for another full CACHE_TTL.
+    age = time.time() - data.get("_fetched_at", 0)
+    if age >= CACHE_TTL:
+        cache_control = "no-store"
+    else:
+        cache_control = f"public, max-age={max(0, int(CACHE_TTL - age))}"
+
     # Strip internal cache metadata.
     response_data = {k: v for k, v in data.items() if not k.startswith("_")}
 
     return JSONResponse(
         content=response_data,
-        headers={"Cache-Control": f"public, max-age={CACHE_TTL}"},
+        headers={"Cache-Control": cache_control},
     )
 
 
