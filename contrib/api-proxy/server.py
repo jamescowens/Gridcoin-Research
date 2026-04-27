@@ -124,7 +124,7 @@ async def rpc_call(client: httpx.AsyncClient, url: str, auth: tuple,
     resp = await client.post(
         url,
         content=json.dumps(payload),
-        headers={"Content-Type": "text/plain;"},
+        headers={"Content-Type": "application/json"},
         auth=auth,
         timeout=60.0,
     )
