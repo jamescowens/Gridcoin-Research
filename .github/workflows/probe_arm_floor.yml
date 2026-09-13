@@ -1,5 +1,6 @@
 # TEMPORARY PROBE -- not for merge.
-# What macOS minimum do Homebrew's arm64 bottles carry on macos-15?
+# What is the HIGHEST macOS minimum across every dylib the ARM build links?
+# That, not our CMake flag, is the real floor of the shipped DMG.
 name: PROBE arm floor
 on:
   push:
@@ -9,23 +10,28 @@ jobs:
   arm-floor:
     runs-on: macos-15
     steps:
-      - name: What does Homebrew give us, and what floor does it carry?
+      - name: Install the full ARM dependency set
+        run: brew install qt openssl boost libevent miniupnpc qrencode libzip capnp >/dev/null 2>&1 && echo installed
+
+      - name: Measure minos for every dependency we link
         run: |
-          set -euo pipefail
-          echo "runner: $(uname -m) macOS $(sw_vers -productVersion)"
-          brew install qtbase openssl@3 2>&1 | grep -iE "Pouring|Building from source" | head -4
-          for lib in "$(brew --prefix qtbase)/lib/QtCore.framework/Versions/A/QtCore" \
-                     "$(brew --prefix openssl@3)/lib/libssl.dylib"; do
-            echo "--- $lib"
-            otool -l "$lib" | grep -A4 LC_BUILD_VERSION | grep -E "minos|sdk" | head -2
+          set -uo pipefail
+          printf '%-16s %-8s %s\n' FORMULA MINOS LIBRARY
+          worst=0; worstname="none"
+          for f in qt openssl@3 boost libevent miniupnpc qrencode libzip capnp; do
+            p="$(brew --prefix "$f" 2>/dev/null)" || continue
+            [ -d "$p" ] || continue
+            lib=$(find "$p" -type f \( -name '*.dylib' -o -name '*.so' \) 2>/dev/null | head -1)
+            if [ -z "$lib" ]; then
+              lib=$(find "$p" -type f -path '*.framework/Versions/A/*' ! -name '*.h' ! -name '*.prl' 2>/dev/null | head -1)
+            fi
+            if [ -z "$lib" ]; then printf '%-16s %-8s %s\n' "$f" "-" "(no library found)"; continue; fi
+            m=$(otool -l "$lib" 2>/dev/null | awk '/LC_BUILD_VERSION/{f=1} f&&/minos/{print $2; exit}')
+            [ -n "$m" ] || m=$(otool -l "$lib" 2>/dev/null | awk '/LC_VERSION_MIN_MACOSX/{f=1} f&&/version/{print $2; exit}')
+            printf '%-16s %-8s %s\n' "$f" "${m:-?}" "$(basename "$lib")"
+            maj=${m%%.*}
+            case "$maj" in ''|*[!0-9]*) ;; *) [ "$maj" -gt "$worst" ] && { worst=$maj; worstname=$f; } ;; esac
           done
-          echo "=== and what a 14.0-targeted binary against them would claim ==="
-          cat > /tmp/t.cpp <<'CPP'
-          #include <QtCore/QCoreApplication>
-          int main(int c, char** v){ QCoreApplication a(c,v); return 0; }
-          CPP
-          clang++ -std=c++17 -mmacosx-version-min=14.0 \
-            -F"$(brew --prefix qtbase)/lib" -framework QtCore \
-            -I"$(brew --prefix qtbase)/lib/QtCore.framework/Headers" /tmp/t.cpp -o /tmp/t
-          echo "our binary:"; otool -l /tmp/t | grep -A4 LC_BUILD_VERSION | grep minos | head -1
-          echo "QtCore it links:"; otool -l "$(brew --prefix qtbase)/lib/QtCore.framework/Versions/A/QtCore" | grep -A4 LC_BUILD_VERSION | grep minos | head -1
+          echo
+          echo "HIGHEST major minos across the set: $worst (from $worstname)"
+          echo "That is the real floor of an ARM DMG built here, whatever CMAKE_OSX_DEPLOYMENT_TARGET claims."
