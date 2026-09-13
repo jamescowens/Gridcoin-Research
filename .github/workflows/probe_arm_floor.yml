@@ -1,37 +1,119 @@
 # TEMPORARY PROBE -- not for merge.
-# What is the HIGHEST macOS minimum across every dylib the ARM build links?
-# That, not our CMake flag, is the real floor of the shipped DMG.
+# Two questions, one round trip:
+#   1. What is the HIGHEST macOS minimum across every dylib an ARM build links
+#      on macos-15?  That, not our CMake flag, is the real floor of the DMG.
+#   2. Can we force Homebrew to pour the older arm64_sonoma bottles, which
+#      should carry minos 14.0, without any mirroring or extra hardware?
 name: PROBE arm floor
 on:
   push:
     branches: [ci/probe-arm-floor]
   workflow_dispatch:
+
+env:
+  LINKED: qt openssl@3 boost libevent miniupnpc qrencode libzip capnp
+
 jobs:
-  arm-floor:
+  measure-default:
+    name: PROBE what floor do the default bottles give us
     runs-on: macos-15
     steps:
-      - name: Install the full ARM dependency set
-        run: brew install qt openssl boost libevent miniupnpc qrencode libzip capnp >/dev/null 2>&1 && echo installed
+      - name: Install the ARM dependency set the way the real job does
+        run: |
+          set -euo pipefail
+          brew install qt openssl boost libevent miniupnpc qrencode libzip capnp
 
-      - name: Measure minos for every dependency we link
+      - name: Highest minos per formula, across every Mach-O in the keg
         run: |
           set -uo pipefail
-          printf '%-16s %-8s %s\n' FORMULA MINOS LIBRARY
-          worst=0; worstname="none"
-          for f in qt openssl@3 boost libevent miniupnpc qrencode libzip capnp; do
-            p="$(brew --prefix "$f" 2>/dev/null)" || continue
-            [ -d "$p" ] || continue
-            lib=$(find "$p" -type f \( -name '*.dylib' -o -name '*.so' \) 2>/dev/null | head -1)
-            if [ -z "$lib" ]; then
-              lib=$(find "$p" -type f -path '*.framework/Versions/A/*' ! -name '*.h' ! -name '*.prl' 2>/dev/null | head -1)
-            fi
-            if [ -z "$lib" ]; then printf '%-16s %-8s %s\n' "$f" "-" "(no library found)"; continue; fi
-            m=$(otool -l "$lib" 2>/dev/null | awk '/LC_BUILD_VERSION/{f=1} f&&/minos/{print $2; exit}')
-            [ -n "$m" ] || m=$(otool -l "$lib" 2>/dev/null | awk '/LC_VERSION_MIN_MACOSX/{f=1} f&&/version/{print $2; exit}')
-            printf '%-16s %-8s %s\n' "$f" "${m:-?}" "$(basename "$lib")"
-            maj=${m%%.*}
-            case "$maj" in ''|*[!0-9]*) ;; *) [ "$maj" -gt "$worst" ] && { worst=$maj; worstname=$f; } ;; esac
+          printf '%-14s %-10s %-16s %s\n' FORMULA MAX_MINOS BOTTLE_TAG WORST_LIBRARY
+          worst=0; worstname=none
+          for f in $LINKED; do
+            # brew --prefix hands back an opt/ SYMLINK; find will not descend a
+            # symlink given as its start path, which is what broke the last probe.
+            p="$(brew --prefix "$f" 2>/dev/null)" || { printf '%-14s %s\n' "$f" "(not installed)"; continue; }
+            p="$(cd "$p" 2>/dev/null && pwd -P)" || { printf '%-14s %s\n' "$f" "(no prefix)"; continue; }
+            tag="$(/usr/bin/python3 -c "import json,sys; r=json.load(open(sys.argv[1])); print(r.get('built_on',{}).get('os_version','?'))" "$p/INSTALL_RECEIPT.json" 2>/dev/null || echo '?')"
+            max=0; maxlib=''; maxfull=''
+            while IFS= read -r lib; do
+              m=$(otool -l "$lib" 2>/dev/null | awk '/LC_BUILD_VERSION/{f=1} f&&/^ *minos/{print $2; exit}')
+              [ -n "$m" ] || m=$(otool -l "$lib" 2>/dev/null | awk '/LC_VERSION_MIN_MACOSX/{f=1} f&&/^ *version/{print $2; exit}')
+              [ -n "$m" ] || continue
+              maj=${m%%.*}
+              case "$maj" in ''|*[!0-9]*) continue ;; esac
+              if [ "$maj" -gt "$max" ]; then max=$maj; maxlib="$(basename "$lib")"; maxfull="$m"; fi
+            done < <(find "$p" -type f \( -name '*.dylib' -o -path '*.framework/Versions/*' \) ! -name '*.h' ! -name '*.prl' ! -name '*.pc' 2>/dev/null)
+            [ "$max" -eq 0 ] && { printf '%-14s %-10s %-16s %s\n' "$f" "-" "$tag" "(no Mach-O found)"; continue; }
+            printf '%-14s %-10s %-16s %s\n' "$f" "$maxfull" "$tag" "$maxlib"
+            [ "$max" -gt "$worst" ] && { worst=$max; worstname="$f ($maxlib)"; }
           done
           echo
-          echo "HIGHEST major minos across the set: $worst (from $worstname)"
-          echo "That is the real floor of an ARM DMG built here, whatever CMAKE_OSX_DEPLOYMENT_TARGET claims."
+          echo "VERDICT-DEFAULT: highest major minos across the set = $worst (from $worstname)"
+
+  force-sonoma-tag:
+    name: PROBE can we force the arm64_sonoma bottles instead
+    runs-on: macos-15
+    steps:
+      - name: Which formulae even HAVE an arm64_sonoma bottle
+        run: |
+          set -uo pipefail
+          for f in $LINKED; do
+            has=$(brew info --json=v2 "$f" | /usr/bin/python3 -c "import json,sys; d=json.load(sys.stdin)['formulae'][0]; print(','.join(sorted(d['bottle'].get('stable',{}).get('files',{}).keys())))")
+            printf '%-14s %s\n' "$f" "$has"
+          done
+
+      - name: Fetch and install the arm64_sonoma bottles explicitly
+        run: |
+          set -uo pipefail
+          # Documented Homebrew idiom: fetch a specific bottle tag into the cache,
+          # then install that local bottle file instead of resolving the formula.
+          for f in $LINKED; do
+            if ! brew fetch --bottle-tag=arm64_sonoma "$f" >/dev/null 2>&1; then
+              echo "FETCH-FAIL  $f (no arm64_sonoma bottle)"
+              continue
+            fi
+            cached="$(brew --cache --bottle-tag=arm64_sonoma "$f")"
+            if brew install "$cached" >/dev/null 2>&1; then
+              echo "INSTALLED   $f  <- $(basename "$cached")"
+            else
+              echo "INSTALL-FAIL $f  <- $(basename "$cached")"
+            fi
+          done
+
+      - name: Highest minos per formula, after forcing sonoma
+        run: |
+          set -uo pipefail
+          printf '%-14s %-10s %s\n' FORMULA MAX_MINOS WORST_LIBRARY
+          worst=0; worstname=none
+          for f in $LINKED; do
+            p="$(brew --prefix "$f" 2>/dev/null)" || continue
+            p="$(cd "$p" 2>/dev/null && pwd -P)" || continue
+            max=0; maxlib=''; maxfull=''
+            while IFS= read -r lib; do
+              m=$(otool -l "$lib" 2>/dev/null | awk '/LC_BUILD_VERSION/{f=1} f&&/^ *minos/{print $2; exit}')
+              [ -n "$m" ] || continue
+              maj=${m%%.*}
+              case "$maj" in ''|*[!0-9]*) continue ;; esac
+              if [ "$maj" -gt "$max" ]; then max=$maj; maxlib="$(basename "$lib")"; maxfull="$m"; fi
+            done < <(find "$p" -type f \( -name '*.dylib' -o -path '*.framework/Versions/*' \) ! -name '*.h' ! -name '*.prl' ! -name '*.pc' 2>/dev/null)
+            [ "$max" -eq 0 ] && continue
+            printf '%-14s %-10s %s\n' "$f" "$maxfull" "$maxlib"
+            [ "$max" -gt "$worst" ] && { worst=$max; worstname="$f ($maxlib)"; }
+          done
+          echo
+          echo "VERDICT-SONOMA: highest major minos across the set = $worst (from $worstname)"
+
+      - name: Does a program still build and link against the forced kegs
+        run: |
+          set -euo pipefail
+          cat > /tmp/t.cpp <<'CPP'
+          #include <openssl/ssl.h>
+          #include <event2/event.h>
+          #include <cstdio>
+          int main() { printf("%s / libevent ok\n", OpenSSL_version(OPENSSL_VERSION)); event_base_free(event_base_new()); return 0; }
+          CPP
+          clang++ -std=c++17 -mmacosx-version-min=14.0 /tmp/t.cpp -o /tmp/t \
+            -I"$(brew --prefix openssl@3)/include" -I"$(brew --prefix libevent)/include" \
+            -L"$(brew --prefix openssl@3)/lib" -L"$(brew --prefix libevent)/lib" -lssl -lcrypto -levent
+          /tmp/t
+          echo "--- our binary:"; otool -l /tmp/t | awk '/LC_BUILD_VERSION/{f=1} f&&/^ *minos/{print "    minos "$2; exit}'
